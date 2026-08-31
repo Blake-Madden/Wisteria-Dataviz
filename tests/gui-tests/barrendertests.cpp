@@ -16,6 +16,7 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include <wx/wx.h>
+#include <wx/bmpbndl.h>
 #include <wx/dcmemory.h>
 #include <wx/dcgraph.h>
 #include <wx/filename.h>
@@ -278,7 +279,20 @@ namespace
         std::vector<double> m_stackedBlocks;
         bool m_decal{ false };
         std::optional<Icons::IconShape> m_stippleShape;
+        bool m_imageScheme{ false };
+        bool m_stippleBrush{ false };
         };
+
+    // A solid image with a contrasting corner, built in memory so the image effects
+    // can be exercised without a file on disk.
+    [[nodiscard]]
+    wxBitmapBundle MakeTestImage(const wxSize size)
+        {
+        wxImage image{ size };
+        image.SetRGB(wxRect{ size }, 0, 90, 160);
+        image.SetRGB(wxRect{ 0, 0, size.GetWidth() / 2, size.GetHeight() / 2 }, 230, 160, 20);
+        return wxBitmapBundle{ wxBitmap{ image } };
+        }
 
     [[nodiscard]]
     std::shared_ptr<BarChart> BuildGeometryChart(Canvas* canvas, const GeometrySpec& spec)
@@ -288,6 +302,19 @@ namespace
         if (spec.m_stippleShape.has_value())
             {
             chart->SetStippleShape(spec.m_stippleShape.value());
+            }
+        // the common image is the first image in the scheme, so one setter feeds
+        // both the CommonImage and Image effects
+        if (spec.m_imageScheme)
+            {
+            chart->SetImageScheme(std::make_shared<Wisteria::Images::Schemes::ImageScheme>(
+                std::vector<wxBitmapBundle>{ MakeTestImage(wxSize{ 800, 600 }),
+                                             MakeTestImage(wxSize{ 800, 600 }),
+                                             MakeTestImage(wxSize{ 800, 600 }) }));
+            }
+        if (spec.m_stippleBrush)
+            {
+            chart->SetStippleBrush(MakeTestImage(wxSize{ 32, 32 }));
             }
 
         const wxColour barColor{ ColorBrewer::GetColor(Color::OceanBoatBlue) };
@@ -557,6 +584,30 @@ namespace
               "(30,183,118,70) (148,183,118,70) (266,183,118,70) (384,183,118,70) "
               "(502,183,118,70) (587,235,7,15) (30,65,118,70) (148,65,118,70) (266,65,118,70) "
               "(384,65,118,70) (476,117,7,15)" },
+            { "vert-common-image",
+              "11 objects: (13,85,682,315) (10,478,687,21) (13,2,681,6) (1,0,13,486) "
+              "(693,7,6,472) (97,242,170,236) (180,223,7,15) (267,85,170,393) (350,66,7,15) "
+              "(437,164,170,314) (520,145,7,15)" },
+            { "horz-common-image",
+              "11 objects: (139,7,444,473) (26,478,671,21) (29,2,665,6) (1,0,29,486) "
+              "(693,7,6,472) (30,301,331,118) (366,353,7,15) (30,183,552,118) (587,235,7,15) "
+              "(30,65,441,118) (476,117,7,15)" },
+            { "vert-image",
+              "11 objects: (13,85,682,315) (10,478,687,21) (13,2,681,6) (1,0,13,486) "
+              "(693,7,6,472) (97,242,170,236) (180,223,7,15) (267,85,170,393) (350,66,7,15) "
+              "(437,164,170,314) (520,145,7,15)" },
+            { "horz-image",
+              "11 objects: (139,7,444,473) (26,478,671,21) (29,2,665,6) (1,0,29,486) "
+              "(693,7,6,472) (30,301,331,118) (366,353,7,15) (30,183,552,118) (587,235,7,15) "
+              "(30,65,441,118) (476,117,7,15)" },
+            { "vert-stipple-image",
+              "11 objects: (13,85,682,315) (10,478,687,21) (13,2,681,6) (1,0,13,486) "
+              "(693,7,6,472) (97,242,170,236) (180,223,7,15) (267,85,170,393) (350,66,7,15) "
+              "(437,164,170,314) (520,145,7,15)" },
+            { "horz-stipple-image",
+              "11 objects: (139,7,444,473) (26,478,671,21) (29,2,665,6) (1,0,29,486) "
+              "(693,7,6,472) (30,301,331,118) (366,353,7,15) (30,183,552,118) (587,235,7,15) "
+              "(30,65,441,118) (476,117,7,15)" },
             { "vert-decal",
               "14 objects: (13,85,682,315) (10,478,687,21) (13,2,681,6) (1,0,13,486) "
               "(693,7,6,472) (97,242,170,236)pts{ 97,242 266,242 266,477 97,477 } (180,223,7,15) "
@@ -668,6 +719,24 @@ namespace
                           GeometrySpec{ .m_orientation = Orientation::Horizontal,
                                         .m_effect = BoxEffect::StippleShape,
                                         .m_stippleShape = Icons::IconShape::Blackboard } });
+        // the image effects anchor an image at the block rectangle's top-left corner
+        specs.push_back({ "vert-common-image", GeometrySpec{ .m_effect = BoxEffect::CommonImage,
+                                                             .m_imageScheme = true } });
+        specs.push_back({ "horz-common-image",
+                          GeometrySpec{ .m_orientation = Orientation::Horizontal,
+                                        .m_effect = BoxEffect::CommonImage,
+                                        .m_imageScheme = true } });
+        specs.push_back({ "vert-image",
+                          GeometrySpec{ .m_effect = BoxEffect::Image, .m_imageScheme = true } });
+        specs.push_back({ "horz-image", GeometrySpec{ .m_orientation = Orientation::Horizontal,
+                                                      .m_effect = BoxEffect::Image,
+                                                      .m_imageScheme = true } });
+        specs.push_back({ "vert-stipple-image", GeometrySpec{ .m_effect = BoxEffect::StippleImage,
+                                                              .m_stippleBrush = true } });
+        specs.push_back({ "horz-stipple-image",
+                          GeometrySpec{ .m_orientation = Orientation::Horizontal,
+                                        .m_effect = BoxEffect::StippleImage,
+                                        .m_stippleBrush = true } });
         // decals are placed from the (possibly deflated) block rectangle
         specs.push_back({ "vert-decal", GeometrySpec{ .m_decal = true } });
         specs.push_back({ "horz-decal", GeometrySpec{ .m_orientation = Orientation::Horizontal,
@@ -915,7 +984,8 @@ TEST_CASE("BarChart block geometry is deterministic", "[barchart][render]")
         }
     }
 
-TEST_CASE("BarChart block geometry matches the recorded baseline", "[barchart][render]")
+// this is machine specific, only ran during bar drawing refactoring
+TEST_CASE("BarChart block geometry matches the recorded baseline", "[barchart][render][.devmachinegeocheck]")
     {
     for (const auto& [name, spec] : GeometrySpecs())
         {

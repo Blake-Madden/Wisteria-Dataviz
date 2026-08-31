@@ -964,6 +964,340 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         }
 
     //-----------------------------------
+    BarChart::BarBlockGeometry BarChart::CalcBarBlockGeometry(
+        const Bar& bar, const BarBlock& barBlock, const BarRenderInfo& barRenderInfo,
+        BarBlockRenderInfo& barBlockRenderInfo) const
+        {
+        const bool isHorizontal{ GetBarOrientation() == Orientation::Horizontal };
+        const auto plotPoint =
+            [this, isHorizontal, &bar](const double scaleValue, wxPoint& resultPt)
+        {
+            if (isHorizontal)
+                {
+                GetPhysicalCoordinates(scaleValue, bar.GetAxisPosition(), resultPt);
+                }
+            else
+                {
+                GetPhysicalCoordinates(bar.GetAxisPosition(), scaleValue, resultPt);
+                }
+        };
+
+        const double baseValue = bar.GetCustomScalingAxisStartPosition().has_value() ?
+                                     bar.GetCustomScalingAxisStartPosition().value() :
+                                     GetScalingAxis().GetRange().first;
+        const double lowValue{ baseValue + barBlockRenderInfo.m_axisOffset };
+        const double highValue{ lowValue + barBlock.GetLength() };
+
+        // reversing the scaling axis swaps which end of the block the bar grows toward
+        const bool isReversed{ GetScalingAxis().IsReversed() };
+        plotPoint(isReversed ? lowValue : highValue, barBlockRenderInfo.m_middlePointOfBarEnd);
+        wxPoint blockStartPt;
+        plotPoint(isReversed ? highValue : lowValue, blockStartPt);
+
+        // if the first block, push it over a pixel so that it doesn't overlap the bar axis
+        const double axisNudge{ barBlockRenderInfo.m_axisOffset == 0 ? ScaleToScreenAndCanvas(1) :
+                                                                       0 };
+        barBlockRenderInfo.m_axisOffset += barBlock.GetLength();
+
+        if (isHorizontal)
+            {
+            const wxCoord lineXStart = blockStartPt.x + axisNudge;
+            const wxCoord barLength = barBlockRenderInfo.m_middlePointOfBarEnd.x - lineXStart;
+            const wxCoord lineYStart = barBlockRenderInfo.m_middlePointOfBarEnd.y -
+                                       safe_divide<double>(barRenderInfo.m_barWidth, 2.0);
+            return BarBlockGeometry{
+                wxRect(lineXStart, lineYStart, barLength, barRenderInfo.m_barWidth), barLength
+            };
+            }
+
+        const wxCoord lineYStart{ blockStartPt.y };
+        const wxCoord barLength = lineYStart - barBlockRenderInfo.m_middlePointOfBarEnd.y;
+        const wxCoord lineYEnd{ barBlockRenderInfo.m_middlePointOfBarEnd.y };
+        const wxCoord lineXStart = barBlockRenderInfo.m_middlePointOfBarEnd.x -
+                                   safe_divide<double>(barRenderInfo.m_barWidth, 2.0);
+        return BarBlockGeometry{ wxRect(lineXStart, lineYEnd, barRenderInfo.m_barWidth, barLength),
+                                 barLength };
+        }
+
+    //-----------------------------------
+    bool BarChart::DrawBarBlockImageEffect(
+        const Bar& bar, const size_t barIndex, const BarBlock& barBlock, const BlockColors& colors,
+        const wxRect& drawArea, const BarRenderInfo& barRenderInfo)
+        {
+        const bool isHorizontal{ GetBarOrientation() == Orientation::Horizontal };
+        const wxRect& barRect{ barRenderInfo.m_barRect };
+        const uint8_t opacityToApply{ colors.m_opacity };
+
+        const auto addImage =
+            [this, &drawArea, opacityToApply](std::unique_ptr<Wisteria::GraphItems::Image> barImage,
+                                              const ShadowType shadowType)
+        {
+            barImage->SetOpacity(opacityToApply);
+            barImage->SetAnchoring(Anchoring::TopLeftCorner);
+            barImage->SetShadowType(shadowType);
+            barImage->SetClippingRect(drawArea);
+            AddObject(std::move(barImage));
+        };
+        const auto shadowOrNone = [this](const ShadowType shadowType)
+        { return (GetShadowType() != ShadowType::NoDisplay) ? shadowType : ShadowType::NoDisplay; };
+
+        if (bar.GetEffect() == BoxEffect::CommonImage && barRenderInfo.m_scaledCommonImg.IsOk())
+            {
+            wxRect imgSubRect{ barRect };
+            imgSubRect.Offset(-GetPlotAreaBoundingBox().GetX(), -GetPlotAreaBoundingBox().GetY());
+            addImage(
+                std::make_unique<Wisteria::GraphItems::Image>(
+                    Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
+                        .Pen(GetImageOutlineColor())
+                        .AnchorPoint(barRect.GetTopLeft()),
+                    barRenderInfo.m_scaledCommonImg.GetSubImage(imgSubRect)),
+                shadowOrNone(isHorizontal ? ShadowType::RightSideAndBottomShadow :
+                                            ShadowType::RightSideShadow));
+            return true;
+            }
+        if (bar.GetEffect() == BoxEffect::Image && GetImageScheme() != nullptr)
+            {
+            const auto& barScaledImage = GetImageScheme()->GetImage(barIndex);
+            addImage(
+                std::make_unique<Wisteria::GraphItems::Image>(
+                    Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
+                        .Pen(GetImageOutlineColor())
+                        .AnchorPoint(barRect.GetTopLeft()),
+                    Wisteria::GraphItems::Image::CropImageToRect(
+                        barScaledImage.GetBitmap(barScaledImage.GetDefaultSize()).ConvertToImage(),
+                        barRect, true)),
+                shadowOrNone(isHorizontal ? ShadowType::RightSideAndBottomShadow :
+                                            ShadowType::RightSideShadow));
+            return true;
+            }
+        if (bar.GetEffect() == BoxEffect::StippleImage && GetStippleBrush().IsOk())
+            {
+            addImage(
+                std::make_unique<Wisteria::GraphItems::Image>(
+                    Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
+                        .Pen(wxNullPen)
+                        .AnchorPoint(barRect.GetTopLeft()),
+                    Wisteria::GraphItems::Image::CreateStippledImage(
+                        GetStippleBrush()
+                            .GetBitmap(GetStippleBrush().GetDefaultSize())
+                            .ConvertToImage(),
+                        barRect.GetSize(),
+                        isHorizontal ? Orientation::Horizontal : Orientation::Vertical,
+                        (GetShadowType() != ShadowType::NoDisplay), ScaleToScreenAndCanvas(4))),
+                // stipples have their own shadows (a silhouette), so turn off
+                // the Image's native shadow renderer
+                ShadowType::NoDisplay);
+            return true;
+            }
+        if (bar.GetEffect() == BoxEffect::StippleShape)
+            {
+            auto shapeWidth{ barRenderInfo.m_barWidth };
+            auto shapeHeight{ barRenderInfo.m_barWidth };
+            if (isHorizontal)
+                {
+                // These particular icons are drawn with a ratio where the width
+                // is 60% of the height if the drawing area is square. To prevent
+                // having large gaps between the icons, adjust the width of the icons'
+                // drawing areas so that they aren't drawn inside squares.
+                if (GetStippleShape() == Icons::IconShape::BusinessWoman ||
+                    GetStippleShape() == Icons::IconShape::Woman ||
+                    GetStippleShape() == Icons::IconShape::Man)
+                    {
+                    shapeWidth *= 0.6;
+                    }
+                else if (GetStippleShape() == Icons::IconShape::Ruler)
+                    {
+                    shapeWidth *= 0.4;
+                    }
+                // likewise, handle icons that are wider than others
+                if (GetStippleShape() == Icons::IconShape::Blackboard)
+                    {
+                    shapeHeight *= 0.6;
+                    }
+                else if (GetStippleShape() == Icons::IconShape::Car)
+                    {
+                    shapeHeight *= 0.9;
+                    }
+                }
+
+            const auto addStipple =
+                [this, &barRenderInfo, &barRect, opacityToApply, shapeWidth,
+                 shapeHeight](const wxPoint& anchorPt, const wxSize& stippleImgSize)
+            {
+                auto shape = std::make_unique<Wisteria::GraphItems::Shape>(
+                    Wisteria::GraphItems::GraphItemInfo{}
+                        .Pen(wxNullPen)
+                        .Brush(Colors::ColorContrast::ChangeOpacity(GetStippleShapeColor(),
+                                                                    opacityToApply))
+                        .AnchorPoint(anchorPt)
+                        .Anchoring(Anchoring::TopLeftCorner)
+                        .DPIScaling(GetDPIScaleFactor())
+                        .Scaling(GetScaling()),
+                    GetStippleShape(), stippleImgSize);
+                shape->SetBoundingBox(wxRect{ anchorPt, wxSize{ static_cast<int>(shapeWidth),
+                                                                static_cast<int>(shapeHeight) } },
+                                      barRenderInfo.m_dc, GetScaling());
+                shape->SetClippingRect(barRect);
+                AddObject(std::move(shape));
+            };
+
+            if (isHorizontal)
+                {
+                auto currentXLeft = barRect.GetX();
+                while (currentXLeft < (barRect.GetX() + barRect.GetWidth()))
+                    {
+                    const wxSize stippleImgSize(shapeWidth, shapeHeight);
+                    addStipple(wxPoint{ currentXLeft, barRect.GetY() }, stippleImgSize);
+                    currentXLeft += stippleImgSize.GetWidth();
+                    }
+                }
+            else
+                {
+                auto currentYTop = (barRect.GetY() + barRect.GetHeight()) - shapeHeight;
+                while ((currentYTop + shapeHeight) > barRect.GetY())
+                    {
+                    const wxSize stippleImgSize(barRenderInfo.m_barWidth, shapeHeight);
+                    addStipple(wxPoint{ barRect.GetX(), static_cast<int>(currentYTop) },
+                               stippleImgSize);
+                    currentYTop -= stippleImgSize.GetHeight();
+                    }
+                }
+            return true;
+            }
+
+        return false;
+        }
+
+    //-----------------------------------
+    bool BarChart::DrawColorFilledBarBlock(const Bar& bar, const BarBlock& barBlock,
+                                           wxRect& barNeckRect, const BlockColors& colors,
+                                           const wxRect& drawArea, BarRenderInfo& barRenderInfo)
+        {
+        const bool isHorizontal{ GetBarOrientation() == Orientation::Horizontal };
+        const wxBrush& blockBrush{ colors.m_brush };
+
+        Wisteria::GraphItems::GraphItemInfo blockInfo{ barBlock.GetSelectionLabel().GetText() };
+        blockInfo.Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
+            .Brush(blockBrush)
+            .Scaling(GetScaling())
+            .Outline(true, true, true, true)
+            .ShowLabelWhenSelected(true);
+
+        std::array<wxPoint, 4> boxPoints{};
+        std::unique_ptr<GraphItems::Polygon> box{ nullptr };
+        GraphItems::Polygon::GetRectPoints(barRenderInfo.m_barRect, boxPoints);
+        if (bar.GetShape() == BarShape::Rectangle)
+            {
+            AddBarBlockShadow(barRenderInfo.m_barRect, blockBrush, barBlock, barRenderInfo);
+            box = std::make_unique<GraphItems::Polygon>(blockInfo, boxPoints);
+            }
+        else if (bar.GetShape() == BarShape::Arrow || bar.GetShape() == BarShape::ReverseArrow)
+            {
+            if (isHorizontal)
+                {
+                barNeckRect.Deflate(wxSize{ 0, safe_divide(barNeckRect.GetHeight(), 5) });
+                const auto originalWidth{ barNeckRect.GetWidth() };
+                barNeckRect.SetWidth(barNeckRect.GetWidth() * 0.90);
+                if (bar.GetShape() == BarShape::ReverseArrow)
+                    {
+                    barNeckRect.Offset(originalWidth - barNeckRect.GetWidth(), 0);
+                    }
+                }
+            else
+                {
+                barNeckRect.Deflate(wxSize(safe_divide(barNeckRect.GetWidth(), 5), 0));
+                const auto originalHeight{ barNeckRect.GetHeight() };
+                barNeckRect.SetHeight(barNeckRect.GetHeight() * math_constants::three_quarters);
+                if (bar.GetShape() == BarShape::Arrow)
+                    {
+                    barNeckRect.Offset(0, originalHeight - barNeckRect.GetHeight());
+                    }
+                }
+
+            const auto arrowPoints = [&bar = std::as_const(bar),
+                                      &barNeckRect = std::as_const(barNeckRect),
+                                      &barRenderInfo = std::as_const(barRenderInfo), isHorizontal]()
+            {
+                if (isHorizontal)
+                    {
+                    return (bar.GetShape() == BarShape::Arrow) ?
+                               std::array<wxPoint, 7>{
+                                   barNeckRect.GetTopLeft(), barNeckRect.GetTopRight(),
+                                   // left top of arrowhead
+                                   wxPoint{ barNeckRect.GetRight(),
+                                            barRenderInfo.m_barRect.GetTop() },
+                                   // point of arrowhead
+                                   wxPoint{ barRenderInfo.m_barRect.GetRight(),
+                                            barRenderInfo.m_barRect.GetTop() +
+                                                (safe_divide((barRenderInfo.m_barRect.GetHeight()),
+                                                             2)) },
+                                   // left bottom of arrowhead
+                                   wxPoint{ barNeckRect.GetRight(),
+                                            barRenderInfo.m_barRect.GetBottom() },
+                                   barNeckRect.GetBottomRight(), barNeckRect.GetBottomLeft()
+                               } :
+                               std::array<wxPoint, 7>{
+                                   // right bottom of arrowhead
+                                   wxPoint{ barNeckRect.GetLeft(),
+                                            barRenderInfo.m_barRect.GetBottom() },
+                                   // point of arrowhead
+                                   wxPoint{ barRenderInfo.m_barRect.GetLeft(),
+                                            barRenderInfo.m_barRect.GetTop() +
+                                                (safe_divide((barRenderInfo.m_barRect.GetHeight()),
+                                                             2)) },
+                                   // right top of arrowhead
+                                   wxPoint{ barNeckRect.GetLeft(),
+                                            barRenderInfo.m_barRect.GetTop() },
+                                   barNeckRect.GetTopLeft(), barNeckRect.GetTopRight(),
+                                   barNeckRect.GetBottomRight(), barNeckRect.GetBottomLeft()
+                               };
+                    }
+                return bar.GetShape() == BarShape::Arrow ?
+                           std::array<wxPoint, 7>{
+                               barNeckRect.GetTopLeft(),
+                               // left bottom of arrowhead
+                               wxPoint{ barRenderInfo.m_barRect.GetLeft(), barNeckRect.GetTop() },
+                               // point of arrowhead
+                               wxPoint{ barRenderInfo.m_barRect.GetLeft() +
+                                            (safe_divide(barRenderInfo.m_barRect.GetWidth(), 2)),
+                                        barRenderInfo.m_barRect.GetTop() },
+                               // right bottom of arrowhead
+                               wxPoint{ barRenderInfo.m_barRect.GetRight(), barNeckRect.GetTop() },
+                               barNeckRect.GetTopRight(), barNeckRect.GetBottomRight(),
+                               barNeckRect.GetBottomLeft()
+                           } :
+                           std::array<wxPoint, 7>{
+                               barNeckRect.GetBottomLeft(),
+                               barNeckRect.GetTopLeft(),
+                               barNeckRect.GetTopRight(),
+                               barNeckRect.GetBottomRight(),
+                               // right top of arrowhead
+                               wxPoint{ barRenderInfo.m_barRect.GetRight(),
+                                        barNeckRect.GetBottom() },
+                               // point of arrowhead
+                               wxPoint{ barRenderInfo.m_barRect.GetLeft() +
+                                            (safe_divide(barRenderInfo.m_barRect.GetWidth(), 2)),
+                                        barRenderInfo.m_barRect.GetBottom() },
+                               // left top of arrowhead
+                               wxPoint{ barRenderInfo.m_barRect.GetLeft(),
+                                        barNeckRect.GetBottom() },
+                           };
+            }();
+
+            box = std::make_unique<Wisteria::GraphItems::Polygon>(blockInfo, arrowPoints);
+            }
+
+        if (box == nullptr)
+            {
+            wxFAIL_MSG(L"Unhandled BarShape encountered in bar drawing.");
+            return false;
+            }
+
+        ApplyBoxEffectToPolygon(std::move(box), bar, barBlock, colors, drawArea, barRenderInfo);
+        return true;
+        }
+
+    //-----------------------------------
     void BarChart::AddBarBlockShadow(const wxRect& barRect, const wxBrush& blockBrush,
                                      const BarBlock& barBlock, const BarRenderInfo& barRenderInfo)
         {
@@ -1369,89 +1703,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         }
 
     //-----------------------------------
-    wxPoint BarChart::DrawBarBlockHorizontal(const Bar& bar, const size_t barIndex,
-                                             const BarBlock& barBlock, BarRenderInfo& barRenderInfo,
-                                             BarBlockRenderInfo& barBlockRenderInfo,
-                                             const bool measureOnly /*= false*/)
+    wxPoint BarChart::DrawBarBlock(const Bar& bar, const size_t barIndex, const BarBlock& barBlock,
+                                   BarRenderInfo& barRenderInfo,
+                                   BarBlockRenderInfo& barBlockRenderInfo,
+                                   const bool measureOnly /*= false*/)
         {
         const wxRect drawArea{ GetDrawArea() };
 
         barRenderInfo.m_barWidth = CalcBarWidth(bar, barBlock, barRenderInfo);
 
-        wxCoord lineXStart{ 0 }; // set the left (starting point) of the bar
-        if (GetScalingAxis().IsReversed())
-            {
-            if (bar.GetCustomScalingAxisStartPosition().has_value())
-                {
-                GetPhysicalCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
-                                           barBlockRenderInfo.m_axisOffset,
-                                       bar.GetAxisPosition(),
-                                       barBlockRenderInfo.m_middlePointOfBarEnd);
-                wxPoint customStartPt;
-                GetPhysicalCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
-                                           barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
-                                       bar.GetAxisPosition(), customStartPt);
-                lineXStart = customStartPt.x +
-                             (barBlockRenderInfo.m_axisOffset == 0 ? ScaleToScreenAndCanvas(1) : 0);
-                }
-            else
-                {
-                // right side of the block
-                GetPhysicalCoordinates(
-                    GetScalingAxis().GetRange().first + barBlockRenderInfo.m_axisOffset,
-                    bar.GetAxisPosition(), barBlockRenderInfo.m_middlePointOfBarEnd);
-                // left side of the block
-                wxPoint pt;
-                GetPhysicalCoordinates(GetScalingAxis().GetRange().first +
-                                           barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
-                                       bar.GetAxisPosition(), pt);
-                // if the first block, push it over 1 pixel so that it doesn't overlap the
-                // bar axis
-                lineXStart =
-                    pt.x + (barBlockRenderInfo.m_axisOffset == 0 ? ScaleToScreenAndCanvas(1) : 0);
-                }
-            }
-        else
-            {
-            if (bar.GetCustomScalingAxisStartPosition().has_value())
-                {
-                GetPhysicalCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
-                                           barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
-                                       bar.GetAxisPosition(),
-                                       barBlockRenderInfo.m_middlePointOfBarEnd);
-                wxPoint customStartPt;
-                GetPhysicalCoordinates(bar.GetCustomScalingAxisStartPosition().value() +
-                                           barBlockRenderInfo.m_axisOffset,
-                                       bar.GetAxisPosition(), customStartPt);
-                lineXStart = customStartPt.x +
-                             (barBlockRenderInfo.m_axisOffset == 0 ? ScaleToScreenAndCanvas(1) : 0);
-                }
-            else
-                {
-                // right side of the block
-                GetPhysicalCoordinates(GetScalingAxis().GetRange().first +
-                                           barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
-                                       bar.GetAxisPosition(),
-                                       barBlockRenderInfo.m_middlePointOfBarEnd);
-                // left side of the block
-                wxPoint pt;
-                GetPhysicalCoordinates(GetScalingAxis().GetRange().first +
-                                           barBlockRenderInfo.m_axisOffset,
-                                       bar.GetAxisPosition(), pt);
-                // if the first block, push it over 1 pixel so that it doesn't overlap the
-                // bar axis
-                lineXStart =
-                    pt.x + (barBlockRenderInfo.m_axisOffset == 0 ? ScaleToScreenAndCanvas(1) : 0);
-                }
-            }
-
-        const wxCoord barLength = barBlockRenderInfo.m_middlePointOfBarEnd.x - lineXStart;
-        barBlockRenderInfo.m_axisOffset += barBlock.GetLength();
-
-        const wxCoord lineYStart = barBlockRenderInfo.m_middlePointOfBarEnd.y -
-                                   safe_divide<double>(barRenderInfo.m_barWidth, 2.0);
-        barRenderInfo.m_barRect =
-            wxRect(lineXStart, lineYStart, barLength, barRenderInfo.m_barWidth);
+        const BarBlockGeometry geometry{ CalcBarBlockGeometry(bar, barBlock, barRenderInfo,
+                                                              barBlockRenderInfo) };
+        barRenderInfo.m_barRect = geometry.m_barRect;
+        const wxCoord barLength{ geometry.m_barLength };
         wxRect barNeckRect = barRenderInfo.m_barRect;
 
         // if just measuring, then we're done
@@ -1466,490 +1730,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             // resolve the fill colors and opacity (accounts for ghosting and
             // the bar's opacity)
             const BlockColors blockColors = ResolveBlockColors(bar, barBlock);
-            const wxBrush& blockBrush = blockColors.m_brush;
-            const uint8_t opacityToApply = blockColors.m_opacity;
 
-            if (bar.GetEffect() == BoxEffect::CommonImage && barRenderInfo.m_scaledCommonImg.IsOk())
+            // color-filled bar, when the bar has no image effect or its image is missing
+            if (!DrawBarBlockImageEffect(bar, barIndex, barBlock, blockColors, drawArea,
+                                         barRenderInfo))
                 {
-                wxRect imgSubRect{ barRenderInfo.m_barRect };
-                imgSubRect.Offset(-GetPlotAreaBoundingBox().GetX(),
-                                  -GetPlotAreaBoundingBox().GetY());
-                auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
-                    Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
-                        .Pen(GetImageOutlineColor())
-                        .AnchorPoint(wxPoint{ lineXStart, lineYStart }),
-                    barRenderInfo.m_scaledCommonImg.GetSubImage(imgSubRect));
-                barImage->SetOpacity(opacityToApply);
-                barImage->SetAnchoring(Anchoring::TopLeftCorner);
-                barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
-                                            ShadowType::RightSideAndBottomShadow :
-                                            ShadowType::NoDisplay);
-                barImage->SetClippingRect(drawArea);
-                AddObject(std::move(barImage));
-                }
-            else if (bar.GetEffect() == BoxEffect::Image && GetImageScheme() != nullptr)
-                {
-                const auto& barScaledImage = GetImageScheme()->GetImage(barIndex);
-                auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
-                    Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
-                        .Pen(GetImageOutlineColor())
-                        .AnchorPoint(wxPoint{ lineXStart, lineYStart }),
-                    Wisteria::GraphItems::Image::CropImageToRect(
-                        barScaledImage.GetBitmap(barScaledImage.GetDefaultSize()).ConvertToImage(),
-                        barRenderInfo.m_barRect, true));
-                barImage->SetOpacity(opacityToApply);
-                barImage->SetAnchoring(Anchoring::TopLeftCorner);
-                barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
-                                            ShadowType::RightSideAndBottomShadow :
-                                            ShadowType::NoDisplay);
-                barImage->SetClippingRect(drawArea);
-                AddObject(std::move(barImage));
-                }
-            else if (bar.GetEffect() == BoxEffect::StippleImage && GetStippleBrush().IsOk())
-                {
-                auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
-                    Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
-                        .Pen(wxNullPen)
-                        .AnchorPoint(wxPoint(lineXStart, lineYStart)),
-                    Wisteria::GraphItems::Image::CreateStippledImage(
-                        GetStippleBrush()
-                            .GetBitmap(GetStippleBrush().GetDefaultSize())
-                            .ConvertToImage(),
-                        wxSize(barLength, barRenderInfo.m_barWidth), Orientation::Horizontal,
-                        (GetShadowType() != ShadowType::NoDisplay), ScaleToScreenAndCanvas(4)));
-                barImage->SetOpacity(opacityToApply);
-                barImage->SetAnchoring(Anchoring::TopLeftCorner);
-                // note that stipples have their own shadows (a silhouette), so turn off
-                // the Image's native shadow renderer.
-                barImage->SetShadowType(ShadowType::NoDisplay);
-                barImage->SetClippingRect(drawArea);
-                AddObject(std::move(barImage));
-                }
-            else if (bar.GetEffect() == BoxEffect::StippleShape)
-                {
-                auto shapeWidth{ barRenderInfo.m_barWidth };
-                auto shapeHeight{ barRenderInfo.m_barWidth };
-                // These particular icons are drawn with a ratio where the width
-                // is 60% of the height if the drawing area is square. To prevent
-                // having large gaps between the icons, adjust the width of the icons'
-                // drawing areas so that they aren't drawn inside squares.
-                if (GetStippleShape() == Icons::IconShape::BusinessWoman ||
-                    GetStippleShape() == Icons::IconShape::Woman ||
-                    GetStippleShape() == Icons::IconShape::Man)
+                if (!DrawColorFilledBarBlock(bar, barBlock, barNeckRect, blockColors, drawArea,
+                                             barRenderInfo))
                     {
-                    shapeWidth *= 0.6;
-                    }
-                else if (GetStippleShape() == Icons::IconShape::Ruler)
-                    {
-                    shapeWidth *= 0.4;
-                    }
-                // likewise, handle icons that are wider than others
-                if (GetStippleShape() == Icons::IconShape::Blackboard)
-                    {
-                    shapeHeight *= 0.6;
-                    }
-                else if (GetStippleShape() == Icons::IconShape::Car)
-                    {
-                    shapeHeight *= 0.9;
-                    }
-                auto currentXLeft = lineXStart;
-                while (currentXLeft < (lineXStart + barLength))
-                    {
-                    const wxSize stippleImgSize(shapeWidth, shapeHeight);
-                    auto shape = std::make_unique<Wisteria::GraphItems::Shape>(
-                        Wisteria::GraphItems::GraphItemInfo{}
-                            .Pen(wxNullPen)
-                            .Brush(Colors::ColorContrast::ChangeOpacity(GetStippleShapeColor(),
-                                                                        opacityToApply))
-                            .AnchorPoint(wxPoint{ currentXLeft, lineYStart })
-                            .Anchoring(Anchoring::TopLeftCorner)
-                            .DPIScaling(GetDPIScaleFactor())
-                            .Scaling(GetScaling()),
-                        GetStippleShape(), stippleImgSize);
-                    shape->SetBoundingBox(wxRect{ wxPoint{ currentXLeft, lineYStart },
-                                                  wxSize{ static_cast<int>(shapeWidth),
-                                                          static_cast<int>(shapeHeight) } },
-                                          barRenderInfo.m_dc, GetScaling());
-                    shape->SetClippingRect(barRenderInfo.m_barRect);
-                    AddObject(std::move(shape));
-                    currentXLeft += stippleImgSize.GetWidth();
-                    }
-                }
-            // color-filled bar
-            else
-                {
-                std::array<wxPoint, 4> boxPoints{};
-                std::unique_ptr<GraphItems::Polygon> box{ nullptr };
-                GraphItems::Polygon::GetRectPoints(barRenderInfo.m_barRect, boxPoints);
-                if (bar.GetShape() == BarShape::Rectangle)
-                    {
-                    AddBarBlockShadow(barRenderInfo.m_barRect, blockBrush, barBlock, barRenderInfo);
-                    box = std::make_unique<GraphItems::Polygon>(
-                        Wisteria::GraphItems::GraphItemInfo{
-                            barBlock.GetSelectionLabel().GetText() }
-                            .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
-                            .Brush(blockBrush)
-                            .Scaling(GetScaling())
-                            .Outline(true, true, true, true)
-                            .ShowLabelWhenSelected(true),
-                        boxPoints);
-                    }
-                else if (bar.GetShape() == BarShape::Arrow ||
-                         bar.GetShape() == BarShape::ReverseArrow)
-                    {
-                    barNeckRect.Deflate(wxSize{ 0, safe_divide(barNeckRect.GetHeight(), 5) });
-                    const auto originalWidth{ barNeckRect.GetWidth() };
-                    barNeckRect.SetWidth(barNeckRect.GetWidth() * 0.90);
-                    if (bar.GetShape() == BarShape::ReverseArrow)
-                        {
-                        barNeckRect.Offset(originalWidth - barNeckRect.GetWidth(), 0);
-                        }
-
-                    const auto arrowPoints = [&bar = std::as_const(bar),
-                                              &barNeckRect = std::as_const(barNeckRect),
-                                              &barRenderInfo = std::as_const(barRenderInfo)]()
-                    {
-                        return (bar.GetShape() == BarShape::Arrow) ?
-                                   std::array<wxPoint, 7>{
-                                       barNeckRect.GetTopLeft(), barNeckRect.GetTopRight(),
-                                       // left top of arrowhead
-                                       wxPoint{ barNeckRect.GetRight(),
-                                                barRenderInfo.m_barRect.GetTop() },
-                                       // point of arrowhead
-                                       wxPoint{
-                                           barRenderInfo.m_barRect.GetRight(),
-                                           barRenderInfo.m_barRect.GetTop() +
-                                               (safe_divide((barRenderInfo.m_barRect.GetHeight()),
-                                                            2)) },
-                                       // left bottom of arrowhead
-                                       wxPoint{ barNeckRect.GetRight(),
-                                                barRenderInfo.m_barRect.GetBottom() },
-                                       barNeckRect.GetBottomRight(), barNeckRect.GetBottomLeft()
-                                   } :
-                                   std::array<wxPoint, 7>{
-                                       // right bottom of arrowhead
-                                       wxPoint{ barNeckRect.GetLeft(),
-                                                barRenderInfo.m_barRect.GetBottom() },
-                                       // point of arrowhead
-                                       wxPoint{
-                                           barRenderInfo.m_barRect.GetLeft(),
-                                           barRenderInfo.m_barRect.GetTop() +
-                                               (safe_divide((barRenderInfo.m_barRect.GetHeight()),
-                                                            2)) },
-                                       // right top of arrowhead
-                                       wxPoint{ barNeckRect.GetLeft(),
-                                                barRenderInfo.m_barRect.GetTop() },
-                                       barNeckRect.GetTopLeft(), barNeckRect.GetTopRight(),
-                                       barNeckRect.GetBottomRight(), barNeckRect.GetBottomLeft()
-                                   };
-                    }();
-                    box = std::make_unique<Wisteria::GraphItems::Polygon>(
-                        Wisteria::GraphItems::GraphItemInfo{
-                            barBlock.GetSelectionLabel().GetText() }
-                            .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
-                            .Brush(blockBrush)
-                            .Scaling(GetScaling())
-                            .Outline(true, true, true, true)
-                            .ShowLabelWhenSelected(true),
-                        arrowPoints);
-                    }
-
-                if (box == nullptr)
-                    {
-                    wxFAIL_MSG(L"Unhandled BarShape encountered in horizontal bar drawing.");
                     return barBlockRenderInfo.m_middlePointOfBarEnd;
                     }
-
-                ApplyBoxEffectToPolygon(std::move(box), bar, barBlock, blockColors, drawArea,
-                                        barRenderInfo);
-                }
-            }
-        // add the decal (if there is one)
-        // (deferred so a later block can overdraw an overflowing decal)
-        if (barBlock.IsShown() && barBlock.GetLength() > 0 &&
-            !barBlock.GetDecal().GetText().empty())
-            {
-            barRenderInfo.m_decals.push_back(
-                BuildBarBlockDecal(bar, barBlock, barNeckRect, barRenderInfo));
-            }
-
-        return barBlockRenderInfo.m_middlePointOfBarEnd;
-        }
-
-    //-----------------------------------
-    wxPoint BarChart::DrawBarBlockVertical(const Bar& bar, const size_t barIndex,
-                                           const BarBlock& barBlock, BarRenderInfo& barRenderInfo,
-                                           BarBlockRenderInfo& barBlockRenderInfo,
-                                           const bool measureOnly /*= false*/)
-        {
-        const wxRect drawArea{ GetDrawArea() };
-
-        barRenderInfo.m_barWidth = CalcBarWidth(bar, barBlock, barRenderInfo);
-
-        // set the bottom (starting point) of the bar
-        wxCoord lineYStart{ 0 };
-        if (GetScalingAxis().IsReversed())
-            {
-            if (bar.GetCustomScalingAxisStartPosition().has_value())
-                {
-                // top of block
-                GetPhysicalCoordinates(bar.GetAxisPosition(),
-                                       bar.GetCustomScalingAxisStartPosition().value() +
-                                           barBlockRenderInfo.m_axisOffset,
-                                       barBlockRenderInfo.m_middlePointOfBarEnd);
-                // bottom of block
-                wxPoint customStartPt;
-                GetPhysicalCoordinates(bar.GetAxisPosition(),
-                                       bar.GetCustomScalingAxisStartPosition().value() +
-                                           barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
-                                       customStartPt);
-                lineYStart = customStartPt.y;
-                }
-            else
-                {
-                // top of block
-                GetPhysicalCoordinates(bar.GetAxisPosition(),
-                                       GetScalingAxis().GetRange().first +
-                                           barBlockRenderInfo.m_axisOffset,
-                                       barBlockRenderInfo.m_middlePointOfBarEnd);
-                // bottom of block
-                wxPoint pt;
-                GetPhysicalCoordinates(bar.GetAxisPosition(),
-                                       GetScalingAxis().GetRange().first +
-                                           barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
-                                       pt);
-                lineYStart = pt.y;
-                }
-            }
-        else
-            {
-            if (bar.GetCustomScalingAxisStartPosition().has_value())
-                {
-                // top of block
-                GetPhysicalCoordinates(bar.GetAxisPosition(),
-                                       bar.GetCustomScalingAxisStartPosition().value() +
-                                           barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
-                                       barBlockRenderInfo.m_middlePointOfBarEnd);
-                // bottom of block
-                wxPoint customStartPt;
-                GetPhysicalCoordinates(bar.GetAxisPosition(),
-                                       bar.GetCustomScalingAxisStartPosition().value() +
-                                           barBlockRenderInfo.m_axisOffset,
-                                       customStartPt);
-                lineYStart = customStartPt.y;
-                }
-            else
-                {
-                // top of block
-                GetPhysicalCoordinates(bar.GetAxisPosition(),
-                                       GetScalingAxis().GetRange().first +
-                                           barBlockRenderInfo.m_axisOffset + barBlock.GetLength(),
-                                       barBlockRenderInfo.m_middlePointOfBarEnd);
-                // bottom of block
-                wxPoint pt;
-                GetPhysicalCoordinates(
-                    bar.GetAxisPosition(),
-                    GetScalingAxis().GetRange().first + barBlockRenderInfo.m_axisOffset, pt);
-                lineYStart = pt.y;
-                }
-            }
-
-        barBlockRenderInfo.m_axisOffset += barBlock.GetLength();
-        const wxCoord barLength = lineYStart - barBlockRenderInfo.m_middlePointOfBarEnd.y;
-        const wxCoord lineYEnd = lineYStart - barLength;
-        const wxCoord lineXStart = barBlockRenderInfo.m_middlePointOfBarEnd.x -
-                                   safe_divide<double>(barRenderInfo.m_barWidth, 2.0);
-        barRenderInfo.m_barRect = wxRect(lineXStart, lineYEnd, barRenderInfo.m_barWidth, barLength);
-        wxRect barNeckRect = barRenderInfo.m_barRect;
-
-        // if just measuring then we're done
-        if (measureOnly)
-            {
-            return barBlockRenderInfo.m_middlePointOfBarEnd;
-            }
-
-        // draw the bar
-        if (barBlock.IsShown() && barLength > 0)
-            {
-            // resolve the fill colors and opacity (accounts for ghosting and
-            // the bar's opacity)
-            const BlockColors blockColors = ResolveBlockColors(bar, barBlock);
-            const wxBrush& blockBrush = blockColors.m_brush;
-            const uint8_t opacityToApply = blockColors.m_opacity;
-
-            if (bar.GetEffect() == BoxEffect::CommonImage && barRenderInfo.m_scaledCommonImg.IsOk())
-                {
-                wxRect imgSubRect{ barRenderInfo.m_barRect };
-                imgSubRect.Offset(-GetPlotAreaBoundingBox().GetX(),
-                                  -GetPlotAreaBoundingBox().GetY());
-                auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
-                    Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
-                        .Pen(GetImageOutlineColor())
-                        .AnchorPoint(wxPoint(lineXStart, lineYEnd)),
-                    barRenderInfo.m_scaledCommonImg.GetSubImage(imgSubRect));
-                barImage->SetOpacity(opacityToApply);
-                barImage->SetAnchoring(Anchoring::TopLeftCorner);
-                barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
-                                            ShadowType::RightSideShadow :
-                                            ShadowType::NoDisplay);
-                barImage->SetClippingRect(drawArea);
-                AddObject(std::move(barImage));
-                }
-            else if (bar.GetEffect() == BoxEffect::Image && GetImageScheme() != nullptr)
-                {
-                const auto& barScaledImage = GetImageScheme()->GetImage(barIndex);
-                auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
-                    Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
-                        .Pen(GetImageOutlineColor())
-                        .AnchorPoint(wxPoint(lineXStart, lineYEnd)),
-                    Wisteria::GraphItems::Image::CropImageToRect(
-                        barScaledImage.GetBitmap(barScaledImage.GetDefaultSize()).ConvertToImage(),
-                        barRenderInfo.m_barRect, true));
-                barImage->SetOpacity(opacityToApply);
-                barImage->SetAnchoring(Anchoring::TopLeftCorner);
-                barImage->SetShadowType((GetShadowType() != ShadowType::NoDisplay) ?
-                                            ShadowType::RightSideAndBottomShadow :
-                                            ShadowType::NoDisplay);
-                barImage->SetClippingRect(drawArea);
-                AddObject(std::move(barImage));
-                }
-            else if (bar.GetEffect() == BoxEffect::StippleImage && GetStippleBrush().IsOk())
-                {
-                auto barImage = std::make_unique<Wisteria::GraphItems::Image>(
-                    Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
-                        .Pen(wxNullPen)
-                        .AnchorPoint(wxPoint(lineXStart, lineYEnd)),
-                    Wisteria::GraphItems::Image::CreateStippledImage(
-                        GetStippleBrush()
-                            .GetBitmap(GetStippleBrush().GetDefaultSize())
-                            .ConvertToImage(),
-                        wxSize(barRenderInfo.m_barWidth, barLength), Orientation::Vertical,
-                        (GetShadowType() != ShadowType::NoDisplay), ScaleToScreenAndCanvas(4)));
-                barImage->SetOpacity(opacityToApply);
-                barImage->SetAnchoring(Anchoring::TopLeftCorner);
-                // note that stipples have their own shadows (a silhouette), so turn off
-                // the Image's native shadow renderer.
-                barImage->SetShadowType(ShadowType::NoDisplay);
-                barImage->SetClippingRect(drawArea);
-                AddObject(std::move(barImage));
-                }
-            else if (bar.GetEffect() == BoxEffect::StippleShape)
-                {
-                auto shapeHeight{ barRenderInfo.m_barWidth };
-                auto currentYTop = lineYStart - shapeHeight;
-                while ((currentYTop + shapeHeight) > lineYEnd)
-                    {
-                    const wxSize stippleImgSize(barRenderInfo.m_barWidth, shapeHeight);
-                    auto shape = std::make_unique<Wisteria::GraphItems::Shape>(
-                        Wisteria::GraphItems::GraphItemInfo{}
-                            .Pen(wxNullPen)
-                            .Brush(Colors::ColorContrast::ChangeOpacity(GetStippleShapeColor(),
-                                                                        opacityToApply))
-                            .AnchorPoint(wxPoint{ lineXStart, static_cast<int>(currentYTop) })
-                            .Anchoring(Anchoring::TopLeftCorner)
-                            .DPIScaling(GetDPIScaleFactor())
-                            .Scaling(GetScaling()),
-                        GetStippleShape(), stippleImgSize);
-                    shape->SetBoundingBox(
-                        wxRect{ wxPoint{ lineXStart, static_cast<int>(currentYTop) },
-                                wxSize{ static_cast<int>(barRenderInfo.m_barWidth),
-                                        static_cast<int>(shapeHeight) } },
-                        barRenderInfo.m_dc, GetScaling());
-                    shape->SetClippingRect(barRenderInfo.m_barRect);
-                    AddObject(std::move(shape));
-                    currentYTop -= stippleImgSize.GetHeight();
-                    }
-                }
-            else
-                {
-                std::array<wxPoint, 4> boxPoints{};
-                std::unique_ptr<GraphItems::Polygon> box{ nullptr };
-                GraphItems::Polygon::GetRectPoints(barRenderInfo.m_barRect, boxPoints);
-                if (bar.GetShape() == BarShape::Rectangle)
-                    {
-                    AddBarBlockShadow(barRenderInfo.m_barRect, blockBrush, barBlock, barRenderInfo);
-
-                    box = std::make_unique<Wisteria::GraphItems::Polygon>(
-                        Wisteria::GraphItems::GraphItemInfo{
-                            barBlock.GetSelectionLabel().GetText() }
-                            .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
-                            .Brush(blockBrush)
-                            .Scaling(GetScaling())
-                            .Outline(true, true, true, true)
-                            .ShowLabelWhenSelected(true),
-                        boxPoints);
-                    }
-                else if (bar.GetShape() == BarShape::Arrow ||
-                         bar.GetShape() == BarShape::ReverseArrow)
-                    {
-                    barNeckRect.Deflate(wxSize(safe_divide(barNeckRect.GetWidth(), 5), 0));
-
-                    const auto originalHeight{ barNeckRect.GetHeight() };
-                    barNeckRect.SetHeight(barNeckRect.GetHeight() * math_constants::three_quarters);
-                    if (bar.GetShape() == BarShape::Arrow)
-                        {
-                        barNeckRect.Offset(0, originalHeight - barNeckRect.GetHeight());
-                        }
-
-                    const auto arrowPoints = [&bar = std::as_const(bar),
-                                              &barNeckRect = std::as_const(barNeckRect),
-                                              &barRenderInfo = std::as_const(barRenderInfo)]()
-                    {
-                        return bar.GetShape() == BarShape::Arrow ?
-                                   std::array<wxPoint, 7>{
-                                       barNeckRect.GetTopLeft(),
-                                       // left bottom of arrowhead
-                                       wxPoint{ barRenderInfo.m_barRect.GetLeft(),
-                                                barNeckRect.GetTop() },
-                                       // point of arrowhead
-                                       wxPoint{
-                                           barRenderInfo.m_barRect.GetLeft() +
-                                               (safe_divide(barRenderInfo.m_barRect.GetWidth(), 2)),
-                                           barRenderInfo.m_barRect.GetTop() },
-                                       // right bottom of arrowhead
-                                       wxPoint{ barRenderInfo.m_barRect.GetRight(),
-                                                barNeckRect.GetTop() },
-                                       barNeckRect.GetTopRight(), barNeckRect.GetBottomRight(),
-                                       barNeckRect.GetBottomLeft()
-                                   } :
-                                   std::array<wxPoint, 7>{
-                                       barNeckRect.GetBottomLeft(),
-                                       barNeckRect.GetTopLeft(),
-                                       barNeckRect.GetTopRight(),
-                                       barNeckRect.GetBottomRight(),
-                                       // right top of arrowhead
-                                       wxPoint{ barRenderInfo.m_barRect.GetRight(),
-                                                barNeckRect.GetBottom() },
-                                       // point of arrowhead
-                                       wxPoint{
-                                           barRenderInfo.m_barRect.GetLeft() +
-                                               (safe_divide(barRenderInfo.m_barRect.GetWidth(), 2)),
-                                           barRenderInfo.m_barRect.GetBottom() },
-                                       // left top of arrowhead
-                                       wxPoint{ barRenderInfo.m_barRect.GetLeft(),
-                                                barNeckRect.GetBottom() },
-                                   };
-                    }();
-
-                    box = std::make_unique<Wisteria::GraphItems::Polygon>(
-                        Wisteria::GraphItems::GraphItemInfo{
-                            barBlock.GetSelectionLabel().GetText() }
-                            .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
-                            .Brush(blockBrush)
-                            .Outline(true, true, true, true)
-                            .Scaling(GetScaling())
-                            .ShowLabelWhenSelected(true),
-                        arrowPoints);
-                    }
-
-                if (box == nullptr)
-                    {
-                    wxFAIL_MSG(L"Unhandled BarShape encountered in vertical bar drawing.");
-                    return barBlockRenderInfo.m_middlePointOfBarEnd;
-                    }
-
-                ApplyBoxEffectToPolygon(std::move(box), bar, barBlock, blockColors, drawArea,
-                                        barRenderInfo);
                 }
             }
         // add the decal (if there is one)
@@ -1993,16 +1783,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
 
         for (const auto& barBlock : bar.GetBlocks())
             {
-            if (GetBarOrientation() == Orientation::Horizontal)
-                {
-                DrawBarBlockHorizontal(bar, barIndex, barBlock, barRenderInfo, barBlockRenderInfo,
-                                       measureOnly);
-                }
-            else
-                {
-                DrawBarBlockVertical(bar, barIndex, barBlock, barRenderInfo, barBlockRenderInfo,
-                                     measureOnly);
-                }
+            DrawBarBlock(bar, barIndex, barBlock, barRenderInfo, barBlockRenderInfo, measureOnly);
             }
 
         // after all blocks are built, add the label at the end of the full bar

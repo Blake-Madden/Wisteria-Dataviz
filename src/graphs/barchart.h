@@ -1539,16 +1539,18 @@ namespace Wisteria::Graphs
             uint8_t m_opacity{ wxALPHA_OPAQUE };
             };
 
+        // The pixel geometry of one bar block along the scaling axis.
+        struct BarBlockGeometry
+            {
+            wxRect m_barRect;
+            wxCoord m_barLength{ 0 };
+            };
+
         wxPoint DrawBar(Bar& bar, size_t barIndex, BarRenderInfo& barRenderInfo,
                         bool measureOnly = false);
-        wxPoint DrawBarBlockHorizontal(const Bar& bar, size_t barIndex, const BarBlock& barBlock,
-                                       BarRenderInfo& barRenderInfo,
-                                       BarBlockRenderInfo& barBlockRenderInfo,
-                                       bool measureOnly = false);
-        wxPoint DrawBarBlockVertical(const Bar& bar, size_t barIndex, const BarBlock& barBlock,
-                                     BarRenderInfo& barRenderInfo,
-                                     BarBlockRenderInfo& barBlockRenderInfo,
-                                     bool measureOnly = false);
+        wxPoint DrawBarBlock(const Bar& bar, size_t barIndex, const BarBlock& barBlock,
+                             BarRenderInfo& barRenderInfo, BarBlockRenderInfo& barBlockRenderInfo,
+                             bool measureOnly = false);
         void DrawBarGroups(BarRenderInfo& barRenderInfo);
 
         /// @returns The resolved fill color, lightened color, brush, and opacity for a block,
@@ -1563,6 +1565,17 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         double CalcBarWidth(const Bar& bar, const BarBlock& barBlock,
                             const BarRenderInfo& barRenderInfo) const;
+        /// @returns The block's pixel rectangle and its length along the scaling axis.
+        /// @param bar The bar being drawn.
+        /// @param barBlock The block being drawn.
+        /// @param barRenderInfo The current render state (the block width is read from it).
+        /// @param[in,out] barBlockRenderInfo The running block state. @c m_axisOffset is read
+        ///     to place the block, then advanced past it so the next block stacks on top.
+        ///     @c m_middlePointOfBarEnd is set to the far edge of the block.
+        [[nodiscard]]
+        BarBlockGeometry CalcBarBlockGeometry(const Bar& bar, const BarBlock& barBlock,
+                                              const BarRenderInfo& barRenderInfo,
+                                              BarBlockRenderInfo& barBlockRenderInfo) const;
         /// @brief Adds the manual drop-shadow polygon under a rectangular bar block.
         /// @details Polygons have no native drop shadow. Does nothing when shadows are off,
         ///     the fill is translucent, the block is degenerate, or the bar is too thin.
@@ -1572,6 +1585,32 @@ namespace Wisteria::Graphs
         /// @param barRenderInfo The current render state (shadow offset).
         void AddBarBlockShadow(const wxRect& barRect, const wxBrush& blockBrush,
                                const BarBlock& barBlock, const BarRenderInfo& barRenderInfo);
+        /// @brief Draws a bar block that is filled with an image or tiled icons.
+        /// @returns @c true if the bar's effect was an image effect and the block was drawn.
+        ///     @c false if the caller should fall through to the color-filled path, which
+        ///     happens when an image effect is set but its image is missing.
+        /// @param bar The bar being drawn.
+        /// @param barIndex The bar's position, used to pick its image from the scheme.
+        /// @param barBlock The block being drawn.
+        /// @param colors The resolved block colors (only the opacity is used).
+        /// @param drawArea The plot draw area used for clipping.
+        /// @param barRenderInfo The current render state (block rectangle, width, and DC).
+        bool DrawBarBlockImageEffect(const Bar& bar, size_t barIndex, const BarBlock& barBlock,
+                                     const BlockColors& colors, const wxRect& drawArea,
+                                     const BarRenderInfo& barRenderInfo);
+        /// @brief Draws a bar block as a color-filled polygon, shaped as a rectangle or an arrow.
+        /// @returns @c false if no polygon could be built for the bar's shape, in which case the
+        ///     caller must return without adding a decal.
+        /// @param bar The bar being drawn.
+        /// @param barBlock The block being drawn.
+        /// @param[in,out] barNeckRect The block's rectangle, deflated in place into the arrow's
+        ///     neck for the arrow shapes. The decal is placed from the deflated rectangle.
+        /// @param colors The resolved block colors.
+        /// @param drawArea The plot draw area used for clipping.
+        /// @param barRenderInfo The current render state.
+        bool DrawColorFilledBarBlock(const Bar& bar, const BarBlock& barBlock, wxRect& barNeckRect,
+                                     const BlockColors& colors, const wxRect& drawArea,
+                                     BarRenderInfo& barRenderInfo);
         /// @brief Applies pen, fill effect, shape, and clipping to a color-filled bar-block
         ///     polygon, then adds it to the plot.
         /// @param box The polygon to finish and add. Consumed by this call.
