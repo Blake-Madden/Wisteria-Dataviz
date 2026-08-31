@@ -374,6 +374,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     //-----------------------------------
     void BarChart::SetBarOrientation(const Orientation orient)
         {
+        wxASSERT_MSG(orient == Orientation::Horizontal || orient == Orientation::Vertical,
+                     L"Bars must be laid out either horizontally or vertically!");
+        if (orient != Orientation::Horizontal && orient != Orientation::Vertical)
+            {
+            return;
+            }
+
         if (GetBarOrientation() != orient)
             {
             GetBarAxis().ClearBrackets();

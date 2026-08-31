@@ -1157,6 +1157,7 @@ namespace Wisteria::Graphs
 
         /// @brief Sets whether the bars are laid out vertically or horizontally across the chart.
         /// @param orient Which orientation to use for the bars.
+        ///     Must be @c Horizontal or @c Vertical; any other value is ignored.
         /// @note All axis brackets will be removed when changing bar orientation, so all bracket
         ///     operations should be called after calling this.
         /// @warning Call this prior to any calls to AddBar() (or SetData() in derived classes).\n
