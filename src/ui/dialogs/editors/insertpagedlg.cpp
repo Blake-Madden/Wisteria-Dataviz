@@ -548,7 +548,7 @@ namespace Wisteria::UI
         resetPageNumCheck->SetValidator(wxGenericValidator{ &m_resetPageNumbering });
         appearanceBox->Add(resetPageNumCheck, wxSizerFlags{}.Border());
 
-        leftSizer->Add(appearanceBox, wxSizerFlags{}.Expand().Border(wxTOP));
+        leftSizer->Add(appearanceBox, wxSizerFlags{}.Expand().Border());
         contentSizer->Add(leftSizer, wxSizerFlags{}.Expand());
 
         // pre-load existing background image when editing
