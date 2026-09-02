@@ -13,24 +13,21 @@
 // documented folding rules (threshold, fold cap, three-bar and two-length
 // preconditions, reversibility).
 
-#include <catch2/catch_test_macros.hpp>
-
-#include <wx/filename.h>
-#include <wx/stdpaths.h>
-#include <wx/txtstrm.h>
-#include <wx/wfstream.h>
-
+#include "../../src/graphs/barchart.h"
+#include "../../src/graphs/categoricalbarchart.h"
+#include "graphrenderharness.h"
 #include <algorithm>
+#include <catch2/catch_test_macros.hpp>
 #include <memory>
 #include <optional>
 #include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "../../src/graphs/barchart.h"
-#include "../../src/graphs/categoricalbarchart.h"
-#include "graphrenderharness.h"
+#include <wx/filename.h>
+#include <wx/stdpaths.h>
+#include <wx/txtstrm.h>
+#include <wx/wfstream.h>
 
 using namespace Wisteria;
 using namespace Wisteria::Data;
@@ -178,9 +175,9 @@ namespace
                           SerpSpec{ .m_barLengths = { 5, 6, 4, 14 },
                                     .m_mode = BarChart::SerpentineMode::Serpentine } });
         // 300 is 50x the reference bar, past the 40-fold cap
-        specs.push_back({ "vert-serpentine-cap",
-                          SerpSpec{ .m_barLengths = { 5, 6, 4, 300 },
-                                    .m_mode = BarChart::SerpentineMode::Serpentine } });
+        specs.push_back(
+            { "vert-serpentine-cap", SerpSpec{ .m_barLengths = { 5, 6, 4, 300 },
+                                               .m_mode = BarChart::SerpentineMode::Serpentine } });
         return specs;
         }
     } // namespace
@@ -483,6 +480,39 @@ TEST_CASE("CategoricalBarChart supports serpentine folding", "[categoricalbarcha
     CHECK(chart->GetSerpentineExtraRowCount() == firstExtra);
     }
 
+TEST_CASE("BarChart serpentine fold arrows are draw-time only", "[barchart][serpentine]")
+    {
+    for (const auto orientation : { Orientation::Vertical, Orientation::Horizontal })
+        {
+        SerpSpec spec;
+        spec.m_orientation = orientation;
+        spec.m_barLengths = { 5, 6, 4, 30 };
+        spec.m_mode = BarChart::SerpentineMode::Serpentine;
+
+        auto* plainCanvas = MakeCanvas();
+        auto plainChart = BuildBarChart(plainCanvas, spec);
+        const auto plainPrint = LayOutAndCapture(plainCanvas, plainChart);
+        REQUIRE(plainPrint.m_foldedBarCount == 1);
+
+        auto* markedCanvas = MakeCanvas();
+        auto markedChart = BuildBarChart(markedCanvas, spec);
+        markedChart->ShowSerpentineFoldArrows(true);
+        CHECK(markedChart->IsShowingSerpentineFoldArrows());
+
+        const auto markedPrint = LayOutAndCapture(markedCanvas, markedChart);
+
+        INFO("plain:  " << plainPrint.ToString());
+        INFO("marked: " << markedPrint.ToString());
+        // the arrows are drawn inside the ribbon, so nothing about the laid-out
+        // chart changes: same axes, same rows, same object count
+        CHECK(markedPrint == plainPrint);
+
+        // a second pass converges on the same drawing
+        const auto secondPrint = LayOutAndCapture(markedCanvas, markedChart);
+        CHECK(secondPrint == markedPrint);
+        }
+    }
+
 // Best-effort human-readable dump of every fingerprint, written next to the test
 // executable. Not an assertion; it exists so the output can be diffed by hand as
 // an extra safety check.
@@ -504,7 +534,7 @@ TEST_CASE("BarChart serpentine characterization dump", "[barchart][serpentine][d
         auto chart = BuildBarChart(canvas, spec);
         const auto print = LayOutAndCapture(canvas, chart);
         textStream << wxString::Format(L"%s\t%s\n", wxString::FromUTF8(name),
-                                      wxString::FromUTF8(print.ToString()));
+                                       wxString::FromUTF8(print.ToString()));
         }
     SUCCEED("wrote " << outPath.ToStdString());
     }
