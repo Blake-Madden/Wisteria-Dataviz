@@ -166,6 +166,9 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_BARCHART);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_BARCHART_STYLIZED);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_BARCHART_IMAGE);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_BARCHART_SERPENTINE);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this,
+         MyApp::ControlIDs::ID_NEW_BARCHART_SERPENTINE_AGGRESSIVE);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_CATEGORICAL_BARCHART);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this,
          MyApp::ControlIDs::ID_NEW_CATEGORICAL_BARCHART_GROUPED);
@@ -218,6 +221,9 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_BARCHART, _(L"Bar Chart"));
     fileMenu->Append(MyApp::ID_NEW_BARCHART_STYLIZED, _(L"Bar Chart (Stylized)"));
     fileMenu->Append(MyApp::ID_NEW_BARCHART_IMAGE, _(L"Bar Chart (Common Image)"));
+    fileMenu->Append(MyApp::ID_NEW_BARCHART_SERPENTINE, _(L"Bar Chart (Serpentine)"));
+    fileMenu->Append(MyApp::ID_NEW_BARCHART_SERPENTINE_AGGRESSIVE,
+                     _(L"Bar Chart (Aggressive Serpentine)"));
     fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART, _(L"Bar Chart (Categorical Data)"));
     fileMenu->Append(MyApp::ID_NEW_CATEGORICAL_BARCHART_GROUPED,
                      _(L"Bar Chart (Categorical Data, Grouped)"));
@@ -1657,6 +1663,93 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         }
+    // Bar Chart, folding a bar that dwarfs the others
+    else if (event.GetId() == MyApp::ID_NEW_BARCHART_SERPENTINE)
+        {
+        subframe->SetTitle(_(L"Bar Chart (Serpentine)"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
+        auto euroData = std::make_shared<Wisteria::Data::Dataset>();
+        try
+            {
+            euroData->ImportCSV(
+                appDir + L"/datasets/historical/euro.csv",
+                Wisteria::Data::ImportInfo()
+                    .ContinuousColumns({ L"Rate" })
+                    .CategoricalColumns(
+                        { { L"Currency",
+                            Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(err.what()), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
+            return;
+            }
+
+        auto plot = std::make_shared<Wisteria::Graphs::CategoricalBarChart>(
+            subframe->m_canvas, std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(
+                                    Wisteria::Colors::Schemes::Decade1980s()));
+
+        plot->SetBarOrientation(PromptForBarOrientation(subframe));
+
+        // the lira is over nine times the escudo, so it folds at the default threshold
+        plot->SetSerpentineMode(Wisteria::Graphs::BarChart::SerpentineMode::Serpentine);
+
+        plot->SetData(euroData, _DT(L"Currency"), _DT(L"Rate"));
+
+        plot->IncludeSpacesBetweenBars();
+
+        // the blank rows that the folds run through have no label of their own
+        plot->GetBarAxis().SetLabelDisplay(Wisteria::AxisLabelDisplay::DisplayOnlyCustomLabels);
+
+        plot->GetScalingAxis().GetTitle().GetGraphItemInfo().Text(
+            _(L"UnitS Per Euro"));
+
+        subframe->m_canvas->SetFixedObject(0, 0, plot);
+        }
+    // Bar Chart, folding a bar into the space left over by the shorter ones
+    else if (event.GetId() == MyApp::ID_NEW_BARCHART_SERPENTINE_AGGRESSIVE)
+        {
+        subframe->SetTitle(_(L"Bar Chart (Aggressive Serpentine)"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
+        auto plot = std::make_shared<Wisteria::Graphs::BarChart>(subframe->m_canvas);
+
+        plot->SetBarOrientation(PromptForBarOrientation(subframe));
+
+        const auto foldedColor{ Wisteria::Colors::ColorBrewer::GetColor(
+            Wisteria::Colors::Color::ForestGreen) };
+        const auto eatTargetColor{ Wisteria::Colors::ColorBrewer::GetColor(
+            Wisteria::Colors::Color::RedTomato) };
+        const auto plainColor{ Wisteria::Colors::ColorBrewer::GetColor(
+            Wisteria::Colors::Color::SteelBlue) };
+
+        const auto addResponse = [&plot](const double axisPosition, const double responseCount,
+                                         const wxString& responseLabel, const wxColour& barColor)
+        {
+            plot->AddBar(Wisteria::Graphs::BarChart::Bar(
+                axisPosition,
+                { Wisteria::Graphs::BarChart::BarBlock(
+                    Wisteria::Graphs::BarChart::BarBlockInfo(responseCount).Brush(barColor)) },
+                L"", Wisteria::GraphItems::Label(responseLabel), Wisteria::BoxEffect::Solid));
+        };
+        addResponse(1, 160, _(L"Yes"), foldedColor);
+        addResponse(2, 3, _(L"No"), eatTargetColor);
+        addResponse(3, 48, _(L"Somewhat"), plainColor);
+        addResponse(4, 6, _(L"No opinion"), plainColor);
+
+        plot->SetSerpentineMode(Wisteria::Graphs::BarChart::SerpentineMode::AggressiveSerpentine);
+
+        plot->IncludeSpacesBetweenBars();
+
+        // the blank rows that the folds run through have no label of their own
+        plot->GetBarAxis().SetLabelDisplay(Wisteria::AxisLabelDisplay::DisplayOnlyCustomLabels);
+
+        plot->GetBarAxis().GetTitle().GetGraphItemInfo().Text(
+            _(L"Are you satisfied with wisteria dv?"));
+        plot->GetScalingAxis().GetTitle().GetGraphItemInfo().Text(_(L"Responses"));
+
+        subframe->m_canvas->SetFixedObject(0, 0, plot);
+        }
     // Bar Chart (Stylized)
     else if (event.GetId() == MyApp::ID_NEW_BARCHART_STYLIZED)
         {
@@ -3024,6 +3117,14 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_BARCHART_IMAGE, _(L"Bar Chart (Common Image)"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-image.svg", iconSize),
                      _(L"Bar Chart (Common Image)"));
+    toolBar->AddTool(
+        MyApp::ID_NEW_BARCHART_SERPENTINE, _(L"Bar Chart (Serpentine)"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-serpentine.svg", iconSize),
+        _(L"Bar Chart (Serpentine)"));
+    toolBar->AddTool(
+        MyApp::ID_NEW_BARCHART_SERPENTINE_AGGRESSIVE, _(L"Bar Chart (Aggressive Serpentine)"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-serpentine-aggressive.svg", iconSize),
+        _(L"Bar Chart (Aggressive Serpentine)"));
     toolBar->AddTool(MyApp::ID_NEW_CATEGORICAL_BARCHART, _(L"Bar Chart (Categorical Data)"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
                      _(L"Bar Chart (Categorical Data)"));

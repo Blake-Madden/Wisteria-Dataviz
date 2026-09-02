@@ -387,6 +387,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             GetScalingAxis().ClearBrackets();
             }
         m_barOrientation = orient;
+        m_serpentineSnapshotValid = false;
         // if both axis grid lines are turned off then don't do anything, but if one of them
         // is turned on then intelligently display just the one relative to the new orientation
         if (GetBarAxis().GetGridlinePen().IsOk() || GetScalingAxis().GetGridlinePen().IsOk())
@@ -452,6 +453,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     //-----------------------------------
     void BarChart::AddBar(Bar bar, const bool adjustScalingAxis /*= true*/)
         {
+        m_serpentineSnapshotValid = false;
         m_bars.push_back(bar);
 
         const auto customWidth = bar.GetCustomWidth().has_value() ?
@@ -689,6 +691,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         // bar groups and brackets connected to bars' positions will need to be removed
         m_barGroups.clear();
         GetBarAxis().ClearBrackets();
+        // bars are moving, so drop the stale fold state and refold on the next layout
+        m_serpentineBarIndices.clear();
+        m_serpentineSegments.clear();
+        m_serpentineExtraRowCount = 0;
+        m_serpentineSnapshotValid = false;
 
         // verify that provided labels are in the existing bars
         // (if not, then add an empty bar for it)
@@ -842,6 +849,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         // bar groups and brackets connected to bars' positions will need to be removed
         m_barGroups.clear();
         GetBarAxis().ClearBrackets();
+        // bars are moving, so drop the stale fold state and refold on the next layout
+        m_serpentineBarIndices.clear();
+        m_serpentineSegments.clear();
+        m_serpentineExtraRowCount = 0;
+        m_serpentineSnapshotValid = false;
 
         const bool isDisplayingOuterLabels = GetBarAxis().IsShowingOuterLabels();
         GetBarAxis().ClearCustomLabels();
@@ -1788,6 +1800,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         {
         BarBlockRenderInfo barBlockRenderInfo{};
 
+        // a folded bar is one ribbon rather than a stack of blocks
+        if (const auto serpentinePos = m_serpentineSegments.find(barIndex);
+            GetSerpentineMode() != SerpentineMode::None && IsBarFoldingSupported() &&
+            serpentinePos != m_serpentineSegments.cend() && !serpentinePos->second.empty())
+            {
+            DrawSerpentineBar(bar, barRenderInfo, barBlockRenderInfo, serpentinePos->second,
+                              measureOnly);
+            PlaceEndOfBarLabel(bar, barRenderInfo, barBlockRenderInfo);
+
+            return barBlockRenderInfo.m_middlePointOfBarEnd;
+            }
+
         for (const auto& barBlock : bar.GetBlocks())
             {
             DrawBarBlock(bar, barIndex, barBlock, barRenderInfo, barBlockRenderInfo, measureOnly);
@@ -2072,6 +2096,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     //-----------------------------------
     void BarChart::RecalcSizes(wxDC & dc)
         {
+        // Fold any bar that dwarfs the others. This shifts the other bars along the bar
+        // axis and shortens the scaling axis, so both axes have to be settled before the
+        // base class determines where the points are.
+        UpdateSerpentineLayout();
+
         Graph2D::RecalcSizes(dc);
 
         // if no bars then just draw a blank 10x10 grid

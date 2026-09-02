@@ -13,8 +13,12 @@
 #define WISTERIA_BARCHART_H
 
 #include "groupgraph2d.h"
+#include <algorithm>
+#include <functional>
+#include <map>
 #include <numeric>
 #include <optional>
+#include <set>
 
 namespace Wisteria::Graphs
     {
@@ -178,6 +182,30 @@ namespace Wisteria::Graphs
                                downward (vertical bars).*/
             /// @private
             BARSHAPE_COUNT
+            };
+
+        /// @brief How to render a bar that is vastly longer than the others.
+        /// @details Stretching the scaling axis to fit one enormous bar crushes the
+        ///     rest. Instead, a long bar is folded. It runs to the far edge of the
+        ///     plot, turns onto the next bar row, and switchbacks over as many rows as
+        ///     it needs. The scaling axis then spans just one fold.
+        /// @par Credit:
+        ///     This technique comes from the charts that W. E. B. Du Bois prepared for
+        ///     the 1900 Paris Exposition.
+        /// @note A folded bar is always drawn as a plain, solid-filled rectangle.
+        ///     Image, stipple, and gradient effects, along with @c BarShape::Arrow and
+        ///     @c BarShape::ReverseArrow, are ignored for it. Bars that are not folded
+        ///     keep their effects and shapes.
+        enum class SerpentineMode
+            {
+            None,                 /*!< Do not fold any bars (the default).*/
+            Serpentine,           /*!< Fold a long bar through blank inserted rows.*/
+            AggressiveSerpentine, /*!< Fold a long bar, packing its last fold into the
+                                       free space of a row that already holds a shorter
+                                       bar. Blank rows are added only when no row has
+                                       room.*/
+            /// @private
+            SERPENTINEMODE_COUNT
             };
 
         class BarBlock; // forward declare
@@ -894,6 +922,12 @@ namespace Wisteria::Graphs
         void ClearBars(const bool resetAxes = true)
             {
             m_bars.clear();
+            // the folding of the removed bars, but not how folding is configured
+            m_serpentineBarIndices.clear();
+            m_serpentineSegments.clear();
+            m_originalBarAxisPositions.clear();
+            m_serpentineSnapshotValid = false;
+            m_serpentineExtraRowCount = 0;
             if (resetAxes)
                 {
                 m_longestBarLength = 0;
@@ -945,6 +979,88 @@ namespace Wisteria::Graphs
                 {
                 bar.SetEffect(effect);
                 }
+            }
+
+        /// @returns How bars that are vastly longer than the others are rendered.
+        [[nodiscard]]
+        SerpentineMode GetSerpentineMode() const noexcept
+            {
+            return m_serpentineMode;
+            }
+
+        /// @brief Sets how bars that are vastly longer than the others are rendered.
+        /// @param mode The serpentine mode to use.
+        /// @note Folding requires at least three bars and a scaling axis that is not
+        ///     reversed. A bar is only eligible if it is a single block, has no custom
+        ///     scaling axis start position, and is not part of a bar group.
+        /// @note Chart types that do not support folding ignore this call.
+        /// @sa SetSerpentineThreshold(), IsBarFoldingSupported().
+        void SetSerpentineMode(const SerpentineMode mode) noexcept
+            {
+            if (mode != SerpentineMode::None && !IsBarFoldingSupported())
+                {
+                return;
+                }
+            m_serpentineMode = mode;
+            m_serpentineSnapshotValid = false;
+            }
+
+        /// @returns How many times longer than the other bars a bar must be to be folded.
+        [[nodiscard]]
+        double GetSerpentineThreshold() const noexcept
+            {
+            return m_serpentineThreshold;
+            }
+
+        /// @brief Sets how many times longer than the other bars a bar must be to be folded.
+        /// @details A bar is folded when its length is at least this many times the length
+        ///     of the longest bar that remains unfolded. The default is @c 3.0.
+        /// @param threshold The multiplier to compare bar lengths against.
+        ///     Clamped to the range [2.0, MAX_SERPENTINE_FOLDS]. A larger value would
+        ///     put every bar past the fold cap and quietly disable folding.
+        /// @note This has no effect unless a serpentine mode is also set.
+        /// @sa SetSerpentineMode().
+        void SetSerpentineThreshold(const double threshold) noexcept
+            {
+            m_serpentineThreshold = std::clamp(threshold, 2.0, MAX_SERPENTINE_FOLDS);
+            m_serpentineSnapshotValid = false;
+            }
+
+        /// @returns The number of blank bar rows inserted to hold the folds of the
+        ///     serpentine bars, as of the last layout. Returns @c 0 if nothing is folded.
+        /// @warning Derived classes that calculate their slot count from the bar container
+        ///     (rather than from the bar axis) must add this to it.
+        /// @sa GetBarSlotCount().
+        [[nodiscard]]
+        size_t GetSerpentineExtraRowCount() const noexcept
+            {
+            return m_serpentineExtraRowCount;
+            }
+
+        /// @returns @c true if the given bar was folded as of the last layout.
+        /// @param barIndex The index of the bar to review.
+        /// @note Returns @c false while a layout is pending after the bars have changed,
+        ///     since the stored fold indices no longer line up with the bars.
+        [[nodiscard]]
+        bool IsBarSerpentine(const size_t barIndex) const noexcept
+            {
+            return m_serpentineSnapshotValid && m_serpentineBarIndices.contains(barIndex);
+            }
+
+        /// @returns The number of straight runs that the given bar was folded into as of
+        ///     the last layout. Returns @c 0 if the bar was not folded.
+        /// @param barIndex The index of the bar to review.
+        /// @note Returns @c 0 while a layout is pending after the bars have changed,
+        ///     since the stored fold data no longer lines up with the bars.
+        [[nodiscard]]
+        size_t GetSerpentineFoldCount(const size_t barIndex) const noexcept
+            {
+            if (!m_serpentineSnapshotValid)
+                {
+                return 0;
+                }
+            const auto foundPos = m_serpentineSegments.find(barIndex);
+            return (foundPos != m_serpentineSegments.cend()) ? foundPos->second.size() : 0;
             }
 
         /** @brief Sets the specified bars (by custom axis label) to be fully opaque,
@@ -1484,6 +1600,14 @@ namespace Wisteria::Graphs
             return GetBarAxis().GetAxisPoints().size() - 2;
             }
 
+        /// @returns Whether over-long bars may be folded into a serpentine ribbon.
+        /// @details The base implementation matches the exact type, so only a plain
+        ///     or categorical bar chart folds. Other bar-based charts (histogram,
+        ///     Likert, Gantt, scale) run their own slot layout. A derived class can
+        ///     override this to return @c true.
+        [[nodiscard]]
+        virtual bool IsBarFoldingSupported() const noexcept;
+
         /// @brief Recalculates the layout of the elements on the chart.
         /// @details Call this after adding all of your bars.
         /// @param dc The DC to measure content with.
@@ -1547,12 +1671,103 @@ namespace Wisteria::Graphs
             wxCoord m_barLength{ 0 };
             };
 
+        // One straight run of a folded (serpentine) bar.
+        struct SerpentineSegment
+            {
+            double m_rowAxisPosition{ 0 }; // bar-axis position of this fold's row
+            double m_scaleStart{ 0 };      // scaling-axis value that the run starts at
+            double m_scaleEnd{ 0 };        // scaling-axis value that the run ends at
+            // travel direction along the scaling axis (right for horizontal bars,
+            // up for vertical)
+            bool m_forward{ true };
+            };
+
+        /* One straight run of a folded bar, before it is given a row. Run lengths
+           depend only on bar length and fold width, so runs are computed first
+           and rows assigned afterward. */
+        struct SerpentineRun
+            {
+            double m_scaleStart{ 0 };
+            double m_scaleEnd{ 0 };
+            bool m_forward{ true };
+            };
+
+        /* A run's row, named rather than positioned. A run either shares the row
+           of the bar at @c m_eatTargetIndex or takes blank row @c m_blankRowIndex,
+           counted from the folded bar's row. Positions are resolved once every
+           blank row is known. */
+        struct SerpentineRowAssignment
+            {
+            std::optional<size_t> m_eatTargetIndex;
+            size_t m_blankRowIndex{ 0 };
+            };
+
+        /* A folded bar, drawn as one continuous band that switchbacks across
+           several bar rows. The band is a single stroked path, not a rectangle per
+           run, so the outline follows only the ribbon's outside. The path is
+           stroked three times, back to front. First the drop shadow, then the
+           outline at full thickness, then the fill just inside it. */
+        class SerpentineRibbon final : public GraphItems::GraphItemBase
+            {
+          public:
+            /* @param itemInfo The base settings. The brush color fills the band and the
+                   pen draws its outline.
+               @param centerLine The path that the band's middle follows.
+               @param segmentRects The rectangle of each straight run, for hit testing.
+               @param thickness How wide the band is drawn.
+               @param shadowOffset How far to offset the drop shadow. */
+            SerpentineRibbon(const GraphItems::GraphItemInfo& itemInfo,
+                             std::vector<wxPoint> centerLine, std::vector<wxRect> segmentRects,
+                             double thickness, wxCoord shadowOffset);
+
+            /// @private
+            [[nodiscard]]
+            wxRect GetBoundingBox(wxDC& dc) const final;
+
+          private:
+            wxRect Draw(wxDC& dc) const final;
+
+            [[nodiscard]]
+            bool HitTest(wxPoint pt, wxDC& dc) const final;
+
+            void Offset(int xOffset, int yOffset) final;
+
+            void SetBoundingBox(const wxRect& rect, wxDC& dc, double scaling) final;
+
+            /* Builds the band's path. The offset shifts the whole path, used to draw
+               the drop shadow. The extension pushes the two ends out so the outline
+               closes across the flat ends of the band. Without it the outline and
+               fill stop at the same point and the ends are left open. */
+            [[nodiscard]]
+            wxGraphicsPath BuildPath(wxGraphicsContext* gc, wxCoord xOffset, wxCoord yOffset,
+                                     wxCoord endExtension) const;
+
+            std::vector<wxPoint> m_centerLine;
+            std::vector<wxRect> m_segmentRects;
+            wxRect m_boundingBox;
+            double m_thickness{ 0 };
+            wxCoord m_shadowOffset{ 0 };
+            };
+
         wxPoint DrawBar(Bar& bar, size_t barIndex, BarRenderInfo& barRenderInfo,
                         bool measureOnly = false);
         wxPoint DrawBarBlock(const Bar& bar, size_t barIndex, const BarBlock& barBlock,
                              BarRenderInfo& barRenderInfo, BarBlockRenderInfo& barBlockRenderInfo,
                              bool measureOnly = false);
         void DrawBarGroups(BarRenderInfo& barRenderInfo);
+        /// @brief Draws a folded bar as a switchback ribbon of solid rectangles.
+        /// @details The bar's effect and shape are ignored. Every run is a plain
+        ///     solid-filled rectangle, joined to the next by a connector at the plot edge.
+        /// @returns The middle of the end of the ribbon, where the bar's value label goes.
+        /// @param bar The bar being drawn.
+        /// @param barRenderInfo The current render state.
+        /// @param[in,out] barBlockRenderInfo Running end-of-bar state.
+        /// @param segments The runs to draw, from CalcSerpentineSegments().
+        /// @param measureOnly @c true to only measure the ribbon, without drawing it.
+        wxPoint DrawSerpentineBar(Bar& bar, BarRenderInfo& barRenderInfo,
+                                  BarBlockRenderInfo& barBlockRenderInfo,
+                                  const std::vector<SerpentineSegment>& segments,
+                                  bool measureOnly = false);
 
         /// @returns The resolved fill color, lightened color, brush, and opacity for a block,
         ///     accounting for ghosting and the bar's opacity.
@@ -1648,6 +1863,52 @@ namespace Wisteria::Graphs
 
         void AdjustScalingAxisFromBarLength(double barLength);
         void AdjustScalingAxisFromBarGroups();
+        /// @brief Recalculates the scaling axis from the unfolded bars only.
+        /// @details Skipping the folded bars holds the axis to one fold's width, which
+        ///     keeps the smaller bars readable.
+        void AdjustScalingAxisFromBars();
+        /// @brief Determines which bars are long enough to be folded, filling
+        ///     @c m_serpentineBarIndices.
+        void ClassifySerpentineBars();
+        /// @brief Folds the over-long bars, shifting the rest down the bar axis to make room.
+        /// @details Restores bar positions from the snapshot first, so repeated passes
+        ///     converge on the same result.
+        void UpdateSerpentineLayout();
+        /// @brief Resets the bar axis's range and custom labels from where the bars
+        ///     currently sit.
+        /// @details Blank fold rows carry no bar, so they end up with no label.
+        void ApplyBarAxisRangeAndLabels();
+        /// @returns The bar the last fold should come down into, or @c std::nullopt to
+        ///     use plain serpentine. A target is returned only when two conditions
+        ///     both hold. The bar splits into an odd number of whole folds with a
+        ///     small leftover run. The neighbor is short enough to leave a wide clear
+        ///     gap beneath that run.
+        /// @param serpentineBarIndex The index of the bar being folded.
+        [[nodiscard]]
+        std::optional<size_t> FindSerpentineEatTarget(size_t serpentineBarIndex) const;
+        /// @returns The straight runs a folded bar is split into, in ribbon-travel
+        ///     order. Each full fold is one @p foldSpan long. Any leftover is a shorter
+        ///     final run.
+        /// @param serpentineBarLength The length of the bar being folded.
+        /// @param foldSpan The length of one fold, which is the length of the tallest
+        ///     bar left unfolded.
+        /// @param lastRunReturns @c true for aggressive folding, where the leftover
+        ///     run hugs the far edge of the fold and turns back down into a neighbor.
+        ///     @c false rolls a tiny leftover back into the fold before it.
+        [[nodiscard]]
+        std::vector<SerpentineRun> CalcSerpentineRuns(double serpentineBarLength, double foldSpan,
+                                                      bool lastRunReturns) const;
+        /// @returns The row that each run after the first is given.
+        /// @details For SerpentineMode::Serpentine, every run takes a blank row of its own.
+        ///     For SerpentineMode::AggressiveSerpentine, every run but the last takes a blank
+        ///     row, and the last run comes down into @c eatTarget when one was found.
+        /// @param runs The runs to place, from CalcSerpentineRuns().
+        /// @param eatTarget The bar the last run comes down into, from
+        ///     FindSerpentineEatTarget().
+        [[nodiscard]]
+        std::vector<SerpentineRowAssignment>
+        AssignSerpentineRows(const std::vector<SerpentineRun>& runs,
+                             std::optional<size_t> eatTarget) const;
         std::vector<Bar> m_bars;
         uint8_t m_barOpacity{ wxALPHA_OPAQUE };
         uint8_t m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY }; // used for showcasing
@@ -1671,6 +1932,19 @@ namespace Wisteria::Graphs
         bool m_constrainScalingAxisToBars{ false };
         bool m_applyBrushesToUngroupedBars{ false };
         Orientation m_barOrientation{ Orientation::Vertical };
+
+        SerpentineMode m_serpentineMode{ SerpentineMode::None };
+        double m_serpentineThreshold{ 3.0 };
+        // past this many folds the ribbon is too thin to read, so the bar is left unfolded
+        constexpr static double MAX_SERPENTINE_FOLDS{ 40 };
+        // which bars are folded, and how each one is folded
+        std::set<size_t> m_serpentineBarIndices;
+        std::map<size_t, std::vector<SerpentineSegment>> m_serpentineSegments;
+        // the bar positions as the client set them, before any folds shifted them
+        std::vector<double> m_originalBarAxisPositions;
+        bool m_serpentineSnapshotValid{ false };
+        size_t m_serpentineExtraRowCount{ 0 };
+        bool m_inSerpentineLayout{ false };
         };
     } // namespace Wisteria::Graphs
 

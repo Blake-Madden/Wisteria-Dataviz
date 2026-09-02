@@ -57,6 +57,7 @@ SET(APP_WISTERIA_SRC
     src/debug/debug_profile.cpp
     src/easyexif/exif.cpp
     src/graphs/barchart.cpp
+    src/graphs/barchart_serpentine.cpp
     src/graphs/boxplot.cpp
     src/graphs/bubbleplot.cpp
     src/graphs/candlestickplot.cpp

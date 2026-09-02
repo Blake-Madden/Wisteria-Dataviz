@@ -28,6 +28,7 @@ namespace Wisteria::UI
             - Labels showing the current variable selections.
             - A box effect choice.
             - Bar orientation (horizontal / vertical).
+            - A serpentine (folded bar) mode and fold threshold.
             - Bar label display.
             - A color scheme choice.
             - Legend placement.*/
@@ -126,6 +127,20 @@ namespace Wisteria::UI
         BinLabelDisplay GetBarLabelDisplay() const noexcept
             {
             return BinLabelDisplayFromIndex(m_barLabelDisplayIndex);
+            }
+
+        /// @returns The selected serpentine (folded bar) mode.
+        [[nodiscard]]
+        Graphs::BarChart::SerpentineMode GetSerpentineMode() const noexcept
+            {
+            return SerpentineModeFromIndex(m_serpentineModeIndex);
+            }
+
+        /// @returns The fold threshold, as a whole multiple of the longest unfolded bar.
+        [[nodiscard]]
+        double GetSerpentineThreshold() const noexcept
+            {
+            return static_cast<double>(m_serpentineThresholdMultiple);
             }
 
         /// @returns Per-bar shape overrides keyed by axis label.
@@ -331,6 +346,10 @@ namespace Wisteria::UI
         static Graphs::BarChart::BarShape BarShapeFromIndex(int index) noexcept;
         [[nodiscard]]
         static int BarShapeToIndex(Graphs::BarChart::BarShape shape) noexcept;
+        [[nodiscard]]
+        static Graphs::BarChart::SerpentineMode SerpentineModeFromIndex(int index) noexcept;
+        [[nodiscard]]
+        static int SerpentineModeToIndex(Graphs::BarChart::SerpentineMode mode) noexcept;
 
         // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
         constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };
@@ -373,6 +392,8 @@ namespace Wisteria::UI
         int m_barOrientationIndex{ 0 };
         int m_barLabelDisplayIndex{ 0 };
         int m_barShapeAllIndex{ 0 };
+        int m_serpentineModeIndex{ 0 };
+        int m_serpentineThresholdMultiple{ 3 };
         int m_ghostOpacity{ 32 };
         bool m_hideLabelsOnGhostedBars{ true };
         bool m_applyBrushesToUngroupedBars{ false };

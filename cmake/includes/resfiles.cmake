@@ -1,5 +1,7 @@
 axis.svg
 barchart-image.svg
+barchart-serpentine-aggressive.svg
+barchart-serpentine.svg
 barchart-stylized.svg
 barchart.svg
 boxplot.svg

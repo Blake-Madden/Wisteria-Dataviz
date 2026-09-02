@@ -43,6 +43,7 @@ SET(TEST_SRC_FILES
     sankeydiagramrendertests.cpp
     scalechartrendertests.cpp
     scatterplotrendertests.cpp
+    serpentinebarrendertests.cpp
     sidebartests.cpp
     stemandleafplotrendertests.cpp
     subsettests.cpp

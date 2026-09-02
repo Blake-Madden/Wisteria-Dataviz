@@ -955,6 +955,42 @@ namespace Wisteria
 
         //---------------------------------------------------
         [[nodiscard]]
+        static std::optional<Graphs::BarChart::SerpentineMode>
+        ConvertSerpentineMode(const wxString& value)
+            {
+            static const std::map<std::wstring, Graphs::BarChart::SerpentineMode>
+                serpentineModeValues = {
+                    { L"none", Graphs::BarChart::SerpentineMode::None },
+                    { L"serpentine", Graphs::BarChart::SerpentineMode::Serpentine },
+                    { L"aggressive-serpentine",
+                      Graphs::BarChart::SerpentineMode::AggressiveSerpentine }
+                };
+
+            const auto foundValue = serpentineModeValues.find(value.Lower().ToStdWstring());
+            return ((foundValue != serpentineModeValues.cend()) ?
+                        std::optional<Graphs::BarChart::SerpentineMode>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertSerpentineModeToString(Graphs::BarChart::SerpentineMode value)
+            {
+            static const std::map<Graphs::BarChart::SerpentineMode, wxString> values = {
+                { Graphs::BarChart::SerpentineMode::None, L"none" },
+                { Graphs::BarChart::SerpentineMode::Serpentine, L"serpentine" },
+                { Graphs::BarChart::SerpentineMode::AggressiveSerpentine,
+                  L"aggressive-serpentine" }
+            };
+
+            const auto foundValue = values.find(value);
+            return ((foundValue != values.cend()) ? std::optional<wxString>(foundValue->second) :
+                                                    std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
         static std::optional<ImageEffect> ConvertImageEffect(const wxString& value)
             {
             static const std::map<std::wstring, ImageEffect> imgEffectValues = {

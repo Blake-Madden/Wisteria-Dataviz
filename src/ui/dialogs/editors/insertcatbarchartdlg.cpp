@@ -163,6 +163,27 @@ namespace Wisteria::UI
                                       wxGenericValidator(&m_includeSpacesBetweenBars)),
                        wxSizerFlags{}.Border(wxLEFT | wxBOTTOM));
 
+        // serpentine (folded) bars
+        auto* serpentineSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        serpentineSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Fold over-long bars:")),
+                             wxSizerFlags{}.CenterVertical());
+        wxArrayString serpentineModes;
+        serpentineModes.Add(_(L"None"));
+        serpentineModes.Add(_(L"Serpentine"));
+        serpentineModes.Add(_(L"Aggressive serpentine"));
+        serpentineSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                          serpentineModes, 0,
+                                          wxGenericValidator{ &m_serpentineModeIndex }),
+                             wxSizerFlags{}.CenterVertical());
+        serpentineSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Fold threshold:")),
+                             wxSizerFlags{}.CenterVertical());
+        auto* serpentineThresholdSpin = new wxSpinCtrl(optionsPage, wxID_ANY);
+        serpentineThresholdSpin->SetRange(2, 25);
+        serpentineThresholdSpin->SetValidator(wxGenericValidator{ &m_serpentineThresholdMultiple });
+        serpentineSizer->Add(serpentineThresholdSpin, wxSizerFlags{}.CenterVertical());
+        leftSizer->Add(serpentineSizer, wxSizerFlags{}.Border());
+
         // bar label suffix
         auto* suffixSizer = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
@@ -1189,6 +1210,40 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    Graphs::BarChart::SerpentineMode
+    InsertCatBarChartDlg::SerpentineModeFromIndex(const int index) noexcept
+        {
+        switch (index)
+            {
+        case 1:
+            return Graphs::BarChart::SerpentineMode::Serpentine;
+        case 2:
+            return Graphs::BarChart::SerpentineMode::AggressiveSerpentine;
+        case 0:
+            [[fallthrough]];
+        default:
+            return Graphs::BarChart::SerpentineMode::None;
+            }
+        }
+
+    //-------------------------------------------
+    int InsertCatBarChartDlg::SerpentineModeToIndex(
+        const Graphs::BarChart::SerpentineMode mode) noexcept
+        {
+        switch (mode)
+            {
+        case Graphs::BarChart::SerpentineMode::Serpentine:
+            return 1;
+        case Graphs::BarChart::SerpentineMode::AggressiveSerpentine:
+            return 2;
+        case Graphs::BarChart::SerpentineMode::None:
+            [[fallthrough]];
+        default:
+            return 0;
+            }
+        }
+
+    //-------------------------------------------
     void InsertCatBarChartDlg::OnBoxEffectChanged()
         {
         const int sel = m_boxEffectChoice->GetSelection();
@@ -1738,6 +1793,8 @@ namespace Wisteria::UI
         m_barLabelDisplayIndex = BinLabelDisplayToIndex(barChart->GetBinLabelDisplay());
         m_applyBrushesToUngroupedBars = barChart->IsApplyingBrushesToUngroupedBars();
         m_constrainScalingAxisToBars = barChart->IsConstrainingScalingAxisToBars();
+        m_serpentineModeIndex = SerpentineModeToIndex(barChart->GetSerpentineMode());
+        m_serpentineThresholdMultiple = static_cast<int>(barChart->GetSerpentineThreshold());
         m_ghostOpacity = barChart->GetGhostOpacity();
         m_hideLabelsOnGhostedBars = barChart->IsHidingGhostedLabels();
         m_includeSpacesBetweenBars = barChart->IsIncludingSpacesBetweenBars();

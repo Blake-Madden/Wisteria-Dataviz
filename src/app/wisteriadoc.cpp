@@ -3537,6 +3537,20 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                 node->Add(L"bar-group-placement", bgStr.value());
                 }
             }
+        if (barChart->GetSerpentineMode() != Wisteria::Graphs::BarChart::SerpentineMode::None)
+            {
+            const auto serpStr = Wisteria::ReportEnumConvert::ConvertSerpentineModeToString(
+                barChart->GetSerpentineMode());
+            if (serpStr.has_value())
+                {
+                node->Add(L"serpentine", serpStr.value());
+                }
+            // threshold only matters once folding is on
+            if (!compare_doubles(barChart->GetSerpentineThreshold(), 3.0))
+                {
+                node->Add(L"serpentine-threshold", barChart->GetSerpentineThreshold());
+                }
+            }
         // bar-shapes: single string if all bars share a non-default shape;
         // otherwise a per-bar array keyed by axis label (Rectangle bars omitted)
         if (!barChart->GetBars().empty())

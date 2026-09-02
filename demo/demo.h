@@ -123,7 +123,9 @@ class MyApp final : public wxApp
         ID_NEW_CHERNOFFPLOT,
         ID_NEW_STEMANDLEAF,
         ID_NEW_RACETRACK,
-        ID_NEW_WILMARTH_BRIDGE
+        ID_NEW_WILMARTH_BRIDGE,
+        ID_NEW_BARCHART_SERPENTINE,
+        ID_NEW_BARCHART_SERPENTINE_AGGRESSIVE
         };
 
   private:

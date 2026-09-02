@@ -61,6 +61,18 @@ Properties common to all bar-chart-derived graphs:
   - `"rectangle"` (the default)
   - `"arrow"`
   - `"reverse-arrow"`
+- `"serpentine"`: How to render a bar that is vastly longer than the others. \
+  Rather than stretching the value axis (which crushes the smaller bars), the long bar is folded back on itself and continues across the following rows. \
+  A folded bar is always drawn as a plain, solid-filled ribbon.
+  Image, stipple, and gradient box effects and the arrow bar shapes are ignored for it. \
+  Available options are:
+  - `"none"` (the default)
+  - `"serpentine"`: fold the long bar through blank inserted rows.
+  - `"aggressive-serpentine"`: fold the long bar, packing its later folds into the free space trailing the shorter bars.
+    Blank rows are added only when no bar has room.
+- `"serpentine-threshold"`: How many times longer than the other bars a bar must be before it is folded. \
+  The default is `3.0`. The value is clamped to the range `2.0` to `40.0`. \
+  Has no effect unless `"serpentine"` is also set.
 - `"bar-sort"`: Properties specifying how to sort the bars (after loading the data). \
   Available options are:
   - `"direction"`: The direction to sort the bars. \

@@ -231,10 +231,12 @@ namespace Wisteria::Graphs
 
         /// @brief Simpler way to get the bar slots since this isn't like a histogram that
         ///     can have gaps in between the bars.
+        /// @details Folded bars run through blank rows that hold no bar of their own,
+        ///     so those rows are counted here as well.
         [[nodiscard]]
         size_t GetBarSlotCount() const noexcept final
             {
-            return GetBars().size();
+            return GetBars().size() + GetSerpentineExtraRowCount();
             }
 
         wxString m_categoricalColumnName;

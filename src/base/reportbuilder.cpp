@@ -2819,6 +2819,19 @@ namespace Wisteria
             barChart->SetBarEffect(boxEffect.value());
             }
 
+        // folding of bars that dwarf the others
+        const auto serpentineMode = ReportEnumConvert::ConvertSerpentineMode(
+            graphNode->GetProperty(L"serpentine")->AsString());
+        if (serpentineMode)
+            {
+            barChart->SetSerpentineMode(serpentineMode.value());
+            }
+        if (graphNode->HasProperty(L"serpentine-threshold"))
+            {
+            barChart->SetSerpentineThreshold(
+                graphNode->GetProperty(L"serpentine-threshold")->AsDouble(3.0));
+            }
+
         // sorting
         const auto sortNode = graphNode->GetProperty(L"bar-sort");
         if (sortNode->IsOk())
