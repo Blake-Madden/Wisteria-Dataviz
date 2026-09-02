@@ -73,6 +73,8 @@ Properties common to all bar-chart-derived graphs:
 - `"serpentine-threshold"`: How many times longer than the other bars a bar must be before it is folded. \
   The default is `3.0`. The value is clamped to the range `2.0` to `40.0`. \
   Has no effect unless `"serpentine"` is also set.
+- `"serpentine-fold-arrows"`: `true` to draw a curved direction arrow inside the ribbon at each fold turn. \
+  The default is `false`.
 - `"bar-sort"`: Properties specifying how to sort the bars (after loading the data). \
   Available options are:
   - `"direction"`: The direction to sort the bars. \

@@ -1694,6 +1694,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // the lira is over nine times the escudo, so it folds at the default threshold
         plot->SetSerpentineMode(Wisteria::Graphs::BarChart::SerpentineMode::Serpentine);
+        // guide the eye through the folds
+        plot->ShowSerpentineFoldArrows(true);
 
         plot->SetData(euroData, _DT(L"Currency"), _DT(L"Rate"));
 
@@ -1738,6 +1740,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         addResponse(4, 6, _(L"No opinion"), plainColor);
 
         plot->SetSerpentineMode(Wisteria::Graphs::BarChart::SerpentineMode::AggressiveSerpentine);
+        plot->ShowSerpentineFoldArrows(true);
 
         plot->IncludeSpacesBetweenBars();
 

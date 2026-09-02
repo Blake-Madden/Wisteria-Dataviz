@@ -28,7 +28,7 @@ namespace Wisteria::UI
             - Labels showing the current variable selections.
             - A box effect choice.
             - Bar orientation (horizontal / vertical).
-            - A serpentine (folded bar) mode and fold threshold.
+            - A serpentine (folded bar) mode, fold threshold, and fold-arrow toggle.
             - Bar label display.
             - A color scheme choice.
             - Legend placement.*/
@@ -141,6 +141,13 @@ namespace Wisteria::UI
         double GetSerpentineThreshold() const noexcept
             {
             return static_cast<double>(m_serpentineThresholdMultiple);
+            }
+
+        /// @returns Whether a direction arrow should be drawn inside the ribbon at each fold.
+        [[nodiscard]]
+        bool IsShowingSerpentineFoldArrows() const noexcept
+            {
+            return m_serpentineFoldArrows;
             }
 
         /// @returns Per-bar shape overrides keyed by axis label.
@@ -394,6 +401,7 @@ namespace Wisteria::UI
         int m_barShapeAllIndex{ 0 };
         int m_serpentineModeIndex{ 0 };
         int m_serpentineThresholdMultiple{ 3 };
+        bool m_serpentineFoldArrows{ false };
         int m_ghostOpacity{ 32 };
         bool m_hideLabelsOnGhostedBars{ true };
         bool m_applyBrushesToUngroupedBars{ false };

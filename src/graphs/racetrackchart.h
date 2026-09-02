@@ -207,6 +207,7 @@ namespace Wisteria::Graphs
         /// @param angleDeg The start angle in degrees (0 = 3 o'clock, 90 = 6 o'clock, etc.).
         void SetStartAngle(const double angleDeg) noexcept { m_startAngle = angleDeg; }
 
+      private:
         /// @deprecated
         [[deprecated("Race track charts do not support legends.")]] [[nodiscard]]
         std::unique_ptr<GraphItems::Label>
@@ -215,7 +216,6 @@ namespace Wisteria::Graphs
             return nullptr;
             }
 
-      private:
         /** @brief Adds a track lane to the chart.
           @param lane The track lane information to add.
           @note Call the parent canvas's `CalcAllSizes()` after adding all track lanes

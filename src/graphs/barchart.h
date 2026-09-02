@@ -1063,6 +1063,21 @@ namespace Wisteria::Graphs
             return (foundPos != m_serpentineSegments.cend()) ? foundPos->second.size() : 0;
             }
 
+        /// @returns Whether a direction arrow is drawn inside the ribbon at each fold.
+        [[nodiscard]]
+        bool IsShowingSerpentineFoldArrows() const noexcept
+            {
+            return m_showSerpentineFoldArrows;
+            }
+
+        /// @brief Sets whether a curved direction arrow is drawn inside the ribbon at
+        ///     each fold turn.
+        /// @param show @c true to draw the arrows.
+        void ShowSerpentineFoldArrows(const bool show) noexcept
+            {
+            m_showSerpentineFoldArrows = show;
+            }
+
         /** @brief Sets the specified bars (by custom axis label) to be fully opaque,
                 and all others to a lighter opacity.
             @param labels The bars to showcase.
@@ -1715,10 +1730,15 @@ namespace Wisteria::Graphs
                @param centerLine The path that the band's middle follows.
                @param segmentRects The rectangle of each straight run, for hit testing.
                @param thickness How wide the band is drawn.
-               @param shadowOffset How far to offset the drop shadow. */
+               @param shadowOffset How far to offset the drop shadow.
+               @param showFoldArrows @c true to draw a curved direction arrow inside the
+                   band at each turn.
+               @param barsAreHorizontal @c true when the runs travel left to right,
+                   @c false when they travel bottom to top. */
             SerpentineRibbon(const GraphItems::GraphItemInfo& itemInfo,
                              std::vector<wxPoint> centerLine, std::vector<wxRect> segmentRects,
-                             double thickness, wxCoord shadowOffset);
+                             double thickness, wxCoord shadowOffset, bool showFoldArrows,
+                             bool barsAreHorizontal);
 
             /// @private
             [[nodiscard]]
@@ -1742,11 +1762,17 @@ namespace Wisteria::Graphs
             wxGraphicsPath BuildPath(wxGraphicsContext* gc, wxCoord xOffset, wxCoord yOffset,
                                      wxCoord endExtension) const;
 
+            /* Draws a curved direction arrow inside the band at each turn, tracing the
+               ribbon from one run into the next. */
+            void DrawFoldArrows(wxGraphicsContext* gc) const;
+
             std::vector<wxPoint> m_centerLine;
             std::vector<wxRect> m_segmentRects;
             wxRect m_boundingBox;
             double m_thickness{ 0 };
             wxCoord m_shadowOffset{ 0 };
+            bool m_showFoldArrows{ false };
+            bool m_barsAreHorizontal{ false };
             };
 
         wxPoint DrawBar(Bar& bar, size_t barIndex, BarRenderInfo& barRenderInfo,
@@ -1945,6 +1971,7 @@ namespace Wisteria::Graphs
         bool m_serpentineSnapshotValid{ false };
         size_t m_serpentineExtraRowCount{ 0 };
         bool m_inSerpentineLayout{ false };
+        bool m_showSerpentineFoldArrows{ false };
         };
     } // namespace Wisteria::Graphs
 

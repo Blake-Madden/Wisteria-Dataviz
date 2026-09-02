@@ -2831,6 +2831,11 @@ namespace Wisteria
             barChart->SetSerpentineThreshold(
                 graphNode->GetProperty(L"serpentine-threshold")->AsDouble(3.0));
             }
+        if (graphNode->HasProperty(L"serpentine-fold-arrows"))
+            {
+            barChart->ShowSerpentineFoldArrows(
+                graphNode->GetProperty(L"serpentine-fold-arrows")->AsBool());
+            }
 
         // sorting
         const auto sortNode = graphNode->GetProperty(L"bar-sort");

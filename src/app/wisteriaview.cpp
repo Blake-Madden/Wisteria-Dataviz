@@ -5003,6 +5003,7 @@ void WisteriaView::OnInsertCatBarChart([[maybe_unused]] wxCommandEvent& event)
             {
             plot->SetSerpentineMode(dlg.GetSerpentineMode());
             plot->SetSerpentineThreshold(dlg.GetSerpentineThreshold());
+            plot->ShowSerpentineFoldArrows(dlg.IsShowingSerpentineFoldArrows());
             }
         if (dlg.IsIncludingSpacesBetweenBars())
             {
@@ -5241,6 +5242,7 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
             {
             plot->SetSerpentineMode(dlg.GetSerpentineMode());
             plot->SetSerpentineThreshold(dlg.GetSerpentineThreshold());
+            plot->ShowSerpentineFoldArrows(dlg.IsShowingSerpentineFoldArrows());
             }
         if (dlg.IsIncludingSpacesBetweenBars())
             {

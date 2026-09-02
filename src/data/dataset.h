@@ -1936,6 +1936,7 @@ namespace Wisteria::Data
         /// @returns @c true if @p fileExtension (without a leading dot) is a
         ///     supported data import type. Derived from GetDataFileWildcards()
         ///     to keep the format list a single source of truth.
+        /// @param fileExtension The file extension to review.
         [[nodiscard]]
         static bool IsSupportedFileExtension(const wxString& fileExtension)
             {

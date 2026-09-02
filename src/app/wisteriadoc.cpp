@@ -3550,6 +3550,10 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                 {
                 node->Add(L"serpentine-threshold", barChart->GetSerpentineThreshold());
                 }
+            if (barChart->IsShowingSerpentineFoldArrows())
+                {
+                node->Add(L"serpentine-fold-arrows", true);
+                }
             }
         // bar-shapes: single string if all bars share a non-default shape;
         // otherwise a per-bar array keyed by axis label (Rectangle bars omitted)

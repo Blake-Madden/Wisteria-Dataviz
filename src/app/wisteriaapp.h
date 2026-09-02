@@ -171,6 +171,7 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
 
     /// @brief Starts a new project that imports @p datasetPath, running the
     ///     same flow as choosing New and picking that dataset.
+    /// @param datasetPath The path to the dataset to open.
     void StartProjectFromDataset(const wxString& datasetPath);
 
   private:

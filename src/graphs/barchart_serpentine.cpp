@@ -647,7 +647,7 @@ namespace Wisteria::Graphs
                 .DPIScaling(GetDPIScaleFactor())
                 .ShowLabelWhenSelected(true),
             std::move(centerLine), std::move(segmentRects), barRenderInfo.m_barWidth,
-            barRenderInfo.m_scaledShadowOffset);
+            barRenderInfo.m_scaledShadowOffset, m_showSerpentineFoldArrows, isHorizontal);
         // Turns land on the plot edge, so the outline pen straddling it sits half
         // outside. Pad the clip by that much so corners are not shaved flat.
         wxRect ribbonClipRect{ GetDrawArea() };
@@ -668,10 +668,13 @@ namespace Wisteria::Graphs
     BarChart::SerpentineRibbon::SerpentineRibbon(const GraphItems::GraphItemInfo& itemInfo,
                                                  std::vector<wxPoint> centerLine,
                                                  std::vector<wxRect> segmentRects,
-                                                 const double thickness, const wxCoord shadowOffset)
+                                                 const double thickness, const wxCoord shadowOffset,
+                                                 const bool showFoldArrows,
+                                                 const bool barsAreHorizontal)
         : GraphItems::GraphItemBase(itemInfo), m_centerLine(std::move(centerLine)),
           m_segmentRects(std::move(segmentRects)), m_thickness(thickness),
-          m_shadowOffset(shadowOffset)
+          m_shadowOffset(shadowOffset), m_showFoldArrows(showFoldArrows),
+          m_barsAreHorizontal(barsAreHorizontal)
         {
         for (const auto& segmentRect : m_segmentRects)
             {
@@ -808,6 +811,7 @@ namespace Wisteria::Graphs
         if (!hasOutline)
             {
             strokeBand(BuildPath(gc, 0, 0, 0), GetBrush().GetColour(), m_thickness);
+            DrawFoldArrows(gc);
             return m_boundingBox;
             }
 
@@ -817,6 +821,101 @@ namespace Wisteria::Graphs
         strokeBand(BuildPath(gc, 0, 0, 0), GetBrush().GetColour(),
                    m_thickness - (outlineWidth * 2));
 
+        DrawFoldArrows(gc);
+
         return m_boundingBox;
+        }
+
+    //-----------------------------------
+    void BarChart::SerpentineRibbon::DrawFoldArrows(wxGraphicsContext* gc) const
+        {
+        if (!m_showFoldArrows || gc == nullptr || m_centerLine.size() < 4 || m_thickness <= 0)
+            {
+            return;
+            }
+
+        // read and build points as (major is along a run, minor is across the rows)
+        const auto majorOf = [this](const wxPoint& linePt) noexcept
+        {
+            return m_barsAreHorizontal ? static_cast<double>(linePt.x) :
+                                         static_cast<double>(linePt.y);
+        };
+        const auto minorOf = [this](const wxPoint& linePt) noexcept
+        {
+            return m_barsAreHorizontal ? static_cast<double>(linePt.y) :
+                                         static_cast<double>(linePt.x);
+        };
+        const auto makePt = [this](const double major, const double minor) noexcept
+        {
+            return m_barsAreHorizontal ? wxPoint2DDouble(major, minor) :
+                                         wxPoint2DDouble(minor, major);
+        };
+
+        const wxColour arrowColor{ Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(
+            GetBrush().GetColour()) };
+
+        const double arrowCap{ ScaleToScreenAndCanvas(28) };
+        const double shaftWidth{ std::max(
+            1.5, std::min(m_thickness * 0.09, ScaleToScreenAndCanvas(3))) };
+        const size_t turnCount{ (m_centerLine.size() / 2) - 1 };
+
+        for (size_t turn = 0; turn < turnCount; ++turn)
+            {
+            const wxPoint& runInStart{ m_centerLine[2 * turn] };
+            const wxPoint& runInEnd{ m_centerLine[(2 * turn) + 1] };
+            const wxPoint& runOutStart{ m_centerLine[(2 * turn) + 2] };
+            const wxPoint& runOutEnd{ m_centerLine[(2 * turn) + 3] };
+
+            const double dirIn{ (majorOf(runInEnd) >= majorOf(runInStart)) ? 1.0 : -1.0 };
+            const double shortRun{ std::min(std::abs(majorOf(runInEnd) - majorOf(runInStart)),
+                                            std::abs(majorOf(runOutEnd) - majorOf(runOutStart))) };
+
+            const double shaftRun{ std::min(
+                { shortRun * 0.3, m_thickness * 0.9, arrowCap * 2.0 }) };
+            const double headLen{ std::min({ shaftRun * 0.8, m_thickness * 0.4, arrowCap }) };
+            if (shaftRun <= 2.0 || headLen <= 1.5)
+                {
+                continue;
+                }
+            const double headHalf{ std::min(
+                { headLen * 0.85, m_thickness * 0.22, arrowCap * 0.7 }) };
+            const double bulge{ std::min(
+                { std::abs(minorOf(runOutStart) - minorOf(runInEnd)) * 0.45, m_thickness * 0.32,
+                  arrowCap * 1.4 }) };
+
+            // tail on the incoming run, curving around the turn to the head on the outgoing run
+            const wxPoint2DDouble tail{ makePt(majorOf(runInEnd) - (dirIn * shaftRun),
+                                               minorOf(runInEnd)) };
+            const wxPoint2DDouble ctrlIn{ makePt(majorOf(runInEnd) + (dirIn * bulge),
+                                                 minorOf(runInEnd)) };
+            const wxPoint2DDouble ctrlOut{ makePt(majorOf(runOutStart) + (dirIn * bulge),
+                                                  minorOf(runOutStart)) };
+            const wxPoint2DDouble neck{ makePt(majorOf(runOutStart) - (dirIn * shaftRun),
+                                               minorOf(runOutStart)) };
+            const wxPoint2DDouble tip{ makePt(majorOf(runOutStart) - (dirIn * (shaftRun + headLen)),
+                                              minorOf(runOutStart)) };
+            const wxPoint2DDouble neckLeft{ makePt(majorOf(runOutStart) - (dirIn * shaftRun),
+                                                   minorOf(runOutStart) - headHalf) };
+            const wxPoint2DDouble neckRight{ makePt(majorOf(runOutStart) - (dirIn * shaftRun),
+                                                    minorOf(runOutStart) + headHalf) };
+
+            wxGraphicsPath shaft{ gc->CreatePath() };
+            shaft.MoveToPoint(tail.m_x, tail.m_y);
+            shaft.AddCurveToPoint(ctrlIn.m_x, ctrlIn.m_y, ctrlOut.m_x, ctrlOut.m_y, neck.m_x,
+                                  neck.m_y);
+            gc->SetPen(gc->CreatePen(
+                wxGraphicsPenInfo(arrowColor, shaftWidth).Cap(wxCAP_ROUND).Join(wxJOIN_ROUND)));
+            gc->SetBrush(*wxTRANSPARENT_BRUSH);
+            gc->StrokePath(shaft);
+
+            wxGraphicsPath head{ gc->CreatePath() };
+            head.MoveToPoint(tip.m_x, tip.m_y);
+            head.AddLineToPoint(neckLeft.m_x, neckLeft.m_y);
+            head.AddLineToPoint(neckRight.m_x, neckRight.m_y);
+            head.CloseSubpath();
+            gc->SetPen(*wxTRANSPARENT_PEN);
+            gc->SetBrush(wxBrush{ arrowColor });
+            gc->FillPath(head);
+            }
         }
     } // namespace Wisteria::Graphs

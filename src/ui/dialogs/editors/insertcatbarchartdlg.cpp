@@ -182,6 +182,11 @@ namespace Wisteria::UI
         serpentineThresholdSpin->SetRange(2, 25);
         serpentineThresholdSpin->SetValidator(wxGenericValidator{ &m_serpentineThresholdMultiple });
         serpentineSizer->Add(serpentineThresholdSpin, wxSizerFlags{}.CenterVertical());
+        serpentineSizer->AddSpacer(0);
+        serpentineSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show fold direction arrows"),
+                                            wxDefaultPosition, wxDefaultSize, 0,
+                                            wxGenericValidator{ &m_serpentineFoldArrows }),
+                             wxSizerFlags{}.CenterVertical());
         leftSizer->Add(serpentineSizer, wxSizerFlags{}.Border());
 
         // bar label suffix
@@ -1795,6 +1800,7 @@ namespace Wisteria::UI
         m_constrainScalingAxisToBars = barChart->IsConstrainingScalingAxisToBars();
         m_serpentineModeIndex = SerpentineModeToIndex(barChart->GetSerpentineMode());
         m_serpentineThresholdMultiple = static_cast<int>(barChart->GetSerpentineThreshold());
+        m_serpentineFoldArrows = barChart->IsShowingSerpentineFoldArrows();
         m_ghostOpacity = barChart->GetGhostOpacity();
         m_hideLabelsOnGhostedBars = barChart->IsHidingGhostedLabels();
         m_includeSpacesBetweenBars = barChart->IsIncludingSpacesBetweenBars();
