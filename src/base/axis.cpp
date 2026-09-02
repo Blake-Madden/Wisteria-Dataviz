@@ -425,18 +425,20 @@ namespace Wisteria::GraphItems
                 {
                 if (GetParallelLabelAlignment() == RelativeAlignment::FlushRight)
                     {
-                    topLeftCorner.x -= firstLabel.GetBoundingBox(dc).GetWidth() - spaceToStart;
+                    topLeftCorner.x -= std::max<wxCoord>(
+                        0, firstLabel.GetBoundingBox(dc).GetWidth() - spaceToStart);
                     }
                 else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
                     {
-                    topLeftCorner.x -=
-                        (firstLabel.GetBoundingBox(dc).GetWidth() / 2) - spaceToStart;
+                    topLeftCorner.x -= std::max<wxCoord>(
+                        0, (firstLabel.GetBoundingBox(dc).GetWidth() / 2) - spaceToStart);
                     }
                 // FlushLeft needs no space on the left outer side
                 }
             else
                 {
-                topLeftCorner.x -= (firstLabel.GetBoundingBox(dc).GetHeight() / 2) - spaceToStart;
+                topLeftCorner.x -= std::max<wxCoord>(
+                    0, (firstLabel.GetBoundingBox(dc).GetHeight() / 2) - spaceToStart);
                 }
             }
         // the last (far most right) axis label
@@ -446,22 +448,26 @@ namespace Wisteria::GraphItems
             GetPhysicalCoordinate(lastLabelPosition, lastLabelPhysicalPos))
             {
             const auto spaceToEnd = GetRightPoint().x - lastLabelPhysicalPos;
+            // clamp at zero so a label set in from the axis end cannot shrink the box
+            // inside the line
             if (GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
                 {
                 if (GetParallelLabelAlignment() == RelativeAlignment::FlushLeft)
                     {
-                    bottomRightCorner.x += lastLabel.GetBoundingBox(dc).GetWidth() - spaceToEnd;
+                    bottomRightCorner.x +=
+                        std::max<wxCoord>(0, lastLabel.GetBoundingBox(dc).GetWidth() - spaceToEnd);
                     }
                 else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
                     {
-                    bottomRightCorner.x +=
-                        (lastLabel.GetBoundingBox(dc).GetWidth() / 2) - spaceToEnd;
+                    bottomRightCorner.x += std::max<wxCoord>(
+                        0, (lastLabel.GetBoundingBox(dc).GetWidth() / 2) - spaceToEnd);
                     }
                 // FlushRight needs no space on the right outer side
                 }
             else
                 {
-                bottomRightCorner.x += (lastLabel.GetBoundingBox(dc).GetHeight() / 2) - spaceToEnd;
+                bottomRightCorner.x += std::max<wxCoord>(
+                    0, (lastLabel.GetBoundingBox(dc).GetHeight() / 2) - spaceToEnd);
                 }
             }
         }
@@ -477,23 +483,26 @@ namespace Wisteria::GraphItems
             GetPhysicalCoordinate(firstLabelPosition, firstLabelPhysicalPos))
             {
             const auto spaceToStart = GetBottomPoint().y - firstLabelPhysicalPos;
+            // Clamp at zero so a label set in from the axis end cannot shrink the box
+            // inside the line.
             if (GetAxisLabelOrientation() == AxisLabelOrientation::Parallel)
                 {
                 if (GetParallelLabelAlignment() == RelativeAlignment::FlushBottom)
                     {
-                    bottomRightCorner.y += firstLabel.GetBoundingBox(dc).GetWidth() - spaceToStart;
+                    bottomRightCorner.y += std::max<wxCoord>(
+                        0, firstLabel.GetBoundingBox(dc).GetWidth() - spaceToStart);
                     }
                 else if (GetParallelLabelAlignment() == RelativeAlignment::Centered)
                     {
-                    bottomRightCorner.y +=
-                        (firstLabel.GetBoundingBox(dc).GetWidth() / 2) - spaceToStart;
+                    bottomRightCorner.y += std::max<wxCoord>(
+                        0, (firstLabel.GetBoundingBox(dc).GetWidth() / 2) - spaceToStart);
                     }
                 // FlushTop needs no space on the upper outside
                 }
             else
                 {
-                bottomRightCorner.y +=
-                    (firstLabel.GetBoundingBox(dc).GetHeight() / 2) - spaceToStart;
+                bottomRightCorner.y += std::max<wxCoord>(
+                    0, (firstLabel.GetBoundingBox(dc).GetHeight() / 2) - spaceToStart);
                 }
             }
         // the last (far most top) axis label
@@ -517,7 +526,9 @@ namespace Wisteria::GraphItems
                 }
             else
                 {
-                topLeftCorner.y -= (lastLabel.GetBoundingBox(dc).GetHeight() / 2) - spaceToEnd;
+                // clamp at zero, as with the first label above
+                topLeftCorner.y -= std::max<wxCoord>(
+                    0, (lastLabel.GetBoundingBox(dc).GetHeight() / 2) - spaceToEnd);
                 }
             }
         }
@@ -3054,7 +3065,7 @@ namespace Wisteria::GraphItems
         // won't cause y-axis label to be stacked, which can look odd--
         // only resort to that is they really are overlapping.
         auto maxTextSize = safe_divide<int64_t>(axisWidth, displayedLabelsCount) -
-                                 (isMeasuringByHeight ? (2 * GetScaling()) : 0);
+                           (isMeasuringByHeight ? (2 * GetScaling()) : 0);
         if (const wxCoord minLabelGap{ CalcMinDistanceBetweenLabels() }; minLabelGap > 0)
             {
             maxTextSize = std::min<double>(maxTextSize, minLabelGap);
