@@ -2322,6 +2322,13 @@ namespace Wisteria::GraphItems
         double CalcBestScalingToFitLabels(wxDC& dc);
         /// @brief Calculates how much space is available for the labels within the plot area.
         void CalcMaxLabelWidth();
+        /// @returns The smallest physical gap between two consecutive label-displaying
+        ///     points, or @c 0 if fewer than two are displayed.
+        /// @details A label's room is the gap to its neighbor. That is less than an
+        ///     even slice of the axis when the labeled points do not run its full
+        ///     length, such as blank trailing rows or partial custom labels.
+        [[nodiscard]]
+        wxCoord CalcMinDistanceBetweenLabels() const;
         void SetBoundingBox(const wxRect& rect, [[maybe_unused]] wxDC& dc,
                             [[maybe_unused]] double parentScaling) final;
 

@@ -2902,11 +2902,46 @@ namespace Wisteria::GraphItems
 
         m_maxLabelWidth =
             safe_divide<wxCoord>(plotSize, displayedLabelsCount) - ScaleToScreenAndCanvas(2);
+        // labeled points bunched into part of the axis have less room than an even
+        // slice implies, so take the smaller of the two
+        if (const wxCoord minLabelGap{ CalcMinDistanceBetweenLabels() }; minLabelGap > 0)
+            {
+            m_maxLabelWidth =
+                std::min<wxCoord>(m_maxLabelWidth, minLabelGap - ScaleToScreenAndCanvas(2));
+            }
         if (IsStackingLabels())
             {
             m_maxLabelWidth *= 2;
             }
         m_widestLabel = m_tallestLabel = Label(GraphItemInfo{}.Ok(false));
+        }
+
+    //--------------------------------------
+    wxCoord Axis::CalcMinDistanceBetweenLabels() const
+        {
+        wxCoord minGap{ 0 };
+        wxCoord prevPos{ 0 };
+        bool havePrev{ false };
+        for (const auto& axisPt : GetAxisPoints())
+            {
+            if (!IsPointDisplayingLabel(axisPt))
+                {
+                continue;
+                }
+            wxCoord thisPos{ 0 };
+            if (!GetPhysicalCoordinate(axisPt.GetValue(), thisPos))
+                {
+                continue;
+                }
+            if (havePrev)
+                {
+                const wxCoord gap{ std::abs(thisPos - prevPos) };
+                minGap = (minGap == 0) ? gap : std::min(minGap, gap);
+                }
+            prevPos = thisPos;
+            havePrev = true;
+            }
+        return minGap;
         }
 
     //--------------------------------------
@@ -3018,8 +3053,12 @@ namespace Wisteria::GraphItems
         // aggressively (e.g., perpendicular, going down the y-axis). This way, you
         // won't cause y-axis label to be stacked, which can look odd--
         // only resort to that is they really are overlapping.
-        const auto maxTextSize = safe_divide<int64_t>(axisWidth, displayedLabelsCount) -
+        auto maxTextSize = safe_divide<int64_t>(axisWidth, displayedLabelsCount) -
                                  (isMeasuringByHeight ? (2 * GetScaling()) : 0);
+        if (const wxCoord minLabelGap{ CalcMinDistanceBetweenLabels() }; minLabelGap > 0)
+            {
+            maxTextSize = std::min<double>(maxTextSize, minLabelGap);
+            }
         if (maxTextSize <= 0)
             {
             return false;
