@@ -1748,7 +1748,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         plot->GetBarAxis().SetLabelDisplay(Wisteria::AxisLabelDisplay::DisplayOnlyCustomLabels);
 
         plot->GetBarAxis().GetTitle().GetGraphItemInfo().Text(
-            _(L"Are you satisfied with wisteria dv?"));
+            _(L"Are you satisfied with Wisteria DV?"));
         plot->GetScalingAxis().GetTitle().GetGraphItemInfo().Text(_(L"Responses"));
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);

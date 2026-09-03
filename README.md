@@ -120,6 +120,10 @@ Basic
 | :-------------- | :-------------- |
 | ![](docs/images/BarChart.svg) | ![](docs/images/LinePlot.svg) |
 
+| Serpentine Bar Chart (Wisteria::Graphs::BarChart) | Serpentine Bar Chart (Wisteria::Graphs::BarChart) |
+| :-------------- | :-------------- |
+| ![](docs/images/serpentine-chart.svg) | ![](docs/images/aggressive-serpentine-chart.svg) |
+
 | Pie Chart (Wisteria::Graphs::PieChart) | Donut Chart (Wisteria::Graphs::PieChart) |
 | :-------------------------------- | :-------------------------------- |
 | ![](docs/images/PieChart.svg) | ![](docs/images/DonutChart.svg) |

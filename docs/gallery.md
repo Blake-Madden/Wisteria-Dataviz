@@ -25,6 +25,10 @@ Basic
 | :-------------------------------- |
 | ![](docs/images/WatercolorBarchart.png) |
 
+| Serpentine Bar Chart (Wisteria::Graphs::BarChart) | Serpentine Bar Chart (Wisteria::Graphs::BarChart) |
+| :-------------- | :-------------- |
+| ![](docs/images/serpentine-chart.svg) | ![](docs/images/aggressive-serpentine-chart.svg) |
+
 | Line Plot (Wisteria::Graphs::LinePlot) | Stylized Line Plot (Wisteria::Graphs::LinePlot) |
 | :-------------------------------- | :-------------------------------- |
 | ![](docs/images/LinePlot.svg) | ![](docs/images/LinePlotCustomized.svg) |

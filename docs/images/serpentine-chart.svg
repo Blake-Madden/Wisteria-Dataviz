@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="29.14cm" height="21.59cm" viewBox="0 0 826 612">
+<title>panel</title>
+<desc>Created with wxWidgets 3.3.4</desc>
+
+<g fill="black" stroke="black" stroke-width="1">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="0" y="0" width="826" height="612" rx="0.00"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="0" y="0" width="826" height="612" rx="0.00"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M30 559 L824 559"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="399.00" y="607.00" textLength="56" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="10.62pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 399.00 607.00)">Currency</text>
+  <text x="50.00" y="573.00" textLength="34" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="5.93pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 50.00 573.00)">Irish punt</text>
+  <text x="81.00" y="584.00" textLength="48" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="5.93pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 81.00 584.00)">German mark</text>
+  <text x="119.00" y="573.00" textLength="48" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="5.93pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 119.00 573.00)">Dutch guilder</text>
+  <text x="155.00" y="584.00" textLength="53" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="5.93pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 155.00 584.00)">Finnish markka</text>
+  <text x="198.00" y="573.00" textLength="43" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="5.93pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 198.00 573.00)">French franc</text>
+  <text x="226.00" y="584.00" textLength="60" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="5.93pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 226.00 584.00)">Austrian schilling</text>
+  <text x="271.00" y="573.00" textLength="46" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="5.93pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 271.00 573.00)">Belgian franc</text>
+  <text x="300.00" y="584.00" textLength="64" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="5.93pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 300.00 584.00)">Luxembourg franc</text>
+  <text x="344.00" y="573.00" textLength="53" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="5.93pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 344.00 573.00)">Spanish peseta</text>
+  <text x="375.00" y="584.00" textLength="67" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="5.93pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 375.00 584.00)">Portuguese escudo</text>
+  <text x="428.00" y="573.00" textLength="34" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="5.93pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 428.00 573.00)">Italian lira</text>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M30 1 L30 559"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="15.00" y="325.00" textLength="90" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="10.62pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(-90.00 15.00 325.00)">UnitS Per Euro</text>
+</g>
+<defs>
+  <clipPath id="clip0">
+    <rect id="cliprect0" x="31" y="2" width="793" height="557" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip0)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#B89D9A" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="53" y="557" width="27" height="2" rx="0.00"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="64.00" y="548.00" textLength="7" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="9.00pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 64.00 548.00)">1</text>
+</g>
+<defs>
+  <clipPath id="clip1">
+    <rect id="cliprect1" x="31" y="2" width="793" height="557" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip1)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#B89D9A" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="91" y="555" width="27" height="4" rx="0.00"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="102.00" y="546.00" textLength="7" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="9.00pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 102.00 546.00)">2</text>
+</g>
+<defs>
+  <clipPath id="clip2">
+    <rect id="cliprect2" x="31" y="2" width="793" height="557" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip2)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#B89D9A" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="129" y="554" width="27" height="5" rx="0.00"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="140.00" y="545.00" textLength="7" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="9.00pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 140.00 545.00)">2</text>
+</g>
+<defs>
+  <clipPath id="clip3">
+    <rect id="cliprect3" x="31" y="2" width="793" height="557" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip3)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#B89D9A" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="167" y="547" width="27" height="12" rx="0.00"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="178.00" y="538.00" textLength="7" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="9.00pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 178.00 538.00)">6</text>
+</g>
+<defs>
+  <clipPath id="clip4">
+    <rect id="cliprect4" x="31" y="2" width="793" height="557" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip4)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#B89D9A" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="205" y="546" width="27" height="13" rx="0.00"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="216.00" y="537.00" textLength="7" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="9.00pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 216.00 537.00)">7</text>
+</g>
+<defs>
+  <clipPath id="clip5">
+    <rect id="cliprect5" x="31" y="2" width="793" height="557" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip5)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#B89D9A" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="242" y="533" width="27" height="26" rx="0.00"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="250.00" y="524.00" textLength="13" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="9.00pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 250.00 524.00)">14</text>
+</g>
+<defs>
+  <clipPath id="clip6">
+    <rect id="cliprect6" x="31" y="2" width="793" height="557" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip6)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#B89D9A" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="280" y="483" width="27" height="76" rx="0.00"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="288.00" y="474.00" textLength="13" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="9.00pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 288.00 474.00)">40</text>
+</g>
+<defs>
+  <clipPath id="clip7">
+    <rect id="cliprect7" x="31" y="2" width="793" height="557" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip7)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#B89D9A" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="318" y="483" width="27" height="76" rx="0.00"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="326.00" y="474.00" textLength="13" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="9.00pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 326.00 474.00)">40</text>
+</g>
+<defs>
+  <clipPath id="clip8">
+    <rect id="cliprect8" x="31" y="2" width="793" height="557" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip8)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#B89D9A" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="356" y="249" width="27" height="310" rx="0.00"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="360.00" y="240.00" textLength="20" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="9.00pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 360.00 240.00)">166</text>
+</g>
+<defs>
+  <clipPath id="clip9">
+    <rect id="cliprect9" x="31" y="2" width="793" height="557" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip9)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#B89D9A" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="394" y="186" width="27" height="373" rx="0.00"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="398.00" y="177.00" textLength="20" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="9.00pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 398.00 177.00)">200</text>
+</g>
+<defs>
+  <clipPath id="clip10">
+    <rect id="cliprect10" x="29" y="0" width="797" height="561" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip10)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="28" stroke-linecap="butt" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#B89D9A" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 445.00 559.00 L 445.00 199.00 L 483.00 199.00 L 483.00 546.00 L 521.00 546.00 L 521.00 199.00 L 559.00 199.00 L 559.00 546.00 L 597.00 546.00 L 597.00 199.00 L 634.00 199.00 L 634.00 546.00 L 672.00 546.00 L 672.00 199.00 L 710.00 199.00 L 710.00 546.00 L 748.00 546.00 L 748.00 199.00 L 786.00 199.00 L 786.00 431.00 " fill="none" stroke="#B89D9A" stroke-opacity="1.00" stroke-width="28" />
+</g>
+<g stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 445.00 224.11 C 445.00 190.07 483.00 190.07 483.00 224.11 " fill="none" stroke="#000000" stroke-opacity="1.00" stroke-width="3" />
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 483.00 235.28 L 476.86 224.11 L 489.14 224.11 Z " fill="#000000" fill-opacity="1.00" fill-rule="evenodd" stroke="none" />
+</g>
+<g stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 483.00 520.89 C 483.00 554.93 521.00 554.93 521.00 520.89 " fill="none" stroke="#000000" stroke-opacity="1.00" stroke-width="3" />
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 521.00 509.72 L 514.86 520.89 L 527.14 520.89 Z " fill="#000000" fill-opacity="1.00" fill-rule="evenodd" stroke="none" />
+</g>
+<g stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 521.00 224.11 C 521.00 190.07 559.00 190.07 559.00 224.11 " fill="none" stroke="#000000" stroke-opacity="1.00" stroke-width="3" />
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 559.00 235.28 L 552.86 224.11 L 565.14 224.11 Z " fill="#000000" fill-opacity="1.00" fill-rule="evenodd" stroke="none" />
+</g>
+<g stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 559.00 520.89 C 559.00 554.93 597.00 554.93 597.00 520.89 " fill="none" stroke="#000000" stroke-opacity="1.00" stroke-width="3" />
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 597.00 509.72 L 590.86 520.89 L 603.14 520.89 Z " fill="#000000" fill-opacity="1.00" fill-rule="evenodd" stroke="none" />
+</g>
+<g stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 597.00 224.11 C 597.00 190.07 634.00 190.07 634.00 224.11 " fill="none" stroke="#000000" stroke-opacity="1.00" stroke-width="3" />
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 634.00 235.28 L 627.86 224.11 L 640.14 224.11 Z " fill="#000000" fill-opacity="1.00" fill-rule="evenodd" stroke="none" />
+</g>
+<g stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 634.00 520.89 C 634.00 554.93 672.00 554.93 672.00 520.89 " fill="none" stroke="#000000" stroke-opacity="1.00" stroke-width="3" />
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 672.00 509.72 L 665.86 520.89 L 678.14 520.89 Z " fill="#000000" fill-opacity="1.00" fill-rule="evenodd" stroke="none" />
+</g>
+<g stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 672.00 224.11 C 672.00 190.07 710.00 190.07 710.00 224.11 " fill="none" stroke="#000000" stroke-opacity="1.00" stroke-width="3" />
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 710.00 235.28 L 703.86 224.11 L 716.14 224.11 Z " fill="#000000" fill-opacity="1.00" fill-rule="evenodd" stroke="none" />
+</g>
+<g stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 710.00 520.89 C 710.00 554.93 748.00 554.93 748.00 520.89 " fill="none" stroke="#000000" stroke-opacity="1.00" stroke-width="3" />
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 748.00 509.72 L 741.86 520.89 L 754.14 520.89 Z " fill="#000000" fill-opacity="1.00" fill-rule="evenodd" stroke="none" />
+</g>
+<g stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 748.00 224.11 C 748.00 190.07 786.00 190.07 786.00 224.11 " fill="none" stroke="#000000" stroke-opacity="1.00" stroke-width="3" />
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 786.00 235.28 L 779.86 224.11 L 792.14 224.11 Z " fill="#000000" fill-opacity="1.00" fill-rule="evenodd" stroke="none" />
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="772.00" y="449.00" textLength="29" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="9.00pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 772.00 449.00)">1,936</text>
+</g>
+</g>
+</svg>
