@@ -500,7 +500,7 @@ void WisteriaView::LoadProject()
                 ApplyGlobalPrintSettings(page);
                 page->FitToPageWhenPrinting(true);
                 page->SetSizeFromPaperSize();
-                page->MaintainAspectRatio(page->GetFixedObjectsGridSize().first > 1);
+                page->MaintainAspectRatio(true);
                 }
             }
         // busy indicator is dismissed by now; safe to show any catastrophic
@@ -1113,7 +1113,7 @@ void WisteriaView::OnEditPage([[maybe_unused]] wxCommandEvent& event)
     dlg.ApplyGridEdits(canvas);
     canvas->FitToPageWhenPrinting(true);
     canvas->SetSizeFromPaperSize();
-    canvas->MaintainAspectRatio(dlg.GetRows() > 1);
+    canvas->MaintainAspectRatio(true);
     canvas->SetWatermark(
         Wisteria::Canvas::Watermark{ dlg.GetWatermarkLabel(), dlg.GetWatermarkColor() });
     canvas->SetBackgroundColor(dlg.GetPageBackgroundColor());
@@ -1403,7 +1403,7 @@ Wisteria::Canvas* WisteriaView::AddPageToProject(const size_t rows, const size_t
     canvas->SetFixedObjectsGridSize(rows, columns);
     canvas->FitToPageWhenPrinting(true);
     canvas->SetSizeFromPaperSize();
-    canvas->MaintainAspectRatio(rows > 1);
+    canvas->MaintainAspectRatio(true);
 
     canvas->Bind(wxEVT_LEFT_UP,
                  [this](wxMouseEvent& event)
@@ -8322,7 +8322,7 @@ void WisteriaView::RefreshPagePrintSettings()
         ApplyGlobalPrintSettings(page);
         page->FitToPageWhenPrinting(true);
         page->SetSizeFromPaperSize();
-        page->MaintainAspectRatio(page->GetFixedObjectsGridSize().first > 1);
+        page->MaintainAspectRatio(true);
         UpdateCanvas(page);
         }
     }
