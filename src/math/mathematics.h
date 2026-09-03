@@ -587,6 +587,48 @@ namespace geometry
         return !is_even(crossPointsCount);
         }
 
+    /** @brief Determines if a point is inside a polygon using the crossing-number
+            test (the standard "PNPOLY" routine by W. Randolph Franklin).
+        @details The test runs in floating point and has no special cases for
+            vertices or horizontal edges, so it stays reliable across large sets of
+            detailed, concave polygons.
+            Prefer it over is_inside_polygon() when hit-testing many complex shapes at once.
+        @param pt The point (with @c x and @c y members).
+        @param polygon The polygon (a sequence of points with @c x and @c y members).
+        @returns Whether the point is inside the polygon.
+        @note A point lying exactly on an edge is reported inconsistently, and the
+            polygon is assumed to be simple (non-self-intersecting). The closing
+            point may be included or omitted.
+        @sa is_inside_polygon() for a boundary-inclusive test on a single simple
+            polygon.*/
+    template<typename pointT, typename polygonT>
+    [[nodiscard]]
+    inline bool is_inside_polygon_crossing_number(const pointT pt, const polygonT& polygon)
+        {
+        if (polygon.size() < 3)
+            {
+            return false;
+            }
+
+        bool inside{ false };
+        const double xCoord{ static_cast<double>(pt.x) };
+        const double yCoord{ static_cast<double>(pt.y) };
+        for (size_t i = 0, j = polygon.size() - 1; i < polygon.size(); j = i++)
+            {
+            const double xVertexI{ static_cast<double>(polygon[i].x) };
+            const double yVertexI{ static_cast<double>(polygon[i].y) };
+            const double xVertexJ{ static_cast<double>(polygon[j].x) };
+            const double yVertexJ{ static_cast<double>(polygon[j].y) };
+            if (((yVertexI > yCoord) != (yVertexJ > yCoord)) &&
+                (xCoord < (((xVertexJ - xVertexI) * (yCoord - yVertexI)) / (yVertexJ - yVertexI)) +
+                              xVertexI))
+                {
+                inside = !inside;
+                }
+            }
+        return inside;
+        }
+
     /** @returns The widest area of the polygon.
         @param polygon The polygon to review.*/
     template<typename polygonT>

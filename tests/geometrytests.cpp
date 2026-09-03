@@ -656,5 +656,57 @@ TEST_CASE("middle_point_horizontal_downward_spline symmetry", "[middle_point_hor
     CHECK_THAT(flatY, WithinRel(5.0, 1e-6));
     }
 
+TEST_CASE("geometry::is_inside_polygon_crossing_number", "[polygon]")
+    {
+    SECTION("Degenerate polygons")
+        {
+        std::vector<MyPoint> empty{};
+        CHECK_FALSE(is_inside_polygon_crossing_number(MyPoint{ 0, 0 }, empty));
+        std::vector<MyPoint> line{ { 0, 0 }, { 10, 0 } };
+        CHECK_FALSE(is_inside_polygon_crossing_number(MyPoint{ 5, 0 }, line));
+        }
+
+    SECTION("Square")
+        {
+        const std::vector<MyPoint> square{ { 0, 0 }, { 10, 0 }, { 10, 10 }, { 0, 10 } };
+        CHECK(is_inside_polygon_crossing_number(MyPoint{ 5, 5 }, square));
+        CHECK_FALSE(is_inside_polygon_crossing_number(MyPoint{ 15, 5 }, square));
+        CHECK_FALSE(is_inside_polygon_crossing_number(MyPoint{ -5, 5 }, square));
+        CHECK_FALSE(is_inside_polygon_crossing_number(MyPoint{ 5, 15 }, square));
+        }
+
+    SECTION("Concave C shape")
+        {
+        // a "C": the notch on the right side is outside
+        const std::vector<MyPoint> cShape{ { 0, 0 },  { 10, 0 }, { 10, 3 }, { 4, 3 },
+                                           { 4, 7 },   { 10, 7 }, { 10, 10 }, { 0, 10 } };
+        CHECK(is_inside_polygon_crossing_number(MyPoint{ 2, 5 }, cShape));  // left bar
+        CHECK(is_inside_polygon_crossing_number(MyPoint{ 7, 1 }, cShape));  // top bar
+        CHECK_FALSE(is_inside_polygon_crossing_number(MyPoint{ 7, 5 }, cShape)); // in the notch
+        }
+
+    SECTION("Point outside but level with a horizontal edge to its right")
+        {
+        // this is the case the boundary-inclusive is_inside_polygon() miscounts:
+        // the test point shares its y with the polygon's horizontal edges and sits
+        // entirely to the west of the polygon, so it must read as outside
+        const std::vector<MyPoint> box{ { 100, 50 }, { 200, 50 }, { 200, 60 }, { 100, 60 } };
+        CHECK_FALSE(is_inside_polygon_crossing_number(MyPoint{ 5, 50 }, box));
+        CHECK_FALSE(is_inside_polygon_crossing_number(MyPoint{ 5, 60 }, box));
+        CHECK_FALSE(is_inside_polygon_crossing_number(MyPoint{ 5, 55 }, box));
+        }
+
+    SECTION("Closing point may be repeated")
+        {
+        const std::vector<MyPoint> openRing{ { 0, 0 }, { 10, 0 }, { 10, 10 }, { 0, 10 } };
+        const std::vector<MyPoint> closedRing{ { 0, 0 },  { 10, 0 }, { 10, 10 },
+                                               { 0, 10 }, { 0, 0 } };
+        CHECK(is_inside_polygon_crossing_number(MyPoint{ 5, 5 }, openRing));
+        CHECK(is_inside_polygon_crossing_number(MyPoint{ 5, 5 }, closedRing));
+        CHECK_FALSE(is_inside_polygon_crossing_number(MyPoint{ 20, 5 }, openRing));
+        CHECK_FALSE(is_inside_polygon_crossing_number(MyPoint{ 20, 5 }, closedRing));
+        }
+    }
+
 // NOLINTEND
 // clang-format on

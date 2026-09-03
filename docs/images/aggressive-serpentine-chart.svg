@@ -1,148 +1,148 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="26.46cm" height="18.59cm" viewBox="0 0 750 527">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="27.80cm" height="22.30cm" viewBox="0 0 788 632">
 <title>panel</title>
 <desc>Created with wxWidgets 3.3.4</desc>
 
 <g fill="black" stroke="black" stroke-width="1">
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
-  <rect x="0" y="0" width="750" height="527" rx="0.00"/>
+  <rect x="0" y="0" width="788" height="632" rx="0.00"/>
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
-  <rect x="0" y="0" width="750" height="527" rx="0.00"/>
+  <rect x="0" y="0" width="788" height="632" rx="0.00"/>
 </g>
 <g stroke-width="1" stroke-linecap="butt" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#D3D3D3" stroke-opacity="0.78"  transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M43 437 L744 437"/>
-  <path d="M43 394 L744 394"/>
-  <path d="M43 351 L744 351"/>
-  <path d="M43 308 L744 308"/>
-  <path d="M43 265 L744 265"/>
-  <path d="M43 222 L744 222"/>
-  <path d="M43 179 L744 179"/>
-  <path d="M43 136 L744 136"/>
-  <path d="M43 93 L744 93"/>
-  <path d="M43 50 L744 50"/>
+  <path d="M43 533 L782 533"/>
+  <path d="M43 480 L782 480"/>
+  <path d="M43 428 L782 428"/>
+  <path d="M43 375 L782 375"/>
+  <path d="M43 322 L782 322"/>
+  <path d="M43 270 L782 270"/>
+  <path d="M43 217 L782 217"/>
+  <path d="M43 164 L782 164"/>
+  <path d="M43 112 L782 112"/>
+  <path d="M43 59 L782 59"/>
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M43 481 L743 481"/>
+  <path d="M43 586 L781 586"/>
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
-  <text x="294.00" y="521.00" textLength="198" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="9.64pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 294.00 521.00)">Are you satisfied with Wisteria DV?</text>
-  <text x="135.00" y="498.00" textLength="17" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 135.00 498.00)">Yes</text>
-  <text x="436.00" y="498.00" textLength="15" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 436.00 498.00)">No</text>
-  <text x="518.00" y="498.00" textLength="50" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 518.00 498.00)">Somewhat</text>
-  <text x="616.00" y="498.00" textLength="54" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 616.00 498.00)">No opinion</text>
+  <text x="308.00" y="626.00" textLength="208" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="10.13pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 308.00 626.00)">Are you satisfied with Wisteria DV?</text>
+  <text x="140.00" y="603.00" textLength="17" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 140.00 603.00)">Yes</text>
+  <text x="456.00" y="603.00" textLength="16" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 456.00 603.00)">No</text>
+  <text x="544.00" y="603.00" textLength="53" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 544.00 603.00)">Somewhat</text>
+  <text x="647.00" y="603.00" textLength="57" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 647.00 603.00)">No opinion</text>
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M43 7 L743 7"/>
+  <path d="M43 7 L781 7"/>
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M43 7 L43 481"/>
+  <path d="M43 7 L43 586"/>
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
-  <text x="14.00" y="274.00" textLength="60" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="9.64pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(-90.00 14.00 274.00)">Responses</text>
-  <text x="31.00" y="486.00" textLength="6" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 31.00 486.00)">0</text>
-  <text x="31.00" y="442.00" textLength="6" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 31.00 442.00)">5</text>
-  <text x="25.00" y="399.00" textLength="12" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 399.00)">10</text>
-  <text x="25.00" y="356.00" textLength="12" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 356.00)">15</text>
-  <text x="25.00" y="313.00" textLength="12" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 313.00)">20</text>
-  <text x="25.00" y="270.00" textLength="12" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 270.00)">25</text>
-  <text x="25.00" y="227.00" textLength="12" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 227.00)">30</text>
-  <text x="25.00" y="184.00" textLength="12" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 184.00)">35</text>
-  <text x="25.00" y="141.00" textLength="12" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 141.00)">40</text>
-  <text x="25.00" y="98.00" textLength="12" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 98.00)">45</text>
-  <text x="25.00" y="55.00" textLength="12" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 55.00)">50</text>
-  <text x="25.00" y="12.00" textLength="12" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 12.00)">55</text>
+  <text x="14.00" y="329.00" textLength="63" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="10.13pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(-90.00 14.00 329.00)">Responses</text>
+  <text x="31.00" y="591.00" textLength="7" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 31.00 591.00)">0</text>
+  <text x="31.00" y="538.00" textLength="7" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 31.00 538.00)">5</text>
+  <text x="25.00" y="485.00" textLength="13" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 485.00)">10</text>
+  <text x="25.00" y="433.00" textLength="13" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 433.00)">15</text>
+  <text x="25.00" y="380.00" textLength="13" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 380.00)">20</text>
+  <text x="25.00" y="327.00" textLength="13" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 327.00)">25</text>
+  <text x="25.00" y="275.00" textLength="13" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 275.00)">30</text>
+  <text x="25.00" y="222.00" textLength="13" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 222.00)">35</text>
+  <text x="25.00" y="169.00" textLength="13" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 169.00)">40</text>
+  <text x="25.00" y="117.00" textLength="13" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 117.00)">45</text>
+  <text x="25.00" y="64.00" textLength="13" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 64.00)">50</text>
+  <text x="25.00" y="12.00" textLength="13" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 25.00 12.00)">55</text>
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M743 7 L743 481"/>
+  <path d="M781 7 L781 586"/>
 </g>
 <defs>
   <clipPath id="clip0">
-    <rect id="cliprect0" x="42" y="6" width="703" height="477" stroke="none" fill="none"/>
+    <rect id="cliprect0" x="42" y="6" width="741" height="582" stroke="none" fill="none"/>
   </clipPath>
 </defs>
 <g clip-path="url(#clip0)">
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
 </g>
-<g stroke-width="93" stroke-linecap="butt" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#228B22" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M 143.00 481.00 L 143.00 113.00 L 243.00 113.00 L 243.00 435.00 L 343.00 435.00 L 343.00 113.00 L 443.00 113.00 L 443.00 205.00 " fill="none" stroke="#228B22" stroke-opacity="1.00" stroke-width="93" />
+<g stroke-width="98" stroke-linecap="butt" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#228B22" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M 148.00 586.00 L 148.00 128.00 L 253.00 128.00 L 253.00 538.00 L 359.00 538.00 L 359.00 128.00 L 464.00 128.00 L 464.00 249.00 " fill="none" stroke="#228B22" stroke-opacity="1.00" stroke-width="98" />
 </g>
 <g stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M 143.00 173.00 C 143.00 83.24 243.00 83.24 243.00 173.00 " fill="none" stroke="#FFFFFF" stroke-opacity="1.00" stroke-width="3" />
+  <path d="M 148.00 191.04 C 148.00 96.73 253.00 96.73 253.00 191.04 " fill="none" stroke="#FFFFFF" stroke-opacity="1.00" stroke-width="3" />
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M 243.00 203.00 L 222.54 173.00 L 263.46 173.00 Z " fill="#FFFFFF" fill-opacity="1.00" fill-rule="evenodd" stroke="none" />
+  <path d="M 253.00 222.56 L 231.50 191.04 L 274.50 191.04 Z " fill="#FFFFFF" fill-opacity="1.00" fill-rule="evenodd" stroke="none" />
 </g>
 <g stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M 243.00 375.00 C 243.00 464.76 343.00 464.76 343.00 375.00 " fill="none" stroke="#FFFFFF" stroke-opacity="1.00" stroke-width="3" />
+  <path d="M 253.00 474.96 C 253.00 569.27 359.00 569.27 359.00 474.96 " fill="none" stroke="#FFFFFF" stroke-opacity="1.00" stroke-width="3" />
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M 343.00 345.00 L 322.54 375.00 L 363.46 375.00 Z " fill="#FFFFFF" fill-opacity="1.00" fill-rule="evenodd" stroke="none" />
+  <path d="M 359.00 443.44 L 337.50 474.96 L 380.50 474.96 Z " fill="#FFFFFF" fill-opacity="1.00" fill-rule="evenodd" stroke="none" />
 </g>
 <g stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M 343.00 140.60 C 343.00 83.24 443.00 83.24 443.00 140.60 " fill="none" stroke="#FFFFFF" stroke-opacity="1.00" stroke-width="3" />
+  <path d="M 359.00 164.30 C 359.00 96.73 464.00 96.73 464.00 164.30 " fill="none" stroke="#FFFFFF" stroke-opacity="1.00" stroke-width="3" />
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
-  <path d="M 443.00 162.68 L 424.23 140.60 L 461.77 140.60 Z " fill="#FFFFFF" fill-opacity="1.00" fill-rule="evenodd" stroke="none" />
+  <path d="M 464.00 193.34 L 442.50 164.30 L 485.50 164.30 Z " fill="#FFFFFF" fill-opacity="1.00" fill-rule="evenodd" stroke="none" />
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
-  <text x="434.00" y="223.00" textLength="18" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 434.00 223.00)">160</text>
+  <text x="455.00" y="267.00" textLength="19" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 455.00 267.00)">160</text>
 </g>
 <defs>
   <clipPath id="clip1">
-    <rect id="cliprect1" x="44" y="8" width="699" height="473" stroke="none" fill="none"/>
+    <rect id="cliprect1" x="44" y="8" width="737" height="578" stroke="none" fill="none"/>
   </clipPath>
 </defs>
 <g clip-path="url(#clip1)">
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#CF3721" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
-  <rect x="396" y="455" width="93" height="26" rx="0.00"/>
+  <rect x="415" y="554" width="97" height="32" rx="0.00"/>
 </g>
 </g>
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
-  <text x="440.00" y="448.00" textLength="6" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 440.00 448.00)">3</text>
+  <text x="461.00" y="547.00" textLength="7" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 461.00 547.00)">3</text>
 </g>
 <defs>
   <clipPath id="clip2">
-    <rect id="cliprect2" x="44" y="8" width="699" height="473" stroke="none" fill="none"/>
+    <rect id="cliprect2" x="44" y="8" width="737" height="578" stroke="none" fill="none"/>
   </clipPath>
 </defs>
 <g clip-path="url(#clip2)">
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#4682B4" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
-  <rect x="496" y="67" width="93" height="414" rx="0.00"/>
+  <rect x="521" y="80" width="97" height="506" rx="0.00"/>
 </g>
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
-  <text x="537.00" y="60.00" textLength="12" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 537.00 60.00)">48</text>
+  <text x="564.00" y="73.00" textLength="13" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 564.00 73.00)">48</text>
 </g>
 <defs>
   <clipPath id="clip3">
-    <rect id="cliprect3" x="44" y="8" width="699" height="473" stroke="none" fill="none"/>
+    <rect id="cliprect3" x="44" y="8" width="737" height="578" stroke="none" fill="none"/>
   </clipPath>
 </defs>
 <g clip-path="url(#clip3)">
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#4682B4" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
-  <rect x="596" y="429" width="93" height="52" rx="0.00"/>
+  <rect x="626" y="522" width="97" height="64" rx="0.00"/>
 </g>
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
 </g>
 <g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
-  <text x="640.00" y="422.00" textLength="6" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.04pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 640.00 422.00)">6</text>
+  <text x="672.00" y="515.00" textLength="7" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.44pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 672.00 515.00)">6</text>
 </g>
 </svg>
