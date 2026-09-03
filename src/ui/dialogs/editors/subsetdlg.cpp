@@ -80,6 +80,9 @@ namespace Wisteria::UI
                 if (colIdx != wxNOT_FOUND)
                     {
                     row.m_columnChoice->SetSelection(colIdx);
+                    // SetSelection does not fire wxEVT_CHOICE, so fill the values
+                    // list with this column's unique labels here
+                    PopulateFilterValueChoices(row);
                     }
 
                 const int opIdx = row.m_operatorChoice->FindString(criterion.m_operator);
@@ -114,6 +117,7 @@ namespace Wisteria::UI
             if (colIdx != wxNOT_FOUND)
                 {
                 m_sectionColumnChoice->SetSelection(colIdx);
+                PopulateSectionLabelChoices();
                 }
             m_startLabelCtrl->SetValue(subsetOptions.m_sectionStartLabel);
             m_endLabelCtrl->SetValue(subsetOptions.m_sectionEndLabel);
