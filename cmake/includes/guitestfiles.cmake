@@ -19,6 +19,7 @@ SET(TEST_SRC_FILES
     fileutiltests.cpp
     fleschchartrendertests.cpp
     ganttchartrendertests.cpp
+    geodatasettests.cpp
     heatmaprendertests.cpp
     histogramrendertests.cpp
     imagetests.cpp

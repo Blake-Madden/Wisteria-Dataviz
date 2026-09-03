@@ -206,13 +206,13 @@ namespace Wisteria::Data
         // real region file needs.
 
         // deepest folder or geometry nesting the tree walkers will descend into
-        constexpr static int maxTraversalDepth{ 256 };
+        constexpr static int MAX_TRAVERSAL_DEPTH{ 256 };
         // most coordinates kept for a single ring
-        constexpr static size_t maxRingVertices{ 2'000'000 };
+        constexpr static size_t MAX_RING_VERTICES{ 2'000'000 };
         // most placemarks turned into regions from one file
-        constexpr static size_t maxRegionCount{ 500'000 };
+        constexpr static size_t MAX_REGION_COUNT{ 500'000 };
         // largest KML file the reader will hand to the XML parser
-        constexpr static wxULongLong_t maxKmlFileBytes{ 512ULL * 1024 * 1024 };
+        constexpr static wxULongLong_t MAX_KML_FILE_BYTES{ 512ULL * 1024 * 1024 };
 
         /// @brief Walks a parsed KML document and fills in the region list.
         /// @param rootNode The document's root (@c kml) node.

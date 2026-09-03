@@ -16,6 +16,7 @@ chart-sports.svg
 chart-statistical.svg
 chart-survey.svg
 chernoffplot.svg
+choropleth.svg
 clear.svg
 color-wheel.svg
 constants-add.svg

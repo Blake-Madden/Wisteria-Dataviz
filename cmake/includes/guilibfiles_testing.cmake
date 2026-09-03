@@ -19,6 +19,7 @@ SET(WISTERIA_SRC
     ../../src/base/lines.cpp
     ../../src/base/points.cpp
     ../../src/base/polygon.cpp
+    ../../src/base/report_builder_basic_graphs.cpp
     ../../src/base/report_builder_formulas.cpp
     ../../src/base/report_builder_stat_graphs.cpp
     ../../src/base/reportbuilder.cpp
@@ -42,8 +43,10 @@ SET(WISTERIA_SRC
     ../../src/data/clone.cpp
     ../../src/data/dataset.cpp
     ../../src/data/excelreader.cpp
+    ../../src/data/geodataset.cpp
     ../../src/data/join_inner.cpp
     ../../src/data/join_left.cpp
+    ../../src/data/kmlreader.cpp
     ../../src/data/odsreader.cpp
     ../../src/data/pdfreader.cpp
     ../../src/data/pivot.cpp
@@ -58,6 +61,7 @@ SET(WISTERIA_SRC
     ../../src/graphs/candlestickplot.cpp
     ../../src/graphs/categoricalbarchart.cpp
     ../../src/graphs/chernoffplot.cpp
+    ../../src/graphs/choroplethmap.cpp
     ../../src/graphs/crawfordgraph.cpp
     ../../src/graphs/danielsonbryan2plot.cpp
     ../../src/graphs/fleschchart.cpp

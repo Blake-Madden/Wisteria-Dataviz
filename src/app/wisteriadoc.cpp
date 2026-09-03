@@ -4812,6 +4812,104 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                 }
             }
         }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChoroplethMap)))
+        {
+        const auto* choroplethMap = dynamic_cast<const Wisteria::Graphs::ChoroplethMap*>(graph);
+
+        node->Add(L"kml-file", MakeRelativePath(choroplethMap->GetKMLFilePath()));
+        if (!choroplethMap->GetKMLIdField().empty())
+            {
+            node->Add(L"kml-id-field", choroplethMap->GetKMLIdField());
+            }
+
+        if (!choroplethMap->GetDataSourceName().empty())
+            {
+            auto dataSourceNode = wxSimpleJSON::Create(L"{}");
+            dataSourceNode->Add(_DT(L"dataset"), choroplethMap->GetDataSourceName());
+            dataSourceNode->Add(L"key-column", choroplethMap->GetDataSourceKeyColumn());
+            if (choroplethMap->IsCategoricalShading())
+                {
+                dataSourceNode->Add(L"category-column", choroplethMap->GetValueColumnName());
+                }
+            else
+                {
+                dataSourceNode->Add(L"value-column", choroplethMap->GetValueColumnName());
+                }
+            if (!choroplethMap->GetProportionalSymbolColumnName().empty())
+                {
+                dataSourceNode->Add(L"symbol-column",
+                                    choroplethMap->GetProportionalSymbolColumnName());
+                }
+            node->Add(L"data-source", dataSourceNode);
+            }
+
+        if (choroplethMap->IsShowingRegionLabels())
+            {
+            node->Add(L"show-region-labels", true);
+            }
+
+        if (choroplethMap->IsShowingGraticule())
+            {
+            node->Add(L"show-graticule", true);
+            }
+
+        if (choroplethMap->GetLabelDisplay() != Wisteria::BinLabelDisplay::BinName)
+            {
+            const auto blStr = Wisteria::ReportEnumConvert::ConvertBinLabelDisplayToString(
+                choroplethMap->GetLabelDisplay());
+            if (blStr.has_value())
+                {
+                node->Add(L"region-label-display", blStr.value());
+                }
+            }
+
+        wxString projectionStr;
+        switch (choroplethMap->GetMapProjection())
+            {
+        case Wisteria::Graphs::ChoroplethMap::MapProjection::Equirectangular:
+            projectionStr = _DT(L"equirectangular");
+            break;
+        case Wisteria::Graphs::ChoroplethMap::MapProjection::AlbersEqualAreaConic:
+            projectionStr = L"albers-equal-area-conic";
+            break;
+        case Wisteria::Graphs::ChoroplethMap::MapProjection::EqualEarth:
+            projectionStr = L"equal-earth";
+            break;
+        case Wisteria::Graphs::ChoroplethMap::MapProjection::Automatic:
+            break;
+            }
+        if (!projectionStr.empty())
+            {
+            node->Add(_DT(L"projection"), projectionStr);
+            }
+
+        if (choroplethMap->GetClassificationMethod() ==
+            Wisteria::Graphs::ChoroplethMap::ClassificationMethod::JenksNaturalBreaks)
+            {
+            node->Add(L"classification-method", wxString(L"jenks-natural-breaks"));
+            node->Add(L"classification-count", static_cast<double>(choroplethMap->GetClassCount()));
+            }
+
+        if (choroplethMap->GetNoDataColor() != wxColour(L"#DDDDDD"))
+            {
+            node->Add(L"no-data-color", ColorToStr(choroplethMap->GetNoDataColor()));
+            }
+
+        if (choroplethMap->GetNoDataFillStyle() != wxBRUSHSTYLE_SOLID)
+            {
+            const auto fillStyleStr = Wisteria::ReportEnumConvert::ConvertBrushStyleToString(
+                choroplethMap->GetNoDataFillStyle());
+            if (fillStyleStr.has_value())
+                {
+                node->Add(L"no-data-fill-style", fillStyleStr.value());
+                }
+            }
+
+        if (choroplethMap->GetProportionalSymbolColor() != wxColour(L"#2F6F8F"))
+            {
+            node->Add(L"symbol-color", ColorToStr(choroplethMap->GetProportionalSymbolColor()));
+            }
+        }
 
     return node;
     }

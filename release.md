@@ -2,8 +2,9 @@
 
 ## 1.2.2
 
-- Add Race Track Chart.
-- Add Wilmarth Bridge Plot.
+- Added Race Track Chart.
+- Added Wilmarth Bridge Plot.
+- Added "Serpentine" features to bar charts.
 - Added showcasing support to Sankey diagrams.
 - Added word balloon styles to labels.
 - Added new shapes:

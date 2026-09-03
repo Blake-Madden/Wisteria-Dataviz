@@ -241,6 +241,12 @@ namespace Wisteria
                                                     item, canvas, currentRow, currentColumn));
                                                 }
                                             else if (typeProperty->AsString().CmpNoCase(
+                                                         L"choropleth-map") == 0)
+                                                {
+                                                embeddedGraphs.push_back(LoadChoroplethMap(
+                                                    item, canvas, currentRow, currentColumn));
+                                                }
+                                            else if (typeProperty->AsString().CmpNoCase(
                                                          L"win-loss-sparkline") == 0)
                                                 {
                                                 embeddedGraphs.push_back(LoadWinLossSparkline(
@@ -5324,6 +5330,42 @@ namespace Wisteria
             const auto headerLabel = legendNode->GetProperty(L"title")->AsString();
             const auto placement = legendNode->GetProperty(L"placement")->AsString();
 
+            // a choropleth map has a specialized legend
+            auto* choroplethMap = dynamic_cast<Graphs::ChoroplethMap*>(graph.get());
+            const bool useChoroplethLegend =
+                (choroplethMap != nullptr &&
+                 !choroplethMap->GetProportionalSymbolColumnName().empty());
+
+            // places the graph and a non-Label legend object per the placement string
+            const auto placeLegendObject = [&](std::unique_ptr<GraphItems::GraphItemBase> legendObj)
+            {
+                if (legendObj == nullptr)
+                    {
+                    canvas->SetFixedObject(currentRow, currentColumn, graph);
+                    return;
+                    }
+                if (placement.CmpNoCase(L"left") == 0)
+                    {
+                    canvas->SetFixedObject(currentRow, currentColumn + 1, graph);
+                    canvas->SetFixedObject(currentRow, currentColumn++, std::move(legendObj));
+                    }
+                else if (placement.CmpNoCase(L"bottom") == 0)
+                    {
+                    canvas->SetFixedObject(currentRow, currentColumn, graph);
+                    canvas->SetFixedObject(++currentRow, currentColumn, std::move(legendObj));
+                    }
+                else if (placement.CmpNoCase(L"top") == 0)
+                    {
+                    canvas->SetFixedObject(currentRow + 1, currentColumn, graph);
+                    canvas->SetFixedObject(currentRow++, currentColumn, std::move(legendObj));
+                    }
+                else
+                    {
+                    canvas->SetFixedObject(currentRow, currentColumn, graph);
+                    canvas->SetFixedObject(currentRow, ++currentColumn, std::move(legendObj));
+                    }
+            };
+
             if (useEnhancedChernoffLegend && chernoffPlot != nullptr)
                 {
                 if (placement.CmpNoCase(L"left") == 0)
@@ -5389,6 +5431,24 @@ namespace Wisteria
                         canvas->SetFixedObject(currentRow, currentColumn, graph);
                         }
                     }
+                }
+            else if (useChoroplethLegend)
+                {
+                const auto [choroSide, choroHint] =
+                    (placement.CmpNoCase(L"left") == 0) ?
+                        std::pair{ Side::Left, LegendCanvasPlacementHint::LeftOfGraph } :
+                    (placement.CmpNoCase(L"bottom") == 0) ?
+                        std::pair{ Side::Bottom, LegendCanvasPlacementHint::AboveOrBeneathGraph } :
+                    (placement.CmpNoCase(L"top") == 0) ?
+                        std::pair{ Side::Top, LegendCanvasPlacementHint::AboveOrBeneathGraph } :
+                        std::pair{ Side::Right, LegendCanvasPlacementHint::RightOfGraph };
+                placeLegendObject(
+                    choroplethMap->CreateChoroplethLegend(Graphs::LegendOptions{}
+                                                              .RingPerimeter(ringPerimeter)
+                                                              .IncludeHeader(includeHeader)
+                                                              .Title(headerLabel)
+                                                              .Placement(choroSide)
+                                                              .PlacementHint(choroHint)));
                 }
             else
                 {

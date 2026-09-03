@@ -913,6 +913,10 @@ wxString WisteriaApp::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph)
         {
         return _DT(L"heatmap");
         }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChoroplethMap)))
+        {
+        return _DT(L"choropleth-map");
+        }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Table)))
         {
         return _DT(L"table");
@@ -1035,6 +1039,10 @@ wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase*
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::HeatMap)))
         {
         return L"heatmap.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChoroplethMap)))
+        {
+        return L"choropleth.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::PieChart)))
         {

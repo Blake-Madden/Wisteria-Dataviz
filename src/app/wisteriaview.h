@@ -125,6 +125,7 @@ class WisteriaView final : public wxView
     void OnInsertWCurvePlot(wxCommandEvent& event);
     void OnInsertLRRoadmap(wxCommandEvent& event);
     void OnInsertProConRoadmap(wxCommandEvent& event);
+    void OnInsertChoroplethMap(wxCommandEvent& event);
     void OnInsertGanttChart(wxCommandEvent& event);
     void OnInsertCandlestickPlot(wxCommandEvent& event);
     void OnInsertSankeyDiagram(wxCommandEvent& event);
@@ -212,6 +213,8 @@ class WisteriaView final : public wxView
                        size_t graphRow, size_t graphCol) const;
     void EditWordCloud(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                        size_t graphRow, size_t graphCol) const;
+    void EditChoroplethMap(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                           size_t graphRow, size_t graphCol) const;
     void EditWLSparkline(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                          size_t graphRow, size_t graphCol) const;
     void EditStemAndLeaf(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,

@@ -17,6 +17,7 @@
 #include "../ui/dialogs/editors/insertcandlestickplotdlg.h"
 #include "../ui/dialogs/editors/insertcatbarchartdlg.h"
 #include "../ui/dialogs/editors/insertchernoffdlg.h"
+#include "../ui/dialogs/editors/insertchoroplethmapdlg.h"
 #include "../ui/dialogs/editors/insertcommonaxisdlg.h"
 #include "../ui/dialogs/editors/insertganttchartdlg.h"
 #include "../ui/dialogs/editors/insertheatmapdlg.h"
@@ -279,6 +280,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertHeatMap, this, ID_NEW_HEATMAP);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertHistogram, this, ID_NEW_HISTOGRAM);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWordCloud, this, ID_NEW_WORD_CLOUD);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertChoroplethMap, this, ID_NEW_CHOROPLETH_MAP);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWLSparkline, this, ID_NEW_WIN_LOSS_SPARKLINE);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertStemAndLeaf, this, ID_NEW_STEMANDLEAF);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertPieChart, this, ID_NEW_PIECHART);
@@ -1607,6 +1609,8 @@ void WisteriaView::BuildGraphMenus()
     appendItem(m_basicGraphMenu, ID_NEW_WAFFLE_CHART, _(L"Waffle Chart..."), L"waffle.svg");
     appendItem(m_basicGraphMenu, ID_NEW_RACETRACK_CHART, _(L"Race Track Chart..."),
                L"racetrack.svg");
+    m_basicGraphMenu.AppendSeparator();
+    appendItem(m_basicGraphMenu, ID_NEW_CHOROPLETH_MAP, _(L"Choropleth Map..."), L"choropleth.svg");
 
     // Business graphs
     appendItem(m_businessGraphMenu, ID_NEW_GANTT, _(L"Gantt Chart..."), L"gantt.svg");
@@ -1707,7 +1711,9 @@ void WisteriaView::ClearGraphAndLegend(Wisteria::Canvas* canvas,
             if (legendItem != nullptr)
                 {
                 auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                if (label != nullptr && label->IsLegend())
+                const bool isChoroplethLegend = (dynamic_cast<Wisteria::Graphs::ChoroplethLegend*>(
+                                                     legendItem.get()) != nullptr);
+                if (isChoroplethLegend || (label != nullptr && label->IsLegend()))
                     {
                     canvas->SetFixedObject(legendRow, legendCol, nullptr);
                     }
@@ -2832,6 +2838,10 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WordCloud)))
         {
         EditWordCloud(*graph, canvas, itemRow, itemCol);
+        }
+    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChoroplethMap)))
+        {
+        EditChoroplethMap(*graph, canvas, itemRow, itemCol);
         }
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WinLossSparkline)))
         {
@@ -6273,6 +6283,242 @@ void WisteriaView::OnInsertWordCloud([[maybe_unused]] wxCommandEvent& event)
         PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
                              Wisteria::UI::LegendPlacement::None);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertChoroplethMap([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = EnsureActivePage();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertChoroplethMapDlg dlg(canvas, &m_reportBuilder, m_frame);
+    SetDialogIcon(dlg, L"choropleth.svg");
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto geoData = std::make_shared<Wisteria::Data::GeoDataset>();
+        if (!geoData->ImportKML(dlg.GetKMLPath(),
+                                Wisteria::Data::GeoImportInfo().IdField(dlg.GetKMLIdField())))
+            {
+            throw std::runtime_error(geoData->GetLastError().ToUTF8().data());
+            }
+
+        const wxString shadingColumn =
+            !dlg.GetCategoryColumn().empty() ? dlg.GetCategoryColumn() : dlg.GetValueColumn();
+        const bool hasSourceColumns = dlg.IsMappingData() || dlg.IsUsingProportionalSymbols();
+        if (hasSourceColumns)
+            {
+            if (!dlg.GetCategoryColumn().empty())
+                {
+                geoData->CopyCategoricalColumnFrom(*dlg.GetSelectedDataset(), dlg.GetKeyColumn(),
+                                                   dlg.GetCategoryColumn(),
+                                                   dlg.GetCategoryColumn());
+                }
+            else if (!dlg.GetValueColumn().empty())
+                {
+                geoData->CopyContinuousColumnFrom(*dlg.GetSelectedDataset(), dlg.GetKeyColumn(),
+                                                  dlg.GetValueColumn(), dlg.GetValueColumn());
+                }
+            if (!dlg.GetSymbolColumn().empty() && dlg.GetSymbolColumn() != dlg.GetValueColumn() &&
+                dlg.GetSymbolColumn() != dlg.GetCategoryColumn())
+                {
+                geoData->CopyContinuousColumnFrom(*dlg.GetSelectedDataset(), dlg.GetKeyColumn(),
+                                                  dlg.GetSymbolColumn(), dlg.GetSymbolColumn());
+                }
+            }
+
+        auto plot = std::make_shared<Wisteria::Graphs::ChoroplethMap>(canvas);
+        dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
+
+        const std::optional<wxString> valueCol =
+            shadingColumn.empty() ? std::nullopt : std::optional<wxString>(shadingColumn);
+        // classification must be set before SetData(), which computes the class colors
+        plot->SetClassificationMethod(
+            static_cast<Wisteria::Graphs::ChoroplethMap::ClassificationMethod>(
+                dlg.GetClassificationMethod()));
+        plot->SetClassCount(static_cast<size_t>(dlg.GetClassCount()));
+        plot->SetData(geoData, valueCol);
+        plot->ShowRegionLabels(dlg.IsShowingRegionLabels());
+        plot->ShowGraticule(dlg.IsShowingGraticule());
+        plot->SetLabelDisplay(static_cast<Wisteria::BinLabelDisplay>(dlg.GetRegionLabelDisplay()));
+        plot->SetNoDataFillStyle(dlg.GetNoDataFillStyle());
+        plot->SetProportionalSymbolColumn(dlg.GetSymbolColumn().empty() ?
+                                              std::nullopt :
+                                              std::optional<wxString>(dlg.GetSymbolColumn()));
+        plot->SetProportionalSymbolColor(dlg.GetProportionalSymbolColor());
+        plot->SetSourceInfo(dlg.GetKMLPath(), dlg.GetKMLIdField(),
+                            hasSourceColumns ? dlg.GetSelectedDatasetName() : wxString{},
+                            hasSourceColumns ? dlg.GetKeyColumn() : wxString{});
+        dlg.ApplyAxisOverrides(*plot);
+
+        // uses a specialized legend
+        const bool wantsLegend = dlg.IsMappingData() || dlg.IsUsingProportionalSymbols();
+        const auto legendPlacement =
+            wantsLegend ? dlg.GetLegendPlacement() : Wisteria::UI::LegendPlacement::None;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
+
+        std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legendObject;
+        if (legendPlacement != Wisteria::UI::LegendPlacement::None)
+            {
+            const auto legendOptions = Wisteria::Graphs::LegendOptions{}
+                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
+                                           .Title(dlg.GetLegendTitle())
+                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
+                                           .Placement(side)
+                                           .PlacementHint(hint);
+            legendObject = dlg.GetSymbolColumn().empty() ?
+                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                   plot->CreateLegend(legendOptions)) :
+                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                   plot->CreateChoroplethLegend(legendOptions));
+            }
+
+        PlaceGraphWithLegend(canvas, plot, std::move(legendObject), dlg.GetSelectedRow(),
+                             dlg.GetSelectedColumn(), legendPlacement);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::EditChoroplethMap(const Wisteria::Graphs::Graph2D& graph,
+                                     Wisteria::Canvas* canvas, const size_t graphRow,
+                                     const size_t graphCol) const
+    {
+    Wisteria::UI::InsertChoroplethMapDlg dlg(
+        canvas, &m_reportBuilder, m_frame, _(L"Edit Choropleth Map"), wxID_ANY, wxDefaultPosition,
+        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    SetDialogIcon(dlg, L"choropleth.svg");
+    dlg.SetSelectedCell(graphRow, graphCol);
+    dlg.LoadFromGraph(graph);
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        const auto* oldMap = dynamic_cast<const Wisteria::Graphs::ChoroplethMap*>(&graph);
+        const wxString newSymbolColumn = dlg.GetSymbolColumn();
+        const bool hasSourceColumns = dlg.IsMappingData() || dlg.IsUsingProportionalSymbols();
+        const wxString newDataSource = hasSourceColumns ? dlg.GetSelectedDatasetName() : wxString{};
+        const wxString newKeyColumn = hasSourceColumns ? dlg.GetKeyColumn() : wxString{};
+        const bool newShadingIsCategorical = !dlg.GetCategoryColumn().empty();
+        const wxString newShadingColumn =
+            newShadingIsCategorical ? dlg.GetCategoryColumn() : dlg.GetValueColumn();
+
+        // Reuse the existing GeoDataset when the KML file and shading data are
+        // unchanged. Rebuilding re-runs the merge, which can shift the color range and
+        // rescale the whole map. The key column is left out of the check because a
+        // matching dataset and value column mean the merged result already stands.
+        const bool sourceUnchanged =
+            (oldMap != nullptr && oldMap->GetGeoDataset() != nullptr &&
+             oldMap->GetKMLFilePath() == dlg.GetKMLPath() &&
+             oldMap->GetKMLIdField() == dlg.GetKMLIdField() &&
+             oldMap->GetDataSourceName() == newDataSource &&
+             oldMap->GetValueColumnName() == newShadingColumn &&
+             oldMap->GetProportionalSymbolColumnName() == newSymbolColumn &&
+             oldMap->IsCategoricalShading() == newShadingIsCategorical);
+
+        std::shared_ptr<const Wisteria::Data::GeoDataset> geoData;
+        if (sourceUnchanged)
+            {
+            geoData = oldMap->GetGeoDataset();
+            }
+        else
+            {
+            auto builtGeoData = std::make_shared<Wisteria::Data::GeoDataset>();
+            if (!builtGeoData->ImportKML(
+                    dlg.GetKMLPath(), Wisteria::Data::GeoImportInfo().IdField(dlg.GetKMLIdField())))
+                {
+                throw std::runtime_error(builtGeoData->GetLastError().ToUTF8().data());
+                }
+            if (hasSourceColumns)
+                {
+                if (newShadingIsCategorical)
+                    {
+                    builtGeoData->CopyCategoricalColumnFrom(*dlg.GetSelectedDataset(), newKeyColumn,
+                                                            newShadingColumn, newShadingColumn);
+                    }
+                else if (!newShadingColumn.empty())
+                    {
+                    builtGeoData->CopyContinuousColumnFrom(*dlg.GetSelectedDataset(), newKeyColumn,
+                                                           newShadingColumn, newShadingColumn);
+                    }
+                if (!newSymbolColumn.empty() && newSymbolColumn != dlg.GetValueColumn() &&
+                    newSymbolColumn != dlg.GetCategoryColumn())
+                    {
+                    builtGeoData->CopyContinuousColumnFrom(*dlg.GetSelectedDataset(), newKeyColumn,
+                                                           newSymbolColumn, newSymbolColumn);
+                    }
+                }
+            geoData = builtGeoData;
+            }
+
+        auto plot = std::make_shared<Wisteria::Graphs::ChoroplethMap>(canvas);
+        plot->SetId(graph.GetId());
+        dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
+
+        const std::optional<wxString> valueCol =
+            newShadingColumn.empty() ? std::nullopt : std::optional<wxString>(newShadingColumn);
+        // classification must be set before SetData(), which computes the class colors
+        plot->SetClassificationMethod(
+            static_cast<Wisteria::Graphs::ChoroplethMap::ClassificationMethod>(
+                dlg.GetClassificationMethod()));
+        plot->SetClassCount(static_cast<size_t>(dlg.GetClassCount()));
+        plot->SetData(geoData, valueCol);
+        plot->ShowRegionLabels(dlg.IsShowingRegionLabels());
+        plot->ShowGraticule(dlg.IsShowingGraticule());
+        plot->SetLabelDisplay(static_cast<Wisteria::BinLabelDisplay>(dlg.GetRegionLabelDisplay()));
+        plot->SetNoDataFillStyle(dlg.GetNoDataFillStyle());
+        plot->SetProportionalSymbolColumn(
+            newSymbolColumn.empty() ? std::nullopt : std::optional<wxString>(newSymbolColumn));
+        plot->SetProportionalSymbolColor(dlg.GetProportionalSymbolColor());
+        plot->SetSourceInfo(dlg.GetKMLPath(), dlg.GetKMLIdField(), newDataSource, newKeyColumn);
+        dlg.ApplyAxisOverrides(*plot);
+
+        const bool wantsLegend = dlg.IsMappingData() || dlg.IsUsingProportionalSymbols();
+        const auto legendPlacement =
+            wantsLegend ? dlg.GetLegendPlacement() : Wisteria::UI::LegendPlacement::None;
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
+
+        std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legendObject;
+        if (legendPlacement != Wisteria::UI::LegendPlacement::None)
+            {
+            const auto legendOptions = Wisteria::Graphs::LegendOptions{}
+                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
+                                           .Title(dlg.GetLegendTitle())
+                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
+                                           .Placement(side)
+                                           .PlacementHint(hint);
+            legendObject = newSymbolColumn.empty() ?
+                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                   plot->CreateLegend(legendOptions)) :
+                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                   plot->CreateChoroplethLegend(legendOptions));
+            }
+
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        PlaceGraphWithLegend(canvas, plot, std::move(legendObject), dlg.GetSelectedRow(),
+                             dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {

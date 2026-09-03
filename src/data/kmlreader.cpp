@@ -86,7 +86,7 @@ namespace Wisteria::Data
         m_lastError.clear();
 
         if (const wxULongLong fileSize = wxFileName::GetSize(filePath);
-            fileSize != wxInvalidSize && fileSize.GetValue() > maxKmlFileBytes)
+            fileSize != wxInvalidSize && fileSize.GetValue() > MAX_KML_FILE_BYTES)
             {
             m_lastError = wxString::Format(_(L"'%s': KML file is too large to read."), filePath);
             return false;
@@ -123,7 +123,7 @@ namespace Wisteria::Data
     std::vector<wxString> KmlReader::ReadFieldNames(const wxString& filePath)
         {
         if (const wxULongLong fileSize = wxFileName::GetSize(filePath);
-            fileSize != wxInvalidSize && fileSize.GetValue() > maxKmlFileBytes)
+            fileSize != wxInvalidSize && fileSize.GetValue() > MAX_KML_FILE_BYTES)
             {
             return {};
             }
@@ -142,7 +142,7 @@ namespace Wisteria::Data
     void KmlReader::CollectFieldNames(const wxXmlNode* parent, std::set<wxString>& fieldNames,
                                       const int depth)
         {
-        if (depth > maxTraversalDepth)
+        if (depth > MAX_TRAVERSAL_DEPTH)
             {
             return;
             }
@@ -185,11 +185,11 @@ namespace Wisteria::Data
         std::vector<const wxXmlNode*> placemarkNodes;
         CollectPlacemarkNodes(rootNode, placemarkNodes, 0);
 
-        if (placemarkNodes.size() > maxRegionCount)
+        if (placemarkNodes.size() > MAX_REGION_COUNT)
             {
             wxLogWarning(L"KML file holds %zu placemarks; only the first %zu will be read.",
-                         placemarkNodes.size(), maxRegionCount);
-            placemarkNodes.resize(maxRegionCount);
+                         placemarkNodes.size(), MAX_REGION_COUNT);
+            placemarkNodes.resize(MAX_REGION_COUNT);
             }
 
         m_regions.reserve(placemarkNodes.size());
@@ -362,10 +362,10 @@ namespace Wisteria::Data
         wxStringTokenizer tupleTokenizer(coordinateText, L" \t\r\n");
         while (tupleTokenizer.HasMoreTokens())
             {
-            if (ring.size() >= maxRingVertices)
+            if (ring.size() >= MAX_RING_VERTICES)
                 {
                 wxLogWarning(L"KML ring has more than %zu vertices; the rest were dropped.",
-                             maxRingVertices);
+                             MAX_RING_VERTICES);
                 break;
                 }
             const wxString tuple = tupleTokenizer.GetNextToken();
@@ -397,7 +397,7 @@ namespace Wisteria::Data
                                           std::vector<const wxXmlNode*>& placemarkNodes,
                                           const int depth)
         {
-        if (depth > maxTraversalDepth)
+        if (depth > MAX_TRAVERSAL_DEPTH)
             {
             return;
             }
@@ -420,7 +420,7 @@ namespace Wisteria::Data
                                         std::vector<const wxXmlNode*>& polygonNodes,
                                         const int depth)
         {
-        if (depth > maxTraversalDepth)
+        if (depth > MAX_TRAVERSAL_DEPTH)
             {
             return;
             }
