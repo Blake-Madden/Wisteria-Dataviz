@@ -373,6 +373,24 @@ void WisteriaView::OnRibbonAddConstant([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
+void WisteriaView::RefreshDatasetGrid(const wxWindowID gridWindowId,
+                                      const std::shared_ptr<Wisteria::Data::Dataset>& dataset)
+    {
+    auto* window = m_workWindows.FindWindowById(gridWindowId);
+    if (window == nullptr || !window->IsKindOf(wxCLASSINFO(wxGrid)))
+        {
+        return;
+        }
+    auto* grid = dynamic_cast<wxGrid*>(window);
+    auto* table = new Wisteria::UI::DatasetGridTable(dataset);
+    grid->SetTable(table, true);
+    ApplyColumnHeaderIcons(grid, table);
+    grid->AutoSizeColumns(false);
+    AdjustGridColumnsForIcons(grid);
+    grid->ForceRefresh();
+    }
+
+//-------------------------------------------
 void WisteriaView::OnEditDataset([[maybe_unused]] wxCommandEvent& event)
     {
     // get the selected dataset
@@ -529,18 +547,7 @@ void WisteriaView::OnEditDataset([[maybe_unused]] wxCommandEvent& event)
         subsettedDataset->SetName(outputName.ToStdWstring());
         m_reportBuilder.GetDatasets()[outputName] = subsettedDataset;
 
-        // replace the existing grid contents
-        if (auto* window = m_workWindows.FindWindowById(subItem.value());
-            window != nullptr && window->IsKindOf(wxCLASSINFO(wxGrid)))
-            {
-            auto* grid = dynamic_cast<wxGrid*>(window);
-            auto* table = new Wisteria::UI::DatasetGridTable(subsettedDataset);
-            grid->SetTable(table, true);
-            ApplyColumnHeaderIcons(grid, table);
-            grid->AutoSizeColumns(false);
-            AdjustGridColumnsForIcons(grid);
-            grid->ForceRefresh();
-            }
+        RefreshDatasetGrid(subItem.value(), subsettedDataset);
 
         GetDocument()->Modify(true);
         }
@@ -624,18 +631,7 @@ void WisteriaView::OnEditDataset([[maybe_unused]] wxCommandEvent& event)
         pivotedDataset->SetName(outputName.ToStdWstring());
         m_reportBuilder.GetDatasets()[outputName] = pivotedDataset;
 
-        // replace the existing grid contents
-        if (auto* window = m_workWindows.FindWindowById(subItem.value());
-            window != nullptr && window->IsKindOf(wxCLASSINFO(wxGrid)))
-            {
-            auto* grid = dynamic_cast<wxGrid*>(window);
-            auto* table = new Wisteria::UI::DatasetGridTable(pivotedDataset);
-            grid->SetTable(table, true);
-            ApplyColumnHeaderIcons(grid, table);
-            grid->AutoSizeColumns(false);
-            AdjustGridColumnsForIcons(grid);
-            grid->ForceRefresh();
-            }
+        RefreshDatasetGrid(subItem.value(), pivotedDataset);
 
         GetDocument()->Modify(true);
         }
@@ -710,18 +706,7 @@ void WisteriaView::OnEditDataset([[maybe_unused]] wxCommandEvent& event)
         joinedDataset->SetName(outputName.ToStdWstring());
         m_reportBuilder.GetDatasets()[outputName] = joinedDataset;
 
-        // replace the existing grid contents
-        if (auto* window = m_workWindows.FindWindowById(subItem.value());
-            window != nullptr && window->IsKindOf(wxCLASSINFO(wxGrid)))
-            {
-            auto* grid = dynamic_cast<wxGrid*>(window);
-            auto* table = new Wisteria::UI::DatasetGridTable(joinedDataset);
-            grid->SetTable(table, true);
-            ApplyColumnHeaderIcons(grid, table);
-            grid->AutoSizeColumns(false);
-            AdjustGridColumnsForIcons(grid);
-            grid->ForceRefresh();
-            }
+        RefreshDatasetGrid(subItem.value(), joinedDataset);
 
         GetDocument()->Modify(true);
         }

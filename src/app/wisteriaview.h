@@ -250,6 +250,8 @@ class WisteriaView final : public wxView
     static std::optional<size_t> ParseDefaultPageNumber(const wxString& name);
     static void ApplyColumnHeaderIcons(const wxGrid* grid, Wisteria::UI::DatasetGridTable* table);
     static void AdjustGridColumnsForIcons(wxGrid* grid);
+    void RefreshDatasetGrid(wxWindowID gridWindowId,
+                            const std::shared_ptr<Wisteria::Data::Dataset>& dataset);
     void PopulateConstantsGrid();
     void BuildGraphMenus();
 
