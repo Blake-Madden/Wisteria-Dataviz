@@ -1711,9 +1711,12 @@ void WisteriaView::ClearGraphAndLegend(Wisteria::Canvas* canvas,
             if (legendItem != nullptr)
                 {
                 auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                const bool isChoroplethLegend = (dynamic_cast<Wisteria::Graphs::ChoroplethLegend*>(
-                                                     legendItem.get()) != nullptr);
-                if (isChoroplethLegend || (label != nullptr && label->IsLegend()))
+                const bool isChoroplethLegend =
+                    legendItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChoroplethLegend));
+                const bool isChernoffLegend = legendItem->IsKindOf(
+                    wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot::ChernoffLegend));
+                if (isChoroplethLegend || isChernoffLegend ||
+                    (label != nullptr && label->IsLegend()))
                     {
                     canvas->SetFixedObject(legendRow, legendCol, nullptr);
                     }
@@ -3049,38 +3052,7 @@ void WisteriaView::EditScatterPlot(const Wisteria::Graphs::Graph2D& graph, Wiste
         const auto legendPlacement = dlg.GetLegendPlacement();
         const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        // clear the old graph and its legend (if any)
-        canvas->SetFixedObject(graphRow, graphCol, nullptr);
-        const auto& oldLegendInfo = graph.GetLegendInfo();
-        if (oldLegendInfo.has_value())
-            {
-            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
-            const auto oldSide = oldLegendInfo->GetPlacement();
-            // ensure the legend cell is within the grid
-            const bool hasLegendCell =
-                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
-                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
-                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
-                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
-            if (hasLegendCell)
-                {
-                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
-                                         (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
-                                                                               graphRow;
-                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
-                                         (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
-                                                                              graphCol;
-                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
-                if (legendItem != nullptr)
-                    {
-                    auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                    if (label != nullptr && label->IsLegend())
-                        {
-                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                        }
-                    }
-                }
-            }
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(
             canvas, plot,
@@ -3321,47 +3293,7 @@ void WisteriaView::EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph,
         const auto legendPlacement = dlg.GetLegendPlacement();
         const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        // clear the old graph and its legend (if any)
-        canvas->SetFixedObject(graphRow, graphCol, nullptr);
-        const auto& oldLegendInfo = graph.GetLegendInfo();
-        if (oldLegendInfo.has_value())
-            {
-            const auto [gRows, gCols] = canvas->GetFixedObjectsGridSize();
-            const auto oldSide = oldLegendInfo->GetPlacement();
-            // ensure the legend cell is within the grid
-            const bool hasLegendCell =
-                (oldSide == Wisteria::Side::Top && graphRow > 0) ||
-                (oldSide == Wisteria::Side::Bottom && graphRow + 1 < gRows) ||
-                (oldSide == Wisteria::Side::Left && graphCol > 0) ||
-                (oldSide == Wisteria::Side::Right && graphCol + 1 < gCols);
-            if (hasLegendCell)
-                {
-                const size_t legendRow = (oldSide == Wisteria::Side::Top)    ? graphRow - 1 :
-                                         (oldSide == Wisteria::Side::Bottom) ? graphRow + 1 :
-                                                                               graphRow;
-                const size_t legendCol = (oldSide == Wisteria::Side::Left)  ? graphCol - 1 :
-                                         (oldSide == Wisteria::Side::Right) ? graphCol + 1 :
-                                                                              graphCol;
-                auto legendItem = canvas->GetFixedObject(legendRow, legendCol);
-                if (legendItem != nullptr)
-                    {
-                    if (legendItem->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Label)))
-                        {
-                        if (auto* label =
-                                dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
-                            label != nullptr && label->IsLegend())
-                            {
-                            canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                            }
-                        }
-                    if (legendItem->IsKindOf(
-                            wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot::ChernoffLegend)))
-                        {
-                        canvas->SetFixedObject(legendRow, legendCol, nullptr);
-                        }
-                    }
-                }
-            }
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(
             canvas, plot,
