@@ -1704,8 +1704,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // the blank rows that the folds run through have no label of their own
         plot->GetBarAxis().SetLabelDisplay(Wisteria::AxisLabelDisplay::DisplayOnlyCustomLabels);
 
-        plot->GetScalingAxis().GetTitle().GetGraphItemInfo().Text(
-            _(L"UnitS Per Euro"));
+        plot->GetScalingAxis().GetTitle().GetGraphItemInfo().Text(_(L"Units Per Euro"));
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         }
@@ -2956,13 +2955,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // colors traced from the original Du Bois plate, one per track lane
         const auto colors = std::make_shared<Wisteria::Colors::Schemes::ColorScheme>(
             Wisteria::Colors::Schemes::ColorScheme{
-                wxColour{ 230, 170, 165 }, // 1875, pale salmon
-                wxColour{ 200, 130, 40 },  // 1880, muted amber
-                wxColour{ 140, 30, 45 },   // 1885, burgundy
-                wxColour{ 140, 155, 180 }, // 1890, slate blue-gray
-                wxColour{ 230, 160, 45 },  // 1895, golden yellow
-                wxColour{ 196, 42, 62 }    // 1899, crimson red
-            });
+                wxColour{ 230, 170, 165 }, wxColour{ 140, 155, 180 }, wxColour{ L"#BA9C84" },
+                wxColour{ 230, 160, 45 }, wxColour{ L"#E0C9B7" }, wxColour{ 196, 42, 62 } });
 
         // aged-paper color from the original plate
         subframe->m_canvas->SetBackgroundColor(wxColour{ 237, 228, 210 });

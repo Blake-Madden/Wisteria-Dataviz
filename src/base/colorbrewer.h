@@ -1352,6 +1352,34 @@ namespace Wisteria::Colors
                 {
                 }
             };
+
+        /** @brief %Du Bois color scheme, based on the palette used in
+             W.E.B. %Du Bois's data visualizations for the 1900 Paris Exposition.
+             \htmlonly
+             <div style='background-color:#000000; width:50px;'>&nbsp;</div>
+             <div style='background-color:#654321; width:50px;'>&nbsp;</div>
+             <div style='background-color:#D2B48C; width:50px;'>&nbsp;</div>
+             <div style='background-color:#FFD700; width:50px;'>&nbsp;</div>
+             <div style='background-color:#FFC0CB; width:50px;'>&nbsp;</div>
+             <div style='background-color:#DC143C; width:50px;'>&nbsp;</div>
+             <div style='background-color:#00AA00; width:50px;'>&nbsp;</div>
+             <div style='background-color:#4682B4; width:50px;'>&nbsp;</div>
+             \endhtmlonly*/
+        class DuBois : public ColorScheme
+            {
+            wxDECLARE_DYNAMIC_CLASS(DuBois);
+
+          public:
+            DuBois()
+                : ColorScheme(
+                      { ColorBrewer::GetColor(Color::Black),
+                        ColorBrewer::GetColor(Color::DarkBrown), ColorBrewer::GetColor(Color::Tan),
+                        ColorBrewer::GetColor(Color::Gold), ColorBrewer::GetColor(Color::Pink),
+                        ColorBrewer::GetColor(Color::Crimson), wxColour(L"#00AA00"),
+                        ColorBrewer::GetColor(Color::SteelBlue) })
+                {
+                }
+            };
         } // namespace Schemes
     } // namespace Wisteria::Colors
 

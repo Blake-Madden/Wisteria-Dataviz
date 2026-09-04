@@ -42,6 +42,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Colors::Schemes::Nautical, ColorScheme)
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Colors::Schemes::MeadowSunset, ColorScheme)
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Colors::Schemes::Semesters, ColorScheme)
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Colors::Schemes::Seasons, ColorScheme)
+wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Colors::Schemes::DuBois, ColorScheme)
     // clang-format on
 
     namespace Wisteria::Colors
