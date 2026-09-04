@@ -737,13 +737,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
         case BinLabelDisplay::BinNameAndValue:
             return wxString::Format(L"%s (%s)", regionName, valueStr);
         case BinLabelDisplay::BinPercentage:
-            return percentStr.empty() ? valueStr : percentStr + L"%";
+            /* TRANSLATORS: value and percentage. */
+            return percentStr.empty() ? valueStr : wxString::Format(_(L"%s%%"), percentStr);
         case BinLabelDisplay::BinNameAndPercentage:
-            return percentStr.empty() ? wxString::Format(L"%s (%s)", regionName, valueStr) :
-                                        wxString::Format(L"%s (%s%%)", regionName, percentStr);
+            return percentStr.empty() ?
+                       wxString::Format(L"%s (%s)", regionName, valueStr) :
+                       /* TRANSLATORS: only %% (percentage) should be translated). */
+                       wxString::Format(_(L"%s (%s%%)"), regionName, percentStr);
         case BinLabelDisplay::BinValueAndPercentage:
-            return percentStr.empty() ? valueStr :
-                                        wxString::Format(L"%s (%s%%)", valueStr, percentStr);
+            return percentStr.empty() ?
+                       valueStr : /* TRANSLATORS: only %% (percentage) should be translated). */
+                       wxString::Format(_(L"%s (%s%%)"), valueStr, percentStr);
         default:
             return regionName;
             }
@@ -1585,6 +1589,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             description +=
                 L". " +
                 wxString::Format(
+                    /* TRANSLATORS: variable and then values. */
                     _(L"Shaded by %s, in %zu classes from %s to %s"), m_valueColumnName,
                     m_classColors.size(),
                     wxNumberFormatter::ToString(m_valueRange.first, 6,
@@ -1597,6 +1602,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             description +=
                 L". " +
                 wxString::Format(
+                    /* TRANSLATORS: variable and then values. */
                     _(L"Shaded by %s, ranging from %s to %s"), m_valueColumnName,
                     wxNumberFormatter::ToString(m_valueRange.first, 6,
                                                 wxNumberFormatter::Style::Style_NoTrailingZeroes),

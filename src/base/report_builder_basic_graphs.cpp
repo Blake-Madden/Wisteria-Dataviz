@@ -37,7 +37,7 @@ namespace Wisteria
         if (!geoData->ImportKML(kmlFile, Data::GeoImportInfo().IdField(kmlIdField)))
             {
             throw std::runtime_error(
-                wxString::Format(_(L"'%s': %s"), kmlFile, geoData->GetLastError()).ToUTF8());
+                wxString::Format(L"'%s': %s", kmlFile, geoData->GetLastError()).ToUTF8());
             }
 
         // optional dataset merged in for shading
