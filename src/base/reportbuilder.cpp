@@ -1765,6 +1765,13 @@ namespace Wisteria
                                 wxString::Format(_(L"'%s': dataset not found."), path).ToUTF8());
                             }
                         }
+                    // store a clean absolute path rather than whatever mix of
+                    // relative parts and separators the project happened to hold
+                    if (wxFileName resolved{ path };
+                        resolved.MakeAbsolute(wxFileName{ m_configFilePath }.GetPath()))
+                        {
+                        path = resolved.GetFullPath();
+                        }
                     // supplied name, or if name is blank then use the file name
                     wxString dsName = datasetNode->GetProperty(_DT(L"name"))->AsString();
                     if (dsName.empty())

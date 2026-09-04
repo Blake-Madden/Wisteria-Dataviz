@@ -54,7 +54,9 @@
 #include "wisteriaapp.h"
 #include "wisteriadoc.h"
 #include <array>
+#include <wx/filename.h>
 #include <wx/rearrangectrl.h>
+#include <wx/wupdlock.h>
 
 wxIMPLEMENT_DYNAMIC_CLASS(WisteriaView, wxView);
 
@@ -397,7 +399,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
             }
         }
 
-    LoadProject();
+    LoadProject(GetDocument()->GetFilename());
 
     if (initialDataset != nullptr)
         {
@@ -478,10 +480,8 @@ void WisteriaView::ShowSideBar(const bool show)
     }
 
 //-------------------------------------------
-void WisteriaView::LoadProject()
+bool WisteriaView::LoadProject(const wxString& filename)
     {
-    const wxString filename = GetDocument()->GetFilename();
-
     // set up sidebar image list from the app's persistent list
     m_sideBar->SetImageList(wxGetApp().GetProjectSideBarImageList());
 
@@ -490,6 +490,8 @@ void WisteriaView::LoadProject()
     // IDs for sidebar items
     const wxWindowID dataFolderId = wxNewId();
     wxWindowID nextId = wxNewId();
+
+    bool loadedClean = true;
 
     if (!filename.empty())
         {
@@ -507,7 +509,9 @@ void WisteriaView::LoadProject()
             }
         // busy indicator is dismissed by now; safe to show any catastrophic
         // load errors without them being hidden behind it
-        for (const auto& errMsg : m_reportBuilder.UnloadPendingErrorMessages())
+        const auto pendingErrors = m_reportBuilder.UnloadPendingErrorMessages();
+        loadedClean = pendingErrors.empty();
+        for (const auto& errMsg : pendingErrors)
             {
             wxMessageBox(errMsg.m_message, errMsg.m_title, wxOK | wxICON_WARNING | wxCENTRE,
                          m_workArea);
@@ -615,6 +619,21 @@ void WisteriaView::LoadProject()
                                       Wisteria::Data::Dataset::ColumnPreviewInfo{};
             auto* table = colInfo.empty() ? new Wisteria::UI::DatasetGridTable(dataset) :
                                             new Wisteria::UI::DatasetGridTable(dataset, colInfo);
+
+            // apply currency symbols to the continuous columns
+            size_t contIdx{ 0 };
+            for (const auto& col : colInfo)
+                {
+                if (col.m_type == Wisteria::Data::Dataset::ColumnImportType::Numeric)
+                    {
+                    if (!col.m_currencySymbol.empty())
+                        {
+                        table->SetCurrencySymbol(contIdx, col.m_currencySymbol);
+                        }
+                    ++contIdx;
+                    }
+                }
+
             auto* grid = new wxGrid(m_workArea, dsId);
             grid->SetDoubleBuffered(true);
             grid->GetGridWindow()->SetDoubleBuffered(true);
@@ -669,6 +688,109 @@ void WisteriaView::LoadProject()
 
     m_workArea->Layout();
     m_sideBar->Refresh();
+
+    return loadedClean;
+    }
+
+//-------------------------------------------
+void WisteriaView::TearDownProject()
+    {
+    if (m_constantsGrid != nullptr)
+        {
+        m_constantsGrid->Unbind(wxEVT_GRID_CELL_CHANGED, &WisteriaView::OnConstantEdited, this);
+        }
+
+    // detach the work-area children from the sizer, then destroy them
+    if (auto* sizer = m_workArea->GetSizer(); sizer != nullptr)
+        {
+        sizer->Clear(false);
+        }
+    for (auto* window : m_workWindows.GetWindows())
+        {
+        if (window != nullptr)
+            {
+            window->Destroy();
+            }
+        }
+    m_workWindows.Clear();
+    m_constantsGrid = nullptr;
+    m_pages.clear();
+
+    m_sideBar->DeleteAllFolders();
+
+    // replace the builder with a fresh one
+    m_reportBuilder = Wisteria::ReportBuilder{};
+    }
+
+//-------------------------------------------
+void WisteriaView::ReloadProject()
+    {
+    auto* doc = dynamic_cast<WisteriaDoc*>(GetDocument());
+    if (doc == nullptr)
+        {
+        return;
+        }
+
+    // Serialize next to the real project file so dataset paths (written relative to
+    // the output file's directory) resolve the same way on reload. Never-saved
+    // projects fall back to the system temp directory.
+    const wxString projectPath = doc->GetFilename();
+    const wxString tempPrefix = projectPath.empty() ?
+                                    wxString{ L"wisteria_reload" } :
+                                    wxFileName{ projectPath }.GetPathWithSep() + L"wisteria_reload";
+    const wxString tempPath = wxFileName::CreateTempFileName(tempPrefix);
+    if (tempPath.empty() || !doc->SaveProject(tempPath))
+        {
+        wxMessageBox(_(L"Unable to reload the project after the change."), _(L"Reload Error"),
+                     wxOK | wxICON_ERROR, m_frame);
+        return;
+        }
+
+    // remember what the user was looking at
+    const wxString selectedLabel = m_sideBar->GetSelectedLabel();
+    const auto selectedFolder = m_sideBar->GetSelectedFolder();
+    const int sashPos = (m_splitter != nullptr) ? m_splitter->GetSashPosition() : 0;
+
+    bool reloadedClean{ false };
+        {
+        wxWindowUpdateLocker noUpdate{ m_frame };
+
+        TearDownProject();
+        reloadedClean = LoadProject(tempPath);
+
+        wxRemoveFile(tempPath);
+
+        // restore the previous selection
+        if (const auto [folderIdx, subIdx] = m_sideBar->FindSubItem(selectedLabel);
+            folderIdx.has_value() && subIdx.has_value())
+            {
+            m_sideBar->SelectSubItem(folderIdx.value(), subIdx.value());
+            }
+        else if (selectedFolder.has_value() && selectedFolder.value() < m_sideBar->GetFolderCount())
+            {
+            m_sideBar->SelectFolder(selectedFolder.value());
+            }
+
+        if (m_splitter != nullptr && sashPos > 0)
+            {
+            m_splitter->SetSashPosition(sashPos);
+            }
+        }
+
+    // Only flag the document dirty when the rebuild came back intact. A degraded
+    // reload leaves an in-memory project that is worse than what is on disk, so
+    // marking it modified would invite a reflexive save over the good file.
+    if (reloadedClean)
+        {
+        doc->Modify(true);
+        }
+    else
+        {
+        wxMessageBox(_(L"The project could not be fully reloaded after the change.\n\n"
+                       "It has not been marked as modified, so the file on disk is unchanged. "
+                       "Close the project without saving to keep that version."),
+                     _(L"Reload Incomplete"), wxOK | wxICON_WARNING, m_frame);
+        }
     }
 
 //-------------------------------------------

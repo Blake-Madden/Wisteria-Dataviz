@@ -513,28 +513,3 @@ TEST_CASE("BarChart serpentine fold arrows are draw-time only", "[barchart][serp
         }
     }
 
-// Best-effort human-readable dump of every fingerprint, written next to the test
-// executable. Not an assertion; it exists so the output can be diffed by hand as
-// an extra safety check.
-TEST_CASE("BarChart serpentine characterization dump", "[barchart][serpentine][dump]")
-    {
-    const wxString outPath{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() +
-                            L"/serpentinebar_characterization.txt" };
-    wxFileOutputStream fileStream{ outPath };
-    if (!fileStream.IsOk())
-        {
-        WARN("could not open " << outPath.ToStdString());
-        return;
-        }
-    wxTextOutputStream textStream{ fileStream };
-
-    for (const auto& [name, spec] : AllSpecs())
-        {
-        auto* canvas = MakeCanvas();
-        auto chart = BuildBarChart(canvas, spec);
-        const auto print = LayOutAndCapture(canvas, chart);
-        textStream << wxString::Format(L"%s\t%s\n", wxString::FromUTF8(name),
-                                       wxString::FromUTF8(print.ToString()));
-        }
-    SUCCEED("wrote " << outPath.ToStdString());
-    }

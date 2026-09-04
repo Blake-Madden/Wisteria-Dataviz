@@ -38,11 +38,16 @@ class WisteriaDoc final : public wxDocument
     [[nodiscard]]
     wxString ResolveFilePath(const wxString& filePath) const;
 
+    /// @brief Serializes the current in-memory project to @p filePath.
+    /// @details Does not change the document's own filename or modified state.
+    /// @param filePath The destination file path.
+    /// @returns @c true on success.
+    bool SaveProject(const wxString& filePath) const;
+
   private:
     bool OnNewDocument() override;
     bool OnOpenDocument(const wxString& filename) override;
     bool DoSaveDocument(const wxString& filename) override;
-    bool SaveProject(const wxString& filePath) const;
 
     // page item save helpers
     [[nodiscard]]

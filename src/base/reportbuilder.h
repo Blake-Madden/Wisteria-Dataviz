@@ -1370,7 +1370,7 @@ namespace Wisteria
             std::pair<size_t, size_t> m_gridPosition;
             std::vector<double> m_childrenIds; // double because that's how cJSON reads numbers
             bool m_commonPerpendicularAxis{ false };
-            const wxSimpleJSON::Ptr_t m_node;
+            wxSimpleJSON::Ptr_t m_node;
             };
 
         std::vector<CommonAxisPlaceholder> m_commonAxesPlaceholders;

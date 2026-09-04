@@ -373,24 +373,6 @@ void WisteriaView::OnRibbonAddConstant([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::RefreshDatasetGrid(const wxWindowID gridWindowId,
-                                      const std::shared_ptr<Wisteria::Data::Dataset>& dataset)
-    {
-    auto* window = m_workWindows.FindWindowById(gridWindowId);
-    if (window == nullptr || !window->IsKindOf(wxCLASSINFO(wxGrid)))
-        {
-        return;
-        }
-    auto* grid = dynamic_cast<wxGrid*>(window);
-    auto* table = new Wisteria::UI::DatasetGridTable(dataset);
-    grid->SetTable(table, true);
-    ApplyColumnHeaderIcons(grid, table);
-    grid->AutoSizeColumns(false);
-    AdjustGridColumnsForIcons(grid);
-    grid->ForceRefresh();
-    }
-
-//-------------------------------------------
 void WisteriaView::OnEditDataset([[maybe_unused]] wxCommandEvent& event)
     {
     // get the selected dataset
@@ -431,7 +413,6 @@ void WisteriaView::OnEditDataset([[maybe_unused]] wxCommandEvent& event)
 
         try
             {
-            const auto columnPreview = importDlg.GetColumnPreviewInfo();
             const auto& fullColumnPreview = importDlg.GetFullColumnPreviewInfo();
             const auto importInfo = importDlg.GetImportInfo();
             const auto worksheet = importDlg.GetWorksheet();
@@ -452,37 +433,7 @@ void WisteriaView::OnEditDataset([[maybe_unused]] wxCommandEvent& event)
             m_reportBuilder.GetDatasetTransformOptions()[selectedDatasetName].m_columnNamesSort =
                 importInfo.GetColumnNamesSort();
 
-            // replace the existing grid contents
-            if (auto* window = m_workWindows.FindWindowById(subItem.value());
-                window != nullptr && window->IsKindOf(wxCLASSINFO(wxGrid)))
-                {
-                auto* grid = dynamic_cast<wxGrid*>(window);
-                auto* table = columnPreview.empty() ?
-                                  new Wisteria::UI::DatasetGridTable(dataset) :
-                                  new Wisteria::UI::DatasetGridTable(dataset, columnPreview);
-
-                // apply currency symbols
-                size_t contIdx{ 0 };
-                for (const auto& col : columnPreview)
-                    {
-                    if (col.m_type == Wisteria::Data::Dataset::ColumnImportType::Numeric)
-                        {
-                        if (!col.m_currencySymbol.empty())
-                            {
-                            table->SetCurrencySymbol(contIdx, col.m_currencySymbol);
-                            }
-                        ++contIdx;
-                        }
-                    }
-
-                grid->SetTable(table, true);
-                ApplyColumnHeaderIcons(grid, table);
-                grid->AutoSizeColumns(false);
-                AdjustGridColumnsForIcons(grid);
-                grid->ForceRefresh();
-                }
-
-            GetDocument()->Modify(true);
+            ReloadProject();
             }
         catch (const std::exception& exc)
             {
@@ -547,9 +498,7 @@ void WisteriaView::OnEditDataset([[maybe_unused]] wxCommandEvent& event)
         subsettedDataset->SetName(outputName.ToStdWstring());
         m_reportBuilder.GetDatasets()[outputName] = subsettedDataset;
 
-        RefreshDatasetGrid(subItem.value(), subsettedDataset);
-
-        GetDocument()->Modify(true);
+        ReloadProject();
         }
     else if (foundPivotOptions != GetReportBuilder().GetDatasetPivotOptions().cend())
         {
@@ -631,9 +580,7 @@ void WisteriaView::OnEditDataset([[maybe_unused]] wxCommandEvent& event)
         pivotedDataset->SetName(outputName.ToStdWstring());
         m_reportBuilder.GetDatasets()[outputName] = pivotedDataset;
 
-        RefreshDatasetGrid(subItem.value(), pivotedDataset);
-
-        GetDocument()->Modify(true);
+        ReloadProject();
         }
     else if (const auto foundMergeOptions =
                  GetReportBuilder().GetDatasetMergeOptions().find(selectedDatasetName);
@@ -706,9 +653,7 @@ void WisteriaView::OnEditDataset([[maybe_unused]] wxCommandEvent& event)
         joinedDataset->SetName(outputName.ToStdWstring());
         m_reportBuilder.GetDatasets()[outputName] = joinedDataset;
 
-        RefreshDatasetGrid(subItem.value(), joinedDataset);
-
-        GetDocument()->Modify(true);
+        ReloadProject();
         }
     }
 

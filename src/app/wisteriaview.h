@@ -86,7 +86,10 @@ class WisteriaView final : public wxView
         return m_splitter;
         }
 
-    void LoadProject();
+    /// @brief Builds the project UI from @p filename.
+    /// @param filename The project file to load (empty for a new project).
+    /// @returns @c true if the project loaded successfully.
+    bool LoadProject(const wxString& filename);
 
     bool OnCreate(wxDocument* doc, long flags) final;
 
@@ -250,8 +253,12 @@ class WisteriaView final : public wxView
     static std::optional<size_t> ParseDefaultPageNumber(const wxString& name);
     static void ApplyColumnHeaderIcons(const wxGrid* grid, Wisteria::UI::DatasetGridTable* table);
     static void AdjustGridColumnsForIcons(wxGrid* grid);
-    void RefreshDatasetGrid(wxWindowID gridWindowId,
-                            const std::shared_ptr<Wisteria::Data::Dataset>& dataset);
+    /// @brief Destroys all work-area windows (canvases, dataset grids, constants grid),
+    ///     drops the sidebar tree, and resets the report model.
+    void TearDownProject();
+    /// @brief Serializes the in-memory project, tears it down, and rebuilds it from
+    ///     that serialization, preserving the current sidebar selection and sash position.
+    void ReloadProject();
     void PopulateConstantsGrid();
     void BuildGraphMenus();
 
