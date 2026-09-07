@@ -24,6 +24,11 @@ namespace lily_of_the_valley
     class spreadsheet_extract_text
         {
       public:
+        /// @brief The maximum number of columns a worksheet can contain.
+        /// @details Matches the column limit of Excel and modern spreadsheet applications.
+        ///     Used to reject nonsensical column spans from malformed cell references.
+        constexpr static size_t EXCEL_MAX_COLUMNS = 16'384;
+
         /** @brief Constructor.
             @param removeNewlinesAndTabs Set to @c true to replace any newlines or tabs in cells'
                 text with spaces.\n This is recommended @c true (the default) for traditional data,

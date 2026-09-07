@@ -208,9 +208,18 @@ namespace lily_of_the_valley
             {
             if (!datum.empty())
                 {
-                maxColumnPosition = std::max(datum.back().get_column_position(), maxColumnPosition);
+                const size_t lastColumnPosition = datum.back().get_column_position();
+                // a malformed cell reference leaves the position invalid; ignore it
+                // rather than treating (size_t)-1 as a real column span
+                if (lastColumnPosition != worksheet_cell::INVALID_INDEX)
+                    {
+                    maxColumnPosition = std::max(lastColumnPosition, maxColumnPosition);
+                    }
                 }
             }
+        // clamp an implausible span (from a bogus cell reference) to a sane maximum
+        // so the fill loop below cannot be driven into billions of iterations
+        maxColumnPosition = std::min(maxColumnPosition, EXCEL_MAX_COLUMNS);
         // Fill in blank cells at any missing column positions in each row.
         for (size_t rowCounter = 0; rowCounter < data.size(); ++rowCounter)
             {

@@ -621,7 +621,8 @@ TEST_CASE("XLSX read sheets", "[xlsx]")
         CHECK(spreadsheet_extract_text::get_cell_text(L"L11", wrk) == L"Noir et blanc");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L12", wrk) == L"Noir et blanc");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L13", wrk) == L"Blanc");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) ==
+              L"Blanc et roux (tâches noires)");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L15", wrk) == L"Sans poils");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L17", wrk) == L"Blanc et noir");
@@ -659,15 +660,18 @@ TEST_CASE("XLSX read sheets", "[xlsx]")
         CHECK(spreadsheet_extract_text::get_cell_text(L"N15", wrk) == L"Sphnyx");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N16", wrk) == L"Chartreux");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N17", wrk) == L"Chat du Maine");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) ==
+              L"Chat de Goputière Angoraic Longhair");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N19", wrk) == L"Chat de Goutière");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O3", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
-                                               L"plus souvent pour éviter les boules de poils.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) ==
+              L"A recommandé au propriétaire de brosser Chesire "
+              L"plus souvent pour éviter les boules de poils.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O5", wrk) == L"");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O6", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
-                                               L"aimer faire tomber les objets au sol.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) ==
+              L"Nécessite surveillance lors de la visite. Semble "
+              L"aimer faire tomber les objets au sol.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O8", wrk) ==
               L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O9", wrk) == L"");
@@ -683,9 +687,11 @@ TEST_CASE("XLSX read sheets", "[xlsx]")
               L"pour son régime.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O14", wrk) == L"");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O15", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) ==
+              L"Chat très difficile --manier avec prudence.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O17", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) ==
+              L"Semble répondre au nom de \"Goober\".");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O19", wrk) ==
               L"Azriel a des griffes très pointues. Très difficile.");
         ext(nullptr, sheettext.length(), wrk);
@@ -1497,7 +1503,8 @@ TEST_CASE("XLSX read broken sheets out of order", "[xlsx]")
         CHECK(spreadsheet_extract_text::get_cell_text(L"L11", wrk) == L"Noir et blanc");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L12", wrk) == L"Noir et blanc");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L13", wrk) == L"Blanc");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) ==
+              L"Blanc et roux (tâches noires)");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L15", wrk) == L"Sans poils");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L17", wrk) == L"Blanc et noir");
@@ -1535,15 +1542,18 @@ TEST_CASE("XLSX read broken sheets out of order", "[xlsx]")
         CHECK(spreadsheet_extract_text::get_cell_text(L"N15", wrk) == L"Sphnyx");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N16", wrk) == L"Chartreux");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N17", wrk) == L"Chat du Maine");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) ==
+              L"Chat de Goputière Angoraic Longhair");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N19", wrk) == L"Chat de Goutière");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O3", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
-                                               L"plus souvent pour éviter les boules de poils.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) ==
+              L"A recommandé au propriétaire de brosser Chesire "
+              L"plus souvent pour éviter les boules de poils.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O5", wrk) == L"");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O6", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
-                                               L"aimer faire tomber les objets au sol.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) ==
+              L"Nécessite surveillance lors de la visite. Semble "
+              L"aimer faire tomber les objets au sol.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O8", wrk) ==
               L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O9", wrk) == L"");
@@ -1559,9 +1569,11 @@ TEST_CASE("XLSX read broken sheets out of order", "[xlsx]")
               L"pour son régime.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O14", wrk) == L"");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O15", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) ==
+              L"Chat très difficile --manier avec prudence.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O17", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) ==
+              L"Semble répondre au nom de \"Goober\".");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O19", wrk) ==
               L"Azriel a des griffes très pointues. Très difficile.");
         ext(nullptr, sheettext.length(), wrk);
@@ -1858,7 +1870,8 @@ TEST_CASE("XLSX read broken sheets out of order", "[xlsx]")
         CHECK(spreadsheet_extract_text::get_cell_text(L"L11", wrk) == L"Noir et blanc");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L12", wrk) == L"Noir et blanc");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L13", wrk) == L"Blanc");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) ==
+              L"Blanc et roux (tâches noires)");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L15", wrk) == L"Sans poils");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L17", wrk) == L"Blanc et noir");
@@ -1896,15 +1909,18 @@ TEST_CASE("XLSX read broken sheets out of order", "[xlsx]")
         CHECK(spreadsheet_extract_text::get_cell_text(L"N15", wrk) == L"Sphnyx");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N16", wrk) == L"Chartreux");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N17", wrk) == L"Chat du Maine");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) ==
+              L"Chat de Goputière Angoraic Longhair");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N19", wrk) == L"Chat de Goutière");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O3", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
-                                               L"plus souvent pour éviter les boules de poils.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) ==
+              L"A recommandé au propriétaire de brosser Chesire "
+              L"plus souvent pour éviter les boules de poils.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O5", wrk) == L"");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O6", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
-                                               L"aimer faire tomber les objets au sol.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) ==
+              L"Nécessite surveillance lors de la visite. Semble "
+              L"aimer faire tomber les objets au sol.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O8", wrk) ==
               L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O9", wrk) == L"");
@@ -1920,9 +1936,11 @@ TEST_CASE("XLSX read broken sheets out of order", "[xlsx]")
               L"pour son régime.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O14", wrk) == L"");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O15", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) ==
+              L"Chat très difficile --manier avec prudence.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O17", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) ==
+              L"Semble répondre au nom de \"Goober\".");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O19", wrk) ==
               L"Azriel a des griffes très pointues. Très difficile.");
         ext(nullptr, sheettext.length(), wrk);
@@ -2223,7 +2241,8 @@ TEST_CASE("XLSX read broken sheets bad dimensions", "[xlsx]")
         CHECK(spreadsheet_extract_text::get_cell_text(L"L11", wrk) == L"Noir et blanc");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L12", wrk) == L"Noir et blanc");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L13", wrk) == L"Blanc");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) ==
+              L"Blanc et roux (tâches noires)");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L15", wrk) == L"Sans poils");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L17", wrk) == L"Blanc et noir");
@@ -2261,15 +2280,18 @@ TEST_CASE("XLSX read broken sheets bad dimensions", "[xlsx]")
         CHECK(spreadsheet_extract_text::get_cell_text(L"N15", wrk) == L"Sphnyx");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N16", wrk) == L"Chartreux");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N17", wrk) == L"Chat du Maine");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) ==
+              L"Chat de Goputière Angoraic Longhair");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N19", wrk) == L"Chat de Goutière");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O3", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
-                                               L"plus souvent pour éviter les boules de poils.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) ==
+              L"A recommandé au propriétaire de brosser Chesire "
+              L"plus souvent pour éviter les boules de poils.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O5", wrk) == L"");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O6", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
-                                               L"aimer faire tomber les objets au sol.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) ==
+              L"Nécessite surveillance lors de la visite. Semble "
+              L"aimer faire tomber les objets au sol.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O8", wrk) ==
               L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O9", wrk) == L"");
@@ -2285,9 +2307,11 @@ TEST_CASE("XLSX read broken sheets bad dimensions", "[xlsx]")
               L"pour son régime.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O14", wrk) == L"");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O15", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) ==
+              L"Chat très difficile --manier avec prudence.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O17", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) ==
+              L"Semble répondre au nom de \"Goober\".");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O19", wrk) ==
               L"Azriel a des griffes très pointues. Très difficile.");
         ext(nullptr, sheettext.length(), wrk);
@@ -2530,8 +2554,9 @@ TEST_CASE("XLSX read broken sheets bad dimensions", "[xlsx]")
             L"r=\"O19\" s=\"17\" t=\"s\"><v>91</v></c></row></sheetData></worksheet>";
         ext(sheettext.c_str(), sheettext.length(), wrk);
         CHECK(xlsx_extract_text::verify_sheet(wrk).first);
-        CHECK(spreadsheet_extract_text::get_cell_text(L"A1", wrk) == L"Enregistrement des patients dans une clinique "
-                                               L"vétérinaire fictive spécialisée dans les félins");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A1", wrk) ==
+              L"Enregistrement des patients dans une clinique "
+              L"vétérinaire fictive spécialisée dans les félins");
         CHECK(spreadsheet_extract_text::get_cell_text(L"A3", wrk) == L"Tori");
         CHECK(spreadsheet_extract_text::get_cell_text(L"A4", wrk) == L"Chesire");
         CHECK(spreadsheet_extract_text::get_cell_text(L"A5", wrk) == L"Fluffy");
@@ -2576,7 +2601,8 @@ TEST_CASE("XLSX read broken sheets bad dimensions", "[xlsx]")
         CHECK(spreadsheet_extract_text::get_cell_text(L"L11", wrk) == L"Noir et blanc");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L12", wrk) == L"Noir et blanc");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L13", wrk) == L"Blanc");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) ==
+              L"Blanc et roux (tâches noires)");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L15", wrk) == L"Sans poils");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L17", wrk) == L"Blanc et noir");
@@ -2614,15 +2640,18 @@ TEST_CASE("XLSX read broken sheets bad dimensions", "[xlsx]")
         CHECK(spreadsheet_extract_text::get_cell_text(L"N15", wrk) == L"Sphnyx");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N16", wrk) == L"Chartreux");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N17", wrk) == L"Chat du Maine");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) ==
+              L"Chat de Goputière Angoraic Longhair");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N19", wrk) == L"Chat de Goutière");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O3", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
-                                               L"plus souvent pour éviter les boules de poils.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) ==
+              L"A recommandé au propriétaire de brosser Chesire "
+              L"plus souvent pour éviter les boules de poils.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O5", wrk) == L"");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O6", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
-                                               L"aimer faire tomber les objets au sol.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) ==
+              L"Nécessite surveillance lors de la visite. Semble "
+              L"aimer faire tomber les objets au sol.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O8", wrk) ==
               L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O9", wrk) == L"");
@@ -2638,9 +2667,11 @@ TEST_CASE("XLSX read broken sheets bad dimensions", "[xlsx]")
               L"pour son régime.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O14", wrk) == L"");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O15", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) ==
+              L"Chat très difficile --manier avec prudence.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O17", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) ==
+              L"Semble répondre au nom de \"Goober\".");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O19", wrk) ==
               L"Azriel a des griffes très pointues. Très difficile.");
         }
@@ -2933,7 +2964,8 @@ TEST_CASE("XLSX read broken items in sheets", "[xlsx]")
         CHECK(spreadsheet_extract_text::get_cell_text(L"L11", wrk) == L"Noir et blanc");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L12", wrk) == L"Noir et blanc");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L13", wrk) == L"Blanc");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) ==
+              L"Blanc et roux (tâches noires)");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L15", wrk) == L"Sans poils");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L17", wrk) == L"Blanc et noir");
@@ -2971,15 +3003,18 @@ TEST_CASE("XLSX read broken items in sheets", "[xlsx]")
         CHECK(spreadsheet_extract_text::get_cell_text(L"N15", wrk) == L"Sphnyx");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N16", wrk) == L"Chartreux");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N17", wrk) == L"Chat du Maine");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) ==
+              L"Chat de Goputière Angoraic Longhair");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N19", wrk) == L"Chat de Goutière");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O3", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
-                                               L"plus souvent pour éviter les boules de poils.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) ==
+              L"A recommandé au propriétaire de brosser Chesire "
+              L"plus souvent pour éviter les boules de poils.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O5", wrk) == L"");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O6", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
-                                               L"aimer faire tomber les objets au sol.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) ==
+              L"Nécessite surveillance lors de la visite. Semble "
+              L"aimer faire tomber les objets au sol.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O8", wrk) ==
               L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O9", wrk) == L"");
@@ -2995,9 +3030,11 @@ TEST_CASE("XLSX read broken items in sheets", "[xlsx]")
               L"pour son régime.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O14", wrk) == L"");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O15", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) ==
+              L"Chat très difficile --manier avec prudence.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O17", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) ==
+              L"Semble répondre au nom de \"Goober\".");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O19", wrk) == L"");
         ext(nullptr, sheettext.length(), wrk);
         CHECK(wrk.size() == 0);
@@ -3293,7 +3330,8 @@ TEST_CASE("XLSX read broken items in sheets", "[xlsx]")
         CHECK(spreadsheet_extract_text::get_cell_text(L"L11", wrk) == L"Noir et blanc");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L12", wrk) == L"Noir et blanc");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L13", wrk) == L"Blanc");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) ==
+              L"Blanc et roux (tâches noires)");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L15", wrk) == L"Sans poils");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L17", wrk) == L"Blanc et noir");
@@ -3331,15 +3369,18 @@ TEST_CASE("XLSX read broken items in sheets", "[xlsx]")
         CHECK(spreadsheet_extract_text::get_cell_text(L"N15", wrk) == L"Sphnyx");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N16", wrk) == L"Chartreux");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N17", wrk) == L"Chat du Maine");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) ==
+              L"Chat de Goputière Angoraic Longhair");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N19", wrk) == L"Chat de Goutière");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O3", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
-                                               L"plus souvent pour éviter les boules de poils.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) ==
+              L"A recommandé au propriétaire de brosser Chesire "
+              L"plus souvent pour éviter les boules de poils.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O5", wrk) == L"");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O6", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
-                                               L"aimer faire tomber les objets au sol.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) ==
+              L"Nécessite surveillance lors de la visite. Semble "
+              L"aimer faire tomber les objets au sol.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O8", wrk) ==
               L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O9", wrk) == L"");
@@ -3355,9 +3396,11 @@ TEST_CASE("XLSX read broken items in sheets", "[xlsx]")
               L"pour son régime.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O14", wrk) == L"");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O15", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) ==
+              L"Chat très difficile --manier avec prudence.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O17", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) ==
+              L"Semble répondre au nom de \"Goober\".");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O19", wrk) ==
               L"Azriel a des griffes très pointues. Très difficile.");
         ext(nullptr, sheettext.length(), wrk);
@@ -3655,7 +3698,8 @@ TEST_CASE("XLSX read broken sheets", "[xlsx]")
         CHECK(spreadsheet_extract_text::get_cell_text(L"L11", wrk) == L"Noir et blanc");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L12", wrk) == L"Noir et blanc");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L13", wrk) == L"Blanc");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) == L"Blanc et roux (tâches noires)");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"L14", wrk) ==
+              L"Blanc et roux (tâches noires)");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L15", wrk) == L"Sans poils");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L16", wrk) == L"Bleu (gris foncé)");
         CHECK(spreadsheet_extract_text::get_cell_text(L"L17", wrk) == L"Blanc et noir");
@@ -3693,15 +3737,18 @@ TEST_CASE("XLSX read broken sheets", "[xlsx]")
         CHECK(spreadsheet_extract_text::get_cell_text(L"N15", wrk) == L"Sphnyx");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N16", wrk) == L"Chartreux");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N17", wrk) == L"Chat du Maine");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) == L"Chat de Goputière Angoraic Longhair");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"N18", wrk) ==
+              L"Chat de Goputière Angoraic Longhair");
         CHECK(spreadsheet_extract_text::get_cell_text(L"N19", wrk) == L"Chat de Goutière");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O3", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) == L"A recommandé au propriétaire de brosser Chesire "
-                                               L"plus souvent pour éviter les boules de poils.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O4", wrk) ==
+              L"A recommandé au propriétaire de brosser Chesire "
+              L"plus souvent pour éviter les boules de poils.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O5", wrk) == L"");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O6", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) == L"Nécessite surveillance lors de la visite. Semble "
-                                               L"aimer faire tomber les objets au sol.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O7", wrk) ==
+              L"Nécessite surveillance lors de la visite. Semble "
+              L"aimer faire tomber les objets au sol.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O8", wrk) ==
               L"Très nerveuse. Essayer de la calmer avec un jouet avant l'examen.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O9", wrk) == L"");
@@ -3717,9 +3764,11 @@ TEST_CASE("XLSX read broken sheets", "[xlsx]")
               L"pour son régime.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O14", wrk) == L"");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O15", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) == L"Chat très difficile --manier avec prudence.");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O16", wrk) ==
+              L"Chat très difficile --manier avec prudence.");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O17", wrk) == L"");
-        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) == L"Semble répondre au nom de \"Goober\".");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"O18", wrk) ==
+              L"Semble répondre au nom de \"Goober\".");
         CHECK(spreadsheet_extract_text::get_cell_text(L"O19", wrk) ==
               L"Azriel a des griffes très pointues. Très difficile.");
         ext(nullptr, sheettext.length(), wrk);
@@ -4472,12 +4521,11 @@ TEST_CASE("XLSX currency format not detected as date", "[xlsx][styles]")
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
 
         // Worksheet with a cell using style 0 and value 90222
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:A1\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>90222</v></c></row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:A1\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>90222</v></c></row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -4490,26 +4538,24 @@ TEST_CASE("XLSX currency format not detected as date", "[xlsx][styles]")
     SECTION("Backslash-escaped characters not treated as date markers")
         {
         // \\d in a format code is a literal 'd', not a day marker
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<numFmts count=\"1\">"
-            L"<numFmt numFmtId=\"165\" formatCode=\"#,##0.00\\d\"/>"
-            L"</numFmts>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"165\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<numFmts count=\"1\">"
+                                    L"<numFmt numFmtId=\"165\" formatCode=\"#,##0.00\\d\"/>"
+                                    L"</numFmts>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"165\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
 
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:A1\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>500</v></c></row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:A1\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>500</v></c></row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -4521,23 +4567,21 @@ TEST_CASE("XLSX currency format not detected as date", "[xlsx][styles]")
     SECTION("Actual date format still detected")
         {
         // numFmtId 14 is a built-in date format (m/d/yyyy)
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"14\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"14\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
 
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:A1\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>45000</v></c></row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:A1\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>45000</v></c></row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -4550,26 +4594,24 @@ TEST_CASE("XLSX currency format not detected as date", "[xlsx][styles]")
     SECTION("Underscore skip-width not treated as date marker")
         {
         // _y means "skip width of y", not a year marker
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<numFmts count=\"1\">"
-            L"<numFmt numFmtId=\"166\" formatCode=\"#,##0.00_y\"/>"
-            L"</numFmts>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"166\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<numFmts count=\"1\">"
+                                    L"<numFmt numFmtId=\"166\" formatCode=\"#,##0.00_y\"/>"
+                                    L"</numFmts>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"166\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
 
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:A1\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>750</v></c></row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:A1\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>750</v></c></row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -4595,12 +4637,11 @@ TEST_CASE("XLSX currency format not detected as date", "[xlsx][styles]")
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
 
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:A1\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>90222</v></c></row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:A1\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>90222</v></c></row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -4612,26 +4653,24 @@ TEST_CASE("XLSX currency format not detected as date", "[xlsx][styles]")
         }
     SECTION("Custom date format with yyyy still detected")
         {
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<numFmts count=\"1\">"
-            L"<numFmt numFmtId=\"170\" formatCode=\"yyyy-mm-dd\"/>"
-            L"</numFmts>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"170\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<numFmts count=\"1\">"
+                                    L"<numFmt numFmtId=\"170\" formatCode=\"yyyy-mm-dd\"/>"
+                                    L"</numFmts>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"170\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
 
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:A1\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>45000</v></c></row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:A1\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>45000</v></c></row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -4647,13 +4686,12 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
     SECTION("Built-in currency format ID 5")
         {
         // numFmtId 5 is a built-in currency format ($#,##0_);($#,##0))
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"5\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"5\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
@@ -4662,12 +4700,11 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         CHECK(ext.m_currency_format_indices.count(0) == 1);
         CHECK(ext.m_currency_format_indices.at(0) == L"$");
 
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:A1\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>1500</v></c></row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:A1\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>1500</v></c></row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -4678,13 +4715,12 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         }
     SECTION("Built-in currency format ID 6")
         {
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"6\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"6\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
@@ -4694,13 +4730,12 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         }
     SECTION("Built-in currency format ID 7")
         {
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"7\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"7\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
@@ -4710,13 +4745,12 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         }
     SECTION("Built-in currency format ID 8")
         {
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"8\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"8\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
@@ -4726,13 +4760,12 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         }
     SECTION("Built-in accounting format ID 42")
         {
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"42\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"42\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
@@ -4742,13 +4775,12 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         }
     SECTION("Built-in accounting format ID 44")
         {
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"44\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"44\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
@@ -4760,15 +4792,14 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         {
         // numFmtId 1 is "0" (integer), numFmtId 2 is "0.00" (decimal),
         // numFmtId 9 is "0%" (percentage)
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<cellXfs count=\"3\">"
-            L"<xf numFmtId=\"1\"/>"
-            L"<xf numFmtId=\"2\"/>"
-            L"<xf numFmtId=\"9\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<cellXfs count=\"3\">"
+                                    L"<xf numFmtId=\"1\"/>"
+                                    L"<xf numFmtId=\"2\"/>"
+                                    L"<xf numFmtId=\"9\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
@@ -4795,12 +4826,11 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         CHECK(ext.m_currency_format_indices.size() == 1);
         CHECK(ext.m_currency_format_indices.at(0) == L"\u20AC");
 
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:A1\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>42.5</v></c></row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:A1\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>42.5</v></c></row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -4828,12 +4858,11 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         CHECK(ext.m_currency_format_indices.size() == 1);
         CHECK(ext.m_currency_format_indices.at(0) == L"\u00A3");
 
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:A1\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>100</v></c></row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:A1\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>100</v></c></row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -4844,16 +4873,15 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         }
     SECTION("Custom format with bracket notation for yen [$\u00A5-804]")
         {
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<numFmts count=\"1\">"
-            L"<numFmt numFmtId=\"166\" formatCode=\"[$\u00A5-804]#,##0\"/>"
-            L"</numFmts>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"166\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<numFmts count=\"1\">"
+                                    L"<numFmt numFmtId=\"166\" formatCode=\"[$\u00A5-804]#,##0\"/>"
+                                    L"</numFmts>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"166\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
@@ -4861,12 +4889,11 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         CHECK(ext.m_currency_format_indices.size() == 1);
         CHECK(ext.m_currency_format_indices.at(0) == L"\u00A5");
 
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:A1\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>5000</v></c></row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:A1\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>5000</v></c></row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -4877,16 +4904,15 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         }
     SECTION("Custom format with bracket notation without locale [$\u20AC]")
         {
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<numFmts count=\"1\">"
-            L"<numFmt numFmtId=\"164\" formatCode=\"[$\u20AC]#,##0.00\"/>"
-            L"</numFmts>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"164\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<numFmts count=\"1\">"
+                                    L"<numFmt numFmtId=\"164\" formatCode=\"[$\u20AC]#,##0.00\"/>"
+                                    L"</numFmts>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"164\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
@@ -4896,16 +4922,15 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         }
     SECTION("Custom format with literal dollar sign")
         {
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<numFmts count=\"1\">"
-            L"<numFmt numFmtId=\"164\" formatCode=\"$#,##0.00\"/>"
-            L"</numFmts>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"164\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<numFmts count=\"1\">"
+                                    L"<numFmt numFmtId=\"164\" formatCode=\"$#,##0.00\"/>"
+                                    L"</numFmts>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"164\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
@@ -4915,17 +4940,16 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         }
     SECTION("Custom format with quoted dollar sign")
         {
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<numFmts count=\"1\">"
-            L"<numFmt numFmtId=\"164\" "
-            L"formatCode=\"&quot;$&quot;#,##0.00\"/>"
-            L"</numFmts>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"164\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<numFmts count=\"1\">"
+                                    L"<numFmt numFmtId=\"164\" "
+                                    L"formatCode=\"&quot;$&quot;#,##0.00\"/>"
+                                    L"</numFmts>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"164\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
@@ -4939,16 +4963,15 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         }
     SECTION("Literal euro sign in custom format")
         {
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<numFmts count=\"1\">"
-            L"<numFmt numFmtId=\"164\" formatCode=\"\u20AC#,##0.00\"/>"
-            L"</numFmts>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"164\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<numFmts count=\"1\">"
+                                    L"<numFmt numFmtId=\"164\" formatCode=\"\u20AC#,##0.00\"/>"
+                                    L"</numFmts>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"164\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
@@ -4958,16 +4981,15 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         }
     SECTION("Literal pound sign in custom format")
         {
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<numFmts count=\"1\">"
-            L"<numFmt numFmtId=\"164\" formatCode=\"\u00A3#,##0.00\"/>"
-            L"</numFmts>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"164\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<numFmts count=\"1\">"
+                                    L"<numFmt numFmtId=\"164\" formatCode=\"\u00A3#,##0.00\"/>"
+                                    L"</numFmts>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"164\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
@@ -4978,14 +5000,13 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
     SECTION("Currency and date styles coexist correctly")
         {
         // Style 0 = currency (built-in 7), Style 1 = date (built-in 14)
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<cellXfs count=\"2\">"
-            L"<xf numFmtId=\"7\"/>"
-            L"<xf numFmtId=\"14\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<cellXfs count=\"2\">"
+                                    L"<xf numFmtId=\"7\"/>"
+                                    L"<xf numFmtId=\"14\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
@@ -4995,15 +5016,14 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         CHECK(ext.m_date_format_indices.size() == 1);
         CHECK(ext.m_date_format_indices.contains(1));
 
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:B1\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\">"
-            L"<c r=\"A1\" s=\"0\"><v>250.75</v></c>"
-            L"<c r=\"B1\" s=\"1\"><v>45000</v></c>"
-            L"</row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:B1\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\">"
+                                   L"<c r=\"A1\" s=\"0\"><v>250.75</v></c>"
+                                   L"<c r=\"B1\" s=\"1\"><v>45000</v></c>"
+                                   L"</row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -5017,23 +5037,21 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         {
         // cell has no s="" attribute, so even with currency styles loaded
         // the value should be read as-is
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"7\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"7\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
 
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:A1\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\"><c r=\"A1\"><v>42.5</v></c></row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:A1\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\"><c r=\"A1\"><v>42.5</v></c></row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -5045,25 +5063,23 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
     SECTION("String cell with currency style is not prefixed")
         {
         // type 's' (shared string) should not have currency prefix applied
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"7\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"7\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
         const wchar_t* sst = L"<sst><si><t>Price</t></si></sst>";
         ext.read_shared_strings(sst, std::wcslen(sst));
 
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:A1\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\"><c r=\"A1\" t=\"s\" s=\"0\"><v>0</v></c></row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:A1\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\"><c r=\"A1\" t=\"s\" s=\"0\"><v>0</v></c></row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -5094,15 +5110,14 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         CHECK(ext.m_currency_format_indices.at(0) == L"$");
         CHECK(ext.m_currency_format_indices.at(1) == L"\u20AC");
 
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:B1\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\">"
-            L"<c r=\"A1\" s=\"0\"><v>100</v></c>"
-            L"<c r=\"B1\" s=\"1\"><v>200</v></c>"
-            L"</row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:B1\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\">"
+                                   L"<c r=\"A1\" s=\"0\"><v>100</v></c>"
+                                   L"<c r=\"B1\" s=\"1\"><v>200</v></c>"
+                                   L"</row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -5115,16 +5130,15 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
     SECTION("Plain number format is not detected as currency")
         {
         // #,##0.00 has no currency symbol
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<numFmts count=\"1\">"
-            L"<numFmt numFmtId=\"164\" formatCode=\"#,##0.00\"/>"
-            L"</numFmts>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"164\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<numFmts count=\"1\">"
+                                    L"<numFmt numFmtId=\"164\" formatCode=\"#,##0.00\"/>"
+                                    L"</numFmts>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"164\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
@@ -5134,16 +5148,15 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         }
     SECTION("Percentage format is not detected as currency")
         {
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<numFmts count=\"1\">"
-            L"<numFmt numFmtId=\"164\" formatCode=\"0.00%\"/>"
-            L"</numFmts>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"164\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<numFmts count=\"1\">"
+                                    L"<numFmt numFmtId=\"164\" formatCode=\"0.00%\"/>"
+                                    L"</numFmts>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"164\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
@@ -5178,16 +5191,15 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         }
     SECTION("Bracket notation [$$-409] extracts dollar symbol")
         {
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<numFmts count=\"1\">"
-            L"<numFmt numFmtId=\"164\" formatCode=\"[$$-409]#,##0.00\"/>"
-            L"</numFmts>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"164\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<numFmts count=\"1\">"
+                                    L"<numFmt numFmtId=\"164\" formatCode=\"[$$-409]#,##0.00\"/>"
+                                    L"</numFmts>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"164\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
@@ -5197,23 +5209,21 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         }
     SECTION("Negative value with currency format")
         {
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"7\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"7\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
 
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:A1\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>-42.5</v></c></row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:A1\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v>-42.5</v></c></row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -5226,24 +5236,22 @@ TEST_CASE("XLSX currency format detection", "[xlsx][styles][currency]")
         }
     SECTION("Empty cell with currency style stays empty")
         {
-        const wchar_t* styles_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<styleSheet>"
-            L"<cellXfs count=\"1\">"
-            L"<xf numFmtId=\"5\"/>"
-            L"</cellXfs>"
-            L"</styleSheet>";
+        const wchar_t* styles_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                    L"<styleSheet>"
+                                    L"<cellXfs count=\"1\">"
+                                    L"<xf numFmtId=\"5\"/>"
+                                    L"</cellXfs>"
+                                    L"</styleSheet>";
 
         xlsx_extract_text ext{ true };
         ext.read_styles(styles_xml, std::wcslen(styles_xml));
 
         // cell has the style but <v> is empty
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:A1\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v></v></c></row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:A1\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\"><c r=\"A1\" s=\"0\"><v></v></c></row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -5258,20 +5266,19 @@ TEST_CASE("XLSX fill_missing_cells", "[xlsx][fill_missing_cells]")
         {
         // Row 1 has A, B, C; row 2 is missing B2
         xlsx_extract_text ext{ true };
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:C2\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\">"
-            L"<c r=\"A1\"><v>1</v></c>"
-            L"<c r=\"B1\"><v>2</v></c>"
-            L"<c r=\"C1\"><v>3</v></c>"
-            L"</row>"
-            L"<row r=\"2\">"
-            L"<c r=\"A2\"><v>4</v></c>"
-            L"<c r=\"C2\"><v>6</v></c>"
-            L"</row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:C2\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\">"
+                                   L"<c r=\"A1\"><v>1</v></c>"
+                                   L"<c r=\"B1\"><v>2</v></c>"
+                                   L"<c r=\"C1\"><v>3</v></c>"
+                                   L"</row>"
+                                   L"<row r=\"2\">"
+                                   L"<c r=\"A2\"><v>4</v></c>"
+                                   L"<c r=\"C2\"><v>6</v></c>"
+                                   L"</row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -5288,19 +5295,18 @@ TEST_CASE("XLSX fill_missing_cells", "[xlsx][fill_missing_cells]")
         // Both rows have data at A and D but are missing B and C.
         // largestRow (cell count) is 2, but max column position is 4.
         xlsx_extract_text ext{ true };
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:D2\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\">"
-            L"<c r=\"A1\"><v>1</v></c>"
-            L"<c r=\"D1\"><v>4</v></c>"
-            L"</row>"
-            L"<row r=\"2\">"
-            L"<c r=\"A2\"><v>5</v></c>"
-            L"<c r=\"D2\"><v>8</v></c>"
-            L"</row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:D2\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\">"
+                                   L"<c r=\"A1\"><v>1</v></c>"
+                                   L"<c r=\"D1\"><v>4</v></c>"
+                                   L"</row>"
+                                   L"<row r=\"2\">"
+                                   L"<c r=\"A2\"><v>5</v></c>"
+                                   L"<c r=\"D2\"><v>8</v></c>"
+                                   L"</row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -5322,19 +5328,18 @@ TEST_CASE("XLSX fill_missing_cells", "[xlsx][fill_missing_cells]")
         {
         // Both rows have data at A and C but are missing B
         xlsx_extract_text ext{ true };
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:C2\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\">"
-            L"<c r=\"A1\"><v>1</v></c>"
-            L"<c r=\"C1\"><v>3</v></c>"
-            L"</row>"
-            L"<row r=\"2\">"
-            L"<c r=\"A2\"><v>4</v></c>"
-            L"<c r=\"C2\"><v>6</v></c>"
-            L"</row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:C2\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\">"
+                                   L"<c r=\"A1\"><v>1</v></c>"
+                                   L"<c r=\"C1\"><v>3</v></c>"
+                                   L"</row>"
+                                   L"<row r=\"2\">"
+                                   L"<c r=\"A2\"><v>4</v></c>"
+                                   L"<c r=\"C2\"><v>6</v></c>"
+                                   L"</row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -5358,13 +5363,12 @@ TEST_CASE("XLSX rows beyond initial limit grow on demand", "[xlsx][grow]")
         // Row 1500 is beyond the 1,000 initial allocation and should
         // be appended via the grow-on-demand path.
         xlsx_extract_text ext{ true };
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:A2000\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\"><c r=\"A1\"><v>first</v></c></row>"
-            L"<row r=\"1500\"><c r=\"A1500\"><v>last</v></c></row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:A2000\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\"><c r=\"A1\"><v>first</v></c></row>"
+                                   L"<row r=\"1500\"><c r=\"A1500\"><v>last</v></c></row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -5385,14 +5389,13 @@ TEST_CASE("XLSX over-allocated rows are trimmed", "[xlsx][trim]")
         // Simulate a sheet where the dimension says A1:A1000 but only 3 rows have data
         xlsx_extract_text ext{ true };
 
-        const wchar_t* sheet_xml =
-            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-            L"<worksheet><dimension ref=\"A1:A1000\"/>"
-            L"<sheetData>"
-            L"<row r=\"1\"><c r=\"A1\"><v>10</v></c></row>"
-            L"<row r=\"2\"><c r=\"A2\"><v>20</v></c></row>"
-            L"<row r=\"3\"><c r=\"A3\"><v>30</v></c></row>"
-            L"</sheetData></worksheet>";
+        const wchar_t* sheet_xml = L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+                                   L"<worksheet><dimension ref=\"A1:A1000\"/>"
+                                   L"<sheetData>"
+                                   L"<row r=\"1\"><c r=\"A1\"><v>10</v></c></row>"
+                                   L"<row r=\"2\"><c r=\"A2\"><v>20</v></c></row>"
+                                   L"<row r=\"3\"><c r=\"A3\"><v>30</v></c></row>"
+                                   L"</sheetData></worksheet>";
 
         xlsx_extract_text::worksheet wrk;
         ext(sheet_xml, std::wcslen(sheet_xml), wrk);
@@ -5402,6 +5405,35 @@ TEST_CASE("XLSX over-allocated rows are trimmed", "[xlsx][trim]")
         CHECK(wrk[0][0].get_value() == L"10");
         CHECK(wrk[1][0].get_value() == L"20");
         CHECK(wrk[2][0].get_value() == L"30");
+        }
+    }
+
+TEST_CASE("XLSX malformed cell reference does not trigger a runaway fill", "[xlsx][malformed]")
+    {
+    SECTION("Bogus column letters in a cell reference")
+        {
+        xlsx_extract_text ext{ true };
+
+        // the second row has a cell with a nonsensical column reference ("!B2").
+        // Its column position parses as invalid and must not be treated as a
+        // span of billions of columns when filling missing cells.
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:B2\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\"><c r=\"A1\"><v>10</v></c><c r=\"B1\"><v>11</v></c></row>"
+            L"<row r=\"2\"><c r=\"A2\"><v>20</v></c><c r=\"!B2\"><v>21</v></c></row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        // completes promptly instead of hanging or exhausting memory
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 2);
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A1", wrk) == L"10");
+        CHECK(spreadsheet_extract_text::get_cell_text(L"A2", wrk) == L"20");
+        CHECK(wrk[0].size() <= spreadsheet_extract_text::EXCEL_MAX_COLUMNS);
+        CHECK(wrk[1].size() <= spreadsheet_extract_text::EXCEL_MAX_COLUMNS);
         }
     }
 
