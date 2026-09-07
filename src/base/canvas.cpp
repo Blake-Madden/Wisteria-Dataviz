@@ -761,8 +761,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             title.SetTextOrientation(Orientation::Vertical);
             title.SetAnchorPoint(wxPoint(leftMarginWidth, GetCanvasRect(dc).GetHeight()));
             title.SetAnchoring(Anchoring::TopLeftCorner);
-            title.SetMinimumUserSizeDIPs(
-                std::nullopt, safe_divide<wxCoord>(GetCanvasRectDIPs().GetHeight(), GetScaling()));
+            title.SetMinimumUserSizeDIPs(std::nullopt,
+                                         static_cast<wxCoord>(safe_divide<double>(
+                                             GetCanvasRectDIPs().GetHeight(), GetScaling())));
             title.SetPageVerticalAlignment(
                 (title.GetRelativeAlignment() == RelativeAlignment::Centered) ?
                     PageVerticalAlignment::Centered :
@@ -791,8 +792,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             title.SetTextOrientation(Orientation::Vertical);
             title.SetAnchorPoint(wxPoint(position, GetCanvasRect(dc).GetHeight()));
             title.SetAnchoring(Anchoring::BottomLeftCorner);
-            title.SetMinimumUserSizeDIPs(
-                std::nullopt, safe_divide<wxCoord>(GetCanvasRectDIPs().GetHeight(), GetScaling()));
+            title.SetMinimumUserSizeDIPs(std::nullopt,
+                                         static_cast<wxCoord>(safe_divide<double>(
+                                             GetCanvasRectDIPs().GetHeight(), GetScaling())));
             title.SetPageVerticalAlignment(
                 (title.GetRelativeAlignment() == RelativeAlignment::Centered) ?
                     PageVerticalAlignment::Centered :
@@ -818,8 +820,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             title.SetScaling(GetScaling());
             title.SetAnchorPoint(wxPoint(0, topMarginHeight));
             title.SetAnchoring(Anchoring::TopLeftCorner);
-            title.SetMinimumUserSizeDIPs(
-                safe_divide<wxCoord>(GetCanvasRectDIPs().GetWidth(), GetScaling()), std::nullopt);
+            title.SetMinimumUserSizeDIPs(static_cast<wxCoord>(safe_divide<double>(
+                                             GetCanvasRectDIPs().GetWidth(), GetScaling())),
+                                         std::nullopt);
             title.SetPageHorizontalAlignment(
                 (title.GetRelativeAlignment() == RelativeAlignment::Centered) ?
                     PageHorizontalAlignment::Centered :
@@ -845,8 +848,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             title.SetScaling(GetScaling());
             title.SetAnchorPoint(wxPoint(0, position));
             title.SetAnchoring(Anchoring::BottomLeftCorner);
-            title.SetMinimumUserSizeDIPs(
-                safe_divide<wxCoord>(GetCanvasRectDIPs().GetWidth(), GetScaling()), std::nullopt);
+            title.SetMinimumUserSizeDIPs(static_cast<wxCoord>(safe_divide<double>(
+                                             GetCanvasRectDIPs().GetWidth(), GetScaling())),
+                                         std::nullopt);
             title.SetPageHorizontalAlignment(
                 (title.GetRelativeAlignment() == RelativeAlignment::Centered) ?
                     PageHorizontalAlignment::Centered :
