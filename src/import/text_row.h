@@ -193,7 +193,7 @@ namespace lily_of_the_valley
                            vector properly. By default, we won't resize it for them either, because
                            then the greater text matrix will wind up being a jagged array.
                            Enable column count resizing to change that.*/
-                        if (m_values)
+                        if (m_values != nullptr)
                             {
                             if (currentColumnIndex >= m_values->size())
                                 {
@@ -237,7 +237,7 @@ namespace lily_of_the_valley
                                     {
                                     return nullptr;
                                     }
-                                if (m_values)
+                                if (m_values != nullptr)
                                     {
                                     m_values->at(currentColumnIndex++).assign(previousPosition);
                                     }
@@ -315,7 +315,7 @@ namespace lily_of_the_valley
                            vector properly. By default, we won't resize it for them either,
                            because then the greater text matrix will wind up being a jagged array.
                            Enable column count resizing to change that.*/
-                        if (m_values)
+                        if (m_values != nullptr)
                             {
                             if (currentColumnIndex >= m_values->size())
                                 {

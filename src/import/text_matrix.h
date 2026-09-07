@@ -76,7 +76,7 @@ namespace lily_of_the_valley
             const wchar_t* currentPosition = text;
             size_t currentRowIndex = 0;
 
-            if (m_matrix)
+            if (m_matrix != nullptr)
                 {
                 m_matrix->clear();
                 m_matrix->resize(row_count);
@@ -97,7 +97,7 @@ namespace lily_of_the_valley
                         recode_md_code();
                         return currentRowIndex;
                         }
-                    if (m_matrix)
+                    if (m_matrix != nullptr)
                         {
                         m_matrix->at(currentRowIndex).resize(column_count);
                         pos->set_values(&m_matrix->at(currentRowIndex));
@@ -124,7 +124,7 @@ namespace lily_of_the_valley
                             // row reader
                             if (pos->get_number_of_columns_last_read() != 0)
                                 {
-                                if (m_matrix)
+                                if (m_matrix != nullptr)
                                     {
                                     // ...but, make sure at least one of the row's columns actually
                                     // contains text
@@ -158,7 +158,7 @@ namespace lily_of_the_valley
                             if (currentPosition == nullptr)
                                 {
                                 // resize to the number of row that were actually read in
-                                if (m_matrix)
+                                if (m_matrix != nullptr)
                                     {
                                     m_matrix->resize(currentRowIndex);
                                     }
@@ -206,7 +206,7 @@ namespace lily_of_the_valley
                             // dynamic number of columns, then trim any extra (blank ones at the
                             // end) that were added while reading Note that this only applies for
                             // multi-column data (i.e., "matrix" mode).
-                            if (m_matrix)
+                            if (m_matrix != nullptr)
                                 {
                                 if (pos->is_column_resizing_enabled() &&
                                     pos->get_number_of_columns_last_read() <
@@ -228,7 +228,7 @@ namespace lily_of_the_valley
                             // dynamic number of columns, then trim any extra (blank ones at the
                             // end) that were added while reading, Note that this only applies for
                             // multi-column data (i.e., "matrix" mode).
-                            if (m_matrix)
+                            if (m_matrix != nullptr)
                                 {
                                 if (pos->is_column_resizing_enabled() &&
                                     pos->get_number_of_columns_last_read() <
@@ -244,7 +244,7 @@ namespace lily_of_the_valley
                     if (currentPosition == nullptr)
                         {
                         // resize to the number of rows that were actually read in
-                        if (m_matrix)
+                        if (m_matrix != nullptr)
                             {
                             m_matrix->resize(currentRowIndex);
                             }
@@ -278,7 +278,7 @@ namespace lily_of_the_valley
                         }
                     }
                 }
-            if (m_matrix)
+            if (m_matrix != nullptr)
                 {
                 m_matrix->resize(currentRowIndex);
                 }
