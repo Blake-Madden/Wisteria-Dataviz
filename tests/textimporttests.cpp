@@ -119,6 +119,54 @@ TEST_CASE("Cell trim", "[text import]")
         CHECK(std::wstring{start, trim.get_trimmed_string_length()} ==
               std::wstring{L"Short for \"constructor.\""});
         }
+    SECTION("Trim Vertical Tab And Form Feed")
+        {
+        const wchar_t* myString = L"\v\fHello\f\v";
+        lily_of_the_valley::cell_trim trim;
+        const wchar_t* start = trim(myString, std::wcslen(myString));
+        CHECK(std::wstring{start, trim.get_trimmed_string_length()} == std::wstring{L"Hello"});
+        CHECK(trim.get_trimmed_string_length() == 5);
+        }
+    SECTION("Non-ASCII Whitespace Is Not Trimmed")
+        {
+        // U+00A0 no-break space and U+3000 ideographic space are left intact
+        const wchar_t* myString = L" Hello　";
+        lily_of_the_valley::cell_trim trim;
+        const wchar_t* start = trim(myString, std::wcslen(myString));
+        CHECK(std::wstring{start, trim.get_trimmed_string_length()} ==
+              std::wstring{L" Hello　"});
+        CHECK(trim.get_trimmed_string_length() == 7);
+        }
+    }
+
+TEST_CASE("ASCII whitespace", "[text import]")
+    {
+    SECTION("Matches ASCII whitespace")
+        {
+        CHECK(lily_of_the_valley::is_ascii_whitespace(L' '));
+        CHECK(lily_of_the_valley::is_ascii_whitespace(L'\t'));
+        CHECK(lily_of_the_valley::is_ascii_whitespace(L'\n'));
+        CHECK(lily_of_the_valley::is_ascii_whitespace(L'\r'));
+        CHECK(lily_of_the_valley::is_ascii_whitespace(L'\f'));
+        CHECK(lily_of_the_valley::is_ascii_whitespace(L'\v'));
+        }
+    SECTION("Rejects non-whitespace and non-ASCII whitespace")
+        {
+        CHECK_FALSE(lily_of_the_valley::is_ascii_whitespace(L'a'));
+        CHECK_FALSE(lily_of_the_valley::is_ascii_whitespace(L'0'));
+        CHECK_FALSE(lily_of_the_valley::is_ascii_whitespace(0));
+        CHECK_FALSE(lily_of_the_valley::is_ascii_whitespace(L' '));
+        CHECK_FALSE(lily_of_the_valley::is_ascii_whitespace(L' '));
+        CHECK_FALSE(lily_of_the_valley::is_ascii_whitespace(L'　'));
+        }
+    SECTION("Standard delimiter parser ignores non-ASCII whitespace")
+        {
+        const lily_of_the_valley::is_standard_delimiters isDelim;
+        CHECK(isDelim(L' '));
+        CHECK(isDelim(L','));
+        CHECK(isDelim(L';'));
+        CHECK_FALSE(isDelim(L' '));
+        }
     }
 
 TEST_CASE("Cell collapse quotes", "[text import]")

@@ -13,7 +13,6 @@
 #define TEXT_FUNCTIONAL_H
 
 #include <algorithm>
-#include <cwctype>
 #include <string>
 
 namespace lily_of_the_valley
@@ -41,6 +40,17 @@ namespace lily_of_the_valley
                 }
             }
         };
+
+    /// @brief Determines whether a character is an ASCII whitespace character.
+    /// @details More performant than @c std::iswspace and suits our needs here.
+    /// @param character The character to review.
+    /// @returns @c true if @p character is an ASCII whitespace character.
+    [[nodiscard]]
+    inline constexpr bool is_ascii_whitespace(const wchar_t character) noexcept
+        {
+        return (character == L' ' || character == L'\t' || character == L'\n' ||
+                character == L'\r' || character == L'\f' || character == L'\v');
+        }
 
     /// @brief Trims whitespace and quotes from around a string.
     /// @details This is needed for reading cells from a CSV file where some cells may be quoted.
@@ -82,7 +92,7 @@ namespace lily_of_the_valley
                 }
             const wchar_t* start =
                 std::find_if_not(valueStart, valueStart + length,
-                                 [](const auto ch) noexcept { return std::iswspace(ch); });
+                                 [](const auto ch) noexcept { return is_ascii_whitespace(ch); });
             // remove trailing quote (just the last one),
             // but only if it has a matching leading quote
             if (hadLeadingQuote && end > start && end[0] == L'\"')
@@ -91,7 +101,7 @@ namespace lily_of_the_valley
                 }
             while (end > start)
                 {
-                if (std::iswspace(end[0]) != 0)
+                if (is_ascii_whitespace(end[0]))
                     {
                     --end;
                     }
@@ -145,7 +155,7 @@ namespace lily_of_the_valley
         [[nodiscard]]
         bool operator()(const wchar_t character) const noexcept
             {
-            return ((std::iswspace(character) != 0) || character == L';' || character == L',');
+            return (is_ascii_whitespace(character) || character == L';' || character == L',');
             }
         };
 
