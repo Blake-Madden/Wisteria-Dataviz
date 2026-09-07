@@ -4309,6 +4309,58 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             node->Add(L"show-labels", false);
             }
         }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::NightingaleRoseChart)))
+        {
+        const auto* roseChart = dynamic_cast<const Wisteria::Graphs::NightingaleRoseChart*>(graph);
+        if (roseChart->GetRadialScaling() !=
+            Wisteria::Graphs::NightingaleRoseChart::RadialScaling::AreaProportional)
+            {
+            const auto rsStr =
+                Wisteria::ReportEnumConvert::ConvertNightingaleRoseRadialScalingToString(
+                    roseChart->GetRadialScaling());
+            if (rsStr.has_value())
+                {
+                node->Add(L"radial-scaling", rsStr.value());
+                }
+            }
+        if (roseChart->GetSeriesDisplay() !=
+            Wisteria::Graphs::NightingaleRoseChart::SeriesDisplay::Overlaid)
+            {
+            const auto sdStr =
+                Wisteria::ReportEnumConvert::ConvertNightingaleRoseSeriesDisplayToString(
+                    roseChart->GetSeriesDisplay());
+            if (sdStr.has_value())
+                {
+                node->Add(L"series-display", sdStr.value());
+                }
+            }
+        if (!compare_doubles(roseChart->GetStartAngle(), 90.0))
+            {
+            node->Add(L"start-angle", roseChart->GetStartAngle());
+            }
+        if (!roseChart->IsShowingLabels())
+            {
+            node->Add(L"show-labels", false);
+            }
+        if (roseChart->GetGhostOpacity() != Wisteria::Settings::GHOST_OPACITY)
+            {
+            node->Add(L"ghost-opacity", static_cast<double>(roseChart->GetGhostOpacity()));
+            }
+        if (!roseChart->GetGhostedWedges().empty())
+            {
+            auto ghostArray = node->GetProperty(L"ghosted-wedges");
+            for (const auto& [groupLabel, categoryLabel] : roseChart->GetGhostedWedges())
+                {
+                auto ghostObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+                ghostObj->Add(L"group", groupLabel);
+                if (!categoryLabel.empty())
+                    {
+                    ghostObj->Add(L"category", categoryLabel);
+                    }
+                ghostArray->ArrayAdd(ghostObj);
+                }
+            }
+        }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WilmarthBridgePlot)))
         {
         const auto* bridgePlot = dynamic_cast<const Wisteria::Graphs::WilmarthBridgePlot*>(graph);

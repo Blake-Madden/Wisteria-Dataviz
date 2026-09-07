@@ -265,6 +265,12 @@ namespace Wisteria
                                                     item, canvas, currentRow, currentColumn));
                                                 }
                                             else if (typeProperty->AsString().CmpNoCase(
+                                                         L"nightingale-rose-chart") == 0)
+                                                {
+                                                embeddedGraphs.push_back(LoadNightingaleRoseChart(
+                                                    item, canvas, currentRow, currentColumn));
+                                                }
+                                            else if (typeProperty->AsString().CmpNoCase(
                                                          L"wilmarth-bridge-plot") == 0)
                                                 {
                                                 embeddedGraphs.push_back(LoadWilmarthBridgePlot(

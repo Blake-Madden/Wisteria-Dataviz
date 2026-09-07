@@ -246,6 +246,7 @@ constexpr wxWindowID ID_NEW_WAFFLE_CHART{ wxID_HIGHEST + 16 };
 constexpr wxWindowID ID_NEW_WORD_CLOUD{ wxID_HIGHEST + 17 };
 constexpr wxWindowID ID_NEW_RACETRACK_CHART{ wxID_HIGHEST + 77 };
 constexpr wxWindowID ID_NEW_CHOROPLETH_MAP{ wxID_HIGHEST + 79 };
+constexpr wxWindowID ID_NEW_NIGHTINGALE_ROSE_CHART{ wxID_HIGHEST + 80 };
 
 // Business graphs
 constexpr wxWindowID ID_NEW_GANTT{ wxID_HIGHEST + 18 };

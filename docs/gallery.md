@@ -66,6 +66,10 @@ Basic
 | :-------------- |
 | ![](docs/images/racetrack.svg) |
 
+| Nightingale Rose Chart (Wisteria::Graphs::NightingaleRoseChart) |
+| :-------------- |
+| ![](docs/images/nightingale_rose_chart.svg) |
+
 Business
 -----------------------------
 

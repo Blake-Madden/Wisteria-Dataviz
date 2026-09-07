@@ -2,6 +2,8 @@
 
 ## 1.2.2
 
+- Added Nightingale Rose Chart.
+- Added Choropleth.
 - Added Race Track Chart.
 - Added Wilmarth Bridge Plot.
 - Added "Serpentine" features to bar charts.

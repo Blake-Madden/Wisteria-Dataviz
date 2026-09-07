@@ -12,6 +12,7 @@
 #include "../base/svgreportprintout.h"
 #include "../ui/controls/datasetgridtable.h"
 #include "../ui/dialogs/datasetimportdlg.h"
+#include "../ui/dialogs/editors/insert_nightingale_rose_chart_dlg.h"
 #include "../ui/dialogs/editors/insertboxplotdlg.h"
 #include "../ui/dialogs/editors/insertbubbleplotdlg.h"
 #include "../ui/dialogs/editors/insertcandlestickplotdlg.h"
@@ -288,6 +289,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertPieChart, this, ID_NEW_PIECHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWaffleChart, this, ID_NEW_WAFFLE_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertRaceTrackChart, this, ID_NEW_RACETRACK_CHART);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertNightingaleRoseChart, this,
+                  ID_NEW_NIGHTINGALE_ROSE_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWilmarthBridgePlot, this,
                   ID_NEW_WILMARTH_BRIDGE_PLOT);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertCatBarChart, this, ID_NEW_BARCHART);
@@ -1731,6 +1734,8 @@ void WisteriaView::BuildGraphMenus()
     appendItem(m_basicGraphMenu, ID_NEW_WAFFLE_CHART, _(L"Waffle Chart..."), L"waffle.svg");
     appendItem(m_basicGraphMenu, ID_NEW_RACETRACK_CHART, _(L"Race Track Chart..."),
                L"racetrack.svg");
+    appendItem(m_basicGraphMenu, ID_NEW_NIGHTINGALE_ROSE_CHART, _(L"Nightingale Rose Chart..."),
+               L"rose.svg");
     m_basicGraphMenu.AppendSeparator();
     appendItem(m_basicGraphMenu, ID_NEW_CHOROPLETH_MAP, _(L"Choropleth Map..."), L"choropleth.svg");
 
@@ -2999,6 +3004,10 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::RaceTrackChart)))
         {
         EditRaceTrackChart(*graph, canvas, itemRow, itemCol);
+        }
+    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::NightingaleRoseChart)))
+        {
+        EditNightingaleRoseChart(*graph, canvas, itemRow, itemCol);
         }
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WilmarthBridgePlot)))
         {
@@ -7415,6 +7424,163 @@ void WisteriaView::EditRaceTrackChart(const Wisteria::Graphs::Graph2D& graph,
         PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
                              Wisteria::UI::LegendPlacement::None);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertNightingaleRoseChart([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = EnsureActivePage();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertNightingaleRoseChartDlg dlg(canvas, &m_reportBuilder, m_frame);
+    SetDialogIcon(dlg, L"rose.svg");
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = std::make_shared<Wisteria::Graphs::NightingaleRoseChart>(canvas);
+        dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
+
+        const std::optional<wxString> aggregateCol =
+            dlg.GetAggregateVariable().empty() ?
+                std::nullopt :
+                std::optional<wxString>(dlg.GetAggregateVariable());
+        const std::optional<wxString> groupCol =
+            dlg.GetGroupVariable().empty() ? std::nullopt :
+                                             std::optional<wxString>(dlg.GetGroupVariable());
+        plot->SetData(dlg.GetSelectedDataset(), aggregateCol, dlg.GetCategoryVariable(), groupCol);
+
+        plot->SetRadialScaling(dlg.GetRadialScaling());
+        plot->SetSeriesDisplay(dlg.GetSeriesDisplay());
+        plot->SetStartAngle(dlg.GetStartAngle());
+        plot->ShowLabels(dlg.IsShowingLabels());
+        plot->SetGhostOpacity(dlg.GetGhostOpacity());
+        for (const auto& [ghostGroupLabel, ghostCategoryLabel] : dlg.GetGhostedWedges())
+            {
+            plot->GhostWedge(ghostGroupLabel, ghostCategoryLabel);
+            }
+
+        // cache dataset and variable names for round-tripping
+        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
+        plot->SetPropertyTemplate(L"variables.category", dlg.GetCategoryVariable());
+        if (!dlg.GetAggregateVariable().empty())
+            {
+            plot->SetPropertyTemplate(L"variables.aggregate", dlg.GetAggregateVariable());
+            }
+        if (!dlg.GetGroupVariable().empty())
+            {
+            plot->SetPropertyTemplate(L"variables.group", dlg.GetGroupVariable());
+            }
+
+        const auto legendPlacement = dlg.GetLegendPlacement();
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
+
+        PlaceGraphWithLegend(
+            canvas, plot,
+            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
+                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
+                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
+                                           .Title(dlg.GetLegendTitle())
+                                           .Placement(side)
+                                           .PlacementHint(hint))) :
+                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::EditNightingaleRoseChart(const Wisteria::Graphs::Graph2D& graph,
+                                            Wisteria::Canvas* canvas, const size_t graphRow,
+                                            const size_t graphCol) const
+    {
+    Wisteria::UI::InsertNightingaleRoseChartDlg dlg(
+        canvas, &m_reportBuilder, m_frame, _(L"Edit Nightingale Rose Chart"), wxID_ANY,
+        wxDefaultPosition, wxDefaultSize,
+        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    SetDialogIcon(dlg, L"rose.svg");
+    dlg.SetSelectedCell(graphRow, graphCol);
+    dlg.LoadFromGraph(graph);
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = std::make_shared<Wisteria::Graphs::NightingaleRoseChart>(canvas);
+        plot->SetId(graph.GetId());
+        dlg.ApplyGraphOptions(*plot);
+        dlg.ApplyPageOptions(*plot);
+
+        const std::optional<wxString> aggregateCol =
+            dlg.GetAggregateVariable().empty() ?
+                std::nullopt :
+                std::optional<wxString>(dlg.GetAggregateVariable());
+        const std::optional<wxString> groupCol =
+            dlg.GetGroupVariable().empty() ? std::nullopt :
+                                             std::optional<wxString>(dlg.GetGroupVariable());
+        plot->SetData(dlg.GetSelectedDataset(), aggregateCol, dlg.GetCategoryVariable(), groupCol);
+        dlg.ApplyAxisOverrides(*plot);
+
+        plot->SetRadialScaling(dlg.GetRadialScaling());
+        plot->SetSeriesDisplay(dlg.GetSeriesDisplay());
+        plot->SetStartAngle(dlg.GetStartAngle());
+        plot->ShowLabels(dlg.IsShowingLabels());
+        plot->SetGhostOpacity(dlg.GetGhostOpacity());
+        for (const auto& [ghostGroupLabel, ghostCategoryLabel] : dlg.GetGhostedWedges())
+            {
+            plot->GhostWedge(ghostGroupLabel, ghostCategoryLabel);
+            }
+
+        // carry forward property templates, preserving {{placeholders}}
+        const auto* oldChart = dynamic_cast<const Wisteria::Graphs::NightingaleRoseChart*>(&graph);
+
+        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
+                             graph.GetPropertyTemplate(L"dataset"));
+        CarryForwardProperty(graph, *plot, L"variables.category", dlg.GetCategoryVariable(),
+                             oldChart != nullptr ? oldChart->GetCategoryColumnName() : wxString{});
+        CarryForwardProperty(graph, *plot, L"variables.aggregate", dlg.GetAggregateVariable(),
+                             oldChart != nullptr ? oldChart->GetAggregateColumnName() : wxString{});
+        CarryForwardProperty(
+            graph, *plot, L"variables.group", dlg.GetGroupVariable(),
+            oldChart != nullptr ? oldChart->GetGroupColumnName().value_or(wxString{}) : wxString{});
+
+        // clear old legend if present
+        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+
+        const auto legendPlacement = dlg.GetLegendPlacement();
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
+
+        PlaceGraphWithLegend(
+            canvas, plot,
+            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
+                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
+                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
+                                           .Title(dlg.GetLegendTitle())
+                                           .Placement(side)
+                                           .PlacementHint(hint))) :
+                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {

@@ -949,6 +949,10 @@ wxString WisteriaApp::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph)
         {
         return _DT(L"wilmarth-bridge-plot");
         }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::NightingaleRoseChart)))
+        {
+        return _DT(L"nightingale-rose-chart");
+        }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::StemAndLeafPlot)))
         {
         return _DT(L"stem-and-leaf-plot");
@@ -1067,6 +1071,10 @@ wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase*
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WilmarthBridgePlot)))
         {
         return L"wilmarth-bridge.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::NightingaleRoseChart)))
+        {
+        return L"rose.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::StemAndLeafPlot)))
         {

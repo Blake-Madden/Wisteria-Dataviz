@@ -35,6 +35,7 @@ SET(TEST_SRC_FILES
     lrroadmaprendertests.cpp
     memmaptests.cpp
     multiserieslineplotrendertests.cpp
+    nightingale_rose_chart_render_tests.cpp
     pdfreadertests.cpp
     piechartrendertests.cpp
     pivottests.cpp

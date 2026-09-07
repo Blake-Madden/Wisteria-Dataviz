@@ -34,6 +34,7 @@
 #include "../src/graphs/lineplot.h"
 #include "../src/graphs/lrroadmap.h"
 #include "../src/graphs/multi_series_lineplot.h"
+#include "../src/graphs/nightingale_rose_chart.h"
 #include "../src/graphs/piechart.h"
 #include "../src/graphs/proconroadmap.h"
 #include "../src/graphs/racetrackchart.h"
@@ -125,7 +126,8 @@ class MyApp final : public wxApp
         ID_NEW_RACETRACK,
         ID_NEW_WILMARTH_BRIDGE,
         ID_NEW_BARCHART_SERPENTINE,
-        ID_NEW_BARCHART_SERPENTINE_AGGRESSIVE
+        ID_NEW_BARCHART_SERPENTINE_AGGRESSIVE,
+        ID_NEW_NIGHTINGALE_ROSE
         };
 
   private:

@@ -558,6 +558,57 @@ Properties for `"race-track-chart"` nodes:
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}
+## Nightingale Rose Chart {#nightingale-rose-chart-properties .unnumbered}
+
+Properties for `"nightingale-rose-chart"` nodes:
+
+- `"variables"`: An item containing the following properties:
+  - `"category"`: The categorical column containing the angular slice categories.
+  - `"aggregate"`: (Optional) The continuous column to aggregate into each slice. \
+    If not provided, the frequency counts of the categories are used.
+  - `"group"`: (Optional) The categorical column that splits each slice into series.
+- `"radial-scaling"`: A string specifying how a wedge's value maps to its radius. \
+  Available options are:
+  - `"area"`: The wedge area is proportional to the value (the default).
+  - `"radius"`: The wedge radius is proportional to the value.
+- `"series-display"`: A string specifying how the series within an angular slice are arranged. \
+  Available options are:
+  - `"overlaid"`: Every series wedge starts at the center, with larger wedges drawn behind smaller ones (the default).
+  - `"stacked"`: Each series is an annular band stacked on the previous one.
+- `"start-angle"`: The angle (in degrees) where the first slice starts. \
+  `0` is 3 o'clock and `90` is 6 o'clock.
+  Slices sweep clockwise.
+  (The default is `90`.)
+- `"show-labels"`: If `false`, will hide the category labels drawn around the perimeter.
+- `"ghost-opacity"`: The opacity (`0`--`255`) that ghosted wedges are drawn with. \
+  The default is the framework's standard ghost opacity.
+- `"ghosted-wedges"`: An array of items, each drawing one series wedge translucent instead of solid. \
+  The wedge outline still shows how far the series reaches.
+  This has an effect only when a `"group"` variable is set.
+  Each item has the following properties:
+  - `"group"`: The series (group) label to ghost.
+  - `"category"`: (Optional) The slice (category) label to ghost it in.
+  If omitted, the series is ghosted in every slice.
+- Some base properties available to [graphs](#graph-properties), including `"brush-scheme"` and `"color-scheme"` for coloring the series. \
+  Each series is colored according to its position in the dataset.
+
+```json
+{
+  "type": "nightingale-rose-chart",
+  "dataset": "Mortality",
+  "variables": {
+    "category": "Month",
+    "aggregate": "Deaths",
+    "group": "Cause"
+  },
+  "color-scheme": "dusk",
+  "series-display": "overlaid",
+  "title": "Causes of Mortality"
+}
+```
+:::
+
+::: {.minipage data-latex="{\textwidth}"}
 ## Sankey Diagram {#sankey-diagram-properties .unnumbered}
 
 Properties for `"sankey-diagram"` nodes:

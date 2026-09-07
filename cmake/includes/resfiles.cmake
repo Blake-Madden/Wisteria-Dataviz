@@ -79,6 +79,7 @@ realtime.svg
 reload.svg
 report.svg
 roadmap.svg
+rose.svg
 sankey.svg
 scale.svg
 scatterplot.svg

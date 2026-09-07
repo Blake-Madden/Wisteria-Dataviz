@@ -198,6 +198,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_STEMANDLEAF);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_RACETRACK);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_WILMARTH_BRIDGE);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_NIGHTINGALE_ROSE);
 
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, wxID_NEW);
@@ -265,6 +266,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_WORD_CLOUD, _(L"Word Cloud"));
     fileMenu->Append(MyApp::ID_NEW_RACETRACK, _(L"Race Track Chart"));
     fileMenu->Append(MyApp::ID_NEW_WILMARTH_BRIDGE, _(L"Wilmarth Bridge Plot"));
+    fileMenu->Append(MyApp::ID_NEW_NIGHTINGALE_ROSE, _(L"Nightingale Rose Chart"));
     fileMenu->AppendSeparator();
 
     fileMenu->Append(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"));
@@ -2968,6 +2970,148 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         }
+    // Nightingale Rose Chart
+    else if (event.GetId() == MyApp::ControlIDs::ID_NEW_NIGHTINGALE_ROSE)
+        {
+        subframe->SetTitle(_(L"Nightingale Rose Chart"));
+        subframe->m_canvas->SetFixedObjectsGridSize(2, 2);
+        // aged-paper ground from the 1858 plate
+        subframe->m_canvas->SetBackgroundColor(wxColour{ 243, 229, 228 });
+
+        // a blackletter face for the titles and a cursive one for the caption,
+        // each resolving to an installed face or the system font
+        wxFont displayFont{ wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT) };
+        displayFont.SetFaceName(Wisteria::GraphItems::Label::GetFirstAvailableDecorativeFont());
+
+        wxFont captionFont{ wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT) };
+        captionFont.SetFaceName(Wisteria::GraphItems::Label::GetFirstAvailableCursiveFont());
+        captionFont.SetStyle(wxFONTSTYLE_ITALIC);
+
+        // cause colors, innermost slice first
+        const auto brushes =
+            std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(std::vector<wxBrush>{
+                wxBrush{
+                    Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::SmokyBlack) },
+                wxBrush{ wxColour{ L"#D8C3BC" } }, wxBrush{ wxColour{ L"#9DB7C0" } } });
+
+        try
+            {
+            auto monthlyData = std::make_shared<Wisteria::Data::Dataset>();
+            monthlyData->ImportCSV(
+                appDir + L"/datasets/historical/Nightingale.csv",
+                Wisteria::Data::ImportInfo()
+                    // annualized deaths per 1,000, the quantity Nightingale's
+                    // 1858 plate is drawn from (not the raw death counts)
+                    .ContinuousColumns({ L"Disease.rate", L"Wounds.rate", L"Other.rate" })
+                    .CategoricalColumns(
+                        { { L"Date", Wisteria::Data::CategoricalImportMethod::ReadAsStrings },
+                          { L"Month", Wisteria::Data::CategoricalImportMethod::ReadAsStrings } }));
+
+            // build one rose from the months in [startDate, endDate], reshaping the
+            // wide HistData rows (one row per month, a column per cause) into one row
+            // per month and cause
+            const auto buildRose =
+                [&](const wxString& startDate, const wxString& endDate, const wxString& title)
+            {
+                Wisteria::Data::Subset dataSubsetter;
+                const auto span =
+                    dataSubsetter.SubsetSection(monthlyData, L"Date", startDate, endDate, true);
+                auto roseData = Wisteria::Data::Pivot::PivotLonger(
+                    span, { L"Month" }, { L"Disease.rate", L"Wounds.rate", L"Other.rate" },
+                    { L"Cause" }, L"Rate");
+                roseData->RecodeRE(L"Cause", L"^Disease\\.rate$", L"Zymotic diseases");
+                roseData->RecodeRE(L"Cause", L"^Wounds\\.rate$", L"Wounds \\& injuries");
+                roseData->RecodeRE(L"Cause", L"^Other\\.rate$", L"All other causes");
+
+                auto rose = std::make_shared<Wisteria::Graphs::NightingaleRoseChart>(
+                    subframe->m_canvas, brushes);
+                rose->SetData(roseData, L"Rate", L"Month", L"Cause");
+                // start the first month at 9 o'clock and sweep the year clockwise
+                rose->SetStartAngle(180);
+                rose->GetTitle().SetText(title);
+                rose->GetTitle().SetPadding(5, 5, 5, 5);
+                rose->GetTitle().SetTextAlignment(Wisteria::TextAlignment::Centered);
+                rose->GetTitle().SetRelativeAlignment(Wisteria::RelativeAlignment::Centered);
+                rose->GetTitle().GetFont() = displayFont;
+                return rose;
+            };
+
+            // right column, matching the plate: the dramatic first year fills the whole column
+            auto firstYear = buildRose(
+                L"1854-04-01", L"1855-03-01",
+                _(L"1.\nAP<span style='text-decoration:underline'>RIL 1854 to MARC</span>H 1855"));
+            // Through autumn 1854 the "all other causes" and "wounds" wedges are
+            // nearly equal, so Nightingale drew only the boundary of "all other
+            // causes" and let "wounds" read as one shape. (Her caption calls out
+            // October 1854; the plate does the same for September and November).
+            // Ghosting those wedges reproduces that.
+            firstYear->GhostWedge(L"All other causes", L"Sep");
+            firstYear->GhostWedge(L"All other causes", L"Oct");
+            firstYear->GhostWedge(L"All other causes", L"Nov");
+            firstYear->GetGraphItemInfo().CanvasHeightProportion(1);
+            subframe->m_canvas->SetFixedObject(0, 1, firstYear);
+
+            // left column: the smaller second year takes the top half
+            auto secondYear =
+                buildRose(L"1855-04-01", L"1856-03-01",
+                          _(L"2.\nAP<span style='text-decoration:underline'>RIL 1855 to "
+                            L"MARC</span>H 1856"));
+            // On the plate, the smaller of the two coinciding wedges is drawn only as
+            // a boundary. April 1855: "all other causes" is larger than "wounds," so
+            // "wounds" is the one that disappears. January & February 1856: "zymotic
+            // diseases" is subsumed into "all other causes."
+            secondYear->GhostWedge(L"Wounds & injuries", L"Apr");
+            secondYear->GhostWedge(L"Zymotic diseases", L"Jan");
+            secondYear->GhostWedge(L"Zymotic diseases", L"Feb");
+            subframe->m_canvas->SetFixedObject(0, 0, secondYear);
+            }
+        catch (const std::exception& err)
+            {
+            wxMessageBox(wxString::FromUTF8(err.what()), _(L"Import Error"),
+                         wxOK | wxICON_ERROR | wxCENTRE);
+            return;
+            }
+
+        auto caption = std::make_shared<Wisteria::GraphItems::Label>(
+            Wisteria::GraphItems::GraphItemInfo{
+                _(L"The Areas of the blue, red, & black wedges are each measured from\n"
+                  "  the centre as the common vertex.\n"
+                  "The blue wedges measured from the centre of the circle represent area\n"
+                  "  for area, the deaths from Preventable or Mitigable Zymotic diseases; the\n"
+                  "  red wedges measured from the centre the deaths from wounds; & the\n"
+                  "  black wedges measured from the centre the deaths from all other causes.\n"
+                  "The black line across the red triangle in Nov. 1854 marks the boundary\n"
+                  "  of the deaths from all other causes during the month.\n"
+                  "In October 1854, & April 1855, the black area coincides with the red;\n"
+                  "  in January & February 1856, the blue coincides with the black.\n"
+                  "The entire areas may be compared by following the blue, the red, &\n"
+                  "  the black lines enclosing them.") }
+                .Padding(5, 5, 5, 5)
+                .ChildAlignment(Wisteria::RelativeAlignment::FlushLeft)
+                .FixedWidthOnCanvas(true)
+                .DPIScaling(subframe->m_canvas->GetDPIScaleFactor()));
+        caption->GetFont() = captionFont;
+        subframe->m_canvas->SetFixedObject(1, 0, caption);
+        // Hold the caption to the left column. Its row has an empty second cell, so
+        // the row's proportions never total 100% and the caption would otherwise be
+        // widened to the full canvas.
+        caption->GetGraphItemInfo().CanvasWidthProportion(0.5);
+
+        // decorative banner across the top of both diagrams
+        Wisteria::GraphItems::Label bannerTitle{
+            Wisteria::GraphItems::GraphItemInfo{
+                _(L"DIAGRAM of the CAUSES of MORTALITY\n"
+                  "<span style='text-decoration:underline'>in the ARMY in the EAST</span>") }
+                .Padding(5, 5, 5, 5)
+                .ChildAlignment(Wisteria::RelativeAlignment::Centered)
+                .LabelAlignment(Wisteria::TextAlignment::Centered)
+        };
+        bannerTitle.SetFont(displayFont);
+        bannerTitle.EnableMarkup(true);
+        subframe->m_canvas->GetTopTitles().push_back(std::move(bannerTitle));
+
+        subframe->m_canvas->GetPrinterSettings().SetOrientation(wxPrintOrientation::wxLANDSCAPE);
+        }
     // Wilmarth Bridge Plot
     else if (event.GetId() == MyApp::ControlIDs::ID_NEW_WILMARTH_BRIDGE)
         {
@@ -3232,6 +3376,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_WILMARTH_BRIDGE, _(L"Wilmarth Bridge Plot"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/wilmarth-bridge.svg", iconSize),
                      _(L"Wilmarth Bridge Plot"));
+    toolBar->AddTool(MyApp::ID_NEW_NIGHTINGALE_ROSE, _(L"Nightingale Rose Chart"),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/rose.svg", iconSize),
+                     _(L"Nightingale Rose Chart"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"),

@@ -19,6 +19,7 @@
 #include "../graphs/ganttchart.h"
 #include "../graphs/histogram.h"
 #include "../graphs/likertchart.h"
+#include "../graphs/nightingale_rose_chart.h"
 #include "../graphs/piechart.h"
 #include "../graphs/proconroadmap.h"
 #include "../graphs/racetrackchart.h"
@@ -706,6 +707,39 @@ namespace Wisteria
             const auto foundValue = trackCounts.find(value.Lower().ToStdWstring());
             return ((foundValue != trackCounts.cend()) ?
                         std::optional<TrackCount>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<Graphs::NightingaleRoseChart::RadialScaling>
+        ConvertNightingaleRoseRadialScaling(const wxString& value)
+            {
+            using RadialScaling = Graphs::NightingaleRoseChart::RadialScaling;
+            static const std::map<std::wstring_view, RadialScaling> radialScalings = {
+                { L"area", RadialScaling::AreaProportional },
+                { L"radius", RadialScaling::RadiusProportional }
+            };
+
+            const auto foundValue = radialScalings.find(value.Lower().ToStdWstring());
+            return ((foundValue != radialScalings.cend()) ?
+                        std::optional<RadialScaling>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<Graphs::NightingaleRoseChart::SeriesDisplay>
+        ConvertNightingaleRoseSeriesDisplay(const wxString& value)
+            {
+            using SeriesDisplay = Graphs::NightingaleRoseChart::SeriesDisplay;
+            static const std::map<std::wstring_view, SeriesDisplay> seriesDisplays = {
+                { L"overlaid", SeriesDisplay::Overlaid }, { L"stacked", SeriesDisplay::Stacked }
+            };
+
+            const auto foundValue = seriesDisplays.find(value.Lower().ToStdWstring());
+            return ((foundValue != seriesDisplays.cend()) ?
+                        std::optional<SeriesDisplay>(foundValue->second) :
                         std::nullopt);
             }
 
@@ -1780,6 +1814,43 @@ namespace Wisteria
             static const std::map<TrackCount, wxString> values = { { TrackCount::Auto, L"auto" },
                                                                    { TrackCount::One, L"one" },
                                                                    { TrackCount::Two, L"two" } };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a NightingaleRoseChart::RadialScaling enum to its JSON string
+        ///     representation.
+        /// @param value The radial scaling enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertNightingaleRoseRadialScalingToString(
+            Graphs::NightingaleRoseChart::RadialScaling value)
+            {
+            using RadialScaling = Graphs::NightingaleRoseChart::RadialScaling;
+            static const std::map<RadialScaling, wxString> values = {
+                { RadialScaling::AreaProportional, L"area" },
+                { RadialScaling::RadiusProportional, L"radius" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a NightingaleRoseChart::SeriesDisplay enum to its JSON string
+        ///     representation.
+        /// @param value The series display enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertNightingaleRoseSeriesDisplayToString(
+            Graphs::NightingaleRoseChart::SeriesDisplay value)
+            {
+            using SeriesDisplay = Graphs::NightingaleRoseChart::SeriesDisplay;
+            static const std::map<SeriesDisplay, wxString> values = {
+                { SeriesDisplay::Overlaid, L"overlaid" }, { SeriesDisplay::Stacked, L"stacked" }
+            };
 
             const auto foundValue = values.find(value);
             return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :

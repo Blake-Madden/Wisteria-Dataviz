@@ -76,6 +76,7 @@ SET(WISTERIA_SRC
     src/graphs/lixgaugegerman.cpp
     src/graphs/lrroadmap.cpp
     src/graphs/multi_series_lineplot.cpp
+    src/graphs/nightingale_rose_chart.cpp
     src/graphs/piechart.cpp
     src/graphs/proconroadmap.cpp
     src/graphs/racetrackchart.cpp
@@ -99,6 +100,7 @@ SET(WISTERIA_SRC
     src/ui/controls/thumbnail.cpp
     src/ui/dialogs/editors/accessibilityoptionspanel.cpp
     src/ui/dialogs/editors/axisoptionspanel.cpp
+    src/ui/dialogs/editors/insert_nightingale_rose_chart_dlg.cpp
     src/ui/dialogs/editors/insertboxplotdlg.cpp
     src/ui/dialogs/editors/insertbubbleplotdlg.cpp
     src/ui/dialogs/editors/insertcandlestickplotdlg.cpp

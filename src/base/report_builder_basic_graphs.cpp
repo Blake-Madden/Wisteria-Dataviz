@@ -7,7 +7,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "reportbuilder.h"
+#include <algorithm>
 #include <cmath>
+#include <cstdint>
 
 namespace Wisteria
     {
@@ -178,5 +180,117 @@ namespace Wisteria
 
         LoadGraph(graphNode, canvas, currentRow, currentColumn, choroplethMap);
         return choroplethMap;
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D>
+    ReportBuilder::LoadNightingaleRoseChart(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                                            size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->AsString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for Nightingale rose chart."), dsName)
+                    .ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (!variablesNode->IsOk())
+            {
+            throw std::runtime_error(
+                _(L"Variables not defined for Nightingale rose chart.").ToUTF8());
+            }
+
+        const auto aggVarNameRaw = variablesNode->GetProperty(L"aggregate")->AsString();
+        const auto aggVarName = ExpandConstants(aggVarNameRaw);
+        const auto categoryVarNameRaw = variablesNode->GetProperty(L"category")->AsString();
+        const auto categoryVarName = ExpandConstants(categoryVarNameRaw);
+        const auto groupVarNameRaw = variablesNode->GetProperty(L"group")->AsString();
+        const auto groupVarName = ExpandConstants(groupVarNameRaw);
+
+        if (categoryVarName.empty())
+            {
+            throw std::runtime_error(
+                wxString::Format(
+                    _(L"%s: category variable not specified for Nightingale rose chart."), dsName)
+                    .ToUTF8());
+            }
+
+        auto roseChart = std::make_shared<Graphs::NightingaleRoseChart>(
+            canvas, LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
+            LoadGraphColorScheme(graphNode));
+        if (!aggVarNameRaw.empty())
+            {
+            roseChart->SetPropertyTemplate(L"variables.aggregate", aggVarNameRaw);
+            }
+        if (!categoryVarNameRaw.empty())
+            {
+            roseChart->SetPropertyTemplate(L"variables.category", categoryVarNameRaw);
+            }
+        if (!groupVarNameRaw.empty())
+            {
+            roseChart->SetPropertyTemplate(L"variables.group", groupVarNameRaw);
+            }
+
+        roseChart->SetData(
+            foundPos->second,
+            (!aggVarName.empty() ? std::optional<wxString>(aggVarName) : std::nullopt),
+            categoryVarName,
+            (!groupVarName.empty() ? std::optional<wxString>(groupVarName) : std::nullopt));
+
+        if (const auto radialScaling = ReportEnumConvert::ConvertNightingaleRoseRadialScaling(
+                graphNode->GetProperty(L"radial-scaling")->AsString());
+            radialScaling.has_value())
+            {
+            roseChart->SetRadialScaling(radialScaling.value());
+            }
+
+        if (const auto seriesDisplay = ReportEnumConvert::ConvertNightingaleRoseSeriesDisplay(
+                graphNode->GetProperty(L"series-display")->AsString());
+            seriesDisplay.has_value())
+            {
+            roseChart->SetSeriesDisplay(seriesDisplay.value());
+            }
+
+        if (graphNode->HasProperty(L"start-angle"))
+            {
+            roseChart->SetStartAngle(graphNode->GetProperty(L"start-angle")->AsDouble(90.0));
+            }
+
+        if (graphNode->HasProperty(L"show-labels"))
+            {
+            roseChart->ShowLabels(graphNode->GetProperty(L"show-labels")->AsBool());
+            }
+
+        if (graphNode->HasProperty(L"ghost-opacity"))
+            {
+            const double rawGhostOpacity =
+                graphNode->GetProperty(L"ghost-opacity")->AsDouble(Settings::GHOST_OPACITY);
+            roseChart->SetGhostOpacity(static_cast<uint8_t>(std::clamp(
+                std::isfinite(rawGhostOpacity) ? rawGhostOpacity :
+                                                 static_cast<double>(Settings::GHOST_OPACITY),
+                0.0, 255.0)));
+            }
+
+        if (const auto ghostedWedgesNode = graphNode->GetProperty(L"ghosted-wedges");
+            ghostedWedgesNode->IsOk() && ghostedWedgesNode->IsValueArray())
+            {
+            for (const auto& ghostNode : ghostedWedgesNode->AsNodes())
+                {
+                const auto groupLabel =
+                    ExpandConstants(ghostNode->GetProperty(L"group")->AsString());
+                if (groupLabel.empty())
+                    {
+                    continue;
+                    }
+                roseChart->GhostWedge(
+                    groupLabel, ExpandConstants(ghostNode->GetProperty(L"category")->AsString()));
+                }
+            }
+
+        LoadGraph(graphNode, canvas, currentRow, currentColumn, roseChart);
+        return roseChart;
         }
     } // namespace Wisteria

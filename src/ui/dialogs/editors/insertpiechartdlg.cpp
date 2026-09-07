@@ -323,11 +323,17 @@ namespace Wisteria::UI
             0, wxGenericValidator(&m_showcaseShowOuterPieMidPointLabels));
         showcaseBox->Add(m_showcaseShowOuterMidPtsCheck, wxSizerFlags{}.Border());
 
-        m_showcaseListBox = new wxEditableListBox(
-            showcaseBox->GetStaticBox(), wxID_ANY, _(L"Slices to showcase:"), wxDefaultPosition,
-            wxSize{ FromDIP(300), FromDIP(120) },
-            wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_ALLOW_EDIT | wxEL_NO_REORDER);
+        m_showcaseListBox =
+            new wxEditableListBox(showcaseBox->GetStaticBox(), wxID_ANY, _(L"Slices to showcase:"),
+                                  wxDefaultPosition, wxSize{ FromDIP(300), FromDIP(120) },
+                                  wxEL_ALLOW_NEW | wxEL_ALLOW_DELETE | wxEL_NO_REORDER);
         showcaseBox->Add(m_showcaseListBox, wxSizerFlags{ 1 }.Expand().Border());
+
+        // rows are chosen through a picker dialog, so block in-place label editing
+        m_showcaseListBox->GetListCtrl()->Bind(wxEVT_LIST_BEGIN_LABEL_EDIT,
+                                               []([[maybe_unused]]
+                                                  wxListEvent& labelEditEvent)
+                                               { labelEditEvent.Veto(); });
 
         // override New button for showcase slices
         m_showcaseListBox->GetNewButton()->Bind(
