@@ -1694,10 +1694,10 @@ void WisteriaDoc::SaveDatasetImportOptions(
         {
         dsNode->Add(L"continuous-md-recode-value", info.GetContinuousMDRecodeValue());
         }
-    if (info.GetMDCodes().has_value())
+    if (!info.GetMDCodes().empty())
         {
         wxArrayString mdArr;
-        for (const auto& code : info.GetMDCodes().value())
+        for (const auto& code : info.GetMDCodes())
             {
             mdArr.Add(wxString{ code });
             }

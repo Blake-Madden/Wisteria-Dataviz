@@ -14,6 +14,8 @@
 
 #include "text_column.h"
 #include "text_row.h"
+#include <algorithm>
+#include <cassert>
 #include <optional>
 
 /// @brief Text importing library.
@@ -291,45 +293,59 @@ namespace lily_of_the_valley
 
         /// @brief Sets the values to treat as missing data (e.g., "NULL," "NA," etc.).
         /// @param mdCodes The values to treat as missing data.
-        void set_missing_data_codes(const std::optional<std::vector<string_typeT>>& mdCodes)
+        void set_missing_data_codes(const std::vector<string_typeT>& mdCodes)
             {
             m_mdVals = mdCodes;
             }
 
+        /// @brief Sets the values to treat as missing data.
+        /// @param mdCodes The values to treat as missing data.
+        /// @overload
+        void set_missing_data_codes(std::initializer_list<string_typeT> mdCodes)
+            {
+            m_mdVals.assign(mdCodes);
+            }
+
+        /// @brief Clears the missing data codes.
+        void clear_missing_data_codes() noexcept { m_mdVals.clear(); }
+
       private:
+        /// @returns @c true if @c value matches one of the missing data codes.
+        /// @param value The cell value to test.
+        [[nodiscard]]
+        bool is_missing_data_code(const string_typeT& value) const
+            {
+            return std::find(m_mdVals.cbegin(), m_mdVals.cend(), value) != m_mdVals.cend();
+            }
+
         void recode_md_code()
             {
-            if (m_mdVals)
+            assert((m_matrix != nullptr || m_vector != nullptr) &&
+                   "text_matrix has no output target");
+            if (m_mdVals.empty())
                 {
-                if (m_matrix)
+                return;
+                }
+            if (m_matrix != nullptr)
+                {
+                for (auto& row : *m_matrix)
                     {
-                    for (int64_t row = 0; row < static_cast<int64_t>(m_matrix->size()); ++row)
+                    for (auto& cell : row)
                         {
-                        for (auto& cell : (*m_matrix)[static_cast<size_t>(row)])
+                        if (is_missing_data_code(cell))
                             {
-                            for (const auto& mdVal : m_mdVals.value())
-                                {
-                                if (cell == mdVal)
-                                    {
-                                    cell.clear();
-                                    break;
-                                    }
-                                }
+                            cell.clear();
                             }
                         }
                     }
-                else
+                }
+            else if (m_vector != nullptr)
+                {
+                for (auto& cell : *m_vector)
                     {
-                    for (auto& cell : *m_vector)
+                    if (is_missing_data_code(cell))
                         {
-                        for (const auto& mdVal : m_mdVals.value())
-                            {
-                            if (cell == mdVal)
-                                {
-                                cell.clear();
-                                break;
-                                }
-                            }
+                        cell.clear();
                         }
                     }
                 }
@@ -339,7 +355,7 @@ namespace lily_of_the_valley
         std::vector<string_typeT>* m_vector{ nullptr };
         std::vector<text_row<string_typeT>> m_rows;
         is_end_of_line is_eol;
-        std::optional<std::vector<string_typeT>> m_mdVals{ std::nullopt };
+        std::vector<string_typeT> m_mdVals;
         };
     } // namespace lily_of_the_valley
 

@@ -46,9 +46,9 @@ namespace Wisteria::UI
           m_columnNamesSort(importInfo.GetColumnNamesSort()), m_columnInfo(std::move(columnInfo))
         {
         // build the MD values string from the codes
-        if (importInfo.GetMDCodes().has_value())
+        if (!importInfo.GetMDCodes().empty())
             {
-            for (const auto& code : importInfo.GetMDCodes().value())
+            for (const auto& code : importInfo.GetMDCodes())
                 {
                 if (!m_mdValues.empty())
                     {
@@ -514,7 +514,7 @@ namespace Wisteria::UI
             previewInfo.ColumnNamesSort(m_columnNamesSort);
             if (m_mdValues.empty())
                 {
-                previewInfo.MDCodes(std::nullopt);
+                previewInfo.ClearMDCodes();
                 }
             else
                 {
@@ -677,7 +677,7 @@ namespace Wisteria::UI
         importInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscrete));
         if (m_mdValues.empty())
             {
-            importInfo.MDCodes(std::nullopt);
+            importInfo.ClearMDCodes();
             }
         else
             {
@@ -982,7 +982,7 @@ namespace Wisteria::UI
         importInfo.MaxDiscreteValue(static_cast<uint16_t>(m_maxDiscrete));
         if (m_mdValues.empty())
             {
-            importInfo.MDCodes(std::nullopt);
+            importInfo.ClearMDCodes();
             }
         else
             {

@@ -897,10 +897,27 @@ namespace Wisteria::Data
         /** @brief Sets the values to treat as missing data (e.g., `"NULL"`, `"NA"`, etc.).
             @param mdCodes The values to treat as missing data.
             @returns A self reference.
-            @sa GetCommonMDCodes().*/
-        ImportInfo& MDCodes(const std::optional<std::vector<std::wstring>>& mdCodes)
+            @sa GetCommonMDCodes(), ClearMDCodes().*/
+        ImportInfo& MDCodes(const std::vector<std::wstring>& mdCodes)
             {
             m_mdCodes = mdCodes;
+            return *this;
+            }
+
+        /// @brief Sets the values to treat as missing data.
+        /// @param mdCodes The values to treat as missing data.
+        /// @returns A self reference.
+        /// @overload
+        ImportInfo& MDCodes(std::initializer_list<std::wstring> mdCodes)
+            {
+            m_mdCodes.assign(mdCodes);
+            return *this;
+            }
+
+        /// @brief Clears the missing data codes.
+        ImportInfo& ClearMDCodes() noexcept
+            {
+            m_mdCodes.clear();
             return *this;
             }
 
@@ -1065,7 +1082,7 @@ namespace Wisteria::Data
 
         /// @returns The missing data codes.
         [[nodiscard]]
-        const std::optional<std::vector<std::wstring>>& GetMDCodes() const noexcept
+        const std::vector<std::wstring>& GetMDCodes() const noexcept
             {
             return m_mdCodes;
             }
@@ -1114,7 +1131,7 @@ namespace Wisteria::Data
         wxString m_idColumn;
         RegExMap m_textImportReplacements;
         double m_continuousMDRecodeValue{ std::numeric_limits<double>::quiet_NaN() };
-        std::optional<std::vector<std::wstring>> m_mdCodes{ std::nullopt };
+        std::vector<std::wstring> m_mdCodes;
         size_t m_skipRows{ 0 };
         bool m_treatLeadingZerosAsText{ false };
         bool m_treatYearsAsText{ false };

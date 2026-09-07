@@ -355,5 +355,241 @@ TEST_CASE("Tabbed Column With Embedded Quotes", "[text import]")
                         L"cleans up resources. Short for \"destructor.\"" });
     }
 
+TEST_CASE("Missing data recode", "[text import]")
+    {
+    SECTION("Single code in matrix")
+        {
+        std::vector<std::vector<std::wstring>> words;
+        lily_of_the_valley::text_matrix<std::wstring> importer(&words);
+        importer.set_missing_data_codes(std::vector<std::wstring>{ L"NA" });
+
+        const wchar_t* fileText = L"a\tNA\tc\n1\t2\tNA";
+        lily_of_the_valley::text_preview preview;
+        lily_of_the_valley::text_column_delimited_character_parser parser(L'\t');
+        lily_of_the_valley::text_column<decltype(parser)> col(parser, std::nullopt);
+        lily_of_the_valley::text_row<std::wstring> row(std::nullopt);
+        row.add_column(col);
+        row.allow_column_resizing(true);
+        importer.add_row_definition(row);
+
+        size_t rowCount = preview(fileText, L'\t', true, false);
+        importer.read(fileText, rowCount, 3, true);
+
+        REQUIRE(words.size() == 2);
+        CHECK(words[0][0] == L"a");
+        CHECK(words[0][1] == L""); // NA -> empty
+        CHECK(words[0][2] == L"c");
+        CHECK(words[1][2] == L""); // NA -> empty
+        }
+
+    SECTION("Multiple codes")
+        {
+        std::vector<std::vector<std::wstring>> words;
+        lily_of_the_valley::text_matrix<std::wstring> importer(&words);
+        importer.set_missing_data_codes(std::vector<std::wstring>{ L"NA", L"NULL", L"." });
+
+        const wchar_t* fileText = L"NA\tNULL\t.\tvalid";
+        lily_of_the_valley::text_preview preview;
+        lily_of_the_valley::text_column_delimited_character_parser parser(L'\t');
+        lily_of_the_valley::text_column<decltype(parser)> col(parser, std::nullopt);
+        lily_of_the_valley::text_row<std::wstring> row(std::nullopt);
+        row.add_column(col);
+        row.allow_column_resizing(true);
+        importer.add_row_definition(row);
+
+        size_t rowCount = preview(fileText, L'\t', true, false);
+        importer.read(fileText, rowCount, 4, true);
+
+        REQUIRE(words.size() == 1);
+        CHECK(words[0][0] == L"");
+        CHECK(words[0][1] == L"");
+        CHECK(words[0][2] == L"");
+        CHECK(words[0][3] == L"valid");
+        }
+
+    SECTION("No codes set - nothing recoded")
+        {
+        std::vector<std::vector<std::wstring>> words;
+        lily_of_the_valley::text_matrix<std::wstring> importer(&words);
+        // don't call set_missing_data_codes at all
+
+        const wchar_t* fileText = L"NA\tNULL";
+        lily_of_the_valley::text_preview preview;
+        lily_of_the_valley::text_column_delimited_character_parser parser(L'\t');
+        lily_of_the_valley::text_column<decltype(parser)> col(parser, std::nullopt);
+        lily_of_the_valley::text_row<std::wstring> row(std::nullopt);
+        row.add_column(col);
+        row.allow_column_resizing(true);
+        importer.add_row_definition(row);
+
+        size_t rowCount = preview(fileText, L'\t', true, false);
+        importer.read(fileText, rowCount, 2, true);
+
+        REQUIRE(words.size() == 1);
+        REQUIRE(words[0].size() == 2);
+        CHECK(words[0][0] == L"NA");
+        CHECK(words[0][1] == L"NULL");
+        }
+
+    SECTION("Empty vector - nothing recoded")
+        {
+        std::vector<std::vector<std::wstring>> words;
+        lily_of_the_valley::text_matrix<std::wstring> importer(&words);
+        importer.set_missing_data_codes(std::vector<std::wstring>{});
+
+        const wchar_t* fileText = L"NA\tNULL";
+        lily_of_the_valley::text_preview preview;
+        lily_of_the_valley::text_column_delimited_character_parser parser(L'\t');
+        lily_of_the_valley::text_column<decltype(parser)> col(parser, std::nullopt);
+        lily_of_the_valley::text_row<std::wstring> row(std::nullopt);
+        row.add_column(col);
+        row.allow_column_resizing(true);
+        importer.add_row_definition(row);
+
+        size_t rowCount = preview(fileText, L'\t', true, false);
+        importer.read(fileText, rowCount, 2, true);
+
+        CHECK(words[0][0] == L"NA");
+        CHECK(words[0][1] == L"NULL");
+        }
+
+    SECTION("Clear codes - nothing recoded")
+        {
+        std::vector<std::vector<std::wstring>> words;
+        lily_of_the_valley::text_matrix<std::wstring> importer(&words);
+        importer.set_missing_data_codes(std::vector<std::wstring>{ L"NA" });
+        importer.clear_missing_data_codes();
+
+        const wchar_t* fileText = L"NA";
+        lily_of_the_valley::text_preview preview;
+        lily_of_the_valley::text_column_delimited_character_parser parser(L'\t');
+        lily_of_the_valley::text_column<decltype(parser)> col(parser, std::nullopt);
+        lily_of_the_valley::text_row<std::wstring> row(std::nullopt);
+        row.add_column(col);
+        row.allow_column_resizing(true);
+        importer.add_row_definition(row);
+
+        size_t rowCount = preview(fileText, L'\t', true, false);
+        importer.read(fileText, rowCount, 1, true);
+
+        CHECK(words[0][0] == L"NA");
+        }
+
+    SECTION("Exact match only - substring not recoded")
+        {
+        std::vector<std::vector<std::wstring>> words;
+        lily_of_the_valley::text_matrix<std::wstring> importer(&words);
+        importer.set_missing_data_codes(std::vector<std::wstring>{ L"NA" });
+
+        const wchar_t* fileText = L"NAN\tNA\tBANANA";
+        lily_of_the_valley::text_preview preview;
+        lily_of_the_valley::text_column_delimited_character_parser parser(L'\t');
+        lily_of_the_valley::text_column<decltype(parser)> col(parser, std::nullopt);
+        lily_of_the_valley::text_row<std::wstring> row(std::nullopt);
+        row.add_column(col);
+        row.allow_column_resizing(true);
+        importer.add_row_definition(row);
+
+        size_t rowCount = preview(fileText, L'\t', true, false);
+        importer.read(fileText, rowCount, 3, true);
+
+        CHECK(words[0][0] == L"NAN"); // not cleared
+        CHECK(words[0][1] == L""); // cleared
+        CHECK(words[0][2] == L"BANANA"); // not cleared
+        }
+
+    SECTION("Case sensitive")
+        {
+        std::vector<std::vector<std::wstring>> words;
+        lily_of_the_valley::text_matrix<std::wstring> importer(&words);
+        importer.set_missing_data_codes(std::vector<std::wstring>{ L"NA" });
+
+        const wchar_t* fileText = L"na\tNa\tNA";
+        lily_of_the_valley::text_preview preview;
+        lily_of_the_valley::text_column_delimited_character_parser parser(L'\t');
+        lily_of_the_valley::text_column<decltype(parser)> col(parser, std::nullopt);
+        lily_of_the_valley::text_row<std::wstring> row(std::nullopt);
+        row.add_column(col);
+        row.allow_column_resizing(true);
+        importer.add_row_definition(row);
+
+        size_t rowCount = preview(fileText, L'\t', true, false);
+        importer.read(fileText, rowCount, 3, true);
+
+        CHECK(words[0][0] == L"na");
+        CHECK(words[0][1] == L"Na");
+        CHECK(words[0][2] == L"");
+        }
+
+    SECTION("Vector mode - single column")
+        {
+        std::vector<std::wstring> words;
+        lily_of_the_valley::text_matrix<std::wstring> importer(&words);
+        importer.set_missing_data_codes(std::vector<std::wstring>{ L"NA" });
+
+        const wchar_t* fileText = L"a\nNA\nc\nNA";
+        lily_of_the_valley::text_preview preview;
+        lily_of_the_valley::text_column_delimited_character_parser parser(L'\t');
+        lily_of_the_valley::text_column<decltype(parser)> col(parser, std::nullopt);
+        lily_of_the_valley::text_row<std::wstring> row(std::nullopt);
+        row.add_column(col);
+        row.allow_column_resizing(true);
+        importer.add_row_definition(row);
+
+        size_t rowCount = preview(fileText, L'\t', true, false);
+        importer.read(fileText, rowCount, 1, true);
+
+        REQUIRE(words.size() == 4);
+        CHECK(words[0] == L"a");
+        CHECK(words[1] == L"");
+        CHECK(words[2] == L"c");
+        CHECK(words[3] == L"");
+        }
+
+    SECTION("Already empty stays empty")
+        {
+        std::vector<std::vector<std::wstring>> words;
+        lily_of_the_valley::text_matrix<std::wstring> importer(&words);
+        importer.set_missing_data_codes(std::vector<std::wstring>{ L"NA" });
+
+        const wchar_t* fileText = L"a\t\tc"; // middle is empty
+        lily_of_the_valley::text_preview preview;
+        lily_of_the_valley::text_column_delimited_character_parser parser(L'\t');
+        lily_of_the_valley::text_column<decltype(parser)> col(parser, std::nullopt);
+        lily_of_the_valley::text_row<std::wstring> row(std::nullopt);
+        row.add_column(col);
+        row.allow_column_resizing(true);
+        importer.add_row_definition(row);
+
+        size_t rowCount = preview(fileText, L'\t', true, false);
+        importer.read(fileText, rowCount, 3, true);
+
+        CHECK(words[0][1] == L"");
+        }
+
+    SECTION("Overwrite codes")
+        {
+        std::vector<std::vector<std::wstring>> words;
+        lily_of_the_valley::text_matrix<std::wstring> importer(&words);
+        importer.set_missing_data_codes(std::vector<std::wstring>{ L"NA" });
+        importer.set_missing_data_codes(std::vector<std::wstring>{ L"NULL" }); // overwrite
+
+        const wchar_t* fileText = L"NA\tNULL";
+        lily_of_the_valley::text_preview preview;
+        lily_of_the_valley::text_column_delimited_character_parser parser(L'\t');
+        lily_of_the_valley::text_column<decltype(parser)> col(parser, std::nullopt);
+        lily_of_the_valley::text_row<std::wstring> row(std::nullopt);
+        row.add_column(col);
+        row.allow_column_resizing(true);
+        importer.add_row_definition(row);
+
+        size_t rowCount = preview(fileText, L'\t', true, false);
+        importer.read(fileText, rowCount, 2, true);
+
+        CHECK(words[0][0] == L"NA"); // no longer recoded
+        CHECK(words[0][1] == L""); // now recoded
+        }
+    }
+
 // NOLINTEND
 // clang-format on
