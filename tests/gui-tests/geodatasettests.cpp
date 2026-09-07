@@ -601,3 +601,32 @@ TEST_CASE("GeoDataset region-file dispatch", "[geojson][kml][geodataset]")
     CHECK_FALSE(GeoDataset::IsGeoJsonFile(L"counties.KML"));
     CHECK_FALSE(GeoDataset::IsGeoJsonFile(L"counties"));
     }
+
+TEST_CASE("GeoDataset geometry-only import for a background layer", "[geojson][kml][geodataset]")
+    {
+    SECTION("From GeoJSON")
+        {
+        auto backgroundData = std::make_shared<GeoDataset>();
+        REQUIRE(backgroundData->ImportGeoJSONFromText(SAMPLE_GEOJSON, GeoImportInfo()));
+        REQUIRE_FALSE(backgroundData->GetGeometries().empty());
+        for (const auto& region : backgroundData->GetGeometries())
+            {
+            CHECK(region.m_boundingBox.IsOk());
+            REQUIRE_FALSE(region.m_polygons.empty());
+            CHECK(region.m_polygons.front().m_outerBoundary.size() >= 3);
+            }
+        }
+
+    SECTION("From KML")
+        {
+        auto backgroundData = std::make_shared<GeoDataset>();
+        REQUIRE(backgroundData->ImportRegionsFromText(SAMPLE_KML, GeoImportInfo()));
+        REQUIRE_FALSE(backgroundData->GetGeometries().empty());
+        for (const auto& region : backgroundData->GetGeometries())
+            {
+            CHECK(region.m_boundingBox.IsOk());
+            REQUIRE_FALSE(region.m_polygons.empty());
+            CHECK(region.m_polygons.front().m_outerBoundary.size() >= 3);
+            }
+        }
+    }

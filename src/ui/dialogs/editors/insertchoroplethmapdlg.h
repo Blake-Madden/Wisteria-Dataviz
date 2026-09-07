@@ -23,8 +23,10 @@ namespace Wisteria::UI
     {
     /** @brief Dialog for inserting a choropleth map into a canvas.
         @details Extends InsertGraphDlg with a "Choropleth Map" page containing:
-            - A picker for the KML file that supplies the region shapes.
+            - A picker for the KML or GeoJSON file that supplies the region shapes.
             - An optional @c ExtendedData field name to use as the region key.
+            - An optional background-layer file (drawn a shade lighter than the
+              no-data color).
             - An optional project dataset, plus a variable selector for the key
               column (matched against the region key) and either a value column
               (a color gradient) or a category column (a color per category).
@@ -66,6 +68,10 @@ namespace Wisteria::UI
             {
             return m_kmlIdField;
             }
+
+        /// @returns The path to the optional background-layer file, or empty if none.
+        [[nodiscard]]
+        wxString GetBackgroundPath() const;
 
         /// @returns The selected dataset to map onto the regions, or @c nullptr if none.
         [[nodiscard]]
@@ -206,6 +212,7 @@ namespace Wisteria::UI
 
         wxFilePickerCtrl* m_kmlPicker{ nullptr };
         wxComboBox* m_kmlIdFieldCombo{ nullptr };
+        wxFilePickerCtrl* m_backgroundPicker{ nullptr };
         wxChoice* m_datasetChoice{ nullptr };
         wxButton* m_selectVarsButton{ nullptr };
         wxStaticText* m_keyColumnLabel{ nullptr };

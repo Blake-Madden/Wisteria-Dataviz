@@ -230,7 +230,15 @@ namespace Wisteria::Graphs
 
         @par Proportional Symbols:
          A second continuous column can be shown as a circle at each region's center,
-         its area proportional to the value.*/
+         its area proportional to the value.
+
+        @par Background Layer:
+         A second set of regions can be drawn beneath the data regions as a backdrop,
+         so a map whose regions have gaps does not float on the page. The backdrop is
+         filled with a light neutral, a shade lighter than GetNoDataColor(), so land
+         outside the dataset reads as "no coverage" and stays clear of the shading. It
+         is projected with the same transform as the data and clipped to the plot
+         area, and does not take part in fitting the view.*/
     class ChoroplethMap final : public Graph2D
         {
         wxDECLARE_DYNAMIC_CLASS(ChoroplethMap);
@@ -404,6 +412,42 @@ namespace Wisteria::Graphs
         const std::shared_ptr<const Data::GeoDataset>& GetGeoDataset() const noexcept
             {
             return m_geoData;
+            }
+
+        /** @brief Sets a second set of regions drawn under the data regions as a
+                backdrop, so a map with gaps does not float on the page.
+            @param backgroundData A GeoDataset holding the backdrop geometry (a state
+                outline, a land polygon, the neighboring regions), or @c nullptr for none.
+            @details The backdrop is filled with a light neutral (a shade lighter than
+                GetNoDataColor()), projected with the same transform as the data
+                regions, and clipped to the plot area. It does not take part in fitting
+                the view, so a backdrop wider than the data extent is cropped at the
+                edges.*/
+        void SetBackgroundLayer(const std::shared_ptr<const Data::GeoDataset>& backgroundData)
+            {
+            m_backgroundData = backgroundData;
+            }
+
+        /// @returns The backdrop GeoDataset, or @c nullptr if none is set.
+        [[nodiscard]]
+        const std::shared_ptr<const Data::GeoDataset>& GetBackgroundLayer() const noexcept
+            {
+            return m_backgroundData;
+            }
+
+        /** @brief Sets the file for the background layer.
+            @param backgroundFilePath The path to the KML or GeoJSON file, or empty
+                for no background layer.*/
+        void SetBackgroundFilePath(wxString backgroundFilePath)
+            {
+            m_backgroundFilePath = std::move(backgroundFilePath);
+            }
+
+        /// @returns The path to the file the background layer was read from, or empty.
+        [[nodiscard]]
+        const wxString& GetBackgroundFilePath() const noexcept
+            {
+            return m_backgroundFilePath;
             }
 
         /// @brief Sets whether each region's label is drawn at its center.
@@ -627,6 +671,11 @@ namespace Wisteria::Graphs
         ///     largest circle.
         void AddProportionalSymbols(const wxRect& mapRect);
 
+        /// @brief Adds the background layer beneath the data regions.
+        /// @details Each backdrop region is projected with the current transform and
+        ///     clipped to the plot area. Does nothing when no background layer is set.
+        void AddBackgroundLayer();
+
         /// @brief Projects a geographic coordinate into the projection plane.
         /// @param coord The coordinate to project.
         /// @returns The point in projection-plane units (y increasing northward).
@@ -651,6 +700,10 @@ namespace Wisteria::Graphs
         wxString m_regionIdField;
         wxString m_dataSourceName;
         wxString m_dataSourceKeyColumn;
+
+        // optional backdrop drawn under the data regions, filled with a tint of the color scheme
+        std::shared_ptr<const Data::GeoDataset> m_backgroundData;
+        wxString m_backgroundFilePath;
 
         // one entry per region row; only valid when m_hasValues is true
         std::vector<wxColour> m_regionColors;

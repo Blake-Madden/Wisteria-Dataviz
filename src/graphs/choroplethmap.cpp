@@ -89,6 +89,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             return {};
             }
 
+        if (GetClippingRect())
+            {
+            dc.SetClippingRegion(GetClippingRect().value());
+            }
+
         wxPen drawPen(GetPen().IsOk() ? GetPen() : *wxTRANSPARENT_PEN);
         drawPen.SetWidth(std::max<int>(1, static_cast<int>(ScaleToScreenAndCanvas(
                                               drawPen.GetWidth() > 0 ? drawPen.GetWidth() : 1))));
@@ -111,6 +116,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                 {
                 dc.DrawPolygon(static_cast<int>(ring.size()), ring.data());
                 }
+            }
+
+        if (GetClippingRect())
+            {
+            dc.DestroyClippingRegion();
             }
 
         return m_boundingBox;
@@ -389,6 +399,27 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             if (hasFiniteValue)
                 {
                 m_colorSpectrum = GetColorScheme()->GetColors();
+                // the ramp needs at least two stops: an empty scheme falls back to
+                // the region brush, and a one-color scheme is grown into a ramp that
+                // runs from a light tint of that hue to a deeper shade of it
+                if (m_colorSpectrum.empty())
+                    {
+                    m_colorSpectrum.push_back(GetBrush().GetColour());
+                    }
+                if (m_colorSpectrum.size() == 1)
+                    {
+                    const wxColour singleColor = m_colorSpectrum.front();
+                    if (Colors::ColorContrast::IsLight(singleColor))
+                        {
+                        m_colorSpectrum.push_back(Colors::ColorContrast::Shade(singleColor, 0.4));
+                        }
+                    else
+                        {
+                        m_colorSpectrum.insert(m_colorSpectrum.cbegin(),
+                                               Colors::ColorContrast::Tint(singleColor, 0.85));
+                        }
+                    }
+
                 for (const auto value : continuousColumn->GetValues())
                     {
                     if (std::isfinite(value))
@@ -955,6 +986,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             plotRect.GetTop() + static_cast<int>((plotRect.GetHeight() - drawnHeight) / 2.0)
         };
 
+        AddBackgroundLayer();
+
         // color for regions that are not data-shaded: the high end of the color scheme
         const wxColour flatFillColor =
             (GetColorScheme() != nullptr && !GetColorScheme()->GetColors().empty()) ?
@@ -997,14 +1030,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             // every ring of the region goes into one selectable object, so a click
             // anywhere on the region selects it and anchors a single name label on
             // the region's own bounding box
-            GraphItems::GraphItemInfo regionInfo;
-            regionInfo.Pen(GetPen())
-                .Brush(regionBrush)
-                .Selectable(true)
-                .Text(regionLabelText)
-                .Scaling(GetScaling())
-                .DPIScaling(GetDPIScaleFactor());
-            auto regionObject = std::make_unique<ChoroplethRegion>(regionInfo);
+            auto regionObject =
+                std::make_unique<ChoroplethRegion>(GraphItems::GraphItemInfo{}
+                                                       .Pen(GetPen())
+                                                       .Brush(regionBrush)
+                                                       .Selectable(true)
+                                                       .Text(regionLabelText)
+                                                       .Scaling(GetScaling())
+                                                       .DPIScaling(GetDPIScaleFactor()));
 
             for (const auto& geoPolygon : region.m_polygons)
                 {
@@ -1328,6 +1361,55 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
         }
 
     //----------------------------------------------------------------
+    void ChoroplethMap::AddBackgroundLayer()
+        {
+        if (m_backgroundData == nullptr)
+            {
+            return;
+            }
+
+        // The backdrop is a lighter neutral than the no-data regions, so land outside
+        // the dataset and open water read as "no coverage" without competing with the
+        // shading. The outline is the no-data color, a step darker than the fill.
+        const wxColour noDataBase = m_noDataColor.IsOk() ? m_noDataColor : wxColour{ L"#DDDDDD" };
+        const wxBrush backgroundBrush{ Colors::ColorContrast::Tint(noDataBase, 0.94) };
+        const wxPen backgroundPen{ noDataBase, 1 };
+
+        const wxRect clipRect = GetPlotAreaBoundingBox();
+        for (const auto& region : m_backgroundData->GetGeometries())
+            {
+            auto backgroundObject =
+                std::make_unique<ChoroplethRegion>(GraphItems::GraphItemInfo{}
+                                                       .Pen(backgroundPen)
+                                                       .Brush(backgroundBrush)
+                                                       .Selectable(false)
+                                                       .Scaling(GetScaling())
+                                                       .DPIScaling(GetDPIScaleFactor()));
+
+            for (const auto& geoPolygon : region.m_polygons)
+                {
+                if (geoPolygon.m_outerBoundary.size() < 3)
+                    {
+                    continue;
+                    }
+                std::vector<wxPoint> outerScreen;
+                outerScreen.reserve(geoPolygon.m_outerBoundary.size());
+                for (const auto& coord : geoPolygon.m_outerBoundary)
+                    {
+                    outerScreen.push_back(GeoToScreen(coord));
+                    }
+                backgroundObject->AddOuterRing(std::move(outerScreen));
+                }
+
+            if (backgroundObject->HasRings())
+                {
+                backgroundObject->SetClippingRect(clipRect);
+                AddObject(std::move(backgroundObject));
+                }
+            }
+        }
+
+    //----------------------------------------------------------------
     std::unique_ptr<GraphItems::Label> ChoroplethMap::CreateLegend(const LegendOptions& options)
         {
         SetLegendInfo(options);
@@ -1615,6 +1697,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             {
             description += L". " + wxString::Format(_(L"With proportional symbols sized by %s"),
                                                     m_symbolColumnName);
+            }
+
+        if (m_backgroundData != nullptr)
+            {
+            description += L". " + wxString{ _(L"Over a background reference layer") };
             }
 
         AddAccessibilityAttribute(description, GetCaption().GetText(), L". ");

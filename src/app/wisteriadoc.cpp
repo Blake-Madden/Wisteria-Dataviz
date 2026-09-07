@@ -4874,6 +4874,11 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             node->Add(L"region-id-field", choroplethMap->GetRegionIdField());
             }
 
+        if (!choroplethMap->GetBackgroundFilePath().empty())
+            {
+            node->Add(L"background-file", MakeRelativePath(choroplethMap->GetBackgroundFilePath()));
+            }
+
         if (!choroplethMap->GetDataSourceName().empty())
             {
             auto dataSourceNode = wxSimpleJSON::Create(L"{}");

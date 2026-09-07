@@ -6438,6 +6438,22 @@ void WisteriaView::OnInsertChoroplethMap([[maybe_unused]] wxCommandEvent& event)
         plot->SetSourceInfo(dlg.GetKMLPath(), dlg.GetKMLIdField(),
                             hasSourceColumns ? dlg.GetSelectedDatasetName() : wxString{},
                             hasSourceColumns ? dlg.GetKeyColumn() : wxString{});
+
+        const wxString backgroundPath = dlg.GetBackgroundPath();
+        if (!backgroundPath.empty())
+            {
+            auto backgroundData = std::make_shared<Wisteria::Data::GeoDataset>();
+            if (backgroundData->ImportRegionFile(backgroundPath))
+                {
+                plot->SetBackgroundLayer(backgroundData);
+                }
+            else
+                {
+                wxMessageBox(backgroundData->GetLastError(), _(L"Background Layer"),
+                             wxOK | wxICON_WARNING, m_frame);
+                }
+            }
+        plot->SetBackgroundFilePath(backgroundPath);
         dlg.ApplyAxisOverrides(*plot);
 
         // uses a specialized legend
@@ -6569,6 +6585,22 @@ void WisteriaView::EditChoroplethMap(const Wisteria::Graphs::Graph2D& graph,
             newSymbolColumn.empty() ? std::nullopt : std::optional<wxString>(newSymbolColumn));
         plot->SetProportionalSymbolColor(dlg.GetProportionalSymbolColor());
         plot->SetSourceInfo(dlg.GetKMLPath(), dlg.GetKMLIdField(), newDataSource, newKeyColumn);
+
+        const wxString backgroundPath = dlg.GetBackgroundPath();
+        if (!backgroundPath.empty())
+            {
+            auto backgroundData = std::make_shared<Wisteria::Data::GeoDataset>();
+            if (backgroundData->ImportRegionFile(backgroundPath))
+                {
+                plot->SetBackgroundLayer(backgroundData);
+                }
+            else
+                {
+                wxMessageBox(backgroundData->GetLastError(), _(L"Background Layer"),
+                             wxOK | wxICON_WARNING, m_frame);
+                }
+            }
+        plot->SetBackgroundFilePath(backgroundPath);
         dlg.ApplyAxisOverrides(*plot);
 
         const bool wantsLegend = dlg.IsMappingData() || dlg.IsUsingProportionalSymbols();

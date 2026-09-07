@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <wx/log.h>
 
 namespace Wisteria
     {
@@ -121,6 +122,31 @@ namespace Wisteria
             geoData, shadingColumn.empty() ? std::nullopt : std::optional<wxString>(shadingColumn));
         choroplethMap->SetSourceInfo(regionFile, regionIdField, dataSourceName,
                                      dataSourceKeyColumn);
+
+        // optional backdrop layer drawn under the data regions
+        if (wxString backgroundFileRaw =
+                graphNode->GetProperty(_DT(L"background-file"))->AsString();
+            !backgroundFileRaw.empty())
+            {
+            if (backgroundFileRaw.StartsWith(L"\\\\") || backgroundFileRaw.StartsWith(L"//"))
+                {
+                throw std::runtime_error(
+                    wxString::Format(_(L"'%s': network paths are not allowed for region files."),
+                                     backgroundFileRaw)
+                        .ToUTF8());
+                }
+            const wxString backgroundFile = NormalizeFilePath(backgroundFileRaw);
+            auto backgroundData = std::make_shared<Data::GeoDataset>();
+            if (backgroundData->ImportRegionFile(backgroundFile))
+                {
+                choroplethMap->SetBackgroundLayer(backgroundData);
+                }
+            else
+                {
+                wxLogWarning(L"'%s': %s", backgroundFile, backgroundData->GetLastError());
+                }
+            choroplethMap->SetBackgroundFilePath(backgroundFile);
+            }
 
         if (!symbolColumn.empty())
             {

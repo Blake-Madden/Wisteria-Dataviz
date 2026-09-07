@@ -97,6 +97,19 @@ namespace Wisteria::UI
 
         optionsSizer->Add(kmlBox, wxSizerFlags{}.Expand().Border());
 
+        // optional backdrop drawn under the regions, filled a shade lighter than the
+        // no-data color
+        auto* backgroundBox =
+            new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Background layer (optional)"));
+        m_backgroundPicker = new wxFilePickerCtrl(
+            backgroundBox->GetStaticBox(), wxID_ANY, wxString{}, _(L"Select a KML or GeoJSON file"),
+            _(L"Region files (*.kml;*.geojson;*.json)|*.kml;*.geojson;*.json|"
+              L"All files (*.*)|*.*"),
+            wxDefaultPosition, wxDefaultSize, wxFLP_DEFAULT_STYLE | wxFLP_USE_TEXTCTRL);
+        backgroundBox->Add(m_backgroundPicker, wxSizerFlags{ 1 }.Expand().Border());
+
+        optionsSizer->Add(backgroundBox, wxSizerFlags{}.Expand().Border());
+
         // optional data to shade by
         auto* dataBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Data to map (optional)"));
         auto* dataGrid = new wxFlexGridSizer(
@@ -459,6 +472,12 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    wxString InsertChoroplethMapDlg::GetBackgroundPath() const
+        {
+        return (m_backgroundPicker != nullptr) ? m_backgroundPicker->GetPath() : wxString{};
+        }
+
+    //-------------------------------------------
     std::shared_ptr<Data::Dataset> InsertChoroplethMapDlg::GetSelectedDataset() const
         {
         if (GetReportBuilder() == nullptr || m_datasetChoice == nullptr)
@@ -523,6 +542,14 @@ namespace Wisteria::UI
             return false;
             }
 
+        if (const wxString backgroundPath = GetBackgroundPath();
+            !backgroundPath.empty() && !wxFileName::FileExists(backgroundPath))
+            {
+            wxMessageBox(_(L"The background layer file could not be found."),
+                         _(L"Background File Not Found"), wxOK | wxICON_WARNING, this);
+            return false;
+            }
+
         if (!GetValueColumn().empty() && !GetCategoryColumn().empty())
             {
             wxMessageBox(_(L"Please choose either a value column or a category column, not both."),
@@ -566,6 +593,12 @@ namespace Wisteria::UI
         // SetPath() does not fire the picker's changed event, so fill the dropdown here
         PopulateKeyFieldChoices(choroplethMap->GetRegionFilePath());
         m_kmlIdField = choroplethMap->GetRegionIdField();
+
+        if (m_backgroundPicker != nullptr && !choroplethMap->GetBackgroundFilePath().empty())
+            {
+            m_backgroundPicker->SetPath(choroplethMap->GetBackgroundFilePath());
+            }
+
         m_showLabels = choroplethMap->IsShowingRegionLabels();
         m_showGraticule = choroplethMap->IsShowingGraticule();
         m_labelDisplay = static_cast<int>(choroplethMap->GetLabelDisplay());
