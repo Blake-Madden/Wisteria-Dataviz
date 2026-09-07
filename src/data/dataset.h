@@ -376,7 +376,9 @@ namespace Wisteria::Data
         /** @brief Applies a regular expression string replacement for all values in
                 the string table.
             @param pattern The regex pattern to replace.
-            @param replace The replacement text.
+            @param replace The replacement text. This is a regex replacement string, not a
+                literal. @c & is replaced with the whole match and @c \\0 - @c \\9 with the
+                captured groups. Write @c \\& for a literal ampersand.
             @note If recoding causes duplicate entries in the string table, then those duplicates
                 will be removed and the data will be recoded accordingly. In other words, the
                 string table may be collapsed in the case of duplicates.
@@ -1681,7 +1683,9 @@ namespace Wisteria::Data
                 the specified categorical column.
             @param colName The categorical column to edit.
             @param pattern The regex pattern to replace.
-            @param replace The replacement text.
+            @param replace The replacement text. This is a regex replacement string, not a
+                literal. @c & is replaced with the whole match and @c \\0 - @c \\9 with the
+                captured groups. Write @c \\& for a literal ampersand.
             @throws std::runtime_error If the regex pattern is invalid, throws an exception.*/
         void RecodeRE(const wxString& colName, const wxString& pattern, const wxString& replace);
 

@@ -566,8 +566,28 @@ namespace Wisteria::GraphItems
         [[nodiscard]]
         static wxString GetFirstAvailableCursiveFont()
             {
+            // Gabriola is ordered last. Its ascenders and descenders are far taller
+            // than its point size, and complicates text measuring.
+            return GetFirstAvailableFont({ L"Segoe Script", L"Brush Script MT", L"Brush Script",
+                                           L"Lucida Handwriting", L"Snell Roundhand",
+                                           L"Apple Chancery", L"URW Chancery L", L"Z003",
+                                           L"AR BERKLEY", L"Gabriola" });
+            }
+
+        /** @returns The first available decorative font (face name) found on
+                the system, or the system default if none are found.
+            @note This function uses a list of known decorative fonts to search with.
+                Blackletter faces are preferred, then engraved-capital display faces,
+                then an old-style serif before the system default.*/
+        [[nodiscard]]
+        static wxString GetFirstAvailableDecorativeFont()
+            {
             return GetFirstAvailableFont(
-                { L"Gabriola", L"Brush Script", L"Segoe Script", L"AR BERKLEY" });
+                { L"Old English Text MT", L"Cloister Black", L"UnifrakturMaguntia",
+                  L"MedievalSharp", L"Blackadder ITC", L"Luminari", L"Herculanum", L"Papyrus",
+                  L"Trattatello", L"Algerian", L"Castellar", L"Copperplate",
+                  L"Copperplate Gothic Bold", L"Engravers MT", L"Book Antiqua",
+                  L"Palatino Linotype", L"Palatino", L"Georgia" });
             }
 
         /** @returns The first available font (face name) that looks nice in a word processor

@@ -1489,33 +1489,69 @@ namespace Wisteria::GraphItems
                                   DebugSettings::DrawInformationOnSelection))
                     {
                     const auto bBox = GetBoundingBox(dc);
-                    const Label infoLabel(
-                        GraphItemInfo{
-                            wxString::Format(_DT(L"Scaling: %s\n"
-                                                 "Width: %s\n"
-                                                 "Height: %s\n"
-                                                 "Default font size: %f\n"
-                                                 "Font size: %f"),
-                                             wxNumberFormatter::ToString(
-                                                 GetScaling(), 1,
-                                                 wxNumberFormatter::Style::Style_NoTrailingZeroes),
-                                             wxNumberFormatter::ToString(
-                                                 bBox.GetWidth(), 0,
-                                                 wxNumberFormatter::Style::Style_WithThousandsSep),
-                                             wxNumberFormatter::ToString(
-                                                 bBox.GetHeight(), 0,
-                                                 wxNumberFormatter::Style::Style_WithThousandsSep),
-                                             GetFont().GetFractionalPointSize(),
-                                             wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)
-                                                 .GetFractionalPointSize()) }
-                            .AnchorPoint(bBox.GetTopLeft())
-                            .Anchoring(Anchoring::TopLeftCorner)
-                            .FontColor(Colors::ColorBrewer::GetColor(Colors::Color::Blue))
-                            .Pen(Colors::ColorBrewer::GetColor(Colors::Color::Blue))
-                            .DPIScaling(GetDPIScaleFactor())
-                            .FontBackgroundColor(
-                                Colors::ColorBrewer::GetColor(Colors::Color::White))
-                            .Padding(2, 2, 2, 2));
+                    // what GetSize() reports versus what DrawMultiLineText()
+                    // actually advances through, line by line
+                    wxCoord gaugedWidth{ 0 }, gaugedHeight{ 0 };
+                    GetSize(dc, gaugedWidth, gaugedHeight);
+                    wxCoord drawnHeight{ 0 };
+                    size_t drawnLines{ 0 };
+                    wxStringTokenizer gaugeTokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
+                    while (gaugeTokenizer.HasMoreTokens())
+                        {
+                        drawnHeight += dc.GetTextExtent(gaugeTokenizer.GetNextToken()).GetHeight() +
+                                       std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
+                        ++drawnLines;
+                        }
+                    const Label infoLabel(GraphItemInfo{
+                        wxString::Format(
+                            _DT(L"Scaling: %s\n"
+                                "Width: %s\n"
+                                "Height: %s\n"
+                                "GetSize height: %s\n"
+                                "Drawn height: %s\n"
+                                "Lines: %s\n"
+                                "Min height DIPs: %s\n"
+                                "Min height scaled: %s\n"
+                                "Label font: %s (ok=%s)\n"
+                                "DC font: %s\n"
+                                "Default font size: %f\n"
+                                "Font size: %f"),
+                            wxNumberFormatter::ToString(
+                                GetScaling(), 1, wxNumberFormatter::Style::Style_NoTrailingZeroes),
+                            wxNumberFormatter::ToString(
+                                bBox.GetWidth(), 0,
+                                wxNumberFormatter::Style::Style_WithThousandsSep),
+                            wxNumberFormatter::ToString(
+                                bBox.GetHeight(), 0,
+                                wxNumberFormatter::Style::Style_WithThousandsSep),
+                            wxNumberFormatter::ToString(
+                                static_cast<double>(gaugedHeight), 0,
+                                wxNumberFormatter::Style::Style_WithThousandsSep),
+                            wxNumberFormatter::ToString(
+                                static_cast<double>(drawnHeight), 0,
+                                wxNumberFormatter::Style::Style_WithThousandsSep),
+                            wxNumberFormatter::ToString(static_cast<double>(drawnLines), 0,
+                                                        wxNumberFormatter::Style::Style_None),
+                            wxNumberFormatter::ToString(
+                                static_cast<double>(GetMinimumUserHeightDIPs().value_or(0)), 0,
+                                wxNumberFormatter::Style::Style_None),
+                            wxNumberFormatter::ToString(
+                                ScaleToScreenAndCanvas(GetMinimumUserHeightDIPs().value_or(0)), 0,
+                                wxNumberFormatter::Style::Style_None),
+                            GetFont().GetFaceName(), (GetFont().IsOk() ? _DT(L"yes") : _DT(L"NO")),
+                            dc.GetFont().GetFaceName(), GetFont().GetFractionalPointSize(),
+                            wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT)
+                                .GetFractionalPointSize()) }
+                                              .AnchorPoint(bBox.GetTopLeft())
+                                              .Anchoring(Anchoring::TopLeftCorner)
+                                              .FontColor(Colors::ColorBrewer::GetColor(
+                                                  Colors::Color::Blue))
+                                              .Pen(Colors::ColorBrewer::GetColor(
+                                                  Colors::Color::Blue))
+                                              .DPIScaling(GetDPIScaleFactor())
+                                              .FontBackgroundColor(Colors::ColorBrewer::GetColor(
+                                                  Colors::Color::White))
+                                              .Padding(2, 2, 2, 2));
                     infoLabel.Draw(dc);
                     }
                 }

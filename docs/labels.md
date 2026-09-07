@@ -351,6 +351,7 @@ Standard CSS properties are used for styling.
 Example:
 
 ```cpp
+label.EnableMarkup(true);
 label.SetText(L"Normal text with <span style='color: red;'>red</span> and "
                "<span style='background-color: lightblue; font-style: italic;'>styled</span> words.");
 ```
