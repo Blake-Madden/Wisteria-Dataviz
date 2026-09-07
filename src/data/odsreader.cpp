@@ -24,8 +24,8 @@ namespace Wisteria::Data
         }
 
     //---------------------------------------------------
-    wxString OdsReader::ReadWorksheet(const std::variant<wxString, size_t>& worksheet,
-                                      const wchar_t delimiter)
+    lily_of_the_valley::ods_extract_text::worksheet
+    OdsReader::ReadWorksheetData(const std::variant<wxString, size_t>& worksheet)
         {
         MemoryMappedFile sourceFile(m_filePath, true, true);
         const ZipCatalog archive(static_cast<const char*>(sourceFile.GetStream()),
@@ -67,6 +67,22 @@ namespace Wisteria::Data
             throw std::runtime_error(_(L"Unknown value specified for ODS worksheet.").ToUTF8());
             }
 
+        return wkData;
+        }
+
+    //---------------------------------------------------
+    wxString OdsReader::ReadWorksheet(const std::variant<wxString, size_t>& worksheet,
+                                      const wchar_t delimiter)
+        {
+        auto wkData = ReadWorksheetData(worksheet);
         return lily_of_the_valley::ods_extract_text::get_worksheet_text(wkData, delimiter);
+        }
+
+    //---------------------------------------------------
+    std::vector<std::vector<std::wstring>>
+    OdsReader::ReadWorksheetMatrix(const std::variant<wxString, size_t>& worksheet)
+        {
+        auto wkData = ReadWorksheetData(worksheet);
+        return lily_of_the_valley::ods_extract_text::extract_worksheet_matrix(wkData);
         }
     } // namespace Wisteria::Data

@@ -54,7 +54,27 @@ namespace Wisteria::Data
         wxString ReadWorksheet(const std::variant<wxString, size_t>& worksheet,
                                wchar_t delimiter = L'\t');
 
+        /** @brief Reads a worksheet from the loaded workbook as a matrix of strings.
+            @param worksheet The name or 1-based index of the worksheet to read.
+            @returns The worksheet's cells, row by row, with each cell's content preserved
+                exactly (no delimiting, quoting, or trimming).
+            @throws std::runtime_error If the worksheet can't be found, throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
+        [[nodiscard]]
+        std::vector<std::vector<std::wstring>>
+        ReadWorksheetMatrix(const std::variant<wxString, size_t>& worksheet);
+
       private:
+        /// @brief Loads and parses a worksheet's XML into a cell matrix.
+        /// @param worksheet The name or 1-based index of the worksheet to read.
+        /// @returns The parsed worksheet.
+        /// @throws std::runtime_error If the worksheet can't be found or the index is
+        ///     out of range.
+        [[nodiscard]]
+        lily_of_the_valley::xlsx_extract_text::worksheet
+        ReadWorksheetData(const std::variant<wxString, size_t>& worksheet);
+
         wxString m_filePath;
         lily_of_the_valley::xlsx_extract_text m_xlsxTextExtractor{ true };
         };

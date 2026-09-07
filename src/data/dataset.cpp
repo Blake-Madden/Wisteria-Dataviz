@@ -8,6 +8,7 @@
 
 #include "dataset.h"
 #include "../math/statistics.h"
+#include <string_view>
 #include <wx/numformatter.h>
 
 namespace Wisteria::Data
@@ -1617,7 +1618,9 @@ namespace Wisteria::Data
                               const ImportInfo& info)
         {
         Data::ExcelReader xlReader(filePath);
-        ImportTextRaw(xlReader.ReadWorksheet(worksheet), info, L'\t');
+        auto dataMatrix = xlReader.ReadWorksheetMatrix(worksheet);
+        Reset();
+        LoadWorksheetMatrix(std::move(dataMatrix), info);
         }
 
     //----------------------------------------------
@@ -1625,19 +1628,53 @@ namespace Wisteria::Data
                             const std::variant<wxString, size_t>& worksheet, const ImportInfo& info)
         {
         Data::OdsReader odsReader(filePath);
-        ImportTextRaw(odsReader.ReadWorksheet(worksheet), info, L'\t');
+        auto dataMatrix = odsReader.ReadWorksheetMatrix(worksheet);
+        Reset();
+        LoadWorksheetMatrix(std::move(dataMatrix), info);
+        }
+
+    //----------------------------------------------
+    void Dataset::LoadWorksheetMatrix(std::vector<std::vector<std::wstring>> dataMatrix,
+                                      const ImportInfo& info)
+        {
+        // Normalize cells like the text path (trim whitespace/quotes, collapse doubled
+        // quotes) so this stays consistent with the ReadColumnInfo() preview.
+        lily_of_the_valley::cell_trim cellTrim;
+        const lily_of_the_valley::cell_collapse_quotes<std::wstring> collapseDoubledQuotes;
+        for (auto& matrixRow : dataMatrix)
+            {
+            for (auto& cell : matrixRow)
+                {
+                const std::wstring_view trimmed{ cellTrim(cell.c_str(), cell.length()),
+                                                 cellTrim.get_trimmed_string_length() };
+                if (trimmed.size() != cell.size())
+                    {
+                    cell = std::wstring{ trimmed };
+                    }
+                collapseDoubledQuotes(cell);
+                }
+            }
+
+        // the first row after any rows the caller asked to skip holds the column names
+        if (info.m_skipRows >= dataMatrix.size())
+            {
+            return;
+            }
+        std::vector<std::wstring> columnNames = std::move(dataMatrix[info.m_skipRows]);
+        dataMatrix.erase(dataMatrix.begin(),
+                         dataMatrix.begin() + static_cast<std::ptrdiff_t>(info.m_skipRows) + 1);
+        if (dataMatrix.empty())
+            {
+            return;
+            }
+        LoadDataStrings(dataMatrix, columnNames, info);
         }
 
     //----------------------------------------------
     void Dataset::ImportTextRaw(const wxString& fileText, const ImportInfo& info,
                                 const wchar_t delimiter)
         {
-        // reset
-        Clear();
-        m_dateColumns.clear();
-        m_categoricalColumns.clear();
-        m_continuousColumns.clear();
-        m_name.clear();
+        Reset();
 
         std::vector<std::vector<std::wstring>> dataStrings;
 
@@ -1677,23 +1714,37 @@ namespace Wisteria::Data
                 {
                 return;
                 }
-            Reserve(rowCount);
             }
         else
             {
             return;
             }
 
+        LoadDataStrings(dataStrings, preview.get_header_names(), info);
+        }
+
+    //----------------------------------------------
+    void Dataset::LoadDataStrings(std::vector<std::vector<std::wstring>>& dataStrings,
+                                  const std::vector<std::wstring>& columnNames,
+                                  const ImportInfo& info)
+        {
+        // pad every row so that access by column index is always in range
+        for (auto& dataRow : dataStrings)
+            {
+            dataRow.resize(columnNames.size());
+            }
+        Reserve(dataStrings.size());
+
         // checks for columns client requested that aren't in the file
-        const auto throwIfColumnNotFound = [&preview](const auto& columnName,
-                                                      const auto& foundIterator,
-                                                      const bool allowEmptyColumnName)
+        const auto throwIfColumnNotFound = [&columnNames](const auto& columnName,
+                                                          const auto& foundIterator,
+                                                          const bool allowEmptyColumnName)
         {
             if (allowEmptyColumnName && columnName.empty())
                 {
                 return;
                 }
-            if (foundIterator == preview.get_header_names().cend())
+            if (foundIterator == columnNames.cend())
                 {
                 throw std::runtime_error(
                     wxString::Format(_(L"'%s': column not found!"), columnName.c_str()).ToUTF8());
@@ -1723,13 +1774,13 @@ namespace Wisteria::Data
         // from the client and map them as they requested
         const auto idColumnIter =
             info.m_idColumn.empty() ?
-                preview.get_header_names().cend() :
-                std::ranges::find_if(preview.get_header_names(), [&info](const auto& item)
+                columnNames.cend() :
+                std::ranges::find_if(columnNames, [&info](const auto& item)
                                      { return info.m_idColumn.CmpNoCase(item.c_str()) == 0; });
         throwIfColumnNotFound(info.m_idColumn, idColumnIter, true);
         const std::optional<size_t> idColumnIndex =
-            (idColumnIter != preview.get_header_names().cend()) ?
-                std::optional<size_t>(idColumnIter - preview.get_header_names().cbegin()) :
+            (idColumnIter != columnNames.cend()) ?
+                std::optional<size_t>(idColumnIter - columnNames.cbegin()) :
                 std::nullopt;
 
         // find the supplied date columns
@@ -1738,15 +1789,15 @@ namespace Wisteria::Data
             {
             const auto dateColumnIter =
                 dateColumn.m_columnName.empty() ?
-                    preview.get_header_names().cend() :
+                    columnNames.cend() :
                     std::ranges::find_if(
-                        preview.get_header_names(), [&dateColumn](const auto& item)
+                        columnNames, [&dateColumn](const auto& item)
                         { return dateColumn.m_columnName.CmpNoCase(item.c_str()) == 0; });
             throwIfColumnNotFound(dateColumn.m_columnName, dateColumnIter, false);
             dateColumnIndices.push_back(
-                (dateColumnIter != preview.get_header_names().cend()) ?
+                (dateColumnIter != columnNames.cend()) ?
                     std::optional<dateIndexInfo>(dateIndexInfo{
-                        static_cast<size_t>(dateColumnIter - preview.get_header_names().cbegin()),
+                        static_cast<size_t>(dateColumnIter - columnNames.cbegin()),
                         dateColumn.m_importMethod, dateColumn.m_strptimeFormatString }) :
                     std::nullopt);
             }
@@ -1757,16 +1808,16 @@ namespace Wisteria::Data
             {
             const auto catColumnIter =
                 catColumn.m_columnName.empty() ?
-                    preview.get_header_names().cend() :
+                    columnNames.cend() :
                     std::ranges::find_if(
-                        preview.get_header_names(), [&catColumn](const auto& item)
+                        columnNames, [&catColumn](const auto& item)
                         { return catColumn.m_columnName.CmpNoCase(item.c_str()) == 0; });
             throwIfColumnNotFound(catColumn.m_columnName, catColumnIter, false);
             catColumnIndices.push_back(
-                (catColumnIter != preview.get_header_names().cend()) ?
-                    std::optional<catIndexInfo>(catIndexInfo{
-                        static_cast<size_t>(catColumnIter - preview.get_header_names().cbegin()),
-                        catColumn.m_importMethod, catColumn.m_mdCode }) :
+                (catColumnIter != columnNames.cend()) ?
+                    std::optional<catIndexInfo>(
+                        catIndexInfo{ static_cast<size_t>(catColumnIter - columnNames.cbegin()),
+                                      catColumn.m_importMethod, catColumn.m_mdCode }) :
                     std::nullopt);
             }
 
@@ -1776,15 +1827,13 @@ namespace Wisteria::Data
             {
             const auto continuousColumnIter =
                 continuousColumn.empty() ?
-                    preview.get_header_names().cend() :
-                    std::ranges::find_if(preview.get_header_names(),
-                                         [&continuousColumn](const auto& item)
+                    columnNames.cend() :
+                    std::ranges::find_if(columnNames, [&continuousColumn](const auto& item)
                                          { return continuousColumn.CmpNoCase(item.c_str()) == 0; });
             throwIfColumnNotFound(continuousColumn, continuousColumnIter, false);
             continuousColumnIndices.push_back(
-                (continuousColumnIter != preview.get_header_names().cend()) ?
-                    std::optional<size_t>(continuousColumnIter -
-                                          preview.get_header_names().cbegin()) :
+                (continuousColumnIter != columnNames.cend()) ?
+                    std::optional<size_t>(continuousColumnIter - columnNames.cbegin()) :
                     std::nullopt);
             }
 
@@ -1933,13 +1982,11 @@ namespace Wisteria::Data
         {
         if (wxFileName{ filePath }.GetExt().CmpNoCase(L"xlsx") == 0)
             {
-            Data::ExcelReader xlReader(filePath);
-            ImportTextRaw(xlReader.ReadWorksheet(worksheet), info, L'\t');
+            ImportExcel(filePath, worksheet, info);
             }
         else if (wxFileName{ filePath }.GetExt().CmpNoCase(L"ods") == 0)
             {
-            Data::OdsReader odsReader(filePath);
-            ImportTextRaw(odsReader.ReadWorksheet(worksheet), info, L'\t');
+            ImportOds(filePath, worksheet, info);
             }
         else
             {

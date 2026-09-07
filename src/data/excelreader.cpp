@@ -42,58 +42,70 @@ namespace Wisteria::Data
         }
 
     //---------------------------------------------------
-    wxString ExcelReader::ReadWorksheet(const std::variant<wxString, size_t>& worksheet,
-                                        const wchar_t delimiter)
+    lily_of_the_valley::xlsx_extract_text::worksheet
+    ExcelReader::ReadWorksheetData(const std::variant<wxString, size_t>& worksheet)
         {
         MemoryMappedFile sourceFile(m_filePath, true, true);
         const ZipCatalog archive(static_cast<const char*>(sourceFile.GetStream()),
                                  sourceFile.GetMapSize());
 
+        const auto& worksheetPaths = m_xlsxTextExtractor.get_worksheet_paths();
+        std::wstring sheetPath;
+
         // find the sheet by name
         if (const auto* const worksheetName{ std::get_if<wxString>(&worksheet) };
             worksheetName != nullptr)
             {
-            const auto& worksheetPaths = m_xlsxTextExtractor.get_worksheet_paths();
-
             const auto sheetPos =
                 std::ranges::find_if(worksheetPaths, [&](const auto& wsPath)
                                      { return wsPath.first == worksheetName->wc_str(); });
-
-            if (sheetPos != worksheetPaths.cend())
+            if (sheetPos == worksheetPaths.cend())
                 {
-                const std::wstring sheetFile = archive.ReadTextFile(sheetPos->second);
-
-                lily_of_the_valley::xlsx_extract_text::worksheet wkData;
-
-                m_xlsxTextExtractor(sheetFile.c_str(), sheetFile.length(), wkData);
-                return lily_of_the_valley::xlsx_extract_text::get_worksheet_text(wkData, delimiter);
+                throw std::runtime_error(
+                    wxString::Format(_(L"'%s': Unable to find worksheet in Excel workbook."),
+                                     *worksheetName)
+                        .ToUTF8());
                 }
-            throw std::runtime_error(
-                wxString::Format(_(L"'%s': Unable to find worksheet in Excel workbook."),
-                                 *worksheetName)
-                    .ToUTF8());
+            sheetPath = sheetPos->second;
             }
         // ...or index (1-based)
-        if (const auto* const worksheetIndex{ std::get_if<size_t>(&worksheet) };
-            worksheetIndex != nullptr)
+        else if (const auto* const worksheetIndex{ std::get_if<size_t>(&worksheet) };
+                 worksheetIndex != nullptr)
             {
-            const auto& worksheetPaths = m_xlsxTextExtractor.get_worksheet_paths();
-
-            if (*worksheetIndex > 0 && *worksheetIndex <= worksheetPaths.size())
+            if (*worksheetIndex == 0 || *worksheetIndex > worksheetPaths.size())
                 {
-                const std::wstring sheetFile =
-                    archive.ReadTextFile(worksheetPaths[*worksheetIndex - 1].second);
-
-                lily_of_the_valley::xlsx_extract_text::worksheet wkData;
-
-                m_xlsxTextExtractor(sheetFile.c_str(), sheetFile.length(), wkData);
-                return lily_of_the_valley::xlsx_extract_text::get_worksheet_text(wkData, delimiter);
+                throw std::runtime_error(
+                    wxString::Format(
+                        _(L"Worksheet '%zu': worksheet out of range in Excel workbook."),
+                        *worksheetIndex)
+                        .ToUTF8());
                 }
-            throw std::runtime_error(
-                wxString::Format(_(L"Worksheet '%zu': worksheet out of range in Excel workbook."),
-                                 *worksheetIndex)
-                    .ToUTF8());
+            sheetPath = worksheetPaths[*worksheetIndex - 1].second;
             }
-        throw std::runtime_error(_(L"Unknown value specified for Excel worksheet.").ToUTF8());
+        else
+            {
+            throw std::runtime_error(_(L"Unknown value specified for Excel worksheet.").ToUTF8());
+            }
+
+        const std::wstring sheetFile = archive.ReadTextFile(sheetPath);
+        lily_of_the_valley::xlsx_extract_text::worksheet wkData;
+        m_xlsxTextExtractor(sheetFile.c_str(), sheetFile.length(), wkData);
+        return wkData;
+        }
+
+    //---------------------------------------------------
+    wxString ExcelReader::ReadWorksheet(const std::variant<wxString, size_t>& worksheet,
+                                        const wchar_t delimiter)
+        {
+        auto wkData = ReadWorksheetData(worksheet);
+        return lily_of_the_valley::xlsx_extract_text::get_worksheet_text(wkData, delimiter);
+        }
+
+    //---------------------------------------------------
+    std::vector<std::vector<std::wstring>>
+    ExcelReader::ReadWorksheetMatrix(const std::variant<wxString, size_t>& worksheet)
+        {
+        auto wkData = ReadWorksheetData(worksheet);
+        return lily_of_the_valley::xlsx_extract_text::extract_worksheet_matrix(wkData);
         }
     } // namespace Wisteria::Data

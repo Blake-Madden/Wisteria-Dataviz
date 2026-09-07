@@ -8,6 +8,7 @@
 
 #include "spreadsheet_extract_text.h"
 #include <algorithm>
+#include <utility>
 
 namespace lily_of_the_valley
     {
@@ -95,6 +96,25 @@ namespace lily_of_the_valley
             }
 
         return dataText;
+        }
+
+    //------------------------------------------------------------------
+    std::vector<std::vector<std::wstring>>
+    spreadsheet_extract_text::extract_worksheet_matrix(worksheet& wrk)
+        {
+        std::vector<std::vector<std::wstring>> matrix;
+        matrix.reserve(wrk.size());
+        for (auto& row : wrk)
+            {
+            std::vector<std::wstring> matrixRow;
+            matrixRow.reserve(row.size());
+            for (auto& cell : row)
+                {
+                matrixRow.push_back(cell.extract_value());
+                }
+            matrix.push_back(std::move(matrixRow));
+            }
+        return matrix;
         }
 
     //------------------------------------------------------------------

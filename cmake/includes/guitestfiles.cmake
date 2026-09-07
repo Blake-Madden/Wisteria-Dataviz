@@ -36,6 +36,7 @@ SET(TEST_SRC_FILES
     memmaptests.cpp
     multiserieslineplotrendertests.cpp
     nightingale_rose_chart_render_tests.cpp
+    odsdatasettests.cpp
     pdfreadertests.cpp
     piechartrendertests.cpp
     pivottests.cpp
@@ -59,4 +60,5 @@ SET(TEST_SRC_FILES
     wcurveplotrendertests.cpp
     wilmarthbridgeplotrendertests.cpp
     winlosssparklinerendertests.cpp
+    xlsxdatasettests.cpp
     xmlformattests.cpp)

@@ -2013,6 +2013,34 @@ namespace Wisteria::Data
             }
 
       private:
+        /// @brief Clears the dataset's contents.
+        void Reset()
+            {
+            Clear();
+            m_dateColumns.clear();
+            m_categoricalColumns.clear();
+            m_continuousColumns.clear();
+            m_name.clear();
+            }
+
+        /** @brief Maps a parsed string matrix onto the dataset's typed columns.
+            @param dataStrings The data rows (no header row), one inner vector per row.
+                Rows are padded to @c columnNames.size() so cell access by index is safe.
+            @param columnNames The column (header) names.
+            @param info The definition for which columns to import and how to map them.
+            @note The caller is responsible for calling Reset() beforehand.*/
+        void LoadDataStrings(std::vector<std::vector<std::wstring>>& dataStrings,
+                             const std::vector<std::wstring>& columnNames, const ImportInfo& info);
+
+        /** @brief Loads a worksheet's cell matrix (e.g., from ExcelReader or OdsReader)
+                into the dataset's typed columns.
+            @param dataMatrix The worksheet rows. The first row after @c info.m_skipRows is
+                taken as the column names, the rest are data.
+            @param info The definition for which columns to import and how to map them.
+            @note The caller is responsible for calling Reset() beforehand.*/
+        void LoadWorksheetMatrix(std::vector<std::vector<std::wstring>> dataMatrix,
+                                 const ImportInfo& info);
+
         /// @returns The specified continuous column by name or index.
         [[nodiscard]]
         ContinuousColumnConstIterator

@@ -141,6 +141,14 @@ namespace lily_of_the_valley
                 return m_value;
                 }
 
+            /// @brief Moves the cell's value out of the cell.
+            /// @returns The cell's value.
+            [[nodiscard]]
+            std::wstring extract_value() noexcept
+                {
+                return std::move(m_value);
+                }
+
           private:
             // 1-indexed, 'A' is column 1
             size_t m_column_position{ INVALID_INDEX };
@@ -215,6 +223,14 @@ namespace lily_of_the_valley
                 before calling this.*/
         [[nodiscard]]
         static std::wstring get_worksheet_text(const worksheet& wrk, wchar_t delim = L'\t');
+
+        /** @brief Moves a worksheet's cell values into a row-major matrix of strings.
+            @param wrk The worksheet to consume. Each cell's value is moved out and left empty.
+            @returns The worksheet's values as a 2D array of strings.
+            @details Unlike get_worksheet_text(), this preserves each cell's content exactly,
+                with no delimiting, quoting, or trimming.*/
+        [[nodiscard]]
+        static std::vector<std::vector<std::wstring>> extract_worksheet_matrix(worksheet& wrk);
 
         /** @brief Verifies that a worksheet isn't jagged and the cells are in the proper order.
             @note This is expensive and should only be used for debugging purposes.
