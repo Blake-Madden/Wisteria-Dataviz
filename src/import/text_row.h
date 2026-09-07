@@ -301,7 +301,7 @@ namespace lily_of_the_valley
                             }
                         }
                     }
-                if (pos->first == column_type::standard_delimiter)
+                else if (pos->first == column_type::standard_delimiter)
                     {
                     auto currentColumnIter = m_standard_delimiter_columns.begin() + pos->second;
                     // some column definitions may be used more than once for consecutive columns
