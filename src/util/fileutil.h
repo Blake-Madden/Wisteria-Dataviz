@@ -229,6 +229,24 @@ bool RenameFileShortenName(const wxString& srcPath, const wxString& destPath);
     @param maxLength The maximum length of the shortened name.*/
 [[nodiscard]]
 wxString GetShortenedFilePath(const wxString& filePath, size_t maxLength = 40);
+
+/// @brief The result of checking a file against a maximum size.
+enum class FileSizeCheckResult
+    {
+    WithinLimit, /*!< The file exists and is no larger than the limit.*/
+    Unreadable,  /*!< The file is missing or its size cannot be determined.*/
+    TooLarge     /*!< The file is larger than the limit allows.*/
+    };
+
+/** @brief Checks a file's size before it is read into memory.
+    @details A file whose size cannot be determined is reported the same as a missing
+        one. A caller that loads an entire file keeps a hard ceiling even when the
+        platform cannot stat the path.
+    @param filePath The path to the file to check.
+    @param maxByteCount The largest size, in bytes, the file may be.
+    @returns Whether the file is within the limit.*/
+[[nodiscard]]
+FileSizeCheckResult CheckFileSizeLimit(const wxString& filePath, wxULongLong_t maxByteCount);
 /// @brief Strips illegal characters from a file path, except for path separators.
 /// @param filePath The path to strip.
 /// @returns The stripped path.

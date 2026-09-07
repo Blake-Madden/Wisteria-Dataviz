@@ -12,8 +12,7 @@
 #ifndef WISTERIA_KML_H
 #define WISTERIA_KML_H
 
-#include <limits>
-#include <map>
+#include "geofeature.h"
 #include <set>
 #include <vector>
 #include <wx/string.h>
@@ -22,99 +21,6 @@ class wxXmlNode;
 
 namespace Wisteria::Data
     {
-    /// @brief A geographic coordinate (WGS 84), as read from a KML file.
-    /// @details Coordinates are stored exactly as they appear in the file;
-    ///     no map projection is applied. The altitude component (if any) is discarded.
-    struct GeoCoordinate
-        {
-        /// @brief The longitude, in decimal degrees (the @c x value, -180 to 180).
-        double m_longitude{ 0.0 };
-        /// @brief The latitude, in decimal degrees (the @c y value, -90 to 90).
-        double m_latitude{ 0.0 };
-        };
-
-    /// @brief An axis-aligned geographic extent, in decimal degrees.
-    /// @details A default-constructed box is empty (see IsOk()).
-    ///     Feeding coordinates or other boxes into Encompass() grows it to fit them.
-    struct GeoBoundingBox
-        {
-        /// @brief The western edge, in decimal degrees.
-        double m_minLongitude{ std::numeric_limits<double>::max() };
-        /// @brief The eastern edge, in decimal degrees.
-        double m_maxLongitude{ std::numeric_limits<double>::lowest() };
-        /// @brief The southern edge, in decimal degrees.
-        double m_minLatitude{ std::numeric_limits<double>::max() };
-        /// @brief The northern edge, in decimal degrees.
-        double m_maxLatitude{ std::numeric_limits<double>::lowest() };
-
-        /// @returns @c true if the box holds a valid, non-empty extent.
-        [[nodiscard]]
-        bool IsOk() const noexcept;
-
-        /// @brief Grows the box so that it contains @c coordinate.
-        /// @param coordinate The coordinate to fit inside the box.
-        void Encompass(const GeoCoordinate& coordinate) noexcept;
-
-        /// @brief Grows the box so that it contains @c box.
-        /// @param box The other box to fit inside this one. An empty box is ignored.
-        void Encompass(const GeoBoundingBox& box) noexcept;
-
-        /// @returns The width of the box, in decimal degrees, or @c 0 if the box is empty.
-        [[nodiscard]]
-        double GetWidth() const noexcept;
-
-        /// @returns The height of the box, in decimal degrees, or @c 0 if the box is empty.
-        [[nodiscard]]
-        double GetHeight() const noexcept;
-
-        /// @returns The coordinate at the center of the box.
-        /// @note The return value is meaningless if the box is empty.
-        [[nodiscard]]
-        GeoCoordinate GetCenter() const noexcept;
-        };
-
-    /// @brief A closed ring of coordinates (a KML @c LinearRing).
-    using GeoLinearRing = std::vector<GeoCoordinate>;
-
-    /// @brief A single polygon: one outer ring, plus zero or more inner rings (holes).
-    struct GeoPolygon
-        {
-        /// @brief The outer boundary of the polygon.
-        GeoLinearRing m_outerBoundary;
-        /// @brief The inner boundaries (holes) cut out of the polygon.
-        std::vector<GeoLinearRing> m_innerBoundaries;
-        /// @brief The extent of every ring in the polygon.
-        GeoBoundingBox m_boundingBox;
-        };
-
-    /// @brief A named region loaded from a KML @c Placemark.
-    /// @details A region carries a label, any tabular attributes attached to the
-    ///     placemark, and the polygon(s) that make up its shape. A placemark with a
-    ///     @c MultiGeometry (e.g., a mainland plus its islands) yields several
-    ///     polygons in @c m_polygons.
-    struct GeoRegion
-        {
-        /// @brief The label of the region (the placemark's @c name).
-        wxString m_name;
-        /// @brief The attributes attached to the placemark, keyed by field name.
-        /// @details These come from the @c SchemaData / @c SimpleData fields in the
-        ///     placemark's @c ExtendedData. They are the values a choropleth is
-        ///     typically colored by.
-        std::map<wxString, wxString> m_attributes;
-        /// @brief The polygons that make up the region's shape.
-        std::vector<GeoPolygon> m_polygons;
-        /// @brief The extent of every polygon in the region.
-        GeoBoundingBox m_boundingBox;
-
-        /// @brief Looks up an attribute by field name.
-        /// @param fieldName The name of the field to look up.
-        /// @param defaultValue The value to return if the field is not present.
-        /// @returns The attribute's value, or @c defaultValue if it was not found.
-        [[nodiscard]]
-        wxString GetAttribute(const wxString& fieldName,
-                              const wxString& defaultValue = wxString{}) const;
-        };
-
     /// @brief Reads region geometry and labels from a KML file.
     /// @details KML is an XML dialect, so this is a thin reader over @c wxXmlDocument.
     ///     Only the parts needed to draw filled regions are kept. Each @c Placemark
@@ -130,7 +36,7 @@ namespace Wisteria::Data
     ///             }
     ///         }
     /// @endcode
-    class KmlReader
+    class KmlReader final : public GeoFeatureReader
         {
       public:
         /// @brief Constructor.
@@ -158,48 +64,6 @@ namespace Wisteria::Data
         [[nodiscard]]
         static std::vector<wxString> ReadFieldNames(const wxString& filePath);
 
-        /// @returns @c true if the last load succeeded and produced at least one region.
-        [[nodiscard]]
-        bool IsOk() const noexcept
-            {
-            return m_lastError.empty() && !m_regions.empty();
-            }
-
-        /// @returns A description of why the last load failed, or an empty string
-        ///     if it succeeded.
-        [[nodiscard]]
-        const wxString& GetLastError() const noexcept
-            {
-            return m_lastError;
-            }
-
-        /// @returns The regions read from the file.
-        [[nodiscard]]
-        const std::vector<GeoRegion>& GetRegions() const noexcept
-            {
-            return m_regions;
-            }
-
-        /// @returns The name of the KML @c Document, or an empty string if it had none.
-        [[nodiscard]]
-        const wxString& GetName() const noexcept
-            {
-            return m_name;
-            }
-
-        /// @returns The combined extent of every region that was read.
-        [[nodiscard]]
-        const GeoBoundingBox& GetBoundingBox() const noexcept
-            {
-            return m_boundingBox;
-            }
-
-        /// @brief Looks up a region by its label.
-        /// @param name The label to search for (a case-sensitive, exact match).
-        /// @returns A pointer to the region, or @c nullptr if no region has that label.
-        [[nodiscard]]
-        const GeoRegion* FindRegion(const wxString& name) const;
-
       private:
         // KML is untrusted input, so the reader keeps a few structural limits that a
         // malformed or hostile file cannot push past. They are well above anything a
@@ -212,7 +76,7 @@ namespace Wisteria::Data
         // most placemarks turned into regions from one file
         constexpr static size_t MAX_REGION_COUNT{ 500'000 };
         // largest KML file the reader will hand to the XML parser
-        constexpr static wxULongLong_t MAX_KML_FILE_BYTES{ 512ULL * 1024 * 1024 };
+        constexpr static wxULongLong_t MAX_KML_FILE_BYTES{ 256ULL * 1024 * 1024 };
 
         /// @brief Walks a parsed KML document and fills in the region list.
         /// @param rootNode The document's root (@c kml) node.
@@ -268,11 +132,6 @@ namespace Wisteria::Data
         /// @param depth The current nesting level. Descent stops past a fixed limit.
         static void CollectFieldNames(const wxXmlNode* parent, std::set<wxString>& fieldNames,
                                       int depth);
-
-        std::vector<GeoRegion> m_regions;
-        GeoBoundingBox m_boundingBox;
-        wxString m_name;
-        wxString m_lastError;
         };
     } // namespace Wisteria::Data
 

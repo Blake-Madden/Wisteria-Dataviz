@@ -10,13 +10,47 @@
 #include <limits>
 #include <map>
 #include <set>
+#include <wx/filename.h>
 
 namespace Wisteria::Data
     {
     //---------------------------------------------------
+    bool GeoDataset::IsGeoJsonFile(const wxString& filePath)
+        {
+        const wxString extension = wxFileName{ filePath }.GetExt();
+        return extension.CmpNoCase(L"geojson") == 0 || extension.CmpNoCase(L"json") == 0;
+        }
+
+    //---------------------------------------------------
+    bool GeoDataset::ImportRegionFile(const wxString& filePath, const GeoImportInfo& info)
+        {
+        return IsGeoJsonFile(filePath) ? ImportGeoJSON(filePath, info) : ImportKML(filePath, info);
+        }
+
+    //---------------------------------------------------
+    std::vector<wxString> GeoDataset::ReadRegionFieldNames(const wxString& filePath)
+        {
+        return IsGeoJsonFile(filePath) ? GeoJsonReader::ReadFieldNames(filePath) :
+                                         KmlReader::ReadFieldNames(filePath);
+        }
+
+    //---------------------------------------------------
     bool GeoDataset::ImportKML(const wxString& filePath, const GeoImportInfo& info)
         {
         KmlReader reader;
+        if (!reader.LoadFile(filePath))
+            {
+            m_lastError = reader.GetLastError();
+            return false;
+            }
+        return ImportRegions(reader, info);
+        }
+
+    //---------------------------------------------------
+    bool GeoDataset::ImportGeoJSON(const wxString& filePath, const GeoImportInfo& info)
+        {
+        GeoJsonReader reader;
+        reader.SetNameField(info.GetNameField());
         if (!reader.LoadFile(filePath))
             {
             m_lastError = reader.GetLastError();
@@ -38,7 +72,20 @@ namespace Wisteria::Data
         }
 
     //---------------------------------------------------
-    bool GeoDataset::ImportRegions(const KmlReader& reader, const GeoImportInfo& info)
+    bool GeoDataset::ImportGeoJSONFromText(const wxString& geoJsonText, const GeoImportInfo& info)
+        {
+        GeoJsonReader reader;
+        reader.SetNameField(info.GetNameField());
+        if (!reader.LoadText(geoJsonText))
+            {
+            m_lastError = reader.GetLastError();
+            return false;
+            }
+        return ImportRegions(reader, info);
+        }
+
+    //---------------------------------------------------
+    bool GeoDataset::ImportRegions(const GeoFeatureReader& reader, const GeoImportInfo& info)
         {
         m_lastError.clear();
         m_geometries.clear();
@@ -53,8 +100,9 @@ namespace Wisteria::Data
         const auto& regions = reader.GetRegions();
         if (regions.empty())
             {
-            m_lastError = reader.GetLastError().empty() ? _(L"No regions to import from KML.") :
-                                                          reader.GetLastError();
+            m_lastError = reader.GetLastError().empty() ?
+                              _(L"No regions to import from the region file.") :
+                              reader.GetLastError();
             return false;
             }
 
@@ -88,7 +136,7 @@ namespace Wisteria::Data
                 }
             }
 
-        SetName(reader.GetName().empty() ? std::wstring{ _DT(L"KML Regions") } :
+        SetName(reader.GetName().empty() ? std::wstring{ _DT(L"Regions") } :
                                            reader.GetName().ToStdWstring());
 
         // create the columns up front, in the order the row values are written below
@@ -177,7 +225,7 @@ namespace Wisteria::Data
         }
 
     //---------------------------------------------------
-    bool GeoDataset::IsContinuousField(const wxString& fieldName, const KmlReader& reader,
+    bool GeoDataset::IsContinuousField(const wxString& fieldName, const GeoFeatureReader& reader,
                                        const GeoImportInfo& info)
         {
         for (const auto& forcedField : info.GetContinuousFields())

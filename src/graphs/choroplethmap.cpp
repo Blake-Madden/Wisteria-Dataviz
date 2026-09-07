@@ -20,7 +20,6 @@
 #include <utility>
 #include <wx/dc.h>
 #include <wx/log.h>
-#include <wx/math.h>
 #include <wx/numformatter.h>
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Graph2D)
@@ -756,8 +755,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
     //----------------------------------------------------------------
     void ChoroplethMap::PrepareProjection()
         {
-        m_projLon0 = wxDegToRad((m_dataBounds.m_minLongitude + m_dataBounds.m_maxLongitude) / 2.0);
-        m_projLat0 = wxDegToRad((m_dataBounds.m_minLatitude + m_dataBounds.m_maxLatitude) / 2.0);
+        m_projLon0 = geometry::degrees_to_radians(
+            (m_dataBounds.m_minLongitude + m_dataBounds.m_maxLongitude) / 2.0);
+        m_projLat0 = geometry::degrees_to_radians(
+            (m_dataBounds.m_minLatitude + m_dataBounds.m_maxLatitude) / 2.0);
 
         // resolve Automatic from how much of the globe the data covers
         m_effectiveProjection = m_projection;
@@ -789,12 +790,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
 
         // for Albers, put the standard parallels one sixth in from the north and
         // south edges of the data
-        const double lat1 =
-            wxDegToRad(m_dataBounds.m_minLatitude + (m_dataBounds.GetHeight() / 6.0));
-        const double lat2 =
-            wxDegToRad(m_dataBounds.m_maxLatitude - (m_dataBounds.GetHeight() / 6.0));
+        const double lat1 = geometry::degrees_to_radians(m_dataBounds.m_minLatitude +
+                                                         (m_dataBounds.GetHeight() / 6.0));
+        const double lat2 = geometry::degrees_to_radians(m_dataBounds.m_maxLatitude -
+                                                         (m_dataBounds.GetHeight() / 6.0));
         m_albersN = (std::sin(lat1) + std::sin(lat2)) / 2.0;
-        // aAn n near zero means the parallels straddle the equator symmetrically and
+        // An n near zero means the parallels straddle the equator symmetrically and
         // the cone degenerates. Nudge it so the math stays finite.
         if (std::fabs(m_albersN) < 1e-6)
             {
@@ -808,8 +809,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
     //----------------------------------------------------------------
     std::pair<double, double> ChoroplethMap::Project(const Data::GeoCoordinate& coord) const
         {
-        const double lon = wxDegToRad(coord.m_longitude);
-        const double lat = wxDegToRad(coord.m_latitude);
+        const double lon = geometry::degrees_to_radians(coord.m_longitude);
+        const double lat = geometry::degrees_to_radians(coord.m_latitude);
 
         if (m_effectiveProjection == MapProjection::AlbersEqualAreaConic)
             {

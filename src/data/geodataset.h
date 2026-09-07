@@ -13,6 +13,7 @@
 #define WISTERIA_GEODATASET_H
 
 #include "dataset.h"
+#include "geojsonreader.h"
 #include "kmlreader.h"
 #include <optional>
 #include <utility>
@@ -66,6 +67,18 @@ namespace Wisteria::Data
             return *this;
             }
 
+        /** @brief Sets which GeoJSON feature @c properties member supplies a region's label.
+            @details This is only used when reading GeoJSON. KML placemarks carry their
+                own @c name, so this is ignored for a KML import. When empty, a set of
+                common name keys (@c "name", @c "NAME", ...) is tried.
+            @param fieldName The property name.
+            @returns A self reference.*/
+        GeoImportInfo& NameField(wxString fieldName)
+            {
+            m_nameField = std::move(fieldName);
+            return *this;
+            }
+
         /// @private
         [[nodiscard]]
         const wxString& GetIdField() const noexcept
@@ -94,10 +107,18 @@ namespace Wisteria::Data
             return m_importCentroids;
             }
 
+        /// @private
+        [[nodiscard]]
+        const wxString& GetNameField() const noexcept
+            {
+            return m_nameField;
+            }
+
       private:
         wxString m_idField;
         std::vector<wxString> m_continuousFields;
         std::vector<wxString> m_categoricalFields;
+        wxString m_nameField;
         bool m_importCentroids{ true };
         };
 
@@ -105,13 +126,14 @@ namespace Wisteria::Data
     ///     geometry needed to draw each region.
     /// @details This is the input to a choropleth (shaded-region) map. The tabular
     ///     side is an ordinary Dataset. The ID column holds a region key, and the
-    ///     KML @c ExtendedData fields become categorical or continuous columns. The
-    ///     geometry side is a parallel array of GeoRegion objects, one per row and
-    ///     in the same order, reachable through GetRegionGeometry().
+    ///     region-file attribute fields (KML @c ExtendedData, or GeoJSON feature
+    ///     @c properties) become categorical or continuous columns. The geometry side
+    ///     is a parallel array of GeoRegion objects, one per row and in the same order,
+    ///     reachable through GetRegionGeometry().
     ///
-    ///     The value a map is shaded by is rarely in the KML itself. Add it either
-    ///     with the normal Dataset column API, or by pulling it from another dataset
-    ///     with CopyContinuousColumnFrom(), matched on the ID column.
+    ///     The value a map is shaded by is rarely in the region file itself. Add it
+    ///     either with the normal Dataset column API, or by pulling it from another
+    ///     dataset with CopyContinuousColumnFrom(), matched on the ID column.
     /// @code
     ///     auto geoData = std::make_shared<GeoDataset>();
     ///     geoData->ImportKML(L"ohio-counties.kml",
@@ -133,12 +155,30 @@ namespace Wisteria::Data
         /// @brief Constructor.
         GeoDataset() = default;
 
+        /** @brief Reads a region file into this dataset, replacing any existing content.
+            @details The format is chosen from the file's extension: @c .geojson or
+                @c .json is read as GeoJSON, anything else as KML.
+            @param filePath The path to the region file to load.
+            @param info Options controlling the ID column and column typing.
+            @returns @c true on success. On failure, GetLastError() explains why and
+                the dataset is left empty.*/
+        bool ImportRegionFile(const wxString& filePath,
+                              const GeoImportInfo& info = GeoImportInfo{});
+
         /** @brief Reads a KML file into this dataset, replacing any existing content.
             @param filePath The path to the KML file to load.
             @param info Options controlling the ID column and column typing.
             @returns @c true on success. On failure, GetLastError() explains why and
                 the dataset is left empty.*/
         bool ImportKML(const wxString& filePath, const GeoImportInfo& info = GeoImportInfo{});
+
+        /** @brief Reads a GeoJSON file into this dataset, replacing any existing content.
+            @param filePath The path to the GeoJSON file to load.
+            @param info Options controlling the ID column and column typing.
+                Use GeoImportInfo::NameField() to say which feature property is the label.
+            @returns @c true on success. On failure, GetLastError() explains why and
+                the dataset is left empty.*/
+        bool ImportGeoJSON(const wxString& filePath, const GeoImportInfo& info = GeoImportInfo{});
 
         /** @brief Reads KML content held in a string into this dataset, replacing any
                 existing content.
@@ -148,11 +188,32 @@ namespace Wisteria::Data
         bool ImportRegionsFromText(const wxString& kmlText,
                                    const GeoImportInfo& info = GeoImportInfo{});
 
+        /** @brief Reads GeoJSON content held in a string into this dataset, replacing
+                any existing content.
+            @param geoJsonText The GeoJSON text to parse.
+            @param info Options controlling the ID column and column typing.
+            @returns @c true on success. On failure, GetLastError() explains why.*/
+        bool ImportGeoJSONFromText(const wxString& geoJsonText,
+                                   const GeoImportInfo& info = GeoImportInfo{});
+
         /** @brief Builds this dataset from regions that have already been parsed.
-            @param reader A KmlReader holding the regions to import.
+            @param reader A KmlReader or GeoJsonReader holding the regions to import.
             @param info Options controlling the ID column and column typing.
             @returns @c true on success.*/
-        bool ImportRegions(const KmlReader& reader, const GeoImportInfo& info = GeoImportInfo{});
+        bool ImportRegions(const GeoFeatureReader& reader,
+                           const GeoImportInfo& info = GeoImportInfo{});
+
+        /** @brief Reads just the attribute field names from a region file.
+            @details The format is chosen from the file's extension, as in ImportRegionFile().
+            @param filePath The path to the region file.
+            @returns The field names, sorted and de-duplicated.
+                Empty if the file cannot be read or declares no fields.*/
+        [[nodiscard]]
+        static std::vector<wxString> ReadRegionFieldNames(const wxString& filePath);
+
+        /// @returns @c true if @p filePath has a @c .geojson or @c .json extension.
+        [[nodiscard]]
+        static bool IsGeoJsonFile(const wxString& filePath);
 
         /// @returns A description of why the last import failed, or an empty string
         ///     if it succeeded.
@@ -235,7 +296,7 @@ namespace Wisteria::Data
         /// @param reader The reader holding the regions to inspect.
         /// @param info The import options.
         /// @returns @c true if the field should be continuous, @c false for categorical.
-        static bool IsContinuousField(const wxString& fieldName, const KmlReader& reader,
+        static bool IsContinuousField(const wxString& fieldName, const GeoFeatureReader& reader,
                                       const GeoImportInfo& info);
 
         std::vector<GeoRegion> m_geometries;

@@ -50,6 +50,8 @@ SET(APP_WISTERIA_SRC
     src/data/dataset.cpp
     src/data/excelreader.cpp
     src/data/geodataset.cpp
+    src/data/geofeature.cpp
+    src/data/geojsonreader.cpp
     src/data/join_inner.cpp
     src/data/join_left.cpp
     src/data/kmlreader.cpp

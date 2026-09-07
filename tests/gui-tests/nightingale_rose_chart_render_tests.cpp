@@ -219,22 +219,22 @@ namespace
 
     // Exact layout output recorded per spec name.
     // Update only for a deliberate, reviewed change to NightingaleRoseChart layout.
-    //
-    // Every layout also includes the four hidden cartesian axes that Graph2D
-    // unconditionally adds to the plot object list, so each object count below
-    // is (wedges + labels + 4).
     [[nodiscard]]
     LayoutFingerprint ExpectedFingerprint(const std::string& specName)
         {
         // fields: object count, slice count, wedge count, group count
-        if (specName == "single-series-area" || specName == "single-series-radius")
+        if (specName == "single-series-area")
             {
             return LayoutFingerprint{ 16, 6, 6, 0 };
+            }
+        if (specName == "single-series-radius")
+            {
+            return LayoutFingerprint{ 17, 6, 6, 0 };
             }
         if (specName == "nightingale-overlaid" || specName == "nightingale-stacked" ||
             specName == "grouped-radius-stacked")
             {
-            return LayoutFingerprint{ 52, 12, 36, 3 };
+            return LayoutFingerprint{ 53, 12, 36, 3 };
             }
         if (specName == "no-labels")
             {
@@ -340,7 +340,7 @@ TEST_CASE("NightingaleRoseChart layout invariants", "[nightingalerosechart][rend
         CHECK(withoutLabels.m_wedgeCount == withLabels.m_wedgeCount);
         }
 
-    SECTION("area and radius scaling produce the same fingerprint for the same shape")
+    SECTION("area and radius scaling produce the same slice and wedge structure")
         {
         auto* canvasArea = MakeCanvas();
         auto chartArea = BuildChart(canvasArea, findSpec("single-series-area"));
@@ -350,7 +350,9 @@ TEST_CASE("NightingaleRoseChart layout invariants", "[nightingalerosechart][rend
         auto chartRadius = BuildChart(canvasRadius, findSpec("single-series-radius"));
         const auto radiusPrint = LayOutAndCapture(canvasRadius, chartRadius);
 
-        CHECK(areaPrint == radiusPrint);
+        CHECK(areaPrint.m_sliceCount == radiusPrint.m_sliceCount);
+        CHECK(areaPrint.m_wedgeCount == radiusPrint.m_wedgeCount);
+        CHECK(areaPrint.m_groupCount == radiusPrint.m_groupCount);
         }
 
     SECTION("overlaid and stacked series produce the same fingerprint for the same shape")

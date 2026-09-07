@@ -6372,8 +6372,8 @@ void WisteriaView::OnInsertChoroplethMap([[maybe_unused]] wxCommandEvent& event)
     try
         {
         auto geoData = std::make_shared<Wisteria::Data::GeoDataset>();
-        if (!geoData->ImportKML(dlg.GetKMLPath(),
-                                Wisteria::Data::GeoImportInfo().IdField(dlg.GetKMLIdField())))
+        if (!geoData->ImportRegionFile(
+                dlg.GetKMLPath(), Wisteria::Data::GeoImportInfo().IdField(dlg.GetKMLIdField())))
             {
             throw std::runtime_error(geoData->GetLastError().ToUTF8().data());
             }
@@ -6493,8 +6493,8 @@ void WisteriaView::EditChoroplethMap(const Wisteria::Graphs::Graph2D& graph,
         // matching dataset and value column mean the merged result already stands.
         const bool sourceUnchanged =
             (oldMap != nullptr && oldMap->GetGeoDataset() != nullptr &&
-             oldMap->GetKMLFilePath() == dlg.GetKMLPath() &&
-             oldMap->GetKMLIdField() == dlg.GetKMLIdField() &&
+             oldMap->GetRegionFilePath() == dlg.GetKMLPath() &&
+             oldMap->GetRegionIdField() == dlg.GetKMLIdField() &&
              oldMap->GetDataSourceName() == newDataSource &&
              oldMap->GetValueColumnName() == newShadingColumn &&
              oldMap->GetProportionalSymbolColumnName() == newSymbolColumn &&
@@ -6508,7 +6508,7 @@ void WisteriaView::EditChoroplethMap(const Wisteria::Graphs::Graph2D& graph,
         else
             {
             auto builtGeoData = std::make_shared<Wisteria::Data::GeoDataset>();
-            if (!builtGeoData->ImportKML(
+            if (!builtGeoData->ImportRegionFile(
                     dlg.GetKMLPath(), Wisteria::Data::GeoImportInfo().IdField(dlg.GetKMLIdField())))
                 {
                 throw std::runtime_error(builtGeoData->GetLastError().ToUTF8().data());

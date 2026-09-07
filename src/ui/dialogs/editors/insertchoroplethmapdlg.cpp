@@ -70,12 +70,14 @@ namespace Wisteria::UI
         optionsPage->SetSizer(optionsSizer);
         GetSideBarBook()->AddPage(optionsPage, _(L"Choropleth Map"), ID_OPTIONS_SECTION, true);
 
-        // KML file
-        auto* kmlBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Regions (KML file)"));
+        // region file
+        auto* kmlBox =
+            new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Regions (KML or GeoJSON file)"));
         m_kmlPicker = new wxFilePickerCtrl(
-            kmlBox->GetStaticBox(), wxID_ANY, wxString{}, _(L"Select a KML file"),
-            _(L"KML files (*.kml)|*.kml|All files (*.*)|*.*"), wxDefaultPosition, wxDefaultSize,
-            wxFLP_DEFAULT_STYLE | wxFLP_USE_TEXTCTRL);
+            kmlBox->GetStaticBox(), wxID_ANY, wxString{}, _(L"Select a KML or GeoJSON file"),
+            _(L"Region files (*.kml;*.geojson;*.json)|*.kml;*.geojson;*.json|"
+              L"All files (*.*)|*.*"),
+            wxDefaultPosition, wxDefaultSize, wxFLP_DEFAULT_STYLE | wxFLP_USE_TEXTCTRL);
         kmlBox->Add(m_kmlPicker, wxSizerFlags{ 1 }.Expand().Border());
         m_kmlPicker->Bind(wxEVT_FILEPICKER_CHANGED,
                           [this]([[maybe_unused]]
@@ -89,7 +91,7 @@ namespace Wisteria::UI
         m_kmlIdFieldCombo =
             new wxComboBox(kmlBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
                            wxDefaultSize, 0, nullptr, 0, wxGenericValidator(&m_kmlIdField));
-        m_kmlIdFieldCombo->SetHint(_(L"(placemark name)"));
+        m_kmlIdFieldCombo->SetHint(_(L"(region name)"));
         idFieldSizer->Add(m_kmlIdFieldCombo, wxSizerFlags{}.Expand());
         kmlBox->Add(idFieldSizer, wxSizerFlags{}.Expand().Border());
 
@@ -431,7 +433,7 @@ namespace Wisteria::UI
         m_kmlIdFieldCombo->Clear();
         if (!kmlPath.empty() && wxFileName::FileExists(kmlPath))
             {
-            for (const auto& fieldName : Data::KmlReader::ReadFieldNames(kmlPath))
+            for (const auto& fieldName : Data::GeoDataset::ReadRegionFieldNames(kmlPath))
                 {
                 m_kmlIdFieldCombo->Append(fieldName);
                 }
@@ -516,8 +518,8 @@ namespace Wisteria::UI
         const wxString kmlPath = GetKMLPath();
         if (kmlPath.empty() || !wxFileName::FileExists(kmlPath))
             {
-            wxMessageBox(_(L"Please select a KML file for the region shapes."),
-                         _(L"KML File Not Specified"), wxOK | wxICON_WARNING, this);
+            wxMessageBox(_(L"Please select a KML or GeoJSON file for the region shapes."),
+                         _(L"Region File Not Specified"), wxOK | wxICON_WARNING, this);
             return false;
             }
 
@@ -557,13 +559,13 @@ namespace Wisteria::UI
 
         LoadGraphOptions(graph);
 
-        if (m_kmlPicker != nullptr && !choroplethMap->GetKMLFilePath().empty())
+        if (m_kmlPicker != nullptr && !choroplethMap->GetRegionFilePath().empty())
             {
-            m_kmlPicker->SetPath(choroplethMap->GetKMLFilePath());
+            m_kmlPicker->SetPath(choroplethMap->GetRegionFilePath());
             }
         // SetPath() does not fire the picker's changed event, so fill the dropdown here
-        PopulateKeyFieldChoices(choroplethMap->GetKMLFilePath());
-        m_kmlIdField = choroplethMap->GetKMLIdField();
+        PopulateKeyFieldChoices(choroplethMap->GetRegionFilePath());
+        m_kmlIdField = choroplethMap->GetRegionIdField();
         m_showLabels = choroplethMap->IsShowingRegionLabels();
         m_showGraticule = choroplethMap->IsShowingGraticule();
         m_labelDisplay = static_cast<int>(choroplethMap->GetLabelDisplay());

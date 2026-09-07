@@ -442,6 +442,18 @@ wxString GetShortenedFilePath(const wxString& filePath, const size_t maxLength /
     }
 
 //------------------------------------------------
+FileSizeCheckResult CheckFileSizeLimit(const wxString& filePath, const wxULongLong_t maxByteCount)
+    {
+    const wxULongLong fileSize = wxFileName::GetSize(filePath);
+    if (fileSize == wxInvalidSize)
+        {
+        return FileSizeCheckResult::Unreadable;
+        }
+    return (fileSize.GetValue() > maxByteCount) ? FileSizeCheckResult::TooLarge :
+                                                  FileSizeCheckResult::WithinLimit;
+    }
+
+//------------------------------------------------
 wxString StripIllegalFileCharacters(const wxString& filePath)
     {
     wxString strippedFilePath = filePath;

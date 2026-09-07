@@ -18,28 +18,38 @@ namespace Wisteria
     ReportBuilder::LoadChoroplethMap(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
                                      size_t& currentRow, size_t& currentColumn)
         {
-        const wxString kmlFileRaw = graphNode->GetProperty(_DT(L"kml-file"))->AsString();
-        if (kmlFileRaw.empty())
+        // "region-file" is the key this writes. "kml-file" is the older key, read for
+        // projects saved before GeoJSON regions were supported.
+        wxString regionFileRaw = graphNode->GetProperty(_DT(L"region-file"))->AsString();
+        if (regionFileRaw.empty())
+            {
+            regionFileRaw = graphNode->GetProperty(_DT(L"kml-file"))->AsString();
+            }
+        if (regionFileRaw.empty())
             {
             throw std::runtime_error(
-                _(L"A KML file must be specified for a choropleth map.").ToUTF8());
+                _(L"A region file must be specified for a choropleth map.").ToUTF8());
             }
         // don't allow trying to load external paths
-        if (kmlFileRaw.StartsWith(L"\\\\") || kmlFileRaw.StartsWith(L"//"))
+        if (regionFileRaw.StartsWith(L"\\\\") || regionFileRaw.StartsWith(L"//"))
             {
             throw std::runtime_error(
-                wxString::Format(_(L"'%s': network paths are not allowed for KML files."),
-                                 kmlFileRaw)
+                wxString::Format(_(L"'%s': network paths are not allowed for region files."),
+                                 regionFileRaw)
                     .ToUTF8());
             }
-        const wxString kmlFile = NormalizeFilePath(kmlFileRaw);
-        const wxString kmlIdField = graphNode->GetProperty(_DT(L"kml-id-field"))->AsString();
+        const wxString regionFile = NormalizeFilePath(regionFileRaw);
+        wxString regionIdField = graphNode->GetProperty(_DT(L"region-id-field"))->AsString();
+        if (regionIdField.empty())
+            {
+            regionIdField = graphNode->GetProperty(_DT(L"kml-id-field"))->AsString();
+            }
 
         auto geoData = std::make_shared<Data::GeoDataset>();
-        if (!geoData->ImportKML(kmlFile, Data::GeoImportInfo().IdField(kmlIdField)))
+        if (!geoData->ImportRegionFile(regionFile, Data::GeoImportInfo().IdField(regionIdField)))
             {
             throw std::runtime_error(
-                wxString::Format(L"'%s': %s", kmlFile, geoData->GetLastError()).ToUTF8());
+                wxString::Format(L"'%s': %s", regionFile, geoData->GetLastError()).ToUTF8());
             }
 
         // optional dataset merged in for shading
@@ -109,7 +119,8 @@ namespace Wisteria
 
         choroplethMap->SetData(
             geoData, shadingColumn.empty() ? std::nullopt : std::optional<wxString>(shadingColumn));
-        choroplethMap->SetSourceInfo(kmlFile, kmlIdField, dataSourceName, dataSourceKeyColumn);
+        choroplethMap->SetSourceInfo(regionFile, regionIdField, dataSourceName,
+                                     dataSourceKeyColumn);
 
         if (!symbolColumn.empty())
             {

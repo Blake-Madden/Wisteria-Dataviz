@@ -4868,10 +4868,10 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
         {
         const auto* choroplethMap = dynamic_cast<const Wisteria::Graphs::ChoroplethMap*>(graph);
 
-        node->Add(L"kml-file", MakeRelativePath(choroplethMap->GetKMLFilePath()));
-        if (!choroplethMap->GetKMLIdField().empty())
+        node->Add(L"region-file", MakeRelativePath(choroplethMap->GetRegionFilePath()));
+        if (!choroplethMap->GetRegionIdField().empty())
             {
-            node->Add(L"kml-id-field", choroplethMap->GetKMLIdField());
+            node->Add(L"region-id-field", choroplethMap->GetRegionIdField());
             }
 
         if (!choroplethMap->GetDataSourceName().empty())

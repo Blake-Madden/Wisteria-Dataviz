@@ -8,9 +8,8 @@
 
 #include "kmlreader.h"
 #include "../../util/donttranslate.h"
-#include <algorithm>
-#include <cmath>
-#include <wx/filename.h>
+#include "../../util/fileutil.h"
+#include <utility>
 #include <wx/log.h>
 #include <wx/sstream.h>
 #include <wx/tokenzr.h>
@@ -20,76 +19,20 @@
 namespace Wisteria::Data
     {
     //---------------------------------------------------
-    bool GeoBoundingBox::IsOk() const noexcept
-        {
-        return std::isfinite(m_minLongitude) && std::isfinite(m_maxLongitude) &&
-               std::isfinite(m_minLatitude) && std::isfinite(m_maxLatitude) &&
-               m_minLongitude <= m_maxLongitude && m_minLatitude <= m_maxLatitude;
-        }
-
-    //---------------------------------------------------
-    void GeoBoundingBox::Encompass(const GeoCoordinate& coordinate) noexcept
-        {
-        if (!std::isfinite(coordinate.m_longitude) || !std::isfinite(coordinate.m_latitude))
-            {
-            return;
-            }
-        m_minLongitude = std::min(m_minLongitude, coordinate.m_longitude);
-        m_maxLongitude = std::max(m_maxLongitude, coordinate.m_longitude);
-        m_minLatitude = std::min(m_minLatitude, coordinate.m_latitude);
-        m_maxLatitude = std::max(m_maxLatitude, coordinate.m_latitude);
-        }
-
-    //---------------------------------------------------
-    void GeoBoundingBox::Encompass(const GeoBoundingBox& box) noexcept
-        {
-        if (!box.IsOk())
-            {
-            return;
-            }
-        Encompass(GeoCoordinate{ box.m_minLongitude, box.m_minLatitude });
-        Encompass(GeoCoordinate{ box.m_maxLongitude, box.m_maxLatitude });
-        }
-
-    //---------------------------------------------------
-    double GeoBoundingBox::GetWidth() const noexcept
-        {
-        return IsOk() ? (m_maxLongitude - m_minLongitude) : 0.0;
-        }
-
-    //---------------------------------------------------
-    double GeoBoundingBox::GetHeight() const noexcept
-        {
-        return IsOk() ? (m_maxLatitude - m_minLatitude) : 0.0;
-        }
-
-    //---------------------------------------------------
-    GeoCoordinate GeoBoundingBox::GetCenter() const noexcept
-        {
-        return GeoCoordinate{ (m_minLongitude + m_maxLongitude) / 2.0,
-                              (m_minLatitude + m_maxLatitude) / 2.0 };
-        }
-
-    //---------------------------------------------------
-    wxString GeoRegion::GetAttribute(const wxString& fieldName, const wxString& defaultValue) const
-        {
-        const auto foundAttribute = m_attributes.find(fieldName);
-        return (foundAttribute != m_attributes.cend()) ? foundAttribute->second : defaultValue;
-        }
-
-    //---------------------------------------------------
     bool KmlReader::LoadFile(const wxString& filePath)
         {
-        m_regions.clear();
-        m_boundingBox = GeoBoundingBox{};
-        m_name.clear();
-        m_lastError.clear();
+        ResetFeatures();
 
-        if (const wxULongLong fileSize = wxFileName::GetSize(filePath);
-            fileSize != wxInvalidSize && fileSize.GetValue() > MAX_KML_FILE_BYTES)
+        switch (CheckFileSizeLimit(filePath, MAX_KML_FILE_BYTES))
             {
+        case FileSizeCheckResult::TooLarge:
             m_lastError = wxString::Format(_(L"'%s': KML file is too large to read."), filePath);
             return false;
+        case FileSizeCheckResult::Unreadable:
+            m_lastError = wxString::Format(_(L"'%s': unable to read KML file."), filePath);
+            return false;
+        case FileSizeCheckResult::WithinLimit:
+            break;
             }
 
         wxXmlDocument doc;
@@ -104,10 +47,7 @@ namespace Wisteria::Data
     //---------------------------------------------------
     bool KmlReader::LoadText(const wxString& kmlText)
         {
-        m_regions.clear();
-        m_boundingBox = GeoBoundingBox{};
-        m_name.clear();
-        m_lastError.clear();
+        ResetFeatures();
 
         wxStringInputStream textStream(kmlText);
         wxXmlDocument doc;
@@ -122,8 +62,7 @@ namespace Wisteria::Data
     //---------------------------------------------------
     std::vector<wxString> KmlReader::ReadFieldNames(const wxString& filePath)
         {
-        if (const wxULongLong fileSize = wxFileName::GetSize(filePath);
-            fileSize != wxInvalidSize && fileSize.GetValue() > MAX_KML_FILE_BYTES)
+        if (CheckFileSizeLimit(filePath, MAX_KML_FILE_BYTES) != FileSizeCheckResult::WithinLimit)
             {
             return {};
             }
@@ -150,8 +89,8 @@ namespace Wisteria::Data
              child != nullptr; child = child->GetNext())
             {
             const wxString childName = child->GetName().AfterLast(L':');
-            if (childName.IsSameAs(L"SimpleField", false) ||
-                childName.IsSameAs(L"SimpleData", false) || childName.IsSameAs(_DT(L"Data"), false))
+            if (childName.CmpNoCase(L"SimpleField") == 0 ||
+                childName.CmpNoCase(L"SimpleData") == 0 || childName.CmpNoCase(_DT(L"Data")) == 0)
                 {
                 const wxString fieldName = child->GetAttribute(_DT(L"name")).Strip(wxString::both);
                 if (!fieldName.empty())
@@ -265,12 +204,12 @@ namespace Wisteria::Data
             {
             const wxString childName = child->GetName().AfterLast(L':');
             // <SchemaData><SimpleData name="FIELD">value</SimpleData></SchemaData>
-            if (childName.IsSameAs(L"SchemaData", false))
+            if (childName.CmpNoCase(L"SchemaData") == 0)
                 {
                 for (const wxXmlNode* fieldNode = child->GetChildren(); fieldNode != nullptr;
                      fieldNode = fieldNode->GetNext())
                     {
-                    if (fieldNode->GetName().AfterLast(L':').IsSameAs(L"SimpleData", false))
+                    if (fieldNode->GetName().AfterLast(L':').CmpNoCase(L"SimpleData") == 0)
                         {
                         const wxString fieldName = fieldNode->GetAttribute(_DT(L"name"));
                         if (!fieldName.empty())
@@ -282,7 +221,7 @@ namespace Wisteria::Data
                     }
                 }
             // <Data name="FIELD"><value>value</value></Data>
-            else if (childName.IsSameAs(L"Data", false))
+            else if (childName.CmpNoCase(L"Data") == 0)
                 {
                 const wxString fieldName = child->GetAttribute(_DT(L"name"));
                 const wxXmlNode* valueNode = FindChildElement(child, _DT(L"value"));
@@ -325,11 +264,11 @@ namespace Wisteria::Data
              child = child->GetNext())
             {
             const wxString childName = child->GetName().AfterLast(L':');
-            if (childName.IsSameAs(L"outerBoundaryIs", false))
+            if (childName.CmpNoCase(L"outerBoundaryIs") == 0)
                 {
                 polygon.m_outerBoundary = readRing(child);
                 }
-            else if (childName.IsSameAs(L"innerBoundaryIs", false))
+            else if (childName.CmpNoCase(L"innerBoundaryIs") == 0)
                 {
                 GeoLinearRing innerRing = readRing(child);
                 if (!innerRing.empty())
@@ -376,16 +315,12 @@ namespace Wisteria::Data
             const wxString longitudeStr = tuple.BeforeFirst(L',');
             const wxString latitudeStr = tuple.AfterFirst(L',').BeforeFirst(L',');
 
+            double longitude{ 0.0 };
+            double latitude{ 0.0 };
             GeoCoordinate coordinate;
-            if (longitudeStr.ToCDouble(&coordinate.m_longitude) &&
-                latitudeStr.ToCDouble(&coordinate.m_latitude) &&
-                std::isfinite(coordinate.m_longitude) && std::isfinite(coordinate.m_latitude))
+            if (longitudeStr.ToCDouble(&longitude) && latitudeStr.ToCDouble(&latitude) &&
+                MakeGeoCoordinate(longitude, latitude, coordinate))
                 {
-                // A KML coordinate is WGS 84 decimal degrees. Hold anything outside
-                // that range to the edge of the globe so a wild value cannot escape
-                // the map projection later.
-                coordinate.m_longitude = std::clamp(coordinate.m_longitude, -180.0, 180.0);
-                coordinate.m_latitude = std::clamp(coordinate.m_latitude, -90.0, 90.0);
                 ring.push_back(coordinate);
                 }
             }
@@ -404,7 +339,7 @@ namespace Wisteria::Data
         for (const wxXmlNode* child = (parent != nullptr) ? parent->GetChildren() : nullptr;
              child != nullptr; child = child->GetNext())
             {
-            if (child->GetName().AfterLast(L':').IsSameAs(_DT(L"Placemark"), false))
+            if (child->GetName().AfterLast(L':').CmpNoCase(_DT(L"Placemark")) == 0)
                 {
                 placemarkNodes.push_back(child);
                 }
@@ -428,12 +363,12 @@ namespace Wisteria::Data
              child != nullptr; child = child->GetNext())
             {
             const wxString childName = child->GetName().AfterLast(L':');
-            if (childName.IsSameAs(_DT(L"Polygon"), false))
+            if (childName.CmpNoCase(_DT(L"Polygon")) == 0)
                 {
                 polygonNodes.push_back(child);
                 }
-            else if (childName.IsSameAs(L"MultiGeometry", false) ||
-                     childName.IsSameAs(L"MultiPolygon", false))
+            else if (childName.CmpNoCase(L"MultiGeometry") == 0 ||
+                     childName.CmpNoCase(L"MultiPolygon") == 0)
                 {
                 CollectPolygonNodes(child, polygonNodes, depth + 1);
                 }
@@ -446,19 +381,11 @@ namespace Wisteria::Data
         for (const wxXmlNode* child = (parent != nullptr) ? parent->GetChildren() : nullptr;
              child != nullptr; child = child->GetNext())
             {
-            if (child->GetName().AfterLast(L':').IsSameAs(name, false))
+            if (child->GetName().AfterLast(L':').CmpNoCase(name) == 0)
                 {
                 return child;
                 }
             }
         return nullptr;
-        }
-
-    //---------------------------------------------------
-    const GeoRegion* KmlReader::FindRegion(const wxString& name) const
-        {
-        const auto foundRegion = std::ranges::find_if(m_regions, [&name](const auto& region)
-                                                      { return region.m_name == name; });
-        return (foundRegion != m_regions.cend()) ? &(*foundRegion) : nullptr;
         }
     } // namespace Wisteria::Data

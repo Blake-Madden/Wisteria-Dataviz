@@ -206,8 +206,8 @@ namespace Wisteria::Graphs
 
     /** @brief A map that shades geographic regions by a data value.
         @details The regions and their labels come from a Data::GeoDataset (built from a
-            KML file). An optional continuous column supplies the value each region is
-            shaded by; without one, every region is filled with a single color.
+            KML or GeoJSON file). An optional continuous column supplies the value each
+            region is shaded by; without one, every region is filled with a single color.
 
         @par %Data:
          This graph accepts a Data::GeoDataset. One row per region, with the polygon
@@ -351,36 +351,37 @@ namespace Wisteria::Graphs
         /** @brief Records where the map's regions came from, for serialization and editing.
             @details This does not load anything. It just stores the strings so that
                 saving the project (or re-opening the editor) can recreate the same map.
-            @param kmlFilePath The path to the KML file the regions were read from.
-            @param kmlIdField The @c ExtendedData field used as the region key
-                (empty for the placemark name).
+            @param regionFilePath The path to the KML or GeoJSON file the regions were
+                read from.
+            @param regionIdField The attribute field used as the region key (empty for
+                the region's own name).
             @param dataSourceName The name of the project dataset whose column was
                 merged in for shading (empty if none).
             @param dataSourceKeyColumn The column in that dataset matched against the
                 region key (empty if none).*/
-        void SetSourceInfo(wxString kmlFilePath, wxString kmlIdField,
+        void SetSourceInfo(wxString regionFilePath, wxString regionIdField,
                            wxString dataSourceName = wxString{},
                            wxString dataSourceKeyColumn = wxString{})
             {
-            m_kmlFilePath = std::move(kmlFilePath);
-            m_kmlIdField = std::move(kmlIdField);
+            m_regionFilePath = std::move(regionFilePath);
+            m_regionIdField = std::move(regionIdField);
             m_dataSourceName = std::move(dataSourceName);
             m_dataSourceKeyColumn = std::move(dataSourceKeyColumn);
             }
 
-        /// @returns The path to the KML file the regions were read from.
+        /// @returns The path to the KML or GeoJSON file the regions were read from.
         [[nodiscard]]
-        const wxString& GetKMLFilePath() const noexcept
+        const wxString& GetRegionFilePath() const noexcept
             {
-            return m_kmlFilePath;
+            return m_regionFilePath;
             }
 
-        /// @returns The @c ExtendedData field used as the region key, or empty for the
-        ///     placemark name.
+        /// @returns The attribute field used as the region key, or empty for the
+        ///     region's own name.
         [[nodiscard]]
-        const wxString& GetKMLIdField() const noexcept
+        const wxString& GetRegionIdField() const noexcept
             {
-            return m_kmlIdField;
+            return m_regionIdField;
             }
 
         /// @returns The project dataset merged in for shading, or empty if none.
@@ -646,8 +647,8 @@ namespace Wisteria::Graphs
         wxString m_valueColumnName;
 
         // where the regions came from (stored for serialization / editing, not used to draw)
-        wxString m_kmlFilePath;
-        wxString m_kmlIdField;
+        wxString m_regionFilePath;
+        wxString m_regionIdField;
         wxString m_dataSourceName;
         wxString m_dataSourceKeyColumn;
 
