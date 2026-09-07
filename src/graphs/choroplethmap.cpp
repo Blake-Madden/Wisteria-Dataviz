@@ -1371,9 +1371,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
         // The backdrop is a lighter neutral than the no-data regions, so land outside
         // the dataset and open water read as "no coverage" without competing with the
         // shading. The outline is the no-data color, a step darker than the fill.
-        const wxColour noDataBase = m_noDataColor.IsOk() ? m_noDataColor : wxColour{ L"#DDDDDD" };
-        const wxBrush backgroundBrush{ Colors::ColorContrast::Tint(noDataBase, 0.94) };
-        const wxPen backgroundPen{ noDataBase, 1 };
+        const wxColour noDataBase = m_noDataColor.IsOk() ? m_noDataColor : wxColour{ L"#D2D2D2" };
+        const wxBrush backgroundBrush{ Colors::ColorContrast::Tint(noDataBase) };
+        const wxPen backgroundPen{ noDataBase };
 
         const wxRect clipRect = GetPlotAreaBoundingBox();
         for (const auto& region : m_backgroundData->GetGeometries())

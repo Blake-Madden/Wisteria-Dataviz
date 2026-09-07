@@ -70,6 +70,10 @@ Basic
 | :-------------- |
 | ![](docs/images/nightingale_rose_chart.svg) |
 
+| Choropleth Map (Wisteria::Graphs::ChoroplethMap) |
+| :-------------- |
+| ![](docs/images/choropleth.svg) |
+
 Business
 -----------------------------
 

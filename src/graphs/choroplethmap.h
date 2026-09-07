@@ -733,8 +733,8 @@ namespace Wisteria::Graphs
         bool m_showLabels{ false };
         bool m_showGraticule{ false };
         BinLabelDisplay m_labelDisplay{ BinLabelDisplay::BinName };
-        wxColour m_noDataColor{ L"#DDDDDD" };
-        wxBrushStyle m_noDataFillStyle{ wxBRUSHSTYLE_SOLID };
+        wxColour m_noDataColor{ L"#D2D2D2" };
+        wxBrushStyle m_noDataFillStyle{ wxBRUSHSTYLE_FDIAGONAL_HATCH };
 
         wxString m_symbolColumnName;
         wxColour m_symbolColor{ L"#2F6F8F" };
