@@ -292,6 +292,7 @@ constexpr wxWindowID ID_JOIN_DATASET{ wxID_HIGHEST + 54 };
 // Project
 constexpr wxWindowID ID_SAVE_PROJECT{ wxID_HIGHEST + 38 };
 constexpr wxWindowID ID_SAVE_PROJECT_AS{ wxID_HIGHEST + 41 };
+constexpr wxWindowID ID_REFRESH_ALL{ wxID_HIGHEST + 81 };
 
 // Item editing
 constexpr wxWindowID ID_EDIT_ITEM{ wxID_HIGHEST + 39 };

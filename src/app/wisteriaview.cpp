@@ -101,12 +101,13 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame = new wxDocChildFrame(doc, this, wxGetApp().GetMainFrame(), wxID_ANY, title,
                                   wxDefaultPosition, windowSize, wxDEFAULT_FRAME_STYLE);
 
-    const std::array<wxAcceleratorEntry, 5> entries = {
+    const std::array<wxAcceleratorEntry, 6> entries = {
         wxAcceleratorEntry(wxACCEL_CTRL, L'O', wxID_OPEN),
         wxAcceleratorEntry(wxACCEL_CTRL, L'S', ID_SAVE_PROJECT),
         wxAcceleratorEntry(wxACCEL_CTRL, L'P', wxID_PRINT),
         wxAcceleratorEntry(wxACCEL_CTRL, L'C', wxID_COPY),
-        wxAcceleratorEntry(wxACCEL_CTRL, L'V', wxID_PASTE)
+        wxAcceleratorEntry(wxACCEL_CTRL, L'V', wxID_PASTE),
+        wxAcceleratorEntry(wxACCEL_NORMAL, WXK_F5, ID_REFRESH_ALL)
     };
     m_frame->SetAcceleratorTable(wxAcceleratorTable(entries.size(), entries.data()));
 
@@ -195,6 +196,18 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         [this]([[maybe_unused]]
                wxCommandEvent& event) { GetDocument()->Save(); },
         ID_SAVE_PROJECT);
+
+    // bind refresh-all button
+    m_frame->Bind(
+        wxEVT_RIBBONBUTTONBAR_CLICKED,
+        [this]([[maybe_unused]]
+               wxCommandEvent& event) { ReloadProject(); },
+        ID_REFRESH_ALL);
+    m_frame->Bind(
+        wxEVT_MENU,
+        [this]([[maybe_unused]]
+               wxCommandEvent& event) { ReloadProject(); },
+        ID_REFRESH_ALL);
 
     // bind insert and edit dataset buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertDataset, this,
