@@ -255,14 +255,42 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
     // build the header and SVGReportOptions feature and prepend it into the content
     wxString header;
 
+    // when the slideshow is on, make the root focusable so keyboard users can Tab
+    // into the report and drive page navigation even when it is embedded in a page
+    wxString svgFocusAttrs;
+    if (options.m_includeSlideshow)
+        {
+        // name the focusable region with the report's own title, falling back to a
+        // generic label, so screen readers announce something meaningful
+        wxString reportTitle;
+        for (const auto* canvas : canvases)
+            {
+            if (canvas != nullptr && !canvas->GetLabel().empty())
+                {
+                reportTitle = canvas->GetLabel();
+                break;
+                }
+            }
+        if (reportTitle.empty())
+            {
+            reportTitle = _(L"Report");
+            }
+        svgFocusAttrs = wxString::Format(
+            L"tabindex=\"0\" aria-label=\"%s\" ",
+            EscapeXmlAttr(
+                reportTitle + L". " +
+                _(L"Use the arrow keys or Page Up and Page Down to move between pages.")));
+        }
+
     header += L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n";
     header += L"<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" "
               "\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n";
     header += wxString::Format(L"<svg xmlns=\"http://www.w3.org/2000/svg\" "
                                "xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" "
-                               "width=\"100%%\" height=\"%d\" "
+                               "width=\"100%%\" height=\"%d\" %s"
                                "preserveAspectRatio=\"xMidYMin meet\" viewBox=\"0 0 %d %d\">\n",
-                               totalHeight + toolbarHeight, maxWidth, totalHeight + toolbarHeight);
+                               totalHeight + toolbarHeight, svgFocusAttrs, maxWidth,
+                               totalHeight + toolbarHeight);
 
     if (options.HasInteractiveFeatures() || hasLayerControls)
         {
@@ -311,6 +339,14 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 "    .btn:hover { fill-opacity: 1.0; transform: translateY(-1px); }\n"
                 "    .btn-text { fill: %s; font-family: sans-serif; font-size: 12px; font-weight: "
                 "bold; pointer-events: none; text-anchor: middle; }\n"
+                "    .btn:focus-visible, .layer-toggle:focus-visible "
+                "{ outline: 2px solid Highlight; outline-offset: 2px; }\n"
+                "    .btn:focus:not(:focus-visible), .layer-toggle:focus:not(:focus-visible) "
+                "{ outline: none; }\n"
+                // fallback focus ring for renderers that don't paint outline on SVG nodes
+                "    .btn:focus-visible { fill-opacity: 1.0; stroke: Highlight; stroke-width: 2; "
+                "}\n"
+                "    .layer-toggle:focus-visible rect.box { stroke-width: 2.5; }\n"
                 "    @media print { #ui-layer { display: none; } }\n",
                 btnHex, textHex);
             }
@@ -422,6 +458,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                       "      const l = g.getAttribute('data-layer');\n"
                       "      const on = activeLayers.has(l);\n"
                       "      g.classList.toggle('disabled', !on);\n"
+                      "      g.setAttribute('aria-checked', on ? 'true' : 'false');\n"
                       "      const check = g.querySelector('.checkmark');\n"
                       "      if (check) check.style.display = on ? 'block' : 'none';\n"
                       "    });\n"
@@ -536,10 +573,43 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             header += L"  function toggleDarkMode() {\n"
                       "    const svg = document.querySelector('svg');\n"
                       "    svg.classList.toggle('dark-mode');\n"
+                      "    const on = svg.classList.contains('dark-mode');\n"
                       "    const btn = document.getElementById('darkmode-btn-text');\n"
-                      "    if (btn) btn.textContent = svg.classList.contains('dark-mode') ? "
-                      "'\u2600\uFE0F' : '\U0001F319';\n"
+                      "    if (btn) btn.textContent = on ? '\u2600\uFE0F' : '\U0001F319';\n"
+                      "    const box = document.getElementById('darkmode-btn');\n"
+                      "    if (box) box.setAttribute('aria-pressed', on ? 'true' : 'false');\n"
                       "  }\n";
+            }
+
+        // wire pointer and keyboard activation for the overlay controls
+        if (options.m_includeLayoutOptions || options.m_includeDarkModeToggle || hasLayerControls)
+            {
+            header += L"  window.addEventListener('load', function() {\n"
+                      "    function onActivate(el, fn) {\n"
+                      "      if (!el) return;\n"
+                      "      el.addEventListener('click', fn);\n"
+                      "      el.addEventListener('keydown', function(e) {\n"
+                      "        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar')\n"
+                      "          { e.preventDefault(); fn(e); }\n"
+                      "      });\n"
+                      "    }\n";
+            if (options.m_includeLayoutOptions)
+                {
+                header += L"    onActivate(document.getElementById('layout-btn'), toggleLayout);\n";
+                }
+            if (options.m_includeDarkModeToggle)
+                {
+                header +=
+                    L"    onActivate(document.getElementById('darkmode-btn'), toggleDarkMode);\n";
+                }
+            if (hasLayerControls)
+                {
+                header += L"    document.querySelectorAll('.layer-toggle').forEach(function(g) {\n"
+                          "      const layer = g.getAttribute('data-layer');\n"
+                          "      onActivate(g, function() { toggleLayer(layer); });\n"
+                          "    });\n";
+                }
+            header += L"  });\n";
             }
 
         if (options.m_includeSlideshow)
@@ -618,7 +688,15 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 "    }\n"
                 "    goToPage(currentPage + 1);\n"
                 "  }\n"
+                // only claim the arrow / page keys when this SVG is the whole document
+                // or actually holds focus, so an embedding page keeps normal scrolling
+                "  const navSvg = document.querySelector('svg');\n"
+                "  const navStandalone = "
+                "document.documentElement.tagName.toLowerCase() === 'svg';\n"
                 "  window.addEventListener('keydown', function(e) {\n"
+                "    if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;\n"
+                "    if (!navStandalone && navSvg && !navSvg.contains(document.activeElement)) "
+                "return;\n"
                 "    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp')\n"
                 "      { e.preventDefault(); prevPage(); }\n"
                 "    else if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === "
@@ -686,11 +764,13 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             const int layoutX =
                 options.m_includeDarkModeToggle ? btnRight - 30 - 10 - 120 : btnRight - 120;
             svgContent += wxString::Format(
-                L"  <rect class=\"btn\" x=\"%d\" y=\"10\" width=\"120\" height=\"30\" rx=\"15\" "
-                "onclick=\"toggleLayout()\"><title>%s</title></rect>\n"
+                L"  <rect id=\"layout-btn\" class=\"btn\" x=\"%d\" y=\"10\" width=\"120\" "
+                "height=\"30\" rx=\"15\" tabindex=\"0\" role=\"button\" aria-label=\"%s\">"
+                "<title>%s</title></rect>\n"
                 "  <text id=\"toggle-btn-text\" class=\"btn-text\" x=\"%d\" y=\"29\">"
                 "%s %s</text>\n",
-                layoutX, _(L"Toggle between single, duplex and stacked page layout"), layoutX + 60,
+                layoutX, EscapeXmlAttr(_(L"Change page layout")),
+                _(L"Toggle between single, duplex and stacked page layout"), layoutX + 60,
                 layoutIcon, layoutLabel);
             }
 
@@ -698,11 +778,12 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             {
             const int dmX = btnRight - 30;
             svgContent += wxString::Format(
-                L"  <rect class=\"btn\" x=\"%d\" y=\"10\" width=\"30\" height=\"30\" rx=\"15\" "
-                "onclick=\"toggleDarkMode()\"><title>%s</title></rect>\n"
+                L"  <rect id=\"darkmode-btn\" class=\"btn\" x=\"%d\" y=\"10\" width=\"30\" "
+                "height=\"30\" rx=\"15\" tabindex=\"0\" role=\"button\" aria-pressed=\"false\" "
+                "aria-label=\"%s\"><title>%s</title></rect>\n"
                 "  <text id=\"darkmode-btn-text\" class=\"btn-text\" x=\"%d\" y=\"29\">"
                 "\U0001F319</text>\n",
-                dmX, _(L"Toggle dark mode"), dmX + 15);
+                dmX, EscapeXmlAttr(_(L"Dark mode")), _(L"Toggle dark mode"), dmX + 15);
             }
 
         if (hasLayerControls)
@@ -719,20 +800,18 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 const int y = startY + row * LAYER_ROW_HEIGHT;
                 const wxString escAttr = EscapeXmlAttr(layer);
                 const wxString escText = EscapeXmlText(layer);
-                // JS string literal nested inside a double-quoted XML attribute,
-                // so JS-escape first then XML-attribute-escape the result
-                const wxString escJS = EscapeXmlAttr(EscapeJsString(layer));
+                // activation is wired up in JS by data-layer; keep the markup handler-free
                 svgContent += wxString::Format(
-                    L"  <g class=\"layer-toggle\" data-layer=\"%s\" "
-                    "onclick=\"toggleLayer('%s')\">\n"
+                    L"  <g class=\"layer-toggle\" data-layer=\"%s\" tabindex=\"0\" "
+                    "role=\"checkbox\" aria-checked=\"true\" aria-label=\"%s\">\n"
                     "    <rect class=\"box\" x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" "
                     "rx=\"3\"/>\n"
                     "    <text class=\"checkmark\" x=\"%d\" y=\"%d\">\u2713</text>\n"
                     "    <text class=\"layer-label\" x=\"%d\" y=\"%d\">%s</text>\n"
                     "    <title>%s</title>\n"
                     "  </g>\n",
-                    escAttr, escJS, x, y, boxSize, boxSize, x + 3, y + 11, x + boxSize + 6, y + 11,
-                    escText, escAttr);
+                    escAttr, escAttr, x, y, boxSize, boxSize, x + 3, y + 11, x + boxSize + 6,
+                    y + 11, escText, escAttr);
                 ++idx;
                 }
             }
