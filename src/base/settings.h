@@ -254,7 +254,7 @@ namespace Wisteria
         constexpr static uint8_t GHOST_OPACITY = 32;
 
         /// @brief Number of rows shown in data preview windows.
-        constexpr static int PREVIEW_MAX_ROWS{ 1'000 };
+        constexpr static int PREVIEW_MAX_ROWS{ 300 };
 
       private:
         inline static bool m_enableReportEditing{ false };
