@@ -325,6 +325,17 @@ namespace Wisteria
             return m_nameTemplate;
             }
 
+        /// @brief Sets the layer that this page belongs to (for SVG layer filtering).
+        /// @param layer The layer name (empty means always visible).
+        void SetLayer(const wxString& layer) { m_layer = layer; }
+
+        /// @returns The layer name, or empty if none was set.
+        [[nodiscard]]
+        const wxString& GetLayer() const noexcept
+            {
+            return m_layer;
+            }
+
         /** @name Watermark Functions
             @brief Functions related to displaying a watermarked stamp or text on the canvas.*/
         /// @{
@@ -1043,6 +1054,7 @@ namespace Wisteria
         wxString m_exportHelpTopic;
 
         wxString m_nameTemplate;
+        wxString m_layer;
 
         // titles
         std::vector<GraphItems::Label> m_leftTitles;

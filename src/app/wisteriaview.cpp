@@ -1023,6 +1023,7 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
     savedOptions.m_includeDarkModeToggle = sizeDlg.IncludeDarkModeToggle();
     savedOptions.m_includeSlideshow = sizeDlg.IncludeSlideshow();
     savedOptions.m_includePageShadow = sizeDlg.IncludePageShadow();
+    savedOptions.m_includeLayerControls = sizeDlg.IncludeLayerControls();
     savedOptions.m_themeColor = sizeDlg.GetThemeColor();
     savedOptions.m_layout = sizeDlg.GetLayout();
 
@@ -1046,6 +1047,8 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
                      .LayoutOptions(savedOptions.m_includeLayoutOptions)
                      .DarkModeToggle(savedOptions.m_includeDarkModeToggle)
                      .Slideshow(savedOptions.m_includeSlideshow)
+                     .LayerControls(savedOptions.m_includeLayerControls)
+                     .Layout(savedOptions.m_layout)
                      .ThemeColor(savedOptions.m_themeColor));
     }
 
@@ -1208,6 +1211,7 @@ void WisteriaView::OnInsertPage([[maybe_unused]] wxCommandEvent& event)
         AddPageToProject(dlg.GetRows(), dlg.GetColumns(), dlg.GetPageName(), insertIndex);
     if (newCanvas != nullptr)
         {
+        newCanvas->SetLayer(dlg.GetLayer());
         newCanvas->SetWatermark(
             Wisteria::Canvas::Watermark{ dlg.GetWatermarkLabel(), dlg.GetWatermarkColor() });
         newCanvas->SetBackgroundColor(dlg.GetPageBackgroundColor());
@@ -1249,6 +1253,7 @@ void WisteriaView::OnEditPage([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
+    canvas->SetLayer(dlg.GetLayer());
     canvas->SetFixedObjectsGridSize(dlg.GetRows(), dlg.GetColumns());
     dlg.ApplyGridEdits(canvas);
     canvas->FitToPageWhenPrinting(true);

@@ -293,6 +293,13 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
             pageObj->Add(L"page-numbering", true);
             }
 
+        // layer
+        const auto& layer = canvas->GetLayer();
+        if (!layer.empty())
+            {
+            pageObj->Add(L"layer", layer);
+            }
+
         auto rowsArray = pageObj->GetProperty(L"rows");
         const auto [rowCount, colCount] = canvas->GetFixedObjectsGridSize();
         for (size_t row = 0; row < rowCount; ++row)

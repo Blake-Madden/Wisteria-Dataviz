@@ -109,6 +109,22 @@ namespace Wisteria::UI
             return m_pageName;
             }
 
+        /// @brief Sets the layer name.
+        /// @param layer The layer name.
+        void SetLayer(const wxString& layer)
+            {
+            m_layer = layer;
+            TransferDataToWindow();
+            }
+
+        /// @returns The layer for the page (may be empty, meaning always visible).
+        [[nodiscard]]
+        wxString GetLayer()
+            {
+            TransferDataFromWindow();
+            return m_layer;
+            }
+
         /// @returns The edit mode.
         [[nodiscard]]
         EditMode GetEditMode() const noexcept
@@ -210,6 +226,7 @@ namespace Wisteria::UI
         int m_relativePageIndex{ wxNOT_FOUND };
         wxArrayString m_pageNames;
         wxString m_pageName;
+        wxString m_layer;
 
         wxString m_watermarkLabel;
         wxColour m_watermarkColor{ wxColour(255, 0, 0) };

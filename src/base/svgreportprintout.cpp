@@ -9,6 +9,7 @@
 #include "svgreportprintout.h"
 #include "../base/colorbrewer.h"
 #include "../import/html_extract_text.h"
+#include <algorithm>
 #include <set>
 #include <wx/dcsvg.h>
 #include <wx/file.h>
@@ -100,6 +101,19 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
         options.LayoutOptions(false).Slideshow(false);
         }
 
+    // collect distinct layers in order of first appearance (empty layer means always visible)
+    std::vector<wxString> distinctLayers;
+    for (const auto* canvas : canvases)
+        {
+        if (canvas != nullptr && !canvas->GetLayer().empty() &&
+            std::find(distinctLayers.cbegin(), distinctLayers.cend(), canvas->GetLayer()) ==
+                distinctLayers.cend())
+            {
+            distinctLayers.push_back(canvas->GetLayer());
+            }
+        }
+    const bool hasLayerControls = options.HasLayerControls(distinctLayers);
+
     // the layout size controls the viewBox and page spacing;
     // the rendering size (pageSizes) stays at each canvas's own paper size
     const bool useOverrideSize =
@@ -119,7 +133,26 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             }
         }
 
-    const int toolbarHeight{ options.HasUILayer() ? 50 : 0 };
+    // layer checkbox grid geometry, shared by the toolbar-height calc and the SVG rendering
+    constexpr int LAYER_ITEM_WIDTH{ 160 };
+    constexpr int LAYER_ROW_HEIGHT{ 28 };
+    constexpr int LAYER_BAR_PADDING{ 12 };
+    const int layerItemsPerRow = std::max(1, maxWidth / LAYER_ITEM_WIDTH);
+    const int layerRowCount =
+        hasLayerControls ?
+            static_cast<int>((distinctLayers.size() + static_cast<size_t>(layerItemsPerRow) - 1) /
+                             static_cast<size_t>(layerItemsPerRow)) :
+            0;
+
+    // toolbar height: button bar (50px if layout/darkmode buttons) + layer bar + nav hint
+    const int buttonBarHeight{ (options.m_includeLayoutOptions || options.m_includeDarkModeToggle) ?
+                                   50 :
+                                   0 };
+    const int layerBarHeight{ hasLayerControls ?
+                                  layerRowCount * LAYER_ROW_HEIGHT + LAYER_BAR_PADDING :
+                                  0 };
+    const int navHintBarHeight{ options.m_includeSlideshow ? 16 : 0 };
+    const int toolbarHeight{ buttonBarHeight + layerBarHeight + navHintBarHeight };
 
     wxString svgContent;
 
@@ -196,11 +229,12 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
         canvas->SendSizeEvent();
         canvas->Refresh();
 
-        svgContent +=
-            wxString::Format(L"<g class=\"page\" data-width=\"%d\" data-height=\"%d\" "
-                             "transform=\"translate(0,%d)\"%s>\n",
-                             layoutWidth, layoutHeight, yOffset,
-                             options.m_includePageShadow ? L" filter=\"url(#page-shadow)\"" : L"");
+        const wxString escapedLayer = EscapeXmlAttr(canvas->GetLayer());
+        svgContent += wxString::Format(
+            L"<g class=\"page\" data-index=\"%zu\" data-layer=\"%s\" data-width=\"%d\" "
+            "data-height=\"%d\" transform=\"translate(0,%d)\"%s>\n",
+            pageIndex - 1, escapedLayer, layoutWidth, layoutHeight, yOffset,
+            options.m_includePageShadow ? L" filter=\"url(#page-shadow)\"" : L"");
         svgContent += StripSvgTags(svgDC.GetSVGDocument());
 
         if (options.m_includeDarkModeToggle)
@@ -230,7 +264,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                                "preserveAspectRatio=\"xMidYMin meet\" viewBox=\"0 0 %d %d\">\n",
                                totalHeight + toolbarHeight, maxWidth, totalHeight + toolbarHeight);
 
-    if (options.HasInteractiveFeatures())
+    if (options.HasInteractiveFeatures() || hasLayerControls)
         {
         header += L"<style type=\"text/css\">\n"
                   "  <![CDATA[\n";
@@ -261,7 +295,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 options.m_themeColor.Blue());
             }
 
-        if (options.HasUILayer())
+        if (options.HasUILayer() || hasLayerControls)
             {
             const wxString btnHex = options.m_themeColor.GetAsString(wxC2S_HTML_SYNTAX);
             const wxString textHex =
@@ -279,6 +313,45 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 "bold; pointer-events: none; text-anchor: middle; }\n"
                 "    @media print { #ui-layer { display: none; } }\n",
                 btnHex, textHex);
+            }
+        if (hasLayerControls)
+            {
+            const wxString layerBtnHex = options.m_themeColor.GetAsString(wxC2S_HTML_SYNTAX);
+            // lighter variant for dark mode (mix 50% towards white)
+            const int r = options.m_themeColor.Red();
+            const int g = options.m_themeColor.Green();
+            const int b = options.m_themeColor.Blue();
+            const wxColour lightLayerColor(r + (255 - r) / 2, g + (255 - g) / 2, b + (255 - b) / 2);
+            const wxString layerBtnLightHex = lightLayerColor.GetAsString(wxC2S_HTML_SYNTAX);
+            header += wxString::Format(
+                L"    .page.hidden { display: none; }\n"
+                "    .layer-toggle { cursor: pointer; }\n"
+                "    .layer-toggle rect.box { fill: white; stroke: %s; stroke-width: 1.5; }\n"
+                "    .layer-toggle.disabled { opacity: 0.45; }\n"
+                "    .layer-toggle .checkmark { pointer-events: none; font-family: sans-serif; "
+                "font-size: 12px; font-weight: bold; fill: %s; }\n"
+                "    .layer-toggle .layer-label { pointer-events: none; font-family: sans-serif; "
+                "font-size: 12px; fill: #222222; }\n"
+                "    @media print { .page.hidden { display: none !important; } }\n",
+                layerBtnHex, layerBtnHex);
+            if (options.m_includeDarkModeToggle)
+                {
+                header += wxString::Format(
+                    L"    svg.dark-mode .layer-toggle rect.box { fill: #222222; stroke: %s; }\n"
+                    "    svg.dark-mode .layer-toggle .checkmark { fill: %s; }\n"
+                    "    svg.dark-mode .layer-toggle .layer-label { fill: #E8E8E8; }\n",
+                    layerBtnLightHex, layerBtnLightHex);
+                }
+            }
+        if (options.m_includeSlideshow)
+            {
+            header += L"    .nav-hint { pointer-events: none; font-family: sans-serif; font-size: "
+                      L"12px; fill: #000000; }\n"
+                      "    @media print { .nav-hint { display: none; } }\n";
+            if (options.m_includeDarkModeToggle)
+                {
+                header += L"    svg.dark-mode .nav-hint { fill: #E8E8E8; }\n";
+                }
             }
         if (options.m_includeDarkModeToggle)
             {
@@ -306,54 +379,156 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                   "</style>\n";
         }
 
-    if (options.HasUILayer())
+    if (options.HasUILayer() || hasLayerControls)
         {
         header += L"<script type=\"text/javascript\"><![CDATA[\n";
 
-        if (options.m_includeLayoutOptions)
+        // page-visibility helpers for layer filtering; with no layers every page
+        // stays visible, so applyLayout() and the slideshow can use them unconditionally
+        const bool needsPageHelpers =
+            hasLayerControls || options.m_includeLayoutOptions || options.m_includeSlideshow;
+        if (needsPageHelpers)
             {
+            wxString jsLayersArray;
+            bool firstLayer{ true };
+            for (const auto& layer : distinctLayers)
+                {
+                if (!firstLayer)
+                    {
+                    jsLayersArray += L", ";
+                    }
+                jsLayersArray += wxString::Format(L"'%s'", EscapeJsString(layer));
+                firstLayer = false;
+                }
+            header += wxString::Format(L"  const allLayers = [%s];\n"
+                                       "  const activeLayers = new Set(allLayers);\n"
+                                       "  function isPageVisible(page) {\n"
+                                       "    const l = page.getAttribute('data-layer') || '';\n"
+                                       "    return !l || activeLayers.has(l);\n"
+                                       "  }\n"
+                                       "  function getVisiblePages() {\n"
+                                       "    return Array.from(document.querySelectorAll('.page'))\n"
+                                       "      .filter(p => !p.classList.contains('hidden'));\n"
+                                       "  }\n",
+                                       jsLayersArray);
+            }
+
+        if (hasLayerControls)
+            {
+            header += L"  function toggleLayer(layer) {\n"
+                      "    if (activeLayers.has(layer)) activeLayers.delete(layer);\n"
+                      "    else activeLayers.add(layer);\n"
+                      "    document.querySelectorAll('.layer-toggle').forEach(g => {\n"
+                      "      const l = g.getAttribute('data-layer');\n"
+                      "      const on = activeLayers.has(l);\n"
+                      "      g.classList.toggle('disabled', !on);\n"
+                      "      const check = g.querySelector('.checkmark');\n"
+                      "      if (check) check.style.display = on ? 'block' : 'none';\n"
+                      "    });\n"
+                      "    applyLayout();\n"
+                      "  }\n";
+            }
+
+        // layout cycle: 0=single, 1=duplex, 2=stacked (books)
+        const int initialLayout =
+            (options.m_layout == Wisteria::SVGReportOptions::PageLayout::Duplex)  ? 1 :
+            (options.m_layout == Wisteria::SVGReportOptions::PageLayout::Stacked) ? 2 :
+                                                                                    0;
+        if (options.m_includeLayoutOptions || hasLayerControls)
+            {
+            header += wxString::Format(L"  let layout = %d;\n", initialLayout);
+
+            if (options.m_includeLayoutOptions)
+                {
+                header += wxString::Format(
+                    L"  function toggleLayout() {\n"
+                    "    const needsRestore = layout === 2;\n"
+                    "    layout = (layout + 1) %% 3;\n"
+                    "    if (needsRestore) {\n"
+                    "      const ps = document.getElementById('pageset');\n"
+                    "      Array.from(document.querySelectorAll('.page'))\n"
+                    "        .sort((a,b) => parseInt(a.getAttribute('data-index')) - "
+                    "parseInt(b.getAttribute('data-index')))\n"
+                    "        .forEach(p => ps.appendChild(p));\n"
+                    "      window.stackedInitialized = false;\n"
+                    "      if (typeof currentPage !== 'undefined') currentPage = 0;\n"
+                    "    }\n"
+                    "    const btnText = document.getElementById('toggle-btn-text');\n"
+                    "    if (btnText) {\n"
+                    "      if (layout === 0) btnText.textContent = '\U0001F4C4\U0001F4C4 %s';\n"
+                    "      else if (layout === 1) btnText.textContent = '\U0001F4DA %s';\n"
+                    "      else btnText.textContent = '\U0001F4C4 %s';\n"
+                    "    }\n"
+                    "    if (needsRestore) {\n"
+                    "      requestAnimationFrame(() => requestAnimationFrame(() => "
+                    "applyLayout()));\n"
+                    "    } else {\n"
+                    "      applyLayout();\n"
+                    "    }\n"
+                    "  }\n",
+                    _(L"Duplex"), _(L"Stacked"), _(L"Single"));
+                }
+
             header += wxString::Format(
-                L"  let isDuplex = %s;\n"
-                "  function toggleLayout() {\n"
-                "    isDuplex = !isDuplex;\n"
-                "    const btnText = document.getElementById('toggle-btn-text');\n"
-                "    if (btnText) btnText.textContent = isDuplex ? '\U0001F4C4 %s' : "
-                "'\U0001F4C4\U0001F4C4 %s';\n"
-                "    applyLayout();\n"
-                "  }\n"
-                "  function applyLayout() {\n"
+                L"  function applyLayout() {\n"
                 "    const pages = document.querySelectorAll('.page');\n"
                 "    const svg = document.querySelector('svg');\n"
+                "    const pageset = document.getElementById('pageset');\n"
                 "    if (pages.length === 0) return;\n"
+                "    pages.forEach(p => {\n"
+                "      const vis = isPageVisible(p);\n"
+                "      p.classList.toggle('hidden', !vis);\n"
+                "      p.style.display = vis ? '' : 'none';\n"
+                "    });\n"
+                "    const visible = getVisiblePages();\n"
                 "    const w = parseInt(pages[0].getAttribute('data-width'));\n"
                 "    const h = parseInt(pages[0].getAttribute('data-height'));\n"
                 "    const gap = %d;\n"
                 "    const sideGap = 25;\n"
-                // must match the toolbarHeight used for the #pageset translate() below
                 "    const topOffset = %d;\n"
-                "    if (isDuplex) {\n"
-                "      pages.forEach((p, i) => {\n"
+                "    const stackedOffset = 18;\n"
+                "    if (visible.length === 0) {\n"
+                "      svg.setAttribute('viewBox', `0 0 ${w} ${topOffset}`);\n"
+                "      svg.setAttribute('height', topOffset);\n"
+                "      return;\n"
+                "    }\n"
+                "    if (layout === 1) {\n"
+                "      visible.forEach((p, i) => {\n"
                 "        const x = (i %% 2) * (w + sideGap);\n"
                 "        const y = Math.floor(i / 2) * (h + gap);\n"
-                "        p.setAttribute('transform', `translate(${x}, ${y})`);\n"
+                "        p.style.transform = `translate(${x}px, ${y}px)`;\n"
                 "      });\n"
-                "      const duplexHeight = topOffset + Math.ceil(pages.length / 2) * (h + gap);\n"
+                "      const duplexHeight = topOffset + Math.ceil(visible.length / 2) * (h + "
+                "gap);\n"
                 "      svg.setAttribute('viewBox', `0 0 ${2 * w + sideGap} ${duplexHeight}`);\n"
                 "      svg.setAttribute('height', duplexHeight);\n"
-                "    } else {\n"
-                "      pages.forEach((p, i) => {\n"
-                "        p.setAttribute('transform', `translate(0, ${i * (h + gap)})`);\n"
+                "    } else if (layout === 2) {\n"
+                "      if (!window.stackedInitialized) {\n"
+                "        for (let i = visible.length - 1; i >= 0; --i) "
+                "pageset.appendChild(visible[i]);\n"
+                "        window.stackedInitialized = true;\n"
+                "      }\n"
+                "      const visibleNow = getVisiblePages();\n"
+                "      visibleNow.forEach((p, i) => {\n"
+                "        const x = (visibleNow.length - 1 - i) * stackedOffset;\n"
+                "        const y = (visibleNow.length - 1 - i) * stackedOffset;\n"
+                "        p.style.transform = `translate(${x}px, ${y}px)`;\n"
                 "      });\n"
-                "      const stackedHeight = topOffset + pages.length * (h + gap);\n"
+                "      const carW = w + (visibleNow.length - 1) * stackedOffset;\n"
+                "      const carH = topOffset + h + (visibleNow.length - 1) * stackedOffset;\n"
+                "      svg.setAttribute('viewBox', `0 0 ${carW} ${carH}`);\n"
+                "      svg.setAttribute('height', carH);\n"
+                "    } else {\n"
+                "      visible.forEach((p, i) => {\n"
+                "        p.style.transform = `translate(0, ${i * (h + gap)}px)`;\n"
+                "      });\n"
+                "      const stackedHeight = topOffset + visible.length * (h + gap);\n"
                 "      svg.setAttribute('viewBox', `0 0 ${w} ${stackedHeight}`);\n"
                 "      svg.setAttribute('height', stackedHeight);\n"
                 "    }\n"
                 "  }\n"
-                "  // apply initial layout on load\n"
                 "  window.addEventListener('load', applyLayout);\n",
-                (options.m_layout == Wisteria::SVGReportOptions::PageLayout::Duplex ? L"true" :
-                                                                                      L"false"),
-                _(L"Stacked"), _(L"Duplex"), PAGE_GAP, toolbarHeight);
+                PAGE_GAP, toolbarHeight);
             }
 
         if (options.m_includeDarkModeToggle)
@@ -372,7 +547,28 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             header +=
                 L"  let currentPage = 0;\n"
                 "  function goToPage(i) {\n"
-                "    const pages = document.querySelectorAll('.page');\n"
+                "    if (typeof layout !== 'undefined' && layout === 2) {\n"
+                "      const pages = getVisiblePages();\n"
+                "      if (pages.length <= 1) return;\n"
+                "      i = Math.max(0, Math.min(i, pages.length - 1));\n"
+                "      const pageset = document.getElementById('pageset');\n"
+                "      const steps = (i - currentPage + pages.length) % pages.length;\n"
+                "      for (let s = 0; s < steps; ++s) {\n"
+                "        const pagesNow = getVisiblePages();\n"
+                "        const last = pagesNow[pagesNow.length - 1];\n"
+                "        if (last) pageset.insertBefore(last, pagesNow[0]);\n"
+                "      }\n"
+                "      currentPage = i;\n"
+                "      applyLayout();\n"
+                "      const newTop = getVisiblePages()[getVisiblePages().length - 1];\n"
+                "      if (newTop) {\n"
+                "        newTop.classList.add('active-page');\n"
+                "        newTop.addEventListener('animationend', () => "
+                "newTop.classList.remove('active-page'), { once: true });\n"
+                "      }\n"
+                "      return;\n"
+                "    }\n"
+                "    const pages = getVisiblePages();\n"
                 "    if (pages.length === 0) return;\n"
                 "    i = Math.max(0, Math.min(i, pages.length - 1));\n"
                 "    currentPage = i;\n"
@@ -396,8 +592,32 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 "        () => page.classList.remove('active-page'), { once: true });\n"
                 "    }));\n"
                 "  }\n"
-                "  function prevPage() { goToPage(currentPage - 1); }\n"
-                "  function nextPage() { goToPage(currentPage + 1); }\n"
+                "  function prevPage() {\n"
+                "    if (typeof layout !== 'undefined' && layout === 2) {\n"
+                "      const pages = getVisiblePages();\n"
+                "      if (pages.length <= 1) return;\n"
+                "      const pageset = document.getElementById('pageset');\n"
+                "      const first = pages[0];\n"
+                "      if (first) pageset.appendChild(first);\n"
+                "      currentPage = (currentPage - 1 + pages.length) % pages.length;\n"
+                "      applyLayout();\n"
+                "      return;\n"
+                "    }\n"
+                "    goToPage(currentPage - 1);\n"
+                "  }\n"
+                "  function nextPage() {\n"
+                "    if (typeof layout !== 'undefined' && layout === 2) {\n"
+                "      const pages = getVisiblePages();\n"
+                "      if (pages.length <= 1) return;\n"
+                "      const pageset = document.getElementById('pageset');\n"
+                "      const last = pages[pages.length - 1];\n"
+                "      if (last) pageset.insertBefore(last, pages[0]);\n"
+                "      currentPage = (currentPage + 1) % pages.length;\n"
+                "      applyLayout();\n"
+                "      return;\n"
+                "    }\n"
+                "    goToPage(currentPage + 1);\n"
+                "  }\n"
                 "  window.addEventListener('keydown', function(e) {\n"
                 "    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp')\n"
                 "      { e.preventDefault(); prevPage(); }\n"
@@ -435,7 +655,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
 
     svgContent.Prepend(header);
 
-    if (options.HasUILayer())
+    if (options.HasUILayer() || hasLayerControls || options.m_includeSlideshow)
         {
         svgContent += L"<g id=\"ui-layer\">\n";
 
@@ -444,8 +664,24 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
 
         if (options.m_includeLayoutOptions)
             {
-            const bool isDuplex =
-                (options.m_layout == Wisteria::SVGReportOptions::PageLayout::Duplex);
+            wxString layoutIcon;
+            wxString layoutLabel;
+            // show next layout (what clicking will switch to), like dark-mode button
+            if (options.m_layout == Wisteria::SVGReportOptions::PageLayout::Single)
+                {
+                layoutIcon = L"\U0001F4C4\U0001F4C4";
+                layoutLabel = _(L"Duplex");
+                }
+            else if (options.m_layout == Wisteria::SVGReportOptions::PageLayout::Duplex)
+                {
+                layoutIcon = L"\U0001F4DA";
+                layoutLabel = _(L"Stacked");
+                }
+            else
+                {
+                layoutIcon = L"\U0001F4C4";
+                layoutLabel = _(L"Single");
+                }
             // leave room for dark-mode button to the right if present
             const int layoutX =
                 options.m_includeDarkModeToggle ? btnRight - 30 - 10 - 120 : btnRight - 120;
@@ -454,9 +690,8 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 "onclick=\"toggleLayout()\"><title>%s</title></rect>\n"
                 "  <text id=\"toggle-btn-text\" class=\"btn-text\" x=\"%d\" y=\"29\">"
                 "%s %s</text>\n",
-                layoutX, _(L"Toggle between stacked and duplex page layout"), layoutX + 60,
-                (isDuplex ? L"\U0001F4C4" : L"\U0001F4C4\U0001F4C4"),
-                (isDuplex ? _(L"Stacked") : _(L"Duplex")));
+                layoutX, _(L"Toggle between single, duplex and stacked page layout"), layoutX + 60,
+                layoutIcon, layoutLabel);
             }
 
         if (options.m_includeDarkModeToggle)
@@ -468,6 +703,47 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
                 "  <text id=\"darkmode-btn-text\" class=\"btn-text\" x=\"%d\" y=\"29\">"
                 "\U0001F319</text>\n",
                 dmX, _(L"Toggle dark mode"), dmX + 15);
+            }
+
+        if (hasLayerControls)
+            {
+            // layer checkboxes: pure SVG, left-aligned, below button bar
+            constexpr int boxSize{ 14 };
+            const int startY = buttonBarHeight + LAYER_BAR_PADDING / 2;
+            int idx{ 0 };
+            for (const auto& layer : distinctLayers)
+                {
+                const int col = idx % layerItemsPerRow;
+                const int row = idx / layerItemsPerRow;
+                const int x = 10 + col * LAYER_ITEM_WIDTH;
+                const int y = startY + row * LAYER_ROW_HEIGHT;
+                const wxString escAttr = EscapeXmlAttr(layer);
+                const wxString escText = EscapeXmlText(layer);
+                // JS string literal nested inside a double-quoted XML attribute,
+                // so JS-escape first then XML-attribute-escape the result
+                const wxString escJS = EscapeXmlAttr(EscapeJsString(layer));
+                svgContent += wxString::Format(
+                    L"  <g class=\"layer-toggle\" data-layer=\"%s\" "
+                    "onclick=\"toggleLayer('%s')\">\n"
+                    "    <rect class=\"box\" x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" "
+                    "rx=\"3\"/>\n"
+                    "    <text class=\"checkmark\" x=\"%d\" y=\"%d\">\u2713</text>\n"
+                    "    <text class=\"layer-label\" x=\"%d\" y=\"%d\">%s</text>\n"
+                    "    <title>%s</title>\n"
+                    "  </g>\n",
+                    escAttr, escJS, x, y, boxSize, boxSize, x + 3, y + 11, x + boxSize + 6, y + 11,
+                    escText, escAttr);
+                ++idx;
+                }
+            }
+
+        if (options.m_includeSlideshow)
+            {
+            const int tipY = toolbarHeight - 6;
+            svgContent += wxString::Format(
+                L"  <text class=\"nav-hint\" x=\"10\" y=\"%d\" font-family=\"sans-serif\" "
+                "font-size=\"12\" fill=\"#000000\">%s</text>\n",
+                tipY, _(L"Tip: Use arrow keys or Page Up/Down to navigate pages"));
             }
 
         svgContent += L"</g>\n";
@@ -574,4 +850,37 @@ wxString Wisteria::SVGReportPrintout::StripSvgTags(const wxString& svgDoc)
         }
 
     return result.Trim(true).Trim(false);
+    }
+
+//------------------------------------------------
+wxString Wisteria::SVGReportPrintout::EscapeXmlAttr(const wxString& str)
+    {
+    wxString result = str;
+    result.Replace(L"&", L"&amp;");
+    result.Replace(L"\"", L"&quot;");
+    result.Replace(L"'", L"&apos;");
+    result.Replace(L"<", L"&lt;");
+    result.Replace(L">", L"&gt;");
+    return result;
+    }
+
+//------------------------------------------------
+wxString Wisteria::SVGReportPrintout::EscapeXmlText(const wxString& str)
+    {
+    wxString result = str;
+    result.Replace(L"&", L"&amp;");
+    result.Replace(L"<", L"&lt;");
+    result.Replace(L">", L"&gt;");
+    return result;
+    }
+
+//------------------------------------------------
+wxString Wisteria::SVGReportPrintout::EscapeJsString(const wxString& str)
+    {
+    wxString result = str;
+    result.Replace(L"\\", L"\\\\");
+    result.Replace(L"'", L"\\'");
+    result.Replace(L"\n", L"\\n");
+    result.Replace(L"\r", wxString{});
+    return result;
     }

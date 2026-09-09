@@ -25,9 +25,11 @@ namespace Wisteria
         enum class PageLayout
             {
             /// @brief Pages are in a single column.
-            Stacked,
+            Single,
             /// @brief Pages are side-by-side (2x2 grid).
-            Duplex
+            Duplex,
+            /// @brief Pages are stacked with southeast offset.
+            Stacked
             };
 
         /// @brief Constructor.
@@ -51,6 +53,8 @@ namespace Wisteria
         bool m_includeSlideshow{ true };
         /// @brief Whether to include a subtle page shadow.
         bool m_includePageShadow{ true };
+        /// @brief Whether to include layer filter checkboxes (when pages have layers).
+        bool m_includeLayerControls{ true };
         /// @brief The background color for the overlay buttons and effects.
         wxColour m_themeColor{ 103, 58, 183 };
         /// @brief Uniform page size (in DIPs). If default, uses per-canvas paper sizes.
@@ -69,10 +73,20 @@ namespace Wisteria
             }
 
         /// @returns @c true if any floating UI overlay (buttons, progress bar) is enabled.
+        /// @note This does not account for layer controls, which also depend on whether any
+        ///     page has a layer. Callers combine this with HasLayerControls().
         [[nodiscard]]
         bool HasUILayer() const noexcept
             {
             return m_includeLayoutOptions || m_includeDarkModeToggle;
+            }
+
+        /// @returns @c true if layer controls should be shown (option enabled and layers exist).
+        template<typename Container>
+        [[nodiscard]]
+        bool HasLayerControls(const Container& layers) const noexcept
+            {
+            return m_includeLayerControls && !layers.empty();
             }
 
         /// @brief Enables/disables smooth transitions.
@@ -135,6 +149,15 @@ namespace Wisteria
         SVGReportOptions& PageShadow(bool include)
             {
             m_includePageShadow = include;
+            return *this;
+            }
+
+        /// @brief Enables/disables layer filter checkboxes.
+        /// @param include @c true to include layer controls.
+        /// @returns A reference to this object.
+        SVGReportOptions& LayerControls(bool include)
+            {
+            m_includeLayerControls = include;
             return *this;
             }
 
@@ -201,6 +224,24 @@ namespace Wisteria
         /// @returns The SVG body without the surrounding svg element.
         [[nodiscard]]
         static wxString StripSvgTags(const wxString& svgDoc);
+
+        /// @brief Escapes a string for use inside a double-quoted XML attribute value.
+        /// @param str The raw string.
+        /// @returns The escaped string.
+        [[nodiscard]]
+        static wxString EscapeXmlAttr(const wxString& str);
+
+        /// @brief Escapes a string for use as XML element text content.
+        /// @param str The raw string.
+        /// @returns The escaped string.
+        [[nodiscard]]
+        static wxString EscapeXmlText(const wxString& str);
+
+        /// @brief Escapes a string for use as a single-quoted JavaScript string literal.
+        /// @param str The raw string.
+        /// @returns The escaped string.
+        [[nodiscard]]
+        static wxString EscapeJsString(const wxString& str);
         };
     } // namespace Wisteria
 

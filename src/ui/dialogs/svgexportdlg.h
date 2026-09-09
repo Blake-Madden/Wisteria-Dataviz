@@ -112,6 +112,13 @@ namespace Wisteria::UI
             return m_includePageShadow;
             }
 
+        /// @returns Whether to include layer filter controls.
+        [[nodiscard]]
+        bool IncludeLayerControls() const noexcept
+            {
+            return m_includeLayerControls;
+            }
+
         /// @returns The selected theme color.
         [[nodiscard]]
         wxColour GetThemeColor() const noexcept
@@ -161,6 +168,7 @@ namespace Wisteria::UI
         bool m_includeDarkModeToggle{ true };
         bool m_includeSlideshow{ true };
         bool m_includePageShadow{ true };
+        bool m_includeLayerControls{ true };
         wxColour m_themeColor{ 103, 58, 183 };
         Wisteria::SVGReportOptions::PageLayout m_layout{
             Wisteria::SVGReportOptions::PageLayout::Duplex

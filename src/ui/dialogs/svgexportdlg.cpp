@@ -39,6 +39,7 @@ namespace Wisteria::UI
             m_includeDarkModeToggle = savedOptions->m_includeDarkModeToggle;
             m_includeSlideshow = savedOptions->m_includeSlideshow;
             m_includePageShadow = savedOptions->m_includePageShadow;
+            m_includeLayerControls = savedOptions->m_includeLayerControls;
             m_themeColor = savedOptions->m_themeColor;
             m_layout = savedOptions->m_layout;
             }
@@ -218,21 +219,32 @@ namespace Wisteria::UI
         featuresSizer->Add(layoutToggleCheck, wxSizerFlags{}.Border());
 
         wxArrayString layoutChoices;
-        layoutChoices.Add(_(L"Stacked"));
+        layoutChoices.Add(_(L"Single"));
         layoutChoices.Add(_(L"Duplex"));
+        layoutChoices.Add(_(L"Stacked"));
         auto* layoutRadio = new wxRadioBox(featuresSizer->GetStaticBox(), LAYOUT_RADIO_ID,
                                            _(L"Default Page Layout"), wxDefaultPosition,
                                            wxDefaultSize, layoutChoices, 1, wxRA_SPECIFY_COLS);
         // map enum to int
-        layoutRadio->SetSelection(m_layout == Wisteria::SVGReportOptions::PageLayout::Stacked ? 0 :
-                                                                                                1);
+        layoutRadio->SetSelection(m_layout == Wisteria::SVGReportOptions::PageLayout::Single ? 0 :
+                                  m_layout == Wisteria::SVGReportOptions::PageLayout::Duplex ? 1 :
+                                                                                               2);
         featuresSizer->Add(layoutRadio, wxSizerFlags{}.Expand().Border());
         layoutRadio->Bind(wxEVT_RADIOBOX,
                           [this, layoutRadio](wxCommandEvent&)
                           {
-                              m_layout = (layoutRadio->GetSelection() == 0) ?
-                                             Wisteria::SVGReportOptions::PageLayout::Stacked :
-                                             Wisteria::SVGReportOptions::PageLayout::Duplex;
+                              if (layoutRadio->GetSelection() == 0)
+                                  {
+                                  m_layout = Wisteria::SVGReportOptions::PageLayout::Single;
+                                  }
+                              else if (layoutRadio->GetSelection() == 1)
+                                  {
+                                  m_layout = Wisteria::SVGReportOptions::PageLayout::Duplex;
+                                  }
+                              else
+                                  {
+                                  m_layout = Wisteria::SVGReportOptions::PageLayout::Stacked;
+                                  }
                           });
 
         // enable/disable layout options
@@ -265,6 +277,11 @@ namespace Wisteria::UI
             new wxCheckBox(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Page shadow"));
         shadowCheck->SetValidator(wxGenericValidator{ &m_includePageShadow });
         featuresSizer->Add(shadowCheck, wxSizerFlags{}.Border());
+
+        auto* layerControlsCheck =
+            new wxCheckBox(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Layer controls"));
+        layerControlsCheck->SetValidator(wxGenericValidator{ &m_includeLayerControls });
+        featuresSizer->Add(layerControlsCheck, wxSizerFlags{}.Border());
 
         auto* highlightingCheck =
             new wxCheckBox(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Hover highlighting"));

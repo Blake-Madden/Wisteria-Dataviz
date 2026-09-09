@@ -109,6 +109,8 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                 boolAttr(L"slideshow", m_svgExportOptions.m_includeSlideshow);
             m_svgExportOptions.m_includePageShadow =
                 boolAttr(L"page-shadow", m_svgExportOptions.m_includePageShadow);
+            m_svgExportOptions.m_includeLayerControls =
+                boolAttr(L"layer-controls", m_svgExportOptions.m_includeLayerControls);
             m_svgExportOptions.m_useGlobalPrintSettings = boolAttr(
                 L"svg-use-global-print-settings", m_svgExportOptions.m_useGlobalPrintSettings);
             const wxString colorStr = child->GetAttribute(
@@ -118,14 +120,25 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                 m_svgExportOptions.m_themeColor = color;
                 }
             const wxString layoutDefault =
-                (m_svgExportOptions.m_layout == Wisteria::SVGReportOptions::PageLayout::Stacked) ?
+                (m_svgExportOptions.m_layout == Wisteria::SVGReportOptions::PageLayout::Single) ?
                     L"0" :
-                    L"1";
+                (m_svgExportOptions.m_layout == Wisteria::SVGReportOptions::PageLayout::Duplex) ?
+                    L"1" :
+                    L"2";
             if (child->GetAttribute(L"layout", layoutDefault).ToLong(&val))
                 {
-                m_svgExportOptions.m_layout = (val == 0) ?
-                                                  Wisteria::SVGReportOptions::PageLayout::Stacked :
-                                                  Wisteria::SVGReportOptions::PageLayout::Duplex;
+                if (val == 0)
+                    {
+                    m_svgExportOptions.m_layout = Wisteria::SVGReportOptions::PageLayout::Single;
+                    }
+                else if (val == 1)
+                    {
+                    m_svgExportOptions.m_layout = Wisteria::SVGReportOptions::PageLayout::Duplex;
+                    }
+                else
+                    {
+                    m_svgExportOptions.m_layout = Wisteria::SVGReportOptions::PageLayout::Stacked;
+                    }
                 }
             }
         }
@@ -181,14 +194,17 @@ bool AppSettings::SaveSettingsFile(const wxString& filePath)
                           m_svgExportOptions.m_includeDarkModeToggle ? L"1" : L"0");
     svgNode->AddAttribute(L"slideshow", m_svgExportOptions.m_includeSlideshow ? L"1" : L"0");
     svgNode->AddAttribute(L"page-shadow", m_svgExportOptions.m_includePageShadow ? L"1" : L"0");
+    svgNode->AddAttribute(L"layer-controls",
+                          m_svgExportOptions.m_includeLayerControls ? L"1" : L"0");
     svgNode->AddAttribute(L"svg-use-global-print-settings",
                           m_svgExportOptions.m_useGlobalPrintSettings ? L"1" : L"0");
     svgNode->AddAttribute(L"themeColor",
                           m_svgExportOptions.m_themeColor.GetAsString(wxC2S_HTML_SYNTAX));
-    svgNode->AddAttribute(L"layout", m_svgExportOptions.m_layout ==
-                                             Wisteria::SVGReportOptions::PageLayout::Stacked ?
-                                         L"0" :
-                                         L"1");
+    svgNode->AddAttribute(
+        L"layout",
+        m_svgExportOptions.m_layout == Wisteria::SVGReportOptions::PageLayout::Single ? L"0" :
+        m_svgExportOptions.m_layout == Wisteria::SVGReportOptions::PageLayout::Duplex ? L"1" :
+                                                                                        L"2");
     root->AddChild(svgNode);
 
     if (!doc.Save(filePath))

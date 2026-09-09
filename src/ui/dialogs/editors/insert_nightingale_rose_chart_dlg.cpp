@@ -170,11 +170,11 @@ namespace Wisteria::UI
             wxEVT_BUTTON,
             [this]([[maybe_unused]] wxCommandEvent&)
             {
-                wxString groupLabel;
+                wxString gpLabel;
                 wxString categoryLabel;
-                if (EditGhostOptions(groupLabel, categoryLabel))
+                if (EditGhostOptions(gpLabel, categoryLabel))
                     {
-                    m_ghostedWedges.emplace_back(groupLabel, categoryLabel);
+                    m_ghostedWedges.emplace_back(gpLabel, categoryLabel);
                     RefreshGhostedWedgesList();
                     }
             });

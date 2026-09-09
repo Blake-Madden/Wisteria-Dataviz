@@ -40,6 +40,7 @@ namespace Wisteria::UI
                 }
             m_backgroundImageOpacity = m_canvas->GetBackgroundImageOpacity();
             m_resetPageNumbering = m_canvas->IsResettingPageNumbering();
+            m_layer = m_canvas->GetLayer();
             }
         CreateControls();
         GetSizer()->SetSizeHints(this);
@@ -425,6 +426,16 @@ namespace Wisteria::UI
         nameCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
 #endif
         gridSizer->Add(nameCtrl, wxSizerFlags{}.Expand());
+
+        // layer
+        gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Layer:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* layerCtrl = new wxTextCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition,
+                                         wxDefaultSize, wxTE_RICH2, wxGenericValidator{ &m_layer });
+#if wxUSE_SPELLCHECK
+        layerCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
+#endif
+        gridSizer->Add(layerCtrl, wxSizerFlags{}.Expand());
 
         if (m_editMode == EditMode::Insert)
             {

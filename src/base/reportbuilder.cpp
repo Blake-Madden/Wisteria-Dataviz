@@ -116,6 +116,13 @@ namespace Wisteria
                     canvas->SetNameTemplate(rawName);
                     canvas->SetLabel(ExpandConstants(rawName));
 
+                    // layer (for SVG layer filtering)
+                    if (page->HasProperty(L"layer"))
+                        {
+                        const auto rawLayer = page->GetProperty(L"layer")->AsString();
+                        canvas->SetLayer(ExpandConstants(rawLayer));
+                        }
+
                     // page numbering
                     if (page->HasProperty(L"page-numbering"))
                         {
