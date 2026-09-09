@@ -242,6 +242,12 @@ namespace Wisteria::UI
                                          wxDefaultSize, 0, wxGenericValidator{ &m_showGraticule }),
                           wxSizerFlags{}.Border());
 
+        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY,
+                                         _(L"Show only regions that have a value"),
+                                         wxDefaultPosition, wxDefaultSize, 0,
+                                         wxGenericValidator{ &m_showOnlyValuedRegions }),
+                          wxSizerFlags{}.Border());
+
         m_datasetChoice->Bind(wxEVT_CHOICE,
                               [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
         m_selectVarsButton->Bind(wxEVT_BUTTON,
@@ -601,6 +607,7 @@ namespace Wisteria::UI
 
         m_showLabels = choroplethMap->IsShowingRegionLabels();
         m_showGraticule = choroplethMap->IsShowingGraticule();
+        m_showOnlyValuedRegions = choroplethMap->IsShowingOnlyRegionsWithValues();
         m_labelDisplay = static_cast<int>(choroplethMap->GetLabelDisplay());
         m_noDataFillStyle = NoDataFillStyleToChoiceIndex(choroplethMap->GetNoDataFillStyle());
         m_classificationMethod = static_cast<int>(choroplethMap->GetClassificationMethod());

@@ -166,18 +166,18 @@ namespace Wisteria::UI
                                                     wxListEvent& labelEditEvent)
                                                  { labelEditEvent.Veto(); });
 
-        m_ghostedWedgesList->GetNewButton()->Bind(
-            wxEVT_BUTTON,
-            [this]([[maybe_unused]] wxCommandEvent&)
-            {
-                wxString gpLabel;
-                wxString categoryLabel;
-                if (EditGhostOptions(gpLabel, categoryLabel))
-                    {
-                    m_ghostedWedges.emplace_back(gpLabel, categoryLabel);
-                    RefreshGhostedWedgesList();
-                    }
-            });
+        m_ghostedWedgesList->GetNewButton()->Bind(wxEVT_BUTTON,
+                                                  [this]([[maybe_unused]] wxCommandEvent&)
+                                                  {
+                                                      wxString gpLabel;
+                                                      wxString catLabel;
+                                                      if (EditGhostOptions(gpLabel, catLabel))
+                                                          {
+                                                          m_ghostedWedges.emplace_back(gpLabel,
+                                                                                       catLabel);
+                                                          RefreshGhostedWedgesList();
+                                                          }
+                                                  });
         m_ghostedWedgesList->GetEditButton()->Bind(
             wxEVT_BUTTON,
             [this]([[maybe_unused]] wxCommandEvent&)
@@ -188,11 +188,11 @@ namespace Wisteria::UI
                     {
                     return;
                     }
-                wxString groupLabel = m_ghostedWedges[sel].first;
-                wxString categoryLabel = m_ghostedWedges[sel].second;
-                if (EditGhostOptions(groupLabel, categoryLabel))
+                wxString gpLabel = m_ghostedWedges[sel].first;
+                wxString catLabel = m_ghostedWedges[sel].second;
+                if (EditGhostOptions(gpLabel, catLabel))
                     {
-                    m_ghostedWedges[sel] = { groupLabel, categoryLabel };
+                    m_ghostedWedges[sel] = { gpLabel, catLabel };
                     RefreshGhostedWedgesList();
                     }
             });

@@ -74,6 +74,86 @@ Properties for `"categorical-bar-chart"` nodes:
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}
+## Choropleth Map {#choropleth-map-properties .unnumbered}
+
+Properties for `"choropleth-map"` nodes:
+
+- `"region-file"`: The path to the KML or GeoJSON file that supplies the region shapes (required). \
+  Network paths (e.g., starting with `\\` or `//`) are not allowed.
+- `"region-id-field"`: The attribute field in the region file to use as each region's key. \
+  If omitted, each region's own name is used.
+- `"background-file"`: The path to an optional KML or GeoJSON file drawn beneath the data regions as a backdrop (e.g., a state outline behind a set of counties). \
+  It is filled a shade lighter than `"no-data-color"`, clipped to the plot area, and does not take part in fitting the view.
+- `"data-source"`: An (optional) item that merges a project dataset onto the regions for shading, matched on the region key.
+  It contains the following properties:
+  - `"dataset"`: The name of the project dataset to pull the shading column from.
+  - `"key-column"`: The dataset column matched against the region key.
+  - `"value-column"`: A continuous column mapped onto the color scheme as a gradient. \
+    Use this or `"category-column"`, not both.
+  - `"category-column"`: A categorical column drawn with one color per category.
+  - `"symbol-column"`: A continuous column drawn as a proportional circle at each region's center (its area proportional to the value). \
+    This can run alongside a shading column or on its own.
+- `"color-scheme"`: A [color scheme](#color-scheme-properties) specification. \
+  The first color is the low end of the gradient and the last color is the high end.
+  With no shading column, the last color fills every region. \
+  A categorical column instead needs a scheme with at least three colors (otherwise a qualitative scheme is used).
+- `"classification-method"`: A string specifying how a continuous value column is split into classes. \
+  Available options are:
+  - `"jenks-natural-breaks"`: Split the values into classes with Jenks natural breaks. \
+    Each class gets one color and the legend shows the class ranges.
+
+  (If omitted, the value is mapped onto a continuous color ramp.)
+- `"classification-count"`: The number of classes to split the value column into, between `2` and `12` (default is `5`). \
+  Only used when `"classification-method"` is set.
+- `"projection"`: A string specifying how longitude and latitude are mapped to the plot area. \
+  Available options are:
+  - `"equirectangular"`: Longitude scaled by the cosine of the center latitude.
+    Best for a small area.
+  - `"albers-equal-area-conic"`: Standard parallels taken from the data extent.
+    The usual choice for a mid-latitude country or continent.
+  - `"equal-earth"`: An equal-area pseudocylindrical projection suited to hemispheric or world maps.
+
+  (If omitted, a projection is chosen from the extent of the data.)
+- `"show-region-labels"`: `true` to draw each region's label at its center.
+- `"region-label-display"`: A string specifying what a region's label shows. \
+  Available options are:
+  - `"value"`: The region's mapped value.
+  - `"percentage"`: The region's share of the value column's total (or, for a category column, the share of regions in that category).
+  - `"value-and-percentage"`: Both.
+  - `"no-display"`: Draw no label.
+  - `"bin-name"`: The region's name (the default).
+  - `"bin-name-and-value"`: The region's name and value.
+  - `"bin-name-and-percentage"`: The region's name and percentage.
+- `"show-graticule"`: `true` to draw a faint latitude and longitude grid over the map, each line labeled with its coordinate at the north or west edge.
+- `"show-only-regions-with-values"`: `true` to draw only the regions that carry a mapped value. \
+  Has an effect only when a `"data-source"` shading column is in use. \
+  The background layer and graticule are dropped, and the view is fitted to the valued regions.
+- `"no-data-color"`: The color used to fill regions whose value is missing.
+- `"no-data-fill-style"`: A string specifying the [brush style](#brush-properties) for regions whose value is missing (e.g., `"forward-diagonal-hatch"`). \
+  A solid style fills flat with `"no-data-color"`.
+  (A hatch style draws that color's hatching over a transparent background.)
+- `"symbol-color"`: The fill color for the proportional symbols (a translucent form of it is used for  the fill).
+- Some base properties available to [graphs](#graph-properties).
+
+```json
+{
+  "type": "choropleth-map",
+  "region-file": "maps/us-counties.geojson",
+  "region-id-field": "GEOID",
+  "background-file": "maps/us-states.geojson",
+  "data-source": {
+    "dataset": "Graduation",
+    "key-column": "county_id",
+    "value-column": "grad_rate"
+  },
+  "color-scheme": "spectral",
+  "show-only-regions-with-values": true,
+  "title": "Graduation Rate by County"
+}
+```
+:::
+
+::: {.minipage data-latex="{\textwidth}"}
 ## Gantt Chart {#gantt-chart-properties .unnumbered}
 
 Properties for `"gantt-chart"` nodes:

@@ -139,6 +139,14 @@ namespace Wisteria::UI
             return m_showGraticule;
             }
 
+        /// @returns @c true if only regions that carry a mapped value should be
+        ///     drawn (the view fitted to just those regions).
+        [[nodiscard]]
+        bool IsShowingOnlyRegionsWithValues() const noexcept
+            {
+            return m_showOnlyValuedRegions;
+            }
+
         /// @returns What a region's label shows.
         [[nodiscard]]
         int GetRegionLabelDisplay() const noexcept
@@ -228,6 +236,7 @@ namespace Wisteria::UI
         wxString m_kmlIdField;
         bool m_showLabels{ false };
         bool m_showGraticule{ false };
+        bool m_showOnlyValuedRegions{ false };
         // 4 is BinLabelDisplay::BinName.
         int m_labelDisplay{ 4 };
         // 0 is a solid fill.

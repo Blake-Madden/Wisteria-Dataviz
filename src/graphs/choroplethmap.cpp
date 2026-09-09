@@ -906,6 +906,26 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             return;
             }
 
+        // "values only" keeps just the valued regions.
+        // The background layer and graticule are removed and the view is zoomed to them.
+        const bool valuesOnly{ m_showOnlyValuedRegions && m_hasValues };
+        if (valuesOnly)
+            {
+            Data::GeoBoundingBox valuedBounds;
+            const auto& allGeometries = m_geoData->GetGeometries();
+            for (size_t row = 0; row < allGeometries.size(); ++row)
+                {
+                if (RegionHasMappedValue(row))
+                    {
+                    valuedBounds.Encompass(allGeometries[row].m_boundingBox);
+                    }
+                }
+            if (valuedBounds.IsOk())
+                {
+                m_dataBounds = valuedBounds;
+                }
+            }
+
         PrepareProjection();
 
         // project every ring point once to find the extent of the projected shapes
@@ -925,9 +945,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             m_planeMax.first = std::max(m_planeMax.first, planeX);
             m_planeMax.second = std::max(m_planeMax.second, planeY);
         };
-        for (const auto& region : m_geoData->GetGeometries())
+        const auto& geometries = m_geoData->GetGeometries();
+        for (size_t row = 0; row < geometries.size(); ++row)
             {
-            for (const auto& geoPolygon : region.m_polygons)
+            // when fitting to just the valued regions, the rest do not count
+            // toward the extent, so the shown regions get the whole plot area
+            if (valuesOnly && !RegionHasMappedValue(row))
+                {
+                continue;
+                }
+            for (const auto& geoPolygon : geometries[row].m_polygons)
                 {
                 for (const auto& coord : geoPolygon.m_outerBoundary)
                     {
@@ -954,8 +981,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
 
         // The graticule's coordinate labels sit in a strip taken off the top and
         // left of the plot area. The map is fitted into what is left.
+        // The "values only" option drops the graticule, so no strip is reserved.
+        const bool drawGraticule{ m_showGraticule && !valuesOnly };
         wxSize graticuleGutter{ 0, 0 };
-        if (m_showGraticule)
+        if (drawGraticule)
             {
             graticuleGutter = MeasureGraticuleGutter(dc);
             if (plotRect.GetWidth() > graticuleGutter.GetWidth() * 4 &&
@@ -986,7 +1015,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             plotRect.GetTop() + static_cast<int>((plotRect.GetHeight() - drawnHeight) / 2.0)
         };
 
-        AddBackgroundLayer();
+        // the backdrop is suppressed when only the valued regions are shown
+        if (!valuesOnly)
+            {
+            AddBackgroundLayer();
+            }
 
         // color for regions that are not data-shaded: the high end of the color scheme
         const wxColour flatFillColor =
@@ -996,6 +1029,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
 
         for (size_t row = 0; row < m_geoData->GetRowCount(); ++row)
             {
+            // with the "values only" option on, a region without a mapped value
+            // is left out entirely, no fill and no label
+            if (valuesOnly && !RegionHasMappedValue(row))
+                {
+                continue;
+                }
             const auto& region = m_geoData->GetRegionGeometry(row);
             const wxString regionLabelText = BuildRegionLabel(row);
 
@@ -1086,7 +1125,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                 }
             }
 
-        if (m_showGraticule)
+        if (drawGraticule)
             {
             AddGraticule(plotRect, graticuleGutter);
             }
@@ -1699,9 +1738,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                                                     m_symbolColumnName);
             }
 
-        if (m_backgroundData != nullptr)
+        if (m_showOnlyValuedRegions && m_hasValues)
             {
-            description += L". " + wxString{ _(L"Over a background reference layer") };
+            description += L". " + _(L"Only regions with a value are shown");
+            }
+        else if (m_backgroundData != nullptr)
+            {
+            description += L". " + _(L"Over a background reference layer");
             }
 
         AddAccessibilityAttribute(description, GetCaption().GetText(), L". ");

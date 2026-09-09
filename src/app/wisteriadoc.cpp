@@ -4917,6 +4917,11 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             node->Add(L"show-graticule", true);
             }
 
+        if (choroplethMap->IsShowingOnlyRegionsWithValues())
+            {
+            node->Add(L"show-only-regions-with-values", true);
+            }
+
         if (choroplethMap->GetLabelDisplay() != Wisteria::BinLabelDisplay::BinName)
             {
             const auto blStr = Wisteria::ReportEnumConvert::ConvertBinLabelDisplayToString(

@@ -515,6 +515,24 @@ namespace Wisteria::Graphs
             return m_noDataFillStyle;
             }
 
+        /** @brief Sets whether only regions that carry a mapped value are drawn.
+            @param show @c true to draw just the regions that have a value.
+            @details This has an effect only when the map is shaded by a data
+                column. With a shading column in place, regions
+                with no value, the background layer, and the graticule are all
+                left out. The view is fitted to just the valued regions, so
+                a handful of shaded regions fill the plot area instead of sitting
+                in a corner of the whole territory. With no shading column the
+                flag is ignored and the whole map is drawn.*/
+        void ShowOnlyRegionsWithValues(const bool show) noexcept { m_showOnlyValuedRegions = show; }
+
+        /// @returns @c true if only regions with a mapped value are drawn.
+        [[nodiscard]]
+        bool IsShowingOnlyRegionsWithValues() const noexcept
+            {
+            return m_showOnlyValuedRegions;
+            }
+
         /** @brief Sets a continuous column drawn as a scaled circle at each region's
                 center, on top of any region shading.
             @param columnName The column that sizes the circles, or @c std::nullopt
@@ -653,6 +671,16 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         wxString BuildRegionLabel(size_t row) const;
 
+        /// @brief Whether a region's row carries a color from the shading column
+        ///     (as opposed to missing data) on a data-shaded map.
+        /// @param row The region's row.
+        /// @returns @c true if the row has a mapped value.
+        [[nodiscard]]
+        bool RegionHasMappedValue(const size_t row) const noexcept
+            {
+            return m_hasValues && row < m_regionColors.size() && m_regionColors[row].IsOk();
+            }
+
         /// @brief Measures the strip the graticule's coordinate labels need.
         /// @param dc The device context to measure text with.
         /// @returns The width to reserve at the left and the height at the top.
@@ -732,6 +760,7 @@ namespace Wisteria::Graphs
 
         bool m_showLabels{ false };
         bool m_showGraticule{ false };
+        bool m_showOnlyValuedRegions{ false };
         BinLabelDisplay m_labelDisplay{ BinLabelDisplay::BinName };
         wxColour m_noDataColor{ L"#D2D2D2" };
         wxBrushStyle m_noDataFillStyle{ wxBRUSHSTYLE_FDIAGONAL_HATCH };

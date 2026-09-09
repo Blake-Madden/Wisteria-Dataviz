@@ -165,6 +165,13 @@ namespace Wisteria
             choroplethMap->ShowGraticule(graticuleNode->AsBool());
             }
 
+        if (const auto valuesOnlyNode =
+                graphNode->GetProperty(_DT(L"show-only-regions-with-values"));
+            valuesOnlyNode->IsOk())
+            {
+            choroplethMap->ShowOnlyRegionsWithValues(valuesOnlyNode->AsBool());
+            }
+
         if (const auto regionLabelDisplayNode =
                 graphNode->GetProperty(_DT(L"region-label-display"));
             regionLabelDisplayNode->IsOk())

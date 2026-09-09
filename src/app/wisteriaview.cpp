@@ -6434,6 +6434,7 @@ void WisteriaView::OnInsertChoroplethMap([[maybe_unused]] wxCommandEvent& event)
         plot->SetData(geoData, valueCol);
         plot->ShowRegionLabels(dlg.IsShowingRegionLabels());
         plot->ShowGraticule(dlg.IsShowingGraticule());
+        plot->ShowOnlyRegionsWithValues(dlg.IsShowingOnlyRegionsWithValues());
         plot->SetLabelDisplay(static_cast<Wisteria::BinLabelDisplay>(dlg.GetRegionLabelDisplay()));
         plot->SetNoDataFillStyle(dlg.GetNoDataFillStyle());
         plot->SetProportionalSymbolColumn(dlg.GetSymbolColumn().empty() ?
@@ -6584,6 +6585,7 @@ void WisteriaView::EditChoroplethMap(const Wisteria::Graphs::Graph2D& graph,
         plot->SetData(geoData, valueCol);
         plot->ShowRegionLabels(dlg.IsShowingRegionLabels());
         plot->ShowGraticule(dlg.IsShowingGraticule());
+        plot->ShowOnlyRegionsWithValues(dlg.IsShowingOnlyRegionsWithValues());
         plot->SetLabelDisplay(static_cast<Wisteria::BinLabelDisplay>(dlg.GetRegionLabelDisplay()));
         plot->SetNoDataFillStyle(dlg.GetNoDataFillStyle());
         plot->SetProportionalSymbolColumn(
