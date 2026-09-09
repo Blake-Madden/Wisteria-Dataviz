@@ -131,6 +131,17 @@ namespace Wisteria::UI
         [[nodiscard]]
         bool GetFixedWidth() const;
 
+        /// @returns Whether the item's scaling is locked.
+        [[nodiscard]]
+        bool GetLockScaling() const noexcept
+            {
+            return m_lockScaling;
+            }
+
+        /// @brief Sets whether the item's scaling is locked.
+        /// @param lock @c true to lock scaling.
+        void SetLockScaling(const bool lock) noexcept { m_lockScaling = lock; }
+
         /// @returns The outline pen (color and width).
         [[nodiscard]]
         wxPen GetOutlinePen() const;
@@ -302,6 +313,7 @@ namespace Wisteria::UI
         int m_paddingLeft{ 0 };
         bool m_fitRowToContent{ false };
         bool m_fixedWidth{ false };
+        bool m_lockScaling{ false };
         int m_outlineWidth{ 1 };
         int m_outlineStyle{ 0 };
         bool m_outlineTop{ false };
@@ -313,6 +325,7 @@ namespace Wisteria::UI
 
         // controls without DDX validator support
         wxSpinCtrlDouble* m_scalingSpin{ nullptr };
+        wxCheckBox* m_lockScalingCheck{ nullptr };
         wxColourPickerCtrl* m_outlineColorPicker{ nullptr };
 
         // controls needed for event handlers

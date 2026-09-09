@@ -16,6 +16,7 @@
 #include <vector>
 #include <wx/clrpicker.h>
 #include <wx/editlbox.h>
+#include <wx/spinctrl.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -259,6 +260,7 @@ namespace Wisteria::UI
         void OnSelectVariables();
         void OnDatasetChanged();
         void OnVarModeChanged();
+        void UpdateMinSizeControls();
         void RefreshVariablesList();
         void OnAddFootnote();
         void OnEditFootnote();
@@ -293,6 +295,10 @@ namespace Wisteria::UI
         wxEditableListBox* m_variablesListBox{ nullptr };
         wxButton* m_varButton{ nullptr };
         wxColourPickerCtrl* m_altRowColorPicker{ nullptr };
+        wxSpinCtrl* m_minWidthSpin{ nullptr };
+        wxSpinCtrl* m_minHeightSpin{ nullptr };
+        wxCheckBox* m_minWidthCheck{ nullptr };
+        wxCheckBox* m_minHeightCheck{ nullptr };
         wxEditableListBox* m_footnotesListBox{ nullptr };
         wxEditableListBox* m_aggregatesListBox{ nullptr };
         wxEditableListBox* m_annotationsListBox{ nullptr };

@@ -472,6 +472,13 @@ namespace Wisteria::GraphItems
         /// @sa LockBoundingBoxScaling(), SetBoundingBox(), SetScaling().
         void UnlockBoundingBoxScaling() noexcept { m_boundingBoxScalingLocked = false; }
 
+        /// @returns @c true if the bounding box scaling is locked.
+        [[nodiscard]]
+        bool IsBoundingBoxScalingLocked() const noexcept
+            {
+            return m_boundingBoxScalingLocked;
+            }
+
         /** @brief Moves the item by the specified x and y values.
             @param xToMove The amount to move horizontally.
             @param yToMove The amount to move vertically.*/

@@ -25,6 +25,10 @@ namespace Wisteria::UI
           m_options(options)
         {
         SetFitRowToContent(true);
+        if (editMode == EditMode::Insert)
+            {
+            SetLockScaling(true);
+            }
         CreateControls();
         FinalizeControls();
         TransferDataToWindow();

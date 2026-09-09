@@ -156,33 +156,31 @@ namespace Wisteria::UI
         auto* sizeParent = sizeBox->GetStaticBox();
 
         auto* minWidthSizer = new wxBoxSizer(wxHORIZONTAL);
-        minWidthSizer->Add(new wxCheckBox(sizeParent, wxID_ANY, _(L"Minimum width (%):"),
-                                          wxDefaultPosition, wxDefaultSize, 0,
-                                          wxGenericValidator(&m_useMinWidth)),
-                           wxSizerFlags{}.CenterVertical());
+        m_minWidthCheck =
+            new wxCheckBox(sizeParent, wxID_ANY, _(L"Minimum width (%):"), wxDefaultPosition,
+                           wxDefaultSize, 0, wxGenericValidator(&m_useMinWidth));
+        minWidthSizer->Add(m_minWidthCheck, wxSizerFlags{}.CenterVertical());
         minWidthSizer->AddSpacer(wxSizerFlags::GetDefaultBorder() * 2);
-            {
-            auto* spin = new wxSpinCtrl(sizeParent, wxID_ANY);
-            spin->SetRange(1, 100);
-            spin->SetValue(m_minWidthPct);
-            spin->SetValidator(wxGenericValidator(&m_minWidthPct));
-            minWidthSizer->Add(spin, wxSizerFlags{}.CenterVertical());
-            }
+        m_minWidthSpin = new wxSpinCtrl(sizeParent, wxID_ANY);
+        m_minWidthSpin->SetRange(1, 100);
+        m_minWidthSpin->SetValue(m_minWidthPct);
+        m_minWidthSpin->SetValidator(wxGenericValidator(&m_minWidthPct));
+        m_minWidthSpin->Enable(m_useMinWidth);
+        minWidthSizer->Add(m_minWidthSpin, wxSizerFlags{}.CenterVertical());
         sizeBox->Add(minWidthSizer, wxSizerFlags{}.Border());
 
         auto* minHeightSizer = new wxBoxSizer(wxHORIZONTAL);
-        minHeightSizer->Add(new wxCheckBox(sizeParent, wxID_ANY, _(L"Minimum height (%):"),
-                                           wxDefaultPosition, wxDefaultSize, 0,
-                                           wxGenericValidator(&m_useMinHeight)),
-                            wxSizerFlags{}.CenterVertical());
+        m_minHeightCheck =
+            new wxCheckBox(sizeParent, wxID_ANY, _(L"Minimum height (%):"), wxDefaultPosition,
+                           wxDefaultSize, 0, wxGenericValidator(&m_useMinHeight));
+        minHeightSizer->Add(m_minHeightCheck, wxSizerFlags{}.CenterVertical());
         minHeightSizer->AddSpacer(wxSizerFlags::GetDefaultBorder() * 2);
-            {
-            auto* spin = new wxSpinCtrl(sizeParent, wxID_ANY);
-            spin->SetRange(1, 100);
-            spin->SetValue(m_minHeightPct);
-            spin->SetValidator(wxGenericValidator(&m_minHeightPct));
-            minHeightSizer->Add(spin, wxSizerFlags{}.CenterVertical());
-            }
+        m_minHeightSpin = new wxSpinCtrl(sizeParent, wxID_ANY);
+        m_minHeightSpin->SetRange(1, 100);
+        m_minHeightSpin->SetValue(m_minHeightPct);
+        m_minHeightSpin->SetValidator(wxGenericValidator(&m_minHeightPct));
+        m_minHeightSpin->Enable(m_useMinHeight);
+        minHeightSizer->Add(m_minHeightSpin, wxSizerFlags{}.CenterVertical());
         sizeBox->Add(minHeightSizer, wxSizerFlags{}.Border());
 
         leftColSizer->Add(sizeBox, wxSizerFlags{}.Expand());
@@ -268,6 +266,11 @@ namespace Wisteria::UI
         m_varButton->Bind(wxEVT_BUTTON,
                           [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
 
+        m_minWidthCheck->Bind(wxEVT_CHECKBOX, [this]([[maybe_unused]] wxCommandEvent&)
+                              { UpdateMinSizeControls(); });
+        m_minHeightCheck->Bind(wxEVT_CHECKBOX, [this]([[maybe_unused]] wxCommandEvent&)
+                               { UpdateMinSizeControls(); });
+
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
         }
@@ -280,6 +283,19 @@ namespace Wisteria::UI
 
         m_variablesListBox->Enable(isCustom);
         m_varButton->Enable(isCustom);
+        }
+
+    //-------------------------------------------
+    void InsertTableDlg::UpdateMinSizeControls()
+        {
+        if (m_minWidthSpin != nullptr && m_minWidthCheck != nullptr)
+            {
+            m_minWidthSpin->Enable(m_minWidthCheck->GetValue());
+            }
+        if (m_minHeightSpin != nullptr && m_minHeightCheck != nullptr)
+            {
+            m_minHeightSpin->Enable(m_minHeightCheck->GetValue());
+            }
         }
 
     //-------------------------------------------
@@ -777,6 +793,7 @@ namespace Wisteria::UI
         TransferDataToWindow();
         RefreshVariablesList();
         OnVarModeChanged();
+        UpdateMinSizeControls();
         RefreshFootnoteList();
         RefreshAggregateList();
         RefreshAnnotationList();

@@ -409,6 +409,12 @@ namespace Wisteria::UI
 
             leftColumnSizer->Add(propsSizer, wxSizerFlags{}.Border());
 
+            // lock scaling
+            m_lockScalingCheck =
+                new wxCheckBox(pagePage, wxID_ANY, _(L"Lock scaling"), wxDefaultPosition,
+                               wxDefaultSize, 0, wxGenericValidator(&m_lockScaling));
+            leftColumnSizer->Add(m_lockScalingCheck, wxSizerFlags{}.Border());
+
             // canvas margins (top, right, bottom, left)
             auto* marginBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Canvas Margins"));
             auto* marginGrid = new wxFlexGridSizer(
@@ -606,7 +612,26 @@ namespace Wisteria::UI
         {
         item.SetPageHorizontalAlignment(GetHorizontalPageAlignment());
         item.SetPageVerticalAlignment(GetVerticalPageAlignment());
-        item.SetScaling(GetItemScaling());
+        // if locking, unlock first so SetScaling isn't immediately overwritten by a locked state,
+        // then set the new scale and re-lock
+        if (auto* label = dynamic_cast<GraphItems::Label*>(&item))
+            {
+            if (GetLockScaling())
+                {
+                label->UnlockBoundingBoxScaling();
+                label->SetScaling(GetItemScaling());
+                label->LockBoundingBoxScaling();
+                }
+            else
+                {
+                label->UnlockBoundingBoxScaling();
+                label->SetScaling(GetItemScaling());
+                }
+            }
+        else
+            {
+            item.SetScaling(GetItemScaling());
+            }
 
         const auto margins = GetCanvasMargins();
         item.SetCanvasMargins(margins[0], margins[1], margins[2], margins[3]);
@@ -678,6 +703,14 @@ namespace Wisteria::UI
         // scaling — use the original value cached when the item was placed on the
         // canvas, since the canvas overwrites GetScaling() with its own scaling
         m_scalingSpin->SetValue(item.GetGraphItemInfo().GetOriginalCanvasScaling());
+        if (const auto* label = dynamic_cast<const GraphItems::Label*>(&item))
+            {
+            m_lockScaling = label->IsBoundingBoxScalingLocked();
+            }
+        else
+            {
+            m_lockScaling = false;
+            }
 
         // canvas margins
         m_marginTop = item.GetTopCanvasMargin();

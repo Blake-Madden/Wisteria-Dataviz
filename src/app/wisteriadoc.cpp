@@ -1115,6 +1115,12 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveLabel(const Wisteria::GraphItems::Label* la
             }
         }
 
+    // lock scaling
+    if (label->IsBoundingBoxScalingLocked())
+        {
+        node->Add(L"lock-scaling", true);
+        }
+
     SaveItem(node, label, canvas);
     return node;
     }

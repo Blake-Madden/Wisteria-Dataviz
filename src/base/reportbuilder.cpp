@@ -1117,6 +1117,12 @@ namespace Wisteria
                 label->SetTextAlignment(textAlignment.value());
                 }
 
+            if (labelNode->HasProperty(L"lock-scaling") &&
+                labelNode->GetProperty(L"lock-scaling")->AsBool())
+                {
+                label->LockBoundingBoxScaling();
+                }
+
             // header info
             auto headerNode = labelNode->GetProperty(L"header");
             if (headerNode->IsOk())
