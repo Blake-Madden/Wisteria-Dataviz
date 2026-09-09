@@ -1615,28 +1615,41 @@ namespace Wisteria::Data
     //----------------------------------------------
     void Dataset::ImportExcel(const wxString& filePath,
                               const std::variant<wxString, size_t>& worksheet,
-                              const ImportInfo& info)
+                              const ImportInfo& info, std::optional<size_t> rowPreviewCount)
         {
         Data::ExcelReader xlReader(filePath);
         auto dataMatrix = xlReader.ReadWorksheetMatrix(worksheet);
         Reset();
-        LoadWorksheetMatrix(std::move(dataMatrix), info);
+        LoadWorksheetMatrix(std::move(dataMatrix), info, rowPreviewCount);
         }
 
     //----------------------------------------------
     void Dataset::ImportOds(const wxString& filePath,
-                            const std::variant<wxString, size_t>& worksheet, const ImportInfo& info)
+                            const std::variant<wxString, size_t>& worksheet, const ImportInfo& info,
+                            std::optional<size_t> rowPreviewCount)
         {
         Data::OdsReader odsReader(filePath);
         auto dataMatrix = odsReader.ReadWorksheetMatrix(worksheet);
         Reset();
-        LoadWorksheetMatrix(std::move(dataMatrix), info);
+        LoadWorksheetMatrix(std::move(dataMatrix), info, rowPreviewCount);
         }
 
     //----------------------------------------------
     void Dataset::LoadWorksheetMatrix(std::vector<std::vector<std::wstring>> dataMatrix,
-                                      const ImportInfo& info)
+                                      const ImportInfo& info, std::optional<size_t> rowPreviewCount)
         {
+        // when only a preview is requested, drop the surplus rows before the
+        // normalization pass below so it doesn't process rows that get discarded
+        // anyway (skipped rows and the header row are kept on top of the data rows)
+        if (rowPreviewCount.has_value())
+            {
+            const size_t keepRowCount = info.m_skipRows + 1 + rowPreviewCount.value();
+            if (dataMatrix.size() > keepRowCount)
+                {
+                dataMatrix.resize(keepRowCount);
+                }
+            }
+
         // Normalize cells like the text path (trim whitespace/quotes, collapse doubled
         // quotes) so this stays consistent with the ReadColumnInfo() preview.
         lily_of_the_valley::cell_trim cellTrim;
@@ -1672,7 +1685,7 @@ namespace Wisteria::Data
 
     //----------------------------------------------
     void Dataset::ImportTextRaw(const wxString& fileText, const ImportInfo& info,
-                                const wchar_t delimiter)
+                                const wchar_t delimiter, std::optional<size_t> rowPreviewCount)
         {
         Reset();
 
@@ -1707,6 +1720,13 @@ namespace Wisteria::Data
         if (size_t rowCount = preview(fileText.wc_str(), delimiter, false, false, info.m_skipRows);
             rowCount > 0)
             {
+            // rowCount from the preview includes the header row, so keep rowPreviewCount
+            // data rows plus that header (matches ReadColumnInfoRaw() and the
+            // worksheet path in LoadWorksheetMatrix())
+            if (rowPreviewCount.has_value() && rowCount > rowPreviewCount.value() + 1)
+                {
+                rowCount = rowPreviewCount.value() + 1;
+                }
             dataStrings.resize(rowCount);
             rowCount = importer.read(fileText.wc_str(), rowCount, preview.get_header_names().size(),
                                      false);
@@ -1978,25 +1998,26 @@ namespace Wisteria::Data
     //----------------------------------------------
     void
     Dataset::Import(const wxString& filePath, const ImportInfo& info,
-                    const std::variant<wxString, size_t>& worksheet /*= static_cast<size_t>(1)*/)
+                    const std::variant<wxString, size_t>& worksheet /*= static_cast<size_t>(1)*/,
+                    std::optional<size_t> rowPreviewCount /*= std::nullopt*/)
         {
         if (wxFileName{ filePath }.GetExt().CmpNoCase(L"xlsx") == 0)
             {
-            ImportExcel(filePath, worksheet, info);
+            ImportExcel(filePath, worksheet, info, rowPreviewCount);
             }
         else if (wxFileName{ filePath }.GetExt().CmpNoCase(L"ods") == 0)
             {
-            ImportOds(filePath, worksheet, info);
+            ImportOds(filePath, worksheet, info, rowPreviewCount);
             }
         else
             {
-            ImportText(filePath, info, GetDelimiterFromExtension(filePath));
+            ImportText(filePath, info, GetDelimiterFromExtension(filePath), rowPreviewCount);
             }
         }
 
     //----------------------------------------------
     void Dataset::ImportText(const wxString& filePath, const ImportInfo& info,
-                             const wchar_t delimiter)
+                             const wchar_t delimiter, std::optional<size_t> rowPreviewCount)
         {
         wxString fileText;
         if (wxFile theFile(filePath); !theFile.IsOpened() || !theFile.ReadAll(&fileText))
@@ -2007,7 +2028,7 @@ namespace Wisteria::Data
             }
         fileText.Trim(true).Trim(false);
 
-        ImportTextRaw(fileText, info, delimiter);
+        ImportTextRaw(fileText, info, delimiter, rowPreviewCount);
 
         m_name = wxFileName{ filePath }.GetName();
         }

@@ -1834,16 +1834,20 @@ namespace Wisteria::Data
                 GroupColumns({ L"Name" }),
                 L',');
             @endcode*/
-        void ImportText(const wxString& filePath, const ImportInfo& info, wchar_t delimiter);
+        void ImportText(const wxString& filePath, const ImportInfo& info, wchar_t delimiter,
+                        std::optional<size_t> rowPreviewCount = std::nullopt);
         /** @brief Imports a file based on its extension.
             @param filePath The path to the data file.
             @param info The definition for which columns to import and how to map them.\n
                 Note that ImportInfoFromPreview() and ReadColumnInfo() can be used to
                 gather this information.
             @param worksheet If loading an *Excel* workbook, the name or
-                1-based index of the worksheet.*/
+                1-based index of the worksheet.
+            @param rowPreviewCount If specified, only the first @p rowPreviewCount data
+                rows are imported (useful for previews).*/
         void Import(const wxString& filePath, const ImportInfo& info,
-                    const std::variant<wxString, size_t>& worksheet = static_cast<size_t>(1));
+                    const std::variant<wxString, size_t>& worksheet = static_cast<size_t>(1),
+                    std::optional<size_t> rowPreviewCount = std::nullopt);
         /** @brief Imports raw text into the dataset.
             @param fileText The text buffer to parse and load into the dataset.
             @param info The definition for which columns to import and how to map them.\n
@@ -1855,7 +1859,8 @@ namespace Wisteria::Data
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.
             @sa ImportText(), ReadColumnInfo(), ImportInfoFromPreview().*/
-        void ImportTextRaw(const wxString& fileText, const ImportInfo& info, wchar_t delimiter);
+        void ImportTextRaw(const wxString& fileText, const ImportInfo& info, wchar_t delimiter,
+                           std::optional<size_t> rowPreviewCount = std::nullopt);
 
         /** @brief Imports a comma-separated file into the dataset.
             @details This is a shortcut for ImportText(), using commas as the column separator.
@@ -1893,24 +1898,30 @@ namespace Wisteria::Data
             @param info The definition for which columns to import and how to map them.\n
                 Note that ImportInfoFromPreview() and ReadColumnInfo() can be used to
                 gather this information.
+            @param rowPreviewCount If specified, only the first @p rowPreviewCount data
+                rows are imported (useful for previews).
             @throws std::runtime_error If the worksheet can't be read or named columns aren't found,
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void ImportExcel(const wxString& filePath, const std::variant<wxString, size_t>& worksheet,
-                         const ImportInfo& info);
+                         const ImportInfo& info,
+                         std::optional<size_t> rowPreviewCount = std::nullopt);
         /** @brief Imports an *ODS* (OpenDocument Spreadsheet) workbook into the dataset.
             @param filePath The path to the data file.
             @param worksheet The name or 1-based index of the worksheet.
             @param info The definition for which columns to import and how to map them.\n
                 Note that ImportInfoFromPreview() and ReadColumnInfo() can be used to
                 gather this information.
+            @param rowPreviewCount If specified, only the first @p rowPreviewCount data
+                rows are imported (useful for previews).
             @throws std::runtime_error If the worksheet can't be read or named columns aren't found,
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void ImportOds(const wxString& filePath, const std::variant<wxString, size_t>& worksheet,
-                       const ImportInfo& info);
+                       const ImportInfo& info,
+                       std::optional<size_t> rowPreviewCount = std::nullopt);
         /** @brief Exports the dataset to a text file.
             @details Columns are exported in the following order:
                 - ID
@@ -2037,9 +2048,12 @@ namespace Wisteria::Data
             @param dataMatrix The worksheet rows. The first row after @c info.m_skipRows is
                 taken as the column names, the rest are data.
             @param info The definition for which columns to import and how to map them.
+            @param rowPreviewCount If specified, only the first @p rowPreviewCount data
+                rows are imported (useful for previews).
             @note The caller is responsible for calling Reset() beforehand.*/
         void LoadWorksheetMatrix(std::vector<std::vector<std::wstring>> dataMatrix,
-                                 const ImportInfo& info);
+                                 const ImportInfo& info,
+                                 std::optional<size_t> rowPreviewCount = std::nullopt);
 
         /// @returns The specified continuous column by name or index.
         [[nodiscard]]

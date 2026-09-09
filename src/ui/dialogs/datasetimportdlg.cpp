@@ -698,7 +698,7 @@ namespace Wisteria::UI
 
         // import data for preview
         m_previewDataset = std::make_shared<Data::Dataset>();
-        m_previewDataset->Import(m_filePath, importInfo, worksheet);
+        m_previewDataset->Import(m_filePath, importInfo, worksheet, Settings::PREVIEW_MAX_ROWS);
 
         // update grid
         auto* table = new DatasetGridTable(m_previewDataset, m_columnInfo);
