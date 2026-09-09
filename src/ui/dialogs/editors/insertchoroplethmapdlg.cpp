@@ -150,6 +150,21 @@ namespace Wisteria::UI
         m_categoryColumnLabel = addVarRow(_(L"Category column:"));
         m_symbolColumnLabel = addVarRow(_(L"Symbol size column:"));
 
+        dataGrid->Add(
+            new wxStaticText(dataBox->GetStaticBox(), wxID_ANY, _(L"Combine rows per region:")),
+            wxSizerFlags{}.CenterVertical());
+        // the order of these entries is the numeric order of Data::GeoColumnAggregation
+        m_aggregationChoice =
+            new wxChoice(dataBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
+                         nullptr, 0, wxGenericValidator{ &m_dataAggregation });
+        m_aggregationChoice->Append(_(L"Sum"));
+        m_aggregationChoice->Append(_(L"Mean"));
+        m_aggregationChoice->Append(_(L"Minimum"));
+        m_aggregationChoice->Append(_(L"Maximum"));
+        m_aggregationChoice->Append(_(L"Count"));
+        m_aggregationChoice->SetSelection(m_dataAggregation);
+        dataGrid->Add(m_aggregationChoice, wxSizerFlags{}.Expand());
+
         dataBox->Add(dataGrid, wxSizerFlags{}.Expand().Border());
         optionsSizer->Add(dataBox, wxSizerFlags{}.Expand().Border());
 
@@ -378,6 +393,13 @@ namespace Wisteria::UI
         if (m_symbolColorPicker != nullptr)
             {
             m_symbolColorPicker->Enable(hasSymbolColumn);
+            }
+
+        // aggregation combines the numeric columns pulled from the dataset, so it
+        // only applies to a value column or a symbol size column
+        if (m_aggregationChoice != nullptr)
+            {
+            m_aggregationChoice->Enable(!m_valueColumn.empty() || hasSymbolColumn);
             }
 
         UpdateClassificationControls();
@@ -612,6 +634,7 @@ namespace Wisteria::UI
         m_noDataFillStyle = NoDataFillStyleToChoiceIndex(choroplethMap->GetNoDataFillStyle());
         m_classificationMethod = static_cast<int>(choroplethMap->GetClassificationMethod());
         m_classCount = static_cast<int>(choroplethMap->GetClassCount());
+        m_dataAggregation = static_cast<int>(choroplethMap->GetDataAggregation());
 
         // pick the source dataset, then restore the column selections
         if (m_datasetChoice != nullptr && !choroplethMap->GetDataSourceName().empty())

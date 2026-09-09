@@ -16,6 +16,7 @@
 #include "../base/shapes.h"
 #include "../graphs/boxplot.h"
 #include "../graphs/candlestickplot.h"
+#include "../graphs/choroplethmap.h"
 #include "../graphs/ganttchart.h"
 #include "../graphs/histogram.h"
 #include "../graphs/likertchart.h"
@@ -1016,6 +1017,43 @@ namespace Wisteria
                 { Graphs::BarChart::SerpentineMode::Serpentine, L"serpentine" },
                 { Graphs::BarChart::SerpentineMode::AggressiveSerpentine,
                   L"aggressive-serpentine" }
+            };
+
+            const auto foundValue = values.find(value);
+            return ((foundValue != values.cend()) ? std::optional<wxString>(foundValue->second) :
+                                                    std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<Data::GeoColumnAggregation>
+        ConvertGeoColumnAggregation(const wxString& value)
+            {
+            static const std::map<std::wstring, Data::GeoColumnAggregation> aggregationValues = {
+                { L"sum", Data::GeoColumnAggregation::Sum },
+                { L"mean", Data::GeoColumnAggregation::Mean },
+                { L"min", Data::GeoColumnAggregation::Min },
+                { L"max", Data::GeoColumnAggregation::Max },
+                { L"count", Data::GeoColumnAggregation::Count }
+            };
+
+            const auto foundValue = aggregationValues.find(value.Lower().ToStdWstring());
+            return ((foundValue != aggregationValues.cend()) ?
+                        std::optional<Data::GeoColumnAggregation>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertGeoColumnAggregationToString(Data::GeoColumnAggregation value)
+            {
+            static const std::map<Data::GeoColumnAggregation, wxString> values = {
+                { Data::GeoColumnAggregation::Sum, L"sum" },
+                { Data::GeoColumnAggregation::Mean, L"mean" },
+                { Data::GeoColumnAggregation::Min, L"min" },
+                { Data::GeoColumnAggregation::Max, L"max" },
+                { Data::GeoColumnAggregation::Count, L"count" }
             };
 
             const auto foundValue = values.find(value);

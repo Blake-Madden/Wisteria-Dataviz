@@ -22,6 +22,20 @@
 
 namespace Wisteria::Data
     {
+    /// @brief How CopyContinuousColumnFrom() combines multiple source rows that
+    ///     share one key value into a single value for the region.
+    /// @details A dataset often has several rows per region (one per school,
+    ///     precinct, or month). The matching rows' values are reduced to one
+    ///     number with the chosen method before the region is shaded.
+    enum class GeoColumnAggregation
+        {
+        Sum,  /*!< Add the matching rows' values together. */
+        Mean, /*!< The average of the matching rows' values. */
+        Min,  /*!< The smallest of the matching rows' values. */
+        Max,  /*!< The largest of the matching rows' values. */
+        Count /*!< How many source rows matched the region key. */
+        };
+
     /// @brief Options controlling how a KML file is turned into a GeoDataset.
     /// @sa GeoDataset::ImportKML().
     class GeoImportInfo
@@ -255,7 +269,10 @@ namespace Wisteria::Data
         /** @brief Copies a continuous column from another dataset, matched on this
                 dataset's ID column.
             @details This is the usual way to attach a metric to shade the map by.
-                Rows with no match are left as missing data (NaN).
+                Rows with no match are left as missing data (NaN). When @c source has
+                more than one row for a key, the matching values are combined with
+                @c aggregation. Non-finite source values are skipped, and a key whose
+                rows are all non-finite is left as missing data.
             @param source The dataset to copy values from.
             @param sourceKeyColumn The name of the column in @c source to match against
                 this dataset's ID column. May be @c source's ID column or one of its
@@ -264,11 +281,13 @@ namespace Wisteria::Data
                 to copy.
             @param targetColumnName The name for the new column in this dataset. If
                 empty, @c sourceValueColumn is used.
+            @param aggregation How to combine several source rows that share a key.
             @returns @c true on success. Returns @c false (and adds nothing) if any of
                 the named columns cannot be found.*/
         bool CopyContinuousColumnFrom(const Dataset& source, const wxString& sourceKeyColumn,
                                       const wxString& sourceValueColumn,
-                                      const wxString& targetColumnName = wxString{});
+                                      const wxString& targetColumnName = wxString{},
+                                      GeoColumnAggregation aggregation = GeoColumnAggregation::Sum);
 
         /** @brief Copies a categorical column from another dataset, matched on this
                 dataset's ID column.

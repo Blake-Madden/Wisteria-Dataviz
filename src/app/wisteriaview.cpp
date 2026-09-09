@@ -6399,6 +6399,8 @@ void WisteriaView::OnInsertChoroplethMap([[maybe_unused]] wxCommandEvent& event)
         const wxString shadingColumn =
             !dlg.GetCategoryColumn().empty() ? dlg.GetCategoryColumn() : dlg.GetValueColumn();
         const bool hasSourceColumns = dlg.IsMappingData() || dlg.IsUsingProportionalSymbols();
+        const auto dataAggregation =
+            static_cast<Wisteria::Data::GeoColumnAggregation>(dlg.GetDataAggregation());
         if (hasSourceColumns)
             {
             if (!dlg.GetCategoryColumn().empty())
@@ -6410,13 +6412,15 @@ void WisteriaView::OnInsertChoroplethMap([[maybe_unused]] wxCommandEvent& event)
             else if (!dlg.GetValueColumn().empty())
                 {
                 geoData->CopyContinuousColumnFrom(*dlg.GetSelectedDataset(), dlg.GetKeyColumn(),
-                                                  dlg.GetValueColumn(), dlg.GetValueColumn());
+                                                  dlg.GetValueColumn(), dlg.GetValueColumn(),
+                                                  dataAggregation);
                 }
             if (!dlg.GetSymbolColumn().empty() && dlg.GetSymbolColumn() != dlg.GetValueColumn() &&
                 dlg.GetSymbolColumn() != dlg.GetCategoryColumn())
                 {
                 geoData->CopyContinuousColumnFrom(*dlg.GetSelectedDataset(), dlg.GetKeyColumn(),
-                                                  dlg.GetSymbolColumn(), dlg.GetSymbolColumn());
+                                                  dlg.GetSymbolColumn(), dlg.GetSymbolColumn(),
+                                                  dataAggregation);
                 }
             }
 
@@ -6435,6 +6439,7 @@ void WisteriaView::OnInsertChoroplethMap([[maybe_unused]] wxCommandEvent& event)
         plot->ShowRegionLabels(dlg.IsShowingRegionLabels());
         plot->ShowGraticule(dlg.IsShowingGraticule());
         plot->ShowOnlyRegionsWithValues(dlg.IsShowingOnlyRegionsWithValues());
+        plot->SetDataAggregation(dataAggregation);
         plot->SetLabelDisplay(static_cast<Wisteria::BinLabelDisplay>(dlg.GetRegionLabelDisplay()));
         plot->SetNoDataFillStyle(dlg.GetNoDataFillStyle());
         plot->SetProportionalSymbolColumn(dlg.GetSymbolColumn().empty() ?
@@ -6521,6 +6526,8 @@ void WisteriaView::EditChoroplethMap(const Wisteria::Graphs::Graph2D& graph,
         const bool newShadingIsCategorical = !dlg.GetCategoryColumn().empty();
         const wxString newShadingColumn =
             newShadingIsCategorical ? dlg.GetCategoryColumn() : dlg.GetValueColumn();
+        const auto newDataAggregation =
+            static_cast<Wisteria::Data::GeoColumnAggregation>(dlg.GetDataAggregation());
 
         // Reuse the existing GeoDataset when the KML file and shading data are
         // unchanged. Rebuilding re-runs the merge, which can shift the color range and
@@ -6531,6 +6538,7 @@ void WisteriaView::EditChoroplethMap(const Wisteria::Graphs::Graph2D& graph,
              oldMap->GetRegionFilePath() == dlg.GetKMLPath() &&
              oldMap->GetRegionIdField() == dlg.GetKMLIdField() &&
              oldMap->GetDataSourceName() == newDataSource &&
+             oldMap->GetDataAggregation() == newDataAggregation &&
              oldMap->GetValueColumnName() == newShadingColumn &&
              oldMap->GetProportionalSymbolColumnName() == newSymbolColumn &&
              oldMap->IsCategoricalShading() == newShadingIsCategorical);
@@ -6558,13 +6566,15 @@ void WisteriaView::EditChoroplethMap(const Wisteria::Graphs::Graph2D& graph,
                 else if (!newShadingColumn.empty())
                     {
                     builtGeoData->CopyContinuousColumnFrom(*dlg.GetSelectedDataset(), newKeyColumn,
-                                                           newShadingColumn, newShadingColumn);
+                                                           newShadingColumn, newShadingColumn,
+                                                           newDataAggregation);
                     }
                 if (!newSymbolColumn.empty() && newSymbolColumn != dlg.GetValueColumn() &&
                     newSymbolColumn != dlg.GetCategoryColumn())
                     {
                     builtGeoData->CopyContinuousColumnFrom(*dlg.GetSelectedDataset(), newKeyColumn,
-                                                           newSymbolColumn, newSymbolColumn);
+                                                           newSymbolColumn, newSymbolColumn,
+                                                           newDataAggregation);
                     }
                 }
             geoData = builtGeoData;
@@ -6586,6 +6596,7 @@ void WisteriaView::EditChoroplethMap(const Wisteria::Graphs::Graph2D& graph,
         plot->ShowRegionLabels(dlg.IsShowingRegionLabels());
         plot->ShowGraticule(dlg.IsShowingGraticule());
         plot->ShowOnlyRegionsWithValues(dlg.IsShowingOnlyRegionsWithValues());
+        plot->SetDataAggregation(newDataAggregation);
         plot->SetLabelDisplay(static_cast<Wisteria::BinLabelDisplay>(dlg.GetRegionLabelDisplay()));
         plot->SetNoDataFillStyle(dlg.GetNoDataFillStyle());
         plot->SetProportionalSymbolColumn(

@@ -7,9 +7,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "geodataset.h"
+#include <algorithm>
+#include <cmath>
 #include <limits>
 #include <map>
+#include <numeric>
 #include <set>
+#include <vector>
 #include <wx/filename.h>
 
 namespace Wisteria::Data
@@ -279,7 +283,8 @@ namespace Wisteria::Data
     bool GeoDataset::CopyContinuousColumnFrom(const Dataset& source,
                                               const wxString& sourceKeyColumn,
                                               const wxString& sourceValueColumn,
-                                              const wxString& targetColumnName)
+                                              const wxString& targetColumnName,
+                                              const GeoColumnAggregation aggregation)
         {
         m_lastError.clear();
 
@@ -304,15 +309,41 @@ namespace Wisteria::Data
                 }
             }
 
-        std::map<wxString, double> keyToValue;
+        // gather every finite value the source carries for each key, so several
+        // rows for one region can be reduced to a single number
+        std::map<wxString, std::vector<double>> keyToValues;
         for (size_t row = 0; row < source.GetRowCount(); ++row)
             {
             const wxString keyValue =
                 keyIsIdColumn ?
                     source.GetIdColumn().GetValue(row) :
                     sourceKeyColumnIter->GetLabelFromID(sourceKeyColumnIter->GetValue(row));
-            keyToValue.insert_or_assign(keyValue, sourceValueColumnIter->GetValue(row));
+            const double sourceValue = sourceValueColumnIter->GetValue(row);
+            if (std::isfinite(sourceValue))
+                {
+                keyToValues[keyValue].push_back(sourceValue);
+                }
             }
+
+        const auto reduceValues = [aggregation](const std::vector<double>& values)
+        {
+            // values is non-empty and every entry is finite
+            const double total = std::accumulate(values.cbegin(), values.cend(), 0.0);
+            switch (aggregation)
+                {
+            case GeoColumnAggregation::Mean:
+                return total / static_cast<double>(values.size());
+            case GeoColumnAggregation::Min:
+                return *std::ranges::min_element(values);
+            case GeoColumnAggregation::Max:
+                return *std::ranges::max_element(values);
+            case GeoColumnAggregation::Count:
+                return static_cast<double>(values.size());
+            case GeoColumnAggregation::Sum:
+                break;
+                }
+            return total;
+        };
 
         const wxString newColumnName =
             targetColumnName.empty() ? sourceValueColumn : targetColumnName;
@@ -320,10 +351,10 @@ namespace Wisteria::Data
         const auto targetColumnIter = GetContinuousColumn(newColumnName);
         for (size_t row = 0; row < GetRowCount(); ++row)
             {
-            const auto foundValue = keyToValue.find(GetIdColumn().GetValue(row));
-            if (foundValue != keyToValue.cend())
+            const auto foundValues = keyToValues.find(GetIdColumn().GetValue(row));
+            if (foundValues != keyToValues.cend() && !foundValues->second.empty())
                 {
-                targetColumnIter->SetValue(row, foundValue->second);
+                targetColumnIter->SetValue(row, reduceValues(foundValues->second));
                 }
             }
 

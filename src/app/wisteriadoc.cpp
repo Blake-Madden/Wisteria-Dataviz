@@ -4897,6 +4897,13 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             auto dataSourceNode = wxSimpleJSON::Create(L"{}");
             dataSourceNode->Add(_DT(L"dataset"), choroplethMap->GetDataSourceName());
             dataSourceNode->Add(L"key-column", choroplethMap->GetDataSourceKeyColumn());
+            if (const auto aggregationStr =
+                    Wisteria::ReportEnumConvert::ConvertGeoColumnAggregationToString(
+                        choroplethMap->GetDataAggregation());
+                aggregationStr.has_value())
+                {
+                dataSourceNode->Add(L"aggregation", aggregationStr.value());
+                }
             if (choroplethMap->IsCategoricalShading())
                 {
                 dataSourceNode->Add(L"category-column", choroplethMap->GetValueColumnName());

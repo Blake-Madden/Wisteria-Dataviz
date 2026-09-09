@@ -117,6 +117,15 @@ namespace Wisteria::UI
             return m_classCount;
             }
 
+        /// @returns How rows sharing a region key are combined into one value,
+        ///     as a Data::GeoColumnAggregation cast to @c int
+        ///     (0 sum, 1 mean, 2 min, 3 max, 4 count).
+        [[nodiscard]]
+        int GetDataAggregation() const noexcept
+            {
+            return m_dataAggregation;
+            }
+
         /// @returns The fill color chosen for the proportional shapes.
         [[nodiscard]]
         const wxColour& GetProportionalSymbolColor() const noexcept
@@ -232,6 +241,7 @@ namespace Wisteria::UI
         wxChoice* m_classificationChoice{ nullptr };
         wxStaticText* m_classCountLabel{ nullptr };
         wxSpinCtrl* m_classCountSpin{ nullptr };
+        wxChoice* m_aggregationChoice{ nullptr };
 
         wxString m_kmlIdField;
         bool m_showLabels{ false };
@@ -244,6 +254,8 @@ namespace Wisteria::UI
         // 0 is unclassed
         int m_classificationMethod{ 0 };
         int m_classCount{ 5 };
+        // 0 is a sum, matching Data::GeoColumnAggregation
+        int m_dataAggregation{ 0 };
 
         wxString m_keyColumn;
         wxString m_valueColumn;

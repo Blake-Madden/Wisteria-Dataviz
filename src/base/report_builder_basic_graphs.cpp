@@ -59,6 +59,7 @@ namespace Wisteria
         wxString valueColumn;
         wxString categoryColumn;
         wxString symbolColumn;
+        auto dataAggregation = Data::GeoColumnAggregation::Sum;
         if (const auto dataSourceNode = graphNode->GetProperty(_DT(L"data-source"));
             dataSourceNode->IsOk())
             {
@@ -67,6 +68,12 @@ namespace Wisteria
             valueColumn = dataSourceNode->GetProperty(_DT(L"value-column"))->AsString();
             categoryColumn = dataSourceNode->GetProperty(_DT(L"category-column"))->AsString();
             symbolColumn = dataSourceNode->GetProperty(_DT(L"symbol-column"))->AsString();
+            if (const auto aggregation = ReportEnumConvert::ConvertGeoColumnAggregation(
+                    dataSourceNode->GetProperty(_DT(L"aggregation"))->AsString());
+                aggregation.has_value())
+                {
+                dataAggregation = aggregation.value();
+                }
 
             const auto foundSource = m_datasets.find(dataSourceName);
             if (foundSource == m_datasets.cend() || foundSource->second == nullptr)
@@ -84,13 +91,13 @@ namespace Wisteria
             else if (!valueColumn.empty())
                 {
                 geoData->CopyContinuousColumnFrom(*foundSource->second, dataSourceKeyColumn,
-                                                  valueColumn, valueColumn);
+                                                  valueColumn, valueColumn, dataAggregation);
                 }
             if (!symbolColumn.empty() && symbolColumn != valueColumn &&
                 symbolColumn != categoryColumn)
                 {
                 geoData->CopyContinuousColumnFrom(*foundSource->second, dataSourceKeyColumn,
-                                                  symbolColumn, symbolColumn);
+                                                  symbolColumn, symbolColumn, dataAggregation);
                 }
             }
 
@@ -122,6 +129,7 @@ namespace Wisteria
             geoData, shadingColumn.empty() ? std::nullopt : std::optional<wxString>(shadingColumn));
         choroplethMap->SetSourceInfo(regionFile, regionIdField, dataSourceName,
                                      dataSourceKeyColumn);
+        choroplethMap->SetDataAggregation(dataAggregation);
 
         // optional backdrop layer drawn under the data regions
         if (wxString backgroundFileRaw =

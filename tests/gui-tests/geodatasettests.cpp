@@ -12,6 +12,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <cmath>
+#include <limits>
 
 using namespace Wisteria::Data;
 using namespace Catch::Matchers;
@@ -395,6 +396,40 @@ TEST_CASE("GeoDataset::CopyContinuousColumnFrom", "[kml][geodataset]")
         CHECK_FALSE(geoData->CopyContinuousColumnFrom(metrics, L"county_id", L"nope"));
         CHECK_FALSE(geoData->GetLastError().empty());
         CHECK_FALSE(geoData->CopyContinuousColumnFrom(metrics, L"nope", L"grad_rate"));
+        }
+
+    SECTION("Rows sharing a key are combined with the chosen aggregation")
+        {
+        Dataset enrollment;
+        enrollment.GetIdColumn().SetName(L"county_id");
+        enrollment.AddContinuousColumn(L"students");
+        enrollment.AddRow(RowInfo().Id(L"3900001").Continuous({ 100.0 }));
+        enrollment.AddRow(RowInfo().Id(L"3900001").Continuous({ 300.0 }));
+        enrollment.AddRow(RowInfo().Id(L"3900001").Continuous({ 50.0 }));
+        // a non-finite value is skipped, not carried into the result
+        enrollment.AddRow(
+            RowInfo().Id(L"3900003").Continuous({ std::numeric_limits<double>::quiet_NaN() }));
+
+        REQUIRE(geoData->CopyContinuousColumnFrom(enrollment, L"county_id", L"students", L"Sum",
+                                                  GeoColumnAggregation::Sum));
+        CHECK_THAT(geoData->GetContinuousColumn(L"Sum")->GetValue(0), WithinAbs(450.0, 1e-9));
+        CHECK(std::isnan(geoData->GetContinuousColumn(L"Sum")->GetValue(2)));
+
+        REQUIRE(geoData->CopyContinuousColumnFrom(enrollment, L"county_id", L"students", L"Mean",
+                                                  GeoColumnAggregation::Mean));
+        CHECK_THAT(geoData->GetContinuousColumn(L"Mean")->GetValue(0), WithinAbs(150.0, 1e-9));
+
+        REQUIRE(geoData->CopyContinuousColumnFrom(enrollment, L"county_id", L"students", L"Min",
+                                                  GeoColumnAggregation::Min));
+        CHECK_THAT(geoData->GetContinuousColumn(L"Min")->GetValue(0), WithinAbs(50.0, 1e-9));
+
+        REQUIRE(geoData->CopyContinuousColumnFrom(enrollment, L"county_id", L"students", L"Max",
+                                                  GeoColumnAggregation::Max));
+        CHECK_THAT(geoData->GetContinuousColumn(L"Max")->GetValue(0), WithinAbs(300.0, 1e-9));
+
+        REQUIRE(geoData->CopyContinuousColumnFrom(enrollment, L"county_id", L"students", L"Count",
+                                                  GeoColumnAggregation::Count));
+        CHECK_THAT(geoData->GetContinuousColumn(L"Count")->GetValue(0), WithinAbs(3.0, 1e-9));
         }
     }
 

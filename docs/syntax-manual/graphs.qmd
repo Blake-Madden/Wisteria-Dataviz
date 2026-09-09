@@ -93,6 +93,10 @@ Properties for `"choropleth-map"` nodes:
   - `"category-column"`: A categorical column drawn with one color per category.
   - `"symbol-column"`: A continuous column drawn as a proportional circle at each region's center (its area proportional to the value). \
     This can run alongside a shading column or on its own.
+  - `"aggregation"`: How multiple dataset rows that share one region key are combined into that region's value. \
+    One of `sum` (the default), `mean`, `min`, `max`, or `count`. \
+    Applies to `"value-column"` and `"symbol-column"`.
+    Non-finite values are skipped.
 - `"color-scheme"`: A [color scheme](#color-scheme-properties) specification. \
   The first color is the low end of the gradient and the last color is the high end.
   With no shading column, the last color fills every region. \
@@ -144,7 +148,8 @@ Properties for `"choropleth-map"` nodes:
   "data-source": {
     "dataset": "Graduation",
     "key-column": "county_id",
-    "value-column": "grad_rate"
+    "value-column": "grad_rate",
+    "aggregation": "mean"
   },
   "color-scheme": "spectral",
   "show-only-regions-with-values": true,
