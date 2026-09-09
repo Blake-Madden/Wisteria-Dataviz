@@ -41,7 +41,9 @@ bool MemoryMappedFile::MapFile(const wxString& filePath, const bool readOnly /*=
         ::CreateFile
     #endif
         (filePath.c_str(), dwDesiredFileAccess,
-         IsReadOnly() ? FILE_SHARE_READ : FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING,
+         IsReadOnly() ? (FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE) :
+                        (FILE_SHARE_READ | FILE_SHARE_WRITE),
+         0, OPEN_EXISTING,
          FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN | SECURITY_SQOS_PRESENT |
              SECURITY_IDENTIFICATION,
          0);
