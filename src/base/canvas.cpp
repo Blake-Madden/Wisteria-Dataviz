@@ -1382,21 +1382,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 }
             ++currentRow;
             }
-        for (size_t i = 0; i < m_rowsInfo.size(); ++i)
-            {
-            if (GetRowInfo(i).GetRowCount() == 0 && i > 0)
-                {
-                long reverseI = i - 1;
-                while (reverseI >= 0 && GetRowInfo(reverseI).GetRowCount() == 0)
-                    {
-                    --reverseI;
-                    }
-                if (reverseI >= 0)
-                    {
-                    GetRowInfo(reverseI).RowCount(GetRowInfo(reverseI).GetRowCount() + 1);
-                    }
-                }
-            }
+        // Empty rows keep RowCount 0 and are given 0 height below.
+        // Their vertical space is left unallocated, so the non-empty rows keep the
+        // same heights they would have if the empty rows were not present.
         // divide the remaining space amongst the rows being auto-fitted
         // (i.e., the rows with items whose heights don't need to be a particular value).
         const size_t autoFitRows = m_rowsInfo.size() - rowsBeingFit;
