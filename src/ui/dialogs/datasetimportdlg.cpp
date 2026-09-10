@@ -28,6 +28,10 @@ namespace Wisteria::UI
         CreateControls();
         RefreshPreview();
 
+        // discard control events emitted while populating the dialog
+        m_debounceTimer.Stop();
+        m_hasChanges = false;
+
         GetSizer()->SetSizeHints(this);
         Centre();
         }
@@ -107,8 +111,27 @@ namespace Wisteria::UI
             RefreshPreviewFromColumnInfo();
             }
 
+        m_debounceTimer.Stop();
+        m_hasChanges = false;
+
         GetSizer()->SetSizeHints(this);
         Centre();
+        }
+
+    //----------------------------------------------
+    bool DatasetImportDlg::TransferDataToWindow()
+        {
+        const bool result = DialogWithHelp::TransferDataToWindow();
+        // Loading control values can emit change events that are not user edits.
+        // Clear now for events dispatched inline, and again after for any that are posted
+        const auto clearPendingEdits = [this]()
+        {
+            m_debounceTimer.Stop();
+            m_hasChanges = false;
+        };
+        clearPendingEdits();
+        CallAfter(clearPendingEdits);
+        return result;
         }
 
     //----------------------------------------------

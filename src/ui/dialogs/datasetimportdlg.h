@@ -142,6 +142,11 @@ namespace Wisteria::UI
             return m_hasChanges;
             }
 
+        /// @private
+        /// @details Also clears the "has changes" state, as loading control values
+        ///     can emit change events that are not user edits.
+        bool TransferDataToWindow() final;
+
       private:
         void CreateControls();
         void RefreshPreview();
@@ -204,7 +209,7 @@ namespace Wisteria::UI
 
         // debounce timer for spin controls and MD text
         wxTimer m_debounceTimer{ this };
-        constexpr static int DEBOUNCE_MS{ 2000 };
+        constexpr static int DEBOUNCE_MS{ 1000 };
         };
     } // namespace Wisteria::UI
 
