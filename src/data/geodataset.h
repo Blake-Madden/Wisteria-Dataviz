@@ -225,6 +225,26 @@ namespace Wisteria::Data
         [[nodiscard]]
         static std::vector<wxString> ReadRegionFieldNames(const wxString& filePath);
 
+        /// @brief How completely a candidate key identifies the regions in a file.
+        struct RegionKeyStats
+            {
+            /// @brief How many regions the file holds.
+            size_t m_regionCount{ 0 };
+            /// @brief How many of them have a non-empty value for the key.
+            size_t m_nonEmptyKeyCount{ 0 };
+            /// @brief How many distinct non-empty key values there are.
+            size_t m_uniqueKeyCount{ 0 };
+            };
+
+        /** @brief Reads a region file and reports how well a key field identifies its regions.
+            @details The format is chosen from the file's extension, as in ImportRegionFile().
+            @param filePath The path to the region file.
+            @param idField The attribute field to test as the key, or empty to test each
+                region's own name (the label used when no key field is chosen).
+            @returns The tally. All-zero if the file cannot be read.*/
+        [[nodiscard]]
+        static RegionKeyStats ReadRegionKeyStats(const wxString& filePath, const wxString& idField);
+
         /// @returns @c true if @p filePath has a @c .geojson or @c .json extension.
         [[nodiscard]]
         static bool IsGeoJsonFile(const wxString& filePath);

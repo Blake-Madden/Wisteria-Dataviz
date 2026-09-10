@@ -13,6 +13,8 @@
 #define WISTERIA_GEOJSON_H
 
 #include "geofeature.h"
+#include <array>
+#include <string_view>
 #include <utility>
 #include <vector>
 #include <wx/string.h>
@@ -83,7 +85,21 @@ namespace Wisteria::Data
         [[nodiscard]]
         static std::vector<wxString> ReadFieldNames(const wxString& filePath);
 
+        /// @brief Checks whether a field name is one of the feature properties a
+        ///     region label is looked for under when no explicit name field is set.
+        /// @param fieldName The field name to test.
+        /// @returns @c true if the field is one of the common label properties.
+        [[nodiscard]]
+        static bool IsCommonNameField(const wxString& fieldName);
+
       private:
+        // the feature properties a region label is looked for under, in priority order,
+        // when SetNameField() was not called
+        constexpr static std::array<std::wstring_view, 9> COMMON_NAME_FIELDS = {
+            L"name",      L"NAME",     L"Name",  L"name_en", L"NAME_EN",
+            L"NAME_LONG", L"NAMELSAD", L"admin", L"ADMIN"
+        };
+
         // GeoJSON is untrusted input, so the reader keeps a few structural limits that
         // a malformed or hostile file cannot push past. They are well above anything a
         // real region file needs.

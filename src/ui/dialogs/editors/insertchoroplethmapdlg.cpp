@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertchoroplethmapdlg.h"
+#include "../../../data/geodataset.h"
 #include "../../../graphs/choroplethmap.h"
 #include "../variableselectdlg.h"
 #include <utility>
@@ -91,7 +92,8 @@ namespace Wisteria::UI
         m_kmlIdFieldCombo =
             new wxComboBox(kmlBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
                            wxDefaultSize, 0, nullptr, 0, wxGenericValidator(&m_kmlIdField));
-        m_kmlIdFieldCombo->SetHint(_(L"(region name)"));
+        m_kmlIdFieldCombo->Append(GetRegionNamePlaceholder());
+        m_kmlIdFieldCombo->SetValue(GetRegionNamePlaceholder());
         idFieldSizer->Add(m_kmlIdFieldCombo, wxSizerFlags{}.Expand());
         kmlBox->Add(idFieldSizer, wxSizerFlags{}.Expand().Border());
 
@@ -472,23 +474,39 @@ namespace Wisteria::UI
         // Clear() drops the typed text along with the list, so save and restore it
         const wxString currentField = m_kmlIdFieldCombo->GetValue();
         m_kmlIdFieldCombo->Clear();
+        // the region's own name is always an option, shown as "(region name)"
+        const wxString regionNamePlaceholder = GetRegionNamePlaceholder();
+        m_kmlIdFieldCombo->Append(regionNamePlaceholder);
+        // KML placemarks always carry a name. A GeoJSON feature only does when one of
+        // its properties looks like a label, or it has a top-level id.
+        bool regionNamesLikely = !Data::GeoDataset::IsGeoJsonFile(kmlPath);
         if (!kmlPath.empty() && wxFileName::FileExists(kmlPath))
             {
             for (const auto& fieldName : Data::GeoDataset::ReadRegionFieldNames(kmlPath))
                 {
                 m_kmlIdFieldCombo->Append(fieldName);
+                if (Data::GeoJsonReader::IsCommonNameField(fieldName) ||
+                    fieldName.CmpNoCase(L"id") == 0)
+                    {
+                    regionNamesLikely = true;
+                    }
                 }
             }
 
-        // if nothing has been chosen yet, prefer a "GEOID" field when the file has one
-        if (currentField.empty())
+        // nothing chosen yet, or still on the placeholder
+        if (currentField.empty() || currentField == regionNamePlaceholder)
             {
-            const int geoIdField = m_kmlIdFieldCombo->FindString(L"GEOID", false);
-            if (geoIdField != wxNOT_FOUND)
+            // When the file's shapes have no obvious name, steer to the first real key field.
+            // "(region name)" stays in the list as an option.
+            if (!regionNamesLikely && m_kmlIdFieldCombo->GetCount() > 1)
                 {
-                m_kmlIdFieldCombo->SetValue(m_kmlIdFieldCombo->GetString(geoIdField));
-                return;
+                m_kmlIdFieldCombo->SetValue(m_kmlIdFieldCombo->GetString(1));
                 }
+            else
+                {
+                m_kmlIdFieldCombo->SetValue(regionNamePlaceholder);
+                }
+            return;
             }
         m_kmlIdFieldCombo->SetValue(currentField);
         }
@@ -570,6 +588,25 @@ namespace Wisteria::UI
             return false;
             }
 
+        // A region can only be shaded when the map can identify it. The chosen key
+        // field, or each shape's own name when no key field is set, must be filled in
+        // for every shape.
+        const wxString regionKeyField = GetKMLIdField();
+        if (const auto keyStats = Data::GeoDataset::ReadRegionKeyStats(kmlPath, regionKeyField);
+            keyStats.m_regionCount > 0 && keyStats.m_nonEmptyKeyCount < keyStats.m_regionCount)
+            {
+            wxMessageBox(regionKeyField.empty() ?
+                             _(L"Some shapes in the region file have no name, so \"(region name)\" "
+                               "cannot identify every region. Choose a region key field that is "
+                               "filled in for every shape.") :
+                             wxString::Format(_(L"The \"%s\" field is empty for some shapes in the "
+                                                "region file, so it cannot identify every region. "
+                                                "Choose a different region key field."),
+                                              regionKeyField),
+                         _(L"Incomplete Region Key"), wxOK | wxICON_WARNING, this);
+            return false;
+            }
+
         if (const wxString backgroundPath = GetBackgroundPath();
             !backgroundPath.empty() && !wxFileName::FileExists(backgroundPath))
             {
@@ -621,6 +658,10 @@ namespace Wisteria::UI
         // SetPath() does not fire the picker's changed event, so fill the dropdown here
         PopulateKeyFieldChoices(choroplethMap->GetRegionFilePath());
         m_kmlIdField = choroplethMap->GetRegionIdField();
+        if (m_kmlIdField.empty())
+            {
+            m_kmlIdField = GetRegionNamePlaceholder();
+            }
 
         if (m_backgroundPicker != nullptr && !choroplethMap->GetBackgroundFilePath().empty())
             {

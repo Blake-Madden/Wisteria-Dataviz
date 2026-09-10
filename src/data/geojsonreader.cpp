@@ -105,6 +105,13 @@ namespace Wisteria::Data
                     fieldNames.insert(fieldName);
                     }
                 }
+            // a top-level feature "id" is kept as an attribute named "id", so it can
+            // be named as a key field just like a property
+            const auto idNode = featureNode->GetProperty(_DT(L"id"));
+            if (idNode->IsOk() && (idNode->IsValueString() || idNode->IsValueNumber()))
+                {
+                fieldNames.insert(_DT(L"id"));
+                }
         };
 
         const wxString rootType = rootNode->GetProperty(_DT(L"type"))->AsString();
@@ -129,6 +136,15 @@ namespace Wisteria::Data
             }
 
         return { fieldNames.cbegin(), fieldNames.cend() };
+        }
+
+    //---------------------------------------------------
+    bool GeoJsonReader::IsCommonNameField(const wxString& fieldName)
+        {
+        const std::wstring fieldNameStr{ fieldName.ToStdWstring() };
+        return std::any_of(COMMON_NAME_FIELDS.cbegin(), COMMON_NAME_FIELDS.cend(),
+                           [&fieldNameStr](const std::wstring_view candidateKey)
+                           { return fieldNameStr == candidateKey; });
         }
 
     //---------------------------------------------------
@@ -424,13 +440,10 @@ namespace Wisteria::Data
             }
 
         // otherwise fall back to the keys a region label is usually stored under
-        static const std::array<const wchar_t*, 9> nameKeys = {
-            L"name",      L"NAME",     L"Name",  L"name_en", L"NAME_EN",
-            L"NAME_LONG", L"NAMELSAD", L"admin", L"ADMIN"
-        };
-        for (const auto* candidateKey : nameKeys)
+        for (const std::wstring_view candidateKey : COMMON_NAME_FIELDS)
             {
-            if (const auto foundCandidate = region.m_attributes.find(candidateKey);
+            const wxString candidateKeyName(candidateKey.data(), candidateKey.length());
+            if (const auto foundCandidate = region.m_attributes.find(candidateKeyName);
                 foundCandidate != region.m_attributes.cend() && !foundCandidate->second.empty())
                 {
                 region.m_name = foundCandidate->second;

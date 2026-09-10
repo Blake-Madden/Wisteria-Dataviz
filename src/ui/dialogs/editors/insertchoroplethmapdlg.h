@@ -61,11 +61,24 @@ namespace Wisteria::UI
         [[nodiscard]]
         wxString GetKMLPath() const;
 
+        /// @returns The placeholder shown in the region key dropdown for the placemark name.
+        [[nodiscard]]
+        static wxString GetRegionNamePlaceholder()
+            {
+            return _(L"(region name)");
+            }
+
         /// @returns The @c ExtendedData field to use as the region key,
         ///     or empty to use each placemark's name.
         [[nodiscard]]
-        const wxString& GetKMLIdField() const noexcept
+        wxString GetKMLIdField() const
             {
+            // the combo shows the placeholder for the placemark name, but the
+            // dataset stores it as empty
+            if (m_kmlIdField == GetRegionNamePlaceholder())
+                {
+                return {};
+                }
             return m_kmlIdField;
             }
 
@@ -243,7 +256,7 @@ namespace Wisteria::UI
         wxSpinCtrl* m_classCountSpin{ nullptr };
         wxChoice* m_aggregationChoice{ nullptr };
 
-        wxString m_kmlIdField;
+        wxString m_kmlIdField{ GetRegionNamePlaceholder() };
         bool m_showLabels{ false };
         bool m_showGraticule{ false };
         bool m_showOnlyValuedRegions{ false };

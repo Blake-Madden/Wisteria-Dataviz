@@ -39,6 +39,50 @@ namespace Wisteria::Data
         }
 
     //---------------------------------------------------
+    GeoDataset::RegionKeyStats GeoDataset::ReadRegionKeyStats(const wxString& filePath,
+                                                              const wxString& idField)
+        {
+        RegionKeyStats stats;
+
+        const auto tallyRegions = [&stats, &idField](const GeoFeatureReader& reader)
+        {
+            const auto& regions = reader.GetRegions();
+            stats.m_regionCount = regions.size();
+            std::set<wxString> distinctKeys;
+            for (const auto& region : regions)
+                {
+                const wxString keyValue{ idField.empty() ? region.m_name :
+                                                           region.GetAttribute(idField) };
+                if (!keyValue.empty())
+                    {
+                    ++stats.m_nonEmptyKeyCount;
+                    distinctKeys.insert(keyValue);
+                    }
+                }
+            stats.m_uniqueKeyCount = distinctKeys.size();
+        };
+
+        if (IsGeoJsonFile(filePath))
+            {
+            GeoJsonReader reader;
+            if (reader.LoadFile(filePath))
+                {
+                tallyRegions(reader);
+                }
+            }
+        else
+            {
+            KmlReader reader;
+            if (reader.LoadFile(filePath))
+                {
+                tallyRegions(reader);
+                }
+            }
+
+        return stats;
+        }
+
+    //---------------------------------------------------
     bool GeoDataset::ImportKML(const wxString& filePath, const GeoImportInfo& info)
         {
         KmlReader reader;
