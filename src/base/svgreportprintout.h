@@ -62,6 +62,10 @@ namespace Wisteria
         /// @brief Whether to use the global print settings (paper size and orientation)
         ///     for the SVG dimensions.
         bool m_useGlobalPrintSettings{ true };
+        /// @brief The paper size to use when @c m_useGlobalPrintSettings is @c true.
+        wxPaperSize m_paperId{ wxPAPER_LETTER };
+        /// @brief The paper orientation to use when @c m_useGlobalPrintSettings is @c true.
+        wxPrintOrientation m_paperOrientation{ wxPORTRAIT };
 
         /// @brief Whether to include any interactive features.
         /// @returns @c true if any interactive features are enabled.
@@ -187,6 +191,24 @@ namespace Wisteria
             m_useGlobalPrintSettings = use;
             return *this;
             }
+
+        /// @brief Sets the paper size for export.
+        /// @param paperId The paper size.
+        /// @returns A reference to this object.
+        SVGReportOptions& PaperId(wxPaperSize paperId)
+            {
+            m_paperId = paperId;
+            return *this;
+            }
+
+        /// @brief Sets the paper orientation for export.
+        /// @param orientation The paper orientation.
+        /// @returns A reference to this object.
+        SVGReportOptions& PaperOrientation(wxPrintOrientation orientation)
+            {
+            m_paperOrientation = orientation;
+            return *this;
+            }
         };
 
     /// @brief Exports a collection of canvases into a multipage SVG file.
@@ -210,6 +232,13 @@ namespace Wisteria
         /// @returns The paper size as a wxSize.
         [[nodiscard]]
         static wxSize GetPaperSizeDIPs(const Canvas* canvas);
+
+        /// @brief Retrieves the paper size (in DIPs) for the given paper type and orientation.
+        /// @param paperId The paper type.
+        /// @param orientation The paper orientation.
+        /// @returns The paper size as a wxSize.
+        [[nodiscard]]
+        static wxSize GetPaperSizeDIPs(wxPaperSize paperId, wxPrintOrientation orientation);
 
         /// @brief Generates CSS dark-mode fill replacement rules for very light colors.
         /// @param svgContent The SVG content to analyze.

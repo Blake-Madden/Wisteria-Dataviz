@@ -21,6 +21,10 @@ namespace Wisteria
         m_tableLinks.clear();
         m_name.clear();
         m_datasets.clear();
+        m_svgExportOptions = SVGReportOptions{ wxString{} };
+        m_pdfExportOptions = PdfExportOptions{};
+        m_svgExportOptionsLoaded = false;
+        m_pdfExportOptionsLoaded = false;
         m_dpiScaleFactor = parent->GetDPIScaleFactor();
 
         m_configFilePath = filePath;
@@ -95,6 +99,101 @@ namespace Wisteria
             reportWatermarkColor = ConvertColor(watermarkProperty->GetProperty(L"color"));
             m_watermarkLabel = reportWatermark;
             m_watermarkColor = reportWatermarkColor;
+            }
+
+        // SVG export options
+        if (const auto svgExportNode = json->GetProperty(L"svg-export"); svgExportNode->IsOk())
+            {
+            m_svgExportOptionsLoaded = true;
+            const auto boolAttr = [&svgExportNode](const wxString& name, const bool fallback)
+            {
+                const auto prop = svgExportNode->GetProperty(name);
+                return prop->IsOk() ? prop->AsBool(fallback) : fallback;
+            };
+            const auto numberAttr = [&svgExportNode](const wxString& name) -> std::optional<double>
+            {
+                const auto prop = svgExportNode->GetProperty(name);
+                return prop->IsOk() ? std::optional<double>{ prop->AsDouble(-1) } : std::nullopt;
+            };
+
+            if (const auto pageWidth = numberAttr(L"page-width"); pageWidth && *pageWidth > 0)
+                {
+                m_svgExportOptions.m_pageSize.SetWidth(static_cast<int>(*pageWidth));
+                }
+            if (const auto pageHeight = numberAttr(L"page-height"); pageHeight && *pageHeight > 0)
+                {
+                m_svgExportOptions.m_pageSize.SetHeight(static_cast<int>(*pageHeight));
+                }
+            m_svgExportOptions.m_useGlobalPrintSettings =
+                boolAttr(L"use-global-print-settings", m_svgExportOptions.m_useGlobalPrintSettings);
+            if (const auto paperId = numberAttr(L"paper-id"); paperId && *paperId >= 0)
+                {
+                m_svgExportOptions.m_paperId = static_cast<wxPaperSize>(static_cast<int>(*paperId));
+                }
+            if (const auto orientation = numberAttr(L"orientation");
+                orientation && *orientation >= 0)
+                {
+                m_svgExportOptions.m_paperOrientation =
+                    (static_cast<int>(*orientation) == wxLANDSCAPE) ? wxLANDSCAPE : wxPORTRAIT;
+                }
+            m_svgExportOptions.m_includeTransitions =
+                boolAttr(L"transitions", m_svgExportOptions.m_includeTransitions);
+            m_svgExportOptions.m_includeHighlighting =
+                boolAttr(L"highlighting", m_svgExportOptions.m_includeHighlighting);
+            m_svgExportOptions.m_includeLayoutOptions =
+                boolAttr(L"layout-options", m_svgExportOptions.m_includeLayoutOptions);
+            m_svgExportOptions.m_includeDarkModeToggle =
+                boolAttr(L"dark-mode-toggle", m_svgExportOptions.m_includeDarkModeToggle);
+            m_svgExportOptions.m_includeSlideshow =
+                boolAttr(L"slideshow", m_svgExportOptions.m_includeSlideshow);
+            m_svgExportOptions.m_includePageShadow =
+                boolAttr(L"page-shadow", m_svgExportOptions.m_includePageShadow);
+            m_svgExportOptions.m_includeLayerControls =
+                boolAttr(L"layer-controls", m_svgExportOptions.m_includeLayerControls);
+            if (const auto colorNode = svgExportNode->GetProperty(L"theme-color");
+                colorNode->IsOk())
+                {
+                if (const wxColour color{ colorNode->AsString() }; color.IsOk())
+                    {
+                    m_svgExportOptions.m_themeColor = color;
+                    }
+                }
+            if (const auto layout = numberAttr(L"layout"); layout && *layout >= 0)
+                {
+                m_svgExportOptions.m_layout =
+                    (static_cast<int>(*layout) == 0) ? SVGReportOptions::PageLayout::Single :
+                    (static_cast<int>(*layout) == 1) ? SVGReportOptions::PageLayout::Duplex :
+                                                       SVGReportOptions::PageLayout::Stacked;
+                }
+            }
+
+        // PDF export options
+        if (const auto pdfExportNode = json->GetProperty(L"pdf-export"); pdfExportNode->IsOk())
+            {
+            m_pdfExportOptionsLoaded = true;
+            if (const auto paperIdNode = pdfExportNode->GetProperty(L"paper-id");
+                paperIdNode->IsOk())
+                {
+                if (const double value{ paperIdNode->AsDouble(-1) }; value >= 0)
+                    {
+                    m_pdfExportOptions.m_paperSize =
+                        static_cast<wxPaperSize>(static_cast<int>(value));
+                    }
+                }
+            if (const auto orientationNode = pdfExportNode->GetProperty(L"orientation");
+                orientationNode->IsOk())
+                {
+                if (const double value{ orientationNode->AsDouble(-1) }; value >= 0)
+                    {
+                    m_pdfExportOptions.m_paperOrientation =
+                        (static_cast<int>(value) == wxLANDSCAPE) ? wxLANDSCAPE : wxPORTRAIT;
+                    }
+                }
+            if (const auto compressNode = pdfExportNode->GetProperty(L"compress");
+                compressNode->IsOk())
+                {
+                m_pdfExportOptions.m_compress = compressNode->AsBool(m_pdfExportOptions.m_compress);
+                }
             }
 
         // start loading the pages

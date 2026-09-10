@@ -100,6 +100,42 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
         root->DeleteProperty(L"watermark");
         }
 
+        // svg-export (per-project, does not affect canvas paper settings)
+        {
+        const auto& svgOpts = view->GetReportBuilder().GetSvgExportOptions();
+        auto svgNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+        svgNode->Add(L"page-width",
+                     static_cast<double>(std::max(0, svgOpts.m_pageSize.GetWidth())));
+        svgNode->Add(L"page-height",
+                     static_cast<double>(std::max(0, svgOpts.m_pageSize.GetHeight())));
+        svgNode->Add(L"use-global-print-settings", svgOpts.m_useGlobalPrintSettings);
+        svgNode->Add(L"paper-id", static_cast<double>(static_cast<int>(svgOpts.m_paperId)));
+        svgNode->Add(L"orientation", static_cast<double>(svgOpts.m_paperOrientation));
+        svgNode->Add(L"transitions", svgOpts.m_includeTransitions);
+        svgNode->Add(L"highlighting", svgOpts.m_includeHighlighting);
+        svgNode->Add(L"layout-options", svgOpts.m_includeLayoutOptions);
+        svgNode->Add(L"dark-mode-toggle", svgOpts.m_includeDarkModeToggle);
+        svgNode->Add(L"slideshow", svgOpts.m_includeSlideshow);
+        svgNode->Add(L"page-shadow", svgOpts.m_includePageShadow);
+        svgNode->Add(L"layer-controls", svgOpts.m_includeLayerControls);
+        svgNode->Add(L"theme-color", svgOpts.m_themeColor.GetAsString(wxC2S_HTML_SYNTAX));
+        svgNode->Add(L"layout",
+                     svgOpts.m_layout == Wisteria::SVGReportOptions::PageLayout::Single ? 0.0 :
+                     svgOpts.m_layout == Wisteria::SVGReportOptions::PageLayout::Duplex ? 1.0 :
+                                                                                          2.0);
+        root->Add(L"svg-export", svgNode);
+        }
+
+        // pdf-export (per-project, does not affect canvas paper settings)
+        {
+        const auto& pdfOpts = view->GetReportBuilder().GetPdfExportOptions();
+        auto pdfNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+        pdfNode->Add(L"paper-id", static_cast<double>(static_cast<int>(pdfOpts.m_paperSize)));
+        pdfNode->Add(L"orientation", static_cast<double>(pdfOpts.m_paperOrientation));
+        pdfNode->Add(L"compress", pdfOpts.m_compress);
+        root->Add(L"pdf-export", pdfNode);
+        }
+
     // datasets
     //---------
     const auto& datasets = view->GetReportBuilder().GetDatasets();

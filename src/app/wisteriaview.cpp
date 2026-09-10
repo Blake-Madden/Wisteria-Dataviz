@@ -417,6 +417,26 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
 
     LoadProject(GetDocument()->GetFilename());
 
+    // seed the per-project export options from the global app settings when the
+    // project file did not carry its own (new projects, or ones saved before these
+    // options existed)
+    auto& appSettings = wxGetApp().GetAppSettings();
+    if (!GetReportBuilder().HasLoadedSvgExportOptions())
+        {
+        auto& svgOpts = GetReportBuilder().GetSvgExportOptions();
+        svgOpts = appSettings->GetSvgExportOptions();
+        svgOpts.m_paperId = appSettings->GetPaperId();
+        svgOpts.m_paperOrientation =
+            static_cast<wxPrintOrientation>(appSettings->GetPrintOrientation());
+        }
+    if (!GetReportBuilder().HasLoadedPdfExportOptions())
+        {
+        auto& pdfOpts = GetReportBuilder().GetPdfExportOptions();
+        pdfOpts.m_paperSize = appSettings->GetPaperId();
+        pdfOpts.m_paperOrientation =
+            static_cast<wxPrintOrientation>(appSettings->GetPrintOrientation());
+        }
+
     if (initialDataset != nullptr)
         {
         AddDatasetToProject(initialDataset, initialDatasetName, initialColumnInfo,
@@ -984,18 +1004,17 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    auto& appSettings = wxGetApp().GetAppSettings();
-    Wisteria::SVGReportOptions& savedOptions = appSettings->GetSvgExportOptions();
+    Wisteria::SVGReportOptions& savedOptions = GetReportBuilder().GetSvgExportOptions();
 
     wxPrintData printData;
-    printData.SetOrientation(static_cast<wxPrintOrientation>(appSettings->GetPrintOrientation()));
-    printData.SetPaperId(appSettings->GetPaperId());
+    printData.SetOrientation(savedOptions.m_paperOrientation);
+    printData.SetPaperId(savedOptions.m_paperId);
 
-    // use the saved page size if valid, fall back to per-canvas paper size
-    const wxSize defaultPageSize =
-        (savedOptions.m_pageSize != wxDefaultSize) ?
-            savedOptions.m_pageSize :
-            Wisteria::SVGReportPrintout::GetPaperSizeDIPs(m_pages.front());
+    // use the saved page size if valid, fall back to export's paper size
+    const wxSize defaultPageSize = (savedOptions.m_pageSize != wxDefaultSize) ?
+                                       savedOptions.m_pageSize :
+                                       Wisteria::SVGReportPrintout::GetPaperSizeDIPs(
+                                           savedOptions.m_paperId, savedOptions.m_paperOrientation);
 
     Wisteria::UI::SvgExportDlg sizeDlg(m_frame, defaultPageSize, printData, &savedOptions);
     if (sizeDlg.ShowModal() != wxID_OK)
@@ -1003,20 +1022,32 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    // persist all choices back to app settings
-    savedOptions.m_pageSize = sizeDlg.GetPageSize();
-    savedOptions.m_useGlobalPrintSettings = sizeDlg.UseGlobalPrintSettings();
-    if (savedOptions.m_useGlobalPrintSettings)
+    // persist all choices back to project.
+    // page size only applies in manual mode, so ignore it under global print settings
+    const wxSize newPageSize = sizeDlg.GetPageSize();
+    const bool newUseGlobal = sizeDlg.UseGlobalPrintSettings();
+    const auto& dlgPrintData = sizeDlg.GetPrintData();
+    const bool pageSizeChanged = !newUseGlobal && (savedOptions.m_pageSize != newPageSize);
+    const bool changed =
+        pageSizeChanged || (savedOptions.m_useGlobalPrintSettings != newUseGlobal) ||
+        (savedOptions.m_paperId != dlgPrintData.GetPaperId()) ||
+        (savedOptions.m_paperOrientation != dlgPrintData.GetOrientation()) ||
+        (savedOptions.m_includeTransitions != sizeDlg.IncludeTransitions()) ||
+        (savedOptions.m_includeHighlighting != sizeDlg.IncludeHighlighting()) ||
+        (savedOptions.m_includeLayoutOptions != sizeDlg.IncludeLayoutOptions()) ||
+        (savedOptions.m_includeDarkModeToggle != sizeDlg.IncludeDarkModeToggle()) ||
+        (savedOptions.m_includeSlideshow != sizeDlg.IncludeSlideshow()) ||
+        (savedOptions.m_includePageShadow != sizeDlg.IncludePageShadow()) ||
+        (savedOptions.m_includeLayerControls != sizeDlg.IncludeLayerControls()) ||
+        (savedOptions.m_themeColor != sizeDlg.GetThemeColor()) ||
+        (savedOptions.m_layout != sizeDlg.GetLayout());
+    if (!newUseGlobal)
         {
-        const auto& dlgPrintData = sizeDlg.GetPrintData();
-        for (auto* page : m_pages)
-            {
-            page->GetPrinterSettings().SetOrientation(dlgPrintData.GetOrientation());
-            page->GetPrinterSettings().SetPaperId(dlgPrintData.GetPaperId());
-            }
-        appSettings->SetPrintOrientation(dlgPrintData.GetOrientation());
-        appSettings->SetPaperId(dlgPrintData.GetPaperId());
+        savedOptions.m_pageSize = newPageSize;
         }
+    savedOptions.m_useGlobalPrintSettings = newUseGlobal;
+    savedOptions.m_paperId = dlgPrintData.GetPaperId();
+    savedOptions.m_paperOrientation = dlgPrintData.GetOrientation();
     savedOptions.m_includeTransitions = sizeDlg.IncludeTransitions();
     savedOptions.m_includeHighlighting = sizeDlg.IncludeHighlighting();
     savedOptions.m_includeLayoutOptions = sizeDlg.IncludeLayoutOptions();
@@ -1026,6 +1057,10 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
     savedOptions.m_includeLayerControls = sizeDlg.IncludeLayerControls();
     savedOptions.m_themeColor = sizeDlg.GetThemeColor();
     savedOptions.m_layout = sizeDlg.GetLayout();
+    if (changed)
+        {
+        GetDocument()->Modify(true);
+        }
 
     wxFileDialog fileDlg(m_frame, _(L"Export to SVG"), wxString{},
                          GetDocument()->GetUserReadableName(), _(L"SVG files (*.svg)|*.svg"),
@@ -1041,6 +1076,8 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
         m_pages, Wisteria::SVGReportOptions(fileDlg.GetPath())
                      .PageSize(savedOptions.m_pageSize)
                      .UseGlobalPrintSettings(savedOptions.m_useGlobalPrintSettings)
+                     .PaperId(savedOptions.m_paperId)
+                     .PaperOrientation(savedOptions.m_paperOrientation)
                      .Transitions(savedOptions.m_includeTransitions)
                      .PageShadow(savedOptions.m_includePageShadow)
                      .Highlighting(savedOptions.m_includeHighlighting)
@@ -1060,14 +1097,18 @@ void WisteriaView::OnPdfExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    Wisteria::PdfExportOptions options;
+    Wisteria::PdfExportOptions& savedPdfOptions = GetReportBuilder().GetPdfExportOptions();
+    Wisteria::PdfExportOptions options = savedPdfOptions;
     options.m_title = GetReportBuilder().GetName().empty() ? GetDocument()->GetUserReadableName() :
                                                              GetReportBuilder().GetName();
     options.m_subject = GetReportBuilder().GetSubject();
     options.m_keywords = GetReportBuilder().GetKeywords();
 
-    Wisteria::UI::PdfExportDlg pdfOptionsDlg(m_frame, m_pages.front()->GetPrinterSettings(),
-                                             options);
+    wxPrintData printData;
+    printData.SetPaperId(options.m_paperSize);
+    printData.SetOrientation(options.m_paperOrientation);
+
+    Wisteria::UI::PdfExportDlg pdfOptionsDlg(m_frame, printData, options);
     if (pdfOptionsDlg.ShowModal() != wxID_OK)
         {
         return;
@@ -1082,19 +1123,30 @@ void WisteriaView::OnPdfExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    const bool optionsChanged = (GetReportBuilder().GetName() != options.m_title ||
+    const bool docInfoChanged = (GetReportBuilder().GetName() != options.m_title ||
                                  GetReportBuilder().GetSubject() != options.m_subject ||
                                  GetReportBuilder().GetKeywords() != options.m_keywords);
-    if (optionsChanged)
+    if (docInfoChanged)
         {
         GetReportBuilder().SetName(options.m_title);
         GetReportBuilder().SetSubject(options.m_subject);
         GetReportBuilder().SetKeywords(options.m_keywords);
         }
 
+    const bool pdfPaperChanged =
+        (savedPdfOptions.m_paperSize != options.m_paperSize) ||
+        (savedPdfOptions.m_paperOrientation != options.m_paperOrientation) ||
+        (savedPdfOptions.m_compress != options.m_compress);
+    if (pdfPaperChanged)
+        {
+        savedPdfOptions.m_paperSize = options.m_paperSize;
+        savedPdfOptions.m_paperOrientation = options.m_paperOrientation;
+        savedPdfOptions.m_compress = options.m_compress;
+        }
+
     Wisteria::ReportPDFExport pdfReport(m_pages, fileDlg.GetPath(), options);
 
-    if (optionsChanged)
+    if (docInfoChanged || pdfPaperChanged)
         {
         GetDocument()->Modify(true);
         }

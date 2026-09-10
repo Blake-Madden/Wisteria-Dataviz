@@ -50,6 +50,7 @@
 #include "colorbrewer.h"
 #include "commonaxisbuilder.h"
 #include "fillableshape.h"
+#include "svgreportprintout.h"
 #include <map>
 #include <utility>
 #include <vector>
@@ -646,6 +647,60 @@ namespace Wisteria
         /// @brief Sets the watermark color.
         /// @param color The new watermark color.
         void SetWatermarkColor(const wxColour& color) { m_watermarkColor = color; }
+
+        /// @returns The SVG export options for the report.
+        [[nodiscard]]
+        const SVGReportOptions& GetSvgExportOptions() const noexcept
+            {
+            return m_svgExportOptions;
+            }
+
+        /// @returns The SVG export options for the report (mutable).
+        [[nodiscard]]
+        SVGReportOptions& GetSvgExportOptions() noexcept
+            {
+            return m_svgExportOptions;
+            }
+
+        /// @brief Sets the SVG export options for the report.
+        /// @param options The new SVG export options.
+        void SetSvgExportOptions(const SVGReportOptions& options) { m_svgExportOptions = options; }
+
+        /// @returns @c true if the SVG export options were read from the loaded project file.
+        ///     When @c false, the options are still at their defaults and the caller should
+        ///     seed them (e.g., from the global application settings).
+        [[nodiscard]]
+        bool HasLoadedSvgExportOptions() const noexcept
+            {
+            return m_svgExportOptionsLoaded;
+            }
+
+        /// @returns The PDF export options for the report.
+        [[nodiscard]]
+        const PdfExportOptions& GetPdfExportOptions() const noexcept
+            {
+            return m_pdfExportOptions;
+            }
+
+        /// @returns The PDF export options for the report (mutable).
+        [[nodiscard]]
+        PdfExportOptions& GetPdfExportOptions() noexcept
+            {
+            return m_pdfExportOptions;
+            }
+
+        /// @brief Sets the PDF export options for the report.
+        /// @param options The new PDF export options.
+        void SetPdfExportOptions(const PdfExportOptions& options) { m_pdfExportOptions = options; }
+
+        /// @returns @c true if the PDF export options were read from the loaded project file.
+        ///     When @c false, the options are still at their defaults and the caller should
+        ///     seed them (e.g., from the global application settings).
+        [[nodiscard]]
+        bool HasLoadedPdfExportOptions() const noexcept
+            {
+            return m_pdfExportOptionsLoaded;
+            }
 
         /** @brief Expands embedded placeholders in strings into their values.
             @param str The full string to expand.
@@ -1369,6 +1424,11 @@ namespace Wisteria
         wxString m_keywords;
         wxString m_watermarkLabel;
         wxColour m_watermarkColor;
+
+        SVGReportOptions m_svgExportOptions{ wxString{} };
+        PdfExportOptions m_pdfExportOptions{};
+        bool m_svgExportOptionsLoaded{ false };
+        bool m_pdfExportOptionsLoaded{ false };
 
         size_t m_pageNumber{ 1 };
 

@@ -83,16 +83,33 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             }
         }
 
-    // collect per-canvas paper sizes for rendering
+    // Collect per-canvas paper sizes for rendering.
+    // When using export's paper settings, use the export's paper size uniformly
+    // so the project canvases are not mutated.
     std::vector<wxSize> pageSizes;
     pageSizes.reserve(canvases.size());
-    for (const auto* canvas : canvases)
+    if (options.m_useGlobalPrintSettings)
         {
-        if (canvas == nullptr)
+        const wxSize exportSize = GetPaperSizeDIPs(options.m_paperId, options.m_paperOrientation);
+        for (const auto* canvas : canvases)
             {
-            continue;
+            if (canvas == nullptr)
+                {
+                continue;
+                }
+            pageSizes.push_back(exportSize);
             }
-        pageSizes.push_back(GetPaperSizeDIPs(canvas));
+        }
+    else
+        {
+        for (const auto* canvas : canvases)
+            {
+            if (canvas == nullptr)
+                {
+                continue;
+                }
+            pageSizes.push_back(GetPaperSizeDIPs(canvas));
+            }
         }
 
     // if only one page, then don't need duplex and such options
@@ -855,8 +872,14 @@ wxSize Wisteria::SVGReportPrintout::GetPaperSizeDIPs(const Canvas* canvas)
         }
 
     const auto& printData = canvas->GetPrinterSettings();
-    const wxPrintPaperType* paperType =
-        wxThePrintPaperDatabase->FindPaperType(printData.GetPaperId());
+    return GetPaperSizeDIPs(printData.GetPaperId(), printData.GetOrientation());
+    }
+
+//------------------------------------------------------
+wxSize Wisteria::SVGReportPrintout::GetPaperSizeDIPs(const wxPaperSize paperId,
+                                                     const wxPrintOrientation orientation)
+    {
+    const wxPrintPaperType* paperType = wxThePrintPaperDatabase->FindPaperType(paperId);
 
     // paper size is in tenths of a millimeter;
     // divide by 254 (25.4mm per inch * 10) to get inches,
@@ -871,7 +894,7 @@ wxSize Wisteria::SVGReportPrintout::GetPaperSizeDIPs(const Canvas* canvas)
         const int heightDIPs =
             wxRound(safe_divide<double>(sizeMM.GetHeight(), TENTHS_MM_PER_INCH) * DIPS_PER_INCH);
 
-        if (printData.GetOrientation() == wxLANDSCAPE)
+        if (orientation == wxLANDSCAPE)
             {
             return { heightDIPs, widthDIPs };
             }
@@ -881,8 +904,8 @@ wxSize Wisteria::SVGReportPrintout::GetPaperSizeDIPs(const Canvas* canvas)
     // fallback: US Letter (8.5" x 11") at 96 DPI
     const int widthDIPs = static_cast<int>(8.5 * DIPS_PER_INCH);
     const int heightDIPs = static_cast<int>(11 * DIPS_PER_INCH);
-    return (printData.GetOrientation() == wxLANDSCAPE) ? wxSize{ heightDIPs, widthDIPs } :
-                                                         wxSize{ widthDIPs, heightDIPs };
+    return (orientation == wxLANDSCAPE) ? wxSize{ heightDIPs, widthDIPs } :
+                                          wxSize{ widthDIPs, heightDIPs };
     }
 
 //------------------------------------------------------
