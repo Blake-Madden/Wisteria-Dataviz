@@ -1099,28 +1099,23 @@ namespace Wisteria::UI
         {
         const wxColour excludedBg{ 220, 220, 220 };
         const wxColour excludedFg{ 160, 160, 160 };
-        const int numRows = m_previewGrid->GetNumberRows();
-        for (size_t col = 0; col < m_columnInfo.size(); ++col)
+        // style whole columns, not individual cells, to avoid a per-cell attribute allocation
+        const auto colCount = std::min<size_t>(
+            m_columnInfo.size(), static_cast<size_t>(std::max(m_previewGrid->GetNumberCols(), 0)));
+        for (size_t col = 0; col < colCount; ++col)
             {
+            auto* attr = new wxGridCellAttr;
             if (m_columnInfo[col].m_excluded)
                 {
-                for (int row = 0; row < numRows; ++row)
-                    {
-                    m_previewGrid->SetCellBackgroundColour(row, static_cast<int>(col), excludedBg);
-                    m_previewGrid->SetCellTextColour(row, static_cast<int>(col), excludedFg);
-                    }
+                attr->SetBackgroundColour(excludedBg);
+                attr->SetTextColour(excludedFg);
                 }
             else
                 {
-                for (int row = 0; row < numRows; ++row)
-                    {
-                    m_previewGrid->SetCellBackgroundColour(
-                        row, static_cast<int>(col),
-                        m_previewGrid->GetDefaultCellBackgroundColour());
-                    m_previewGrid->SetCellTextColour(row, static_cast<int>(col),
-                                                     m_previewGrid->GetDefaultCellTextColour());
-                    }
+                attr->SetBackgroundColour(m_previewGrid->GetDefaultCellBackgroundColour());
+                attr->SetTextColour(m_previewGrid->GetDefaultCellTextColour());
                 }
+            m_previewGrid->SetColAttr(static_cast<int>(col), attr);
             }
         }
 
