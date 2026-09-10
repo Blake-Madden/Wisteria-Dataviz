@@ -401,12 +401,19 @@ void WisteriaView::OnEditDataset([[maybe_unused]] wxCommandEvent& event)
     if (foundDsImportOptions != GetReportBuilder().GetDatasetImportOptions().cend())
         {
         // edit an imported dataset
-        Wisteria::UI::DatasetImportDlg importDlg(m_frame, foundDsImportOptions->second.m_filePath,
-                                                 foundDsImportOptions->second.m_importInfo,
-                                                 foundDsImportOptions->second.m_columnPreviewInfo,
-                                                 foundDsImportOptions->second.m_worksheet, wxID_ANY,
-                                                 _(L"Edit Import Options"));
+        // (lazy preview of existing dataset)
+        const auto existingDataset = foundDs->second;
+        Wisteria::UI::DatasetImportDlg importDlg(
+            m_frame, foundDsImportOptions->second.m_filePath,
+            foundDsImportOptions->second.m_importInfo,
+            foundDsImportOptions->second.m_columnPreviewInfo,
+            foundDsImportOptions->second.m_worksheet, existingDataset, wxID_ANY,
+            _(L"Edit Import Options"));
         if (importDlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+        if (!importDlg.HasChanges())
             {
             return;
             }

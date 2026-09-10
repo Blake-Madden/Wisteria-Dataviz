@@ -39,10 +39,23 @@ namespace Wisteria::Data
                 changes to the dataset being cloned.*/
         void SetSourceData(const std::shared_ptr<const Dataset>& fromDataset);
         /// @brief Creates a clone of the original dataset.
-        /// @returns A cloned copy of the original dataset, or null if SetSourceData()
+        /// @returns A cloned copy of the original dataset, or @c nullptr if SetSourceData()
         ///     hasn't been called.
+        /// @note This consumes the source row cursor. Call SetSourceData() again before
+        ///     any further call to Clone() or CloneTopN() on the same instance.
         [[nodiscard]]
         std::shared_ptr<Dataset> Clone();
+
+        /** @brief Creates a clone of the first @p n rows of the original dataset.
+            @param n The number of rows to clone from the top of the dataset.
+            @returns A cloned copy containing at most @p n rows,
+                or @c nullptr if SetSourceData() hasn't been called.
+            @warning This advances the source row cursor and does not reset it.
+                Call SetSourceData() again before any further call to CloneTopN()
+                or Clone() on the same instance; otherwise rows are appended onto
+                the already-populated destination.*/
+        [[nodiscard]]
+        std::shared_ptr<Dataset> CloneTopN(size_t n);
 
       protected:
         /// @returns @c true if there are more rows that can be copied or skipped.

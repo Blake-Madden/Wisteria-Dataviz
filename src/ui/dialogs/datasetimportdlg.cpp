@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "datasetimportdlg.h"
+#include "../../data/clone.h"
 #include <wx/artprov.h>
 #include <wx/sizer.h>
 #include <wx/valgen.h>
@@ -38,6 +39,19 @@ namespace Wisteria::UI
                                        const std::variant<wxString, size_t>& worksheet,
                                        wxWindowID id, const wxString& caption, const wxPoint& pos,
                                        const wxSize& size, long style)
+        : DatasetImportDlg(parent, filePath, importInfo, std::move(columnInfo), worksheet, nullptr,
+                           id, caption, pos, size, style)
+        {
+        }
+
+    //----------------------------------------------
+    DatasetImportDlg::DatasetImportDlg(wxWindow* parent, const wxString& filePath,
+                                       const Data::ImportInfo& importInfo,
+                                       Data::Dataset::ColumnPreviewInfo columnInfo,
+                                       const std::variant<wxString, size_t>& worksheet,
+                                       const std::shared_ptr<const Data::Dataset>& dataset,
+                                       wxWindowID id, const wxString& caption, const wxPoint& pos,
+                                       const wxSize& size, long style)
         : m_filePath(filePath), m_fileExt(wxFileName{ filePath }.GetExt()),
           m_skipRows(static_cast<int>(importInfo.GetSkipRows())),
           m_maxDiscrete(static_cast<int>(importInfo.GetMaxDiscreteValue())),
@@ -45,18 +59,7 @@ namespace Wisteria::UI
           m_yearsAsText(importInfo.GetTreatYearsAsText()),
           m_columnNamesSort(importInfo.GetColumnNamesSort()), m_columnInfo(std::move(columnInfo))
         {
-        // build the MD values string from the codes
-        if (!importInfo.GetMDCodes().empty())
-            {
-            for (const auto& code : importInfo.GetMDCodes())
-                {
-                if (!m_mdValues.empty())
-                    {
-                    m_mdValues += L", ";
-                    }
-                m_mdValues += code;
-                }
-            }
+        m_mdValues = JoinMDCodes(importInfo.GetMDCodes());
 
         wxWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
         Wisteria::UI::DialogWithHelp::Create(parent, id, caption, pos, size, style);
@@ -93,10 +96,34 @@ namespace Wisteria::UI
                 }
             }
 
-        RefreshPreviewFromColumnInfo();
+        // lazy preview: use the existing dataset if available,
+        // avoid re-parsing the full file on open
+        if (dataset != nullptr && dataset->GetRowCount() > 0)
+            {
+            PopulatePreviewFromDataset(dataset);
+            }
+        else
+            {
+            RefreshPreviewFromColumnInfo();
+            }
 
         GetSizer()->SetSizeHints(this);
         Centre();
+        }
+
+    //----------------------------------------------
+    wxString DatasetImportDlg::JoinMDCodes(const std::vector<std::wstring>& codes)
+        {
+        wxString joined;
+        for (const auto& code : codes)
+            {
+            if (!joined.empty())
+                {
+                joined += L", ";
+                }
+            joined += code;
+            }
+        return joined;
         }
 
     //----------------------------------------------
@@ -198,14 +225,7 @@ namespace Wisteria::UI
         // (the editing constructor pre-populates m_mdValues)
         if (m_mdValues.empty())
             {
-            for (const auto& code : Data::ImportInfo::GetCommonMDCodes())
-                {
-                if (!m_mdValues.empty())
-                    {
-                    m_mdValues += L", ";
-                    }
-                m_mdValues += code;
-                }
+            m_mdValues = JoinMDCodes(Data::ImportInfo::GetCommonMDCodes());
             }
         auto* mdValuesText =
             new wxTextCtrl(this, wxID_ANY, m_mdValues, wxDefaultPosition,
@@ -270,19 +290,45 @@ namespace Wisteria::UI
 
         // bind events
         m_worksheetChoice->Bind(wxEVT_CHOICE, &DatasetImportDlg::OnOptionChanged, this);
-        skipRowsSpin->Bind(wxEVT_SPINCTRL, &DatasetImportDlg::OnSpinChanged, this);
-        maxDiscreteSpin->Bind(wxEVT_SPINCTRL, &DatasetImportDlg::OnSpinChanged, this);
+        skipRowsSpin->Bind(wxEVT_SPINCTRL, &DatasetImportDlg::OnSpinChangedDebounced, this);
+        maxDiscreteSpin->Bind(wxEVT_SPINCTRL, &DatasetImportDlg::OnSpinChangedDebounced, this);
         leadingZerosCheck->Bind(wxEVT_CHECKBOX, &DatasetImportDlg::OnOptionChanged, this);
         yearsAsTextCheck->Bind(wxEVT_CHECKBOX, &DatasetImportDlg::OnOptionChanged, this);
         sortColumnsCheck->Bind(wxEVT_CHECKBOX, &DatasetImportDlg::OnOptionChanged, this);
         m_idColumnChoice->Bind(wxEVT_CHOICE, &DatasetImportDlg::OnOptionChanged, this);
-        mdValuesText->Bind(wxEVT_TEXT, &DatasetImportDlg::OnOptionChanged, this);
+        mdValuesText->Bind(wxEVT_TEXT, &DatasetImportDlg::OnMDTextChanged, this);
         m_previewGrid->Bind(wxEVT_GRID_LABEL_LEFT_CLICK, &DatasetImportDlg::OnColumnHeaderClick,
                             this);
         m_previewGrid->Bind(wxEVT_GRID_SELECT_CELL, &DatasetImportDlg::OnColumnSelected, this);
         m_columnTypeChoice->Bind(wxEVT_CHOICE, &DatasetImportDlg::OnColumnTypeChanged, this);
         refreshButton->Bind(wxEVT_BUTTON, &DatasetImportDlg::OnRefreshFromFile, this);
         browseButton->Bind(wxEVT_BUTTON, &DatasetImportDlg::OnBrowseForFile, this);
+        Bind(wxEVT_TIMER, &DatasetImportDlg::OnDebounceTimer, this);
+        Bind(wxEVT_CLOSE_WINDOW,
+             [this](wxCloseEvent& evt)
+             {
+                 m_debounceTimer.Stop();
+                 evt.Skip();
+             });
+        Bind(wxEVT_BUTTON,
+             [this](wxCommandEvent& evt)
+             {
+                 if (evt.GetId() == wxID_OK)
+                     {
+                     // flush a pending debounced refresh so the finalized ImportInfo
+                     // and the stored column info reflect the most recent edits
+                     if (m_debounceTimer.IsRunning())
+                         {
+                         m_debounceTimer.Stop();
+                         RefreshPreview();
+                         }
+                     }
+                 else if (evt.GetId() == wxID_CANCEL)
+                     {
+                     m_debounceTimer.Stop();
+                     }
+                 evt.Skip();
+             });
         }
 
     //----------------------------------------------
@@ -304,12 +350,41 @@ namespace Wisteria::UI
     //----------------------------------------------
     void DatasetImportDlg::OnOptionChanged([[maybe_unused]] wxCommandEvent& event)
         {
+        m_hasChanges = true;
+        m_debounceTimer.Stop();
+        RefreshPreview();
+        }
+
+    //----------------------------------------------
+    void DatasetImportDlg::OnSpinChangedDebounced([[maybe_unused]] wxSpinEvent& event)
+        {
+        m_hasChanges = true;
+        m_debounceTimer.StartOnce(DEBOUNCE_MS);
+        }
+
+    //----------------------------------------------
+    void DatasetImportDlg::OnMDTextChanged([[maybe_unused]] wxCommandEvent& event)
+        {
+        m_hasChanges = true;
+        m_debounceTimer.StartOnce(DEBOUNCE_MS);
+        }
+
+    //----------------------------------------------
+    void DatasetImportDlg::OnDebounceTimer([[maybe_unused]] wxTimerEvent& event)
+        {
+        if (!IsShown() || IsBeingDeleted())
+            {
+            return;
+            }
         RefreshPreview();
         }
 
     //----------------------------------------------
     void DatasetImportDlg::OnRefreshFromFile([[maybe_unused]] wxCommandEvent& event)
         {
+        // this explicit refresh supersedes any pending debounced one
+        m_debounceTimer.Stop();
+        m_hasChanges = true;
         TransferDataFromWindow();
 
         // for spreadsheets, re-read the worksheet list and verify the current
@@ -390,6 +465,13 @@ namespace Wisteria::UI
             }
 
         const wxString newFilePath = fileDlg.GetPath();
+        if (newFilePath.CmpNoCase(m_filePath) == 0)
+            {
+            return;
+            }
+        // switching files supersedes any pending debounced refresh
+        m_debounceTimer.Stop();
+        m_hasChanges = true;
 
         TransferDataFromWindow();
 
@@ -495,9 +577,6 @@ namespace Wisteria::UI
             wxMessageBox(message, _(L"Columns Removed"), wxOK | wxICON_WARNING, this);
             }
         }
-
-    //----------------------------------------------
-    void DatasetImportDlg::OnSpinChanged([[maybe_unused]] wxSpinEvent& event) { RefreshPreview(); }
 
     //----------------------------------------------
     void DatasetImportDlg::RefreshPreview()
@@ -661,6 +740,90 @@ namespace Wisteria::UI
             wxLogWarning(L"%s", wxString::FromUTF8(exc.what()));
             wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Import Error"), wxOK | wxICON_ERROR,
                          this);
+            }
+        }
+
+    //----------------------------------------------
+    void DatasetImportDlg::PopulatePreviewFromDataset(
+        const std::shared_ptr<const Data::Dataset>& dataset)
+        {
+        try
+            {
+            if (dataset == nullptr)
+                {
+                RefreshPreview();
+                return;
+                }
+
+            // copy only the top N rows for preview
+            Data::DatasetClone cloner;
+            cloner.SetSourceData(dataset);
+            m_previewDataset = cloner.CloneTopN(Settings::PREVIEW_MAX_ROWS);
+
+            // add placeholder columns for any excluded columns that are not in the dataset
+            // (the final dataset excludes them, but the preview should show them grayed out)
+            for (const auto& col : m_columnInfo)
+                {
+                if (!col.m_excluded)
+                    {
+                    continue;
+                    }
+                if (m_previewDataset->ContainsColumn(col.m_name))
+                    {
+                    continue;
+                    }
+                // add an empty column of the appropriate type
+                switch (col.m_type)
+                    {
+                case Data::Dataset::ColumnImportType::String:
+                    [[fallthrough]];
+                case Data::Dataset::ColumnImportType::DichotomousString:
+                    [[fallthrough]];
+                case Data::Dataset::ColumnImportType::Discrete:
+                    [[fallthrough]];
+                case Data::Dataset::ColumnImportType::DichotomousDiscrete:
+                    m_previewDataset->AddCategoricalColumn(col.m_name);
+                    break;
+                case Data::Dataset::ColumnImportType::Numeric:
+                    m_previewDataset->AddContinuousColumn(col.m_name);
+                    break;
+                case Data::Dataset::ColumnImportType::Date:
+                    m_previewDataset->AddDateColumn(col.m_name);
+                    break;
+                    }
+                }
+
+            // update grid
+            auto* table = new DatasetGridTable(m_previewDataset, m_columnInfo);
+            table->SetMaxRows(Settings::PREVIEW_MAX_ROWS);
+
+            // apply currency symbols to continuous columns
+            size_t contIdx{ 0 };
+            for (const auto& col : m_columnInfo)
+                {
+                if (col.m_type == Data::Dataset::ColumnImportType::Numeric)
+                    {
+                    if (!col.m_currencySymbol.empty())
+                        {
+                        table->SetCurrencySymbol(contIdx, col.m_currencySymbol);
+                        }
+                    ++contIdx;
+                    }
+                }
+
+            m_previewGrid->SetTable(table, true);
+            m_previewGrid->SetSelectionMode(wxGrid::wxGridSelectColumns);
+            ApplyColumnHeaderIcons(table);
+            m_previewGrid->AutoSizeColumns(false);
+            AdjustGridColumnsForIcons();
+            ApplyExcludedColumnStyling();
+            m_previewGrid->ForceRefresh();
+            }
+        catch (const std::exception& exc)
+            {
+            wxLogWarning(L"%s", wxString::FromUTF8(exc.what()));
+            // fallback to file-based preview if lazy population fails
+            RefreshPreview();
             }
         }
 
@@ -916,6 +1079,10 @@ namespace Wisteria::UI
                 }
             }
 
+        if (needsReimport || needsStyleRefresh)
+            {
+            m_hasChanges = true;
+            }
         if (needsReimport)
             {
             RefreshPreviewFromColumnInfo();

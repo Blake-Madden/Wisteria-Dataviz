@@ -28,6 +28,23 @@ namespace Wisteria::Data
         }
 
     //---------------------------------------------------
+    std::shared_ptr<Dataset> DatasetClone::CloneTopN(const size_t n)
+        {
+        if (m_fromDataset == nullptr)
+            {
+            return nullptr;
+            }
+
+        const size_t rowsToCopy{ std::min(n, m_fromDataset->GetRowCount()) };
+        for (size_t i = 0; i < rowsToCopy; ++i)
+            {
+            CopyNextRow();
+            }
+
+        return m_toDataset;
+        }
+
+    //---------------------------------------------------
     void DatasetClone::SetSourceData(const std::shared_ptr<const Dataset>& fromDataset)
         {
         m_fromDataset = fromDataset;

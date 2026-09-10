@@ -28,6 +28,7 @@
 #include <wx/spinctrl.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
+#include <wx/timer.h>
 #include <wx/tokenzr.h>
 #include <wx/wx.h>
 
@@ -69,6 +70,33 @@ namespace Wisteria::UI
                          const wxString& caption = _(L"Edit Import Settings"),
                          const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                          long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        /** @brief Constructor that pre-populates the dialog with existing import settings
+                and an existing dataset for lazy preview.
+            @param parent The parent window.
+            @param filePath The path to the data file to import.
+            @param importInfo The import settings to pre-populate.
+            @param columnInfo The full column preview information (including excluded
+                columns and user type overrides).
+            @param worksheet The worksheet selection (1-based index or name),
+                as returned by GetWorksheet().
+            @param dataset The existing dataset to display in the preview without
+                re-reading the file. If provided, the preview is populated from this
+                dataset on open and the file is only re-read when the user changes
+                an import option.
+            @param id The dialog's ID.
+            @param caption The dialog's caption.
+            @param pos The dialog's position.
+            @param size The dialog's size.
+            @param style The dialog's style.*/
+        DatasetImportDlg(wxWindow* parent, const wxString& filePath,
+                         const Data::ImportInfo& importInfo,
+                         Data::Dataset::ColumnPreviewInfo columnInfo,
+                         const std::variant<wxString, size_t>& worksheet,
+                         const std::shared_ptr<const Data::Dataset>& dataset,
+                         wxWindowID id = wxID_ANY,
+                         const wxString& caption = _(L"Edit Import Settings"),
+                         const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
+                         long style = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
 
         /// @private
         DatasetImportDlg() = delete;
@@ -76,6 +104,9 @@ namespace Wisteria::UI
         DatasetImportDlg(const DatasetImportDlg&) = delete;
         /// @private
         DatasetImportDlg& operator=(const DatasetImportDlg&) = delete;
+
+        /// @private
+        ~DatasetImportDlg() { m_debounceTimer.Stop(); }
 
         /// @returns The finalized ImportInfo based on the dialog's settings.
         [[nodiscard]]
@@ -104,16 +135,26 @@ namespace Wisteria::UI
             return m_filePath;
             }
 
+        /// @returns @c true if the user changed any import option since the dialog opened.
+        [[nodiscard]]
+        bool HasChanges() const noexcept
+            {
+            return m_hasChanges;
+            }
+
       private:
         void CreateControls();
         void RefreshPreview();
         void RefreshPreviewFromColumnInfo();
         void UpdateGrid();
+        void PopulatePreviewFromDataset(const std::shared_ptr<const Data::Dataset>& dataset);
         void ApplyColumnHeaderIcons(DatasetGridTable* table);
         void ApplyExcludedColumnStyling();
         void AdjustGridColumnsForIcons();
         void OnOptionChanged(wxCommandEvent& event);
-        void OnSpinChanged(wxSpinEvent& event);
+        void OnSpinChangedDebounced(wxSpinEvent& event);
+        void OnMDTextChanged(wxCommandEvent& event);
+        void OnDebounceTimer(wxTimerEvent& event);
         void OnColumnHeaderClick(wxGridEvent& event);
         void OnColumnSelected(wxGridEvent& event);
         void OnColumnTypeChanged(wxCommandEvent& event);
@@ -123,6 +164,12 @@ namespace Wisteria::UI
         void ReadWorksheetNames();
         void WarnAboutColumnChanges(const std::vector<wxString>& previousNames,
                                     const wxString& previousId);
+
+        /// @brief Joins missing-data codes into a comma-separated string for display.
+        /// @param codes The codes to join.
+        /// @returns The joined string (empty if @p codes is empty).
+        [[nodiscard]]
+        static wxString JoinMDCodes(const std::vector<std::wstring>& codes);
 
         // controls
         wxChoice* m_idColumnChoice{ nullptr };
@@ -151,6 +198,13 @@ namespace Wisteria::UI
 
         // worksheet names (for XLSX/ODS)
         std::vector<std::wstring> m_worksheetNames;
+
+        // whether any import option has been changed since dialog opened
+        bool m_hasChanges{ false };
+
+        // debounce timer for spin controls and MD text
+        wxTimer m_debounceTimer{ this };
+        constexpr static int DEBOUNCE_MS{ 2000 };
         };
     } // namespace Wisteria::UI
 
