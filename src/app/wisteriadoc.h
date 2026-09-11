@@ -109,6 +109,9 @@ class WisteriaDoc final : public wxDocument
     // save helpers
     [[nodiscard]]
     static wxString EscapeJsonStr(const wxString& str);
+    /// @returns @p value as a JSON number, or @c null if it is not finite.
+    [[nodiscard]]
+    static wxString DoubleToJsonStr(double value);
     [[nodiscard]]
     wxString ColorToStr(const wxColour& color) const;
     };

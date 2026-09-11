@@ -2339,14 +2339,15 @@ wxString WisteriaView::BuildAggPosJson(const wxString& pos, const wxString& dime
         {
         return wxString(L"null");
         }
-    double dVal = 0;
-    if (pos.ToDouble(&dVal))
+    // numeric positions are row/column indices
+    long index{ 0 };
+    if (pos.ToLong(&index) && index >= 0)
         {
         if (offset != 0)
             {
-            return wxString::Format(L"{\"origin\":%s, \"offset\":%d}", pos, offset);
+            return wxString::Format(L"{\"origin\":%ld, \"offset\":%d}", index, offset);
             }
-        return pos;
+        return std::to_wstring(index);
         }
     if (pos.CmpNoCase(L"last-column") == 0 || pos.CmpNoCase(L"last-row") == 0)
         {

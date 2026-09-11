@@ -521,7 +521,7 @@ namespace Wisteria
             for (const auto& cst : m_constants)
                 {
                 double dVal{ 0 };
-                if (cst.m_value.ToDouble(&dVal))
+                if (cst.m_value.ToCDouble(&dVal))
                     {
                     m_values[cst.m_name] = dVal;
                     }
@@ -740,6 +740,24 @@ namespace Wisteria
         [[nodiscard]]
         wxString ExpandConstants(wxString str) const;
 
+        /** @brief Converts a formula from U.S. format (period decimal separator,
+                comma parameter separator) into the current locale's format for display.
+            @details Text inside backtick-quoted spans (column names, string literals)
+                is left untouched, since it may legitimately contain a comma or period.
+            @param formula The U.S.-formatted formula.
+            @returns The formula in the current locale's format.*/
+        [[nodiscard]]
+        static wxString FormatFormulaFromUS(const wxString& formula);
+        /** @brief Converts a locale-formatted formula (as produced by
+                @c FormatFormulaFromUS()) back into U.S. format (period decimal
+                separator, comma parameter separator) for storage and parsing.
+            @details Text inside backtick-quoted spans (column names, string literals)
+                is left untouched, since it may legitimately contain a comma or period.
+            @param formula The locale-formatted formula.
+            @returns The formula in U.S. format.*/
+        [[nodiscard]]
+        static wxString FormatFormulaToUS(const wxString& formula);
+
         // variable selection functions
         //-----------------------------
 
@@ -838,6 +856,16 @@ namespace Wisteria
 
       private:
         using ValuesType = std::variant<wxString, double>;
+
+        /// @brief Expands placeholders for use in formulas and stored filter values.
+        /// @details Numeric values are written with a period as the decimal separator
+        ///     and no thousands separators, regardless of locale.
+        [[nodiscard]]
+        wxString ExpandConstantsForFormula(wxString str) const;
+        /// @brief Expands placeholders, formatting numbers either for display
+        ///     (locale-aware) or for use inside formulas.
+        [[nodiscard]]
+        wxString ExpandConstantsImpl(wxString str, bool formulaNumbers) const;
 
         static auto wxStringVectorToWstringVector(const std::vector<wxString>& inVec)
             {

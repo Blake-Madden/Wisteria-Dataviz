@@ -744,7 +744,8 @@ bool Screenshot::SaveScreenshotOfWebView(const wxString& filePath, const wxWindo
             size_t coordIndex{ 0 };
             while (coordTkz.HasMoreTokens() && coordIndex < coords.size())
                 {
-                if (!coordTkz.GetNextToken().ToDouble(&coords[coordIndex]))
+                // JavaScript always formats numbers with '.' as the decimal separator
+                if (!coordTkz.GetNextToken().ToCDouble(&coords[coordIndex]))
                     {
                     break;
                     }

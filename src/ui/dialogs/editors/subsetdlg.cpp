@@ -7,6 +7,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "subsetdlg.h"
+#include <format>
+#include <wx/numformatter.h>
 #include <wx/tokenzr.h>
 
 namespace Wisteria::UI
@@ -91,6 +93,12 @@ namespace Wisteria::UI
                     row.m_operatorChoice->SetSelection(opIdx);
                     }
 
+                // numbers for continuous columns are stored with '.' as the decimal
+                // separator, but shown using the locale's decimal separator
+                const auto dataset = GetSelectedDataset();
+                const bool isContinuous{ dataset != nullptr &&
+                                         dataset->GetContinuousColumn(criterion.m_column) !=
+                                             dataset->GetContinuousColumns().cend() };
                 wxString valuesStr;
                 for (const auto& val : criterion.m_values)
                     {
@@ -98,7 +106,13 @@ namespace Wisteria::UI
                         {
                         valuesStr += L", ";
                         }
-                    valuesStr += val;
+                    wxString shownVal{ val };
+                    if (double numVal{ 0 }; isContinuous && val.ToCDouble(&numVal))
+                        {
+                        shownVal.Replace(L".",
+                                         wxString(1, wxNumberFormatter::GetDecimalSeparator()));
+                        }
+                    valuesStr += shownVal;
                     }
                 row.m_valuesCtrl->SetValue(valuesStr);
                 }
@@ -698,7 +712,8 @@ namespace Wisteria::UI
                     if (isContinuous)
                         {
                         double numVal{ 0 };
-                        if (valuesStr.ToDouble(&numVal))
+                        // a single number is entered using the locale's number format
+                        if (wxNumberFormatter::FromString(valuesStr, &numVal))
                             {
                             cFilter.m_values.push_back(numVal);
                             }
@@ -830,13 +845,23 @@ namespace Wisteria::UI
 
         if (opts.m_filterType != SubsetOptions::FilterType::Section)
             {
+            const auto dataset = GetSelectedDataset();
             for (const auto& row : m_filterRows)
                 {
                 SubsetOptions::FilterCriterion criterion;
                 criterion.m_column = row.m_columnChoice->GetStringSelection();
                 criterion.m_operator = row.m_operatorChoice->GetStringSelection();
 
-                const wxString valuesStr = row.m_valuesCtrl->GetValue().Strip(wxString::both);
+                wxString valuesStr = row.m_valuesCtrl->GetValue().Strip(wxString::both);
+                // numbers for continuous columns are entered in the locale's format,
+                // but stored with '.' as the decimal separator
+                if (double numVal{ 0 }; dataset != nullptr &&
+                                        dataset->GetContinuousColumn(criterion.m_column) !=
+                                            dataset->GetContinuousColumns().cend() &&
+                                        wxNumberFormatter::FromString(valuesStr, &numVal))
+                    {
+                    valuesStr = std::format(L"{}", numVal);
+                    }
                 if (!valuesStr.empty())
                     {
                     criterion.m_values.push_back(valuesStr);

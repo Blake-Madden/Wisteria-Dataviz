@@ -158,17 +158,19 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                 }
             double dval{ 0 };
             if (child
-                    ->GetAttribute(L"custom-width",
-                                   std::to_wstring(m_powerPointExportOptions.m_customWidthInches))
-                    .ToDouble(&dval) &&
+                    ->GetAttribute(
+                        L"custom-width",
+                        wxString::FromCDouble(m_powerPointExportOptions.m_customWidthInches))
+                    .ToCDouble(&dval) &&
                 dval > 0)
                 {
                 m_powerPointExportOptions.m_customWidthInches = dval;
                 }
             if (child
-                    ->GetAttribute(L"custom-height",
-                                   std::to_wstring(m_powerPointExportOptions.m_customHeightInches))
-                    .ToDouble(&dval) &&
+                    ->GetAttribute(
+                        L"custom-height",
+                        wxString::FromCDouble(m_powerPointExportOptions.m_customHeightInches))
+                    .ToCDouble(&dval) &&
                 dval > 0)
                 {
                 m_powerPointExportOptions.m_customHeightInches = dval;
@@ -289,9 +291,9 @@ bool AppSettings::SaveSettingsFile(const wxString& filePath)
     pptxNode->AddAttribute(
         L"slide-size", std::to_wstring(static_cast<int>(m_powerPointExportOptions.m_slideSize)));
     pptxNode->AddAttribute(L"custom-width",
-                           std::to_wstring(m_powerPointExportOptions.m_customWidthInches));
+                           wxString::FromCDouble(m_powerPointExportOptions.m_customWidthInches));
     pptxNode->AddAttribute(L"custom-height",
-                           std::to_wstring(m_powerPointExportOptions.m_customHeightInches));
+                           wxString::FromCDouble(m_powerPointExportOptions.m_customHeightInches));
     pptxNode->AddAttribute(
         L"transition", std::to_wstring(static_cast<int>(m_powerPointExportOptions.m_transition)));
     pptxNode->AddAttribute(L"transition-speed", std::to_wstring(static_cast<int>(

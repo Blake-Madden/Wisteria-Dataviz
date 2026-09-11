@@ -8,6 +8,7 @@
 
 #include "dataset.h"
 #include "../math/statistics.h"
+#include <format>
 #include <string_view>
 #include <wx/numformatter.h>
 

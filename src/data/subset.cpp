@@ -113,7 +113,7 @@ namespace Wisteria::Data
                              strVal2 != nullptr)
                         {
                         double numVal{ 0.0 };
-                        if (strVal2->ToDouble(&numVal))
+                        if (strVal2->ToCDouble(&numVal))
                             {
                             m_doubleValues.push_back(numVal);
                             }
@@ -168,7 +168,7 @@ namespace Wisteria::Data
                          strVal != nullptr)
                     {
                     double convertedVal{ 0.0 };
-                    if (strVal->ToDouble(&convertedVal))
+                    if (strVal->ToCDouble(&convertedVal))
                         {
                         m_doubleValues.push_back(convertedVal);
                         }

@@ -8,11 +8,76 @@
 
 #include "../data/pivot.h"
 #include "../data/subset.h"
+#include "../util/formulaformat.h"
 #include "reportbuilder.h"
+#include <cmath>
+#include <format>
 #include <utility>
 
 namespace Wisteria
     {
+    //---------------------------------------------------
+    wxString ReportBuilder::FormatFormulaFromUS(const wxString& formula)
+        {
+        wxString result{ formula };
+        bool inBackticks{ false };
+        for (size_t i = 0; i < result.length(); ++i)
+            {
+            if (result[i] == L'`')
+                {
+                inBackticks = !inBackticks;
+                }
+            else if (inBackticks)
+                {
+                continue;
+                }
+            else if (result[i] == L',')
+                {
+                result[i] = FormulaFormat::GetListSeparator();
+                }
+            else if (result[i] == L'.')
+                {
+                // leave ellipses alone
+                if ((i + 1 < result.length() && result[i + 1] == L'.') ||
+                    (i > 0 && result[i - 1] == L'.'))
+                    {
+                    continue;
+                    }
+                result[i] = wxNumberFormatter::GetDecimalSeparator();
+                }
+            }
+        return result;
+        }
+
+    //---------------------------------------------------
+    wxString ReportBuilder::FormatFormulaToUS(const wxString& formula)
+        {
+        wxString result{ formula };
+        const wxUniChar decimalSep{ wxNumberFormatter::GetDecimalSeparator() };
+        const wxUniChar listSep{ FormulaFormat::GetListSeparator() };
+        bool inBackticks{ false };
+        for (size_t i = 0; i < result.length(); ++i)
+            {
+            if (result[i] == L'`')
+                {
+                inBackticks = !inBackticks;
+                }
+            else if (inBackticks)
+                {
+                continue;
+                }
+            else if (result[i] == decimalSep)
+                {
+                result[i] = L'.';
+                }
+            else if (result[i] == listSep)
+                {
+                result[i] = L',';
+                }
+            }
+        return result;
+        }
+
     //---------------------------------------------------
     void ReportBuilder::LoadConstants(const wxSimpleJSON::Ptr_t& constantsNode)
         {
@@ -37,8 +102,8 @@ namespace Wisteria
                         }
                     else if (value->GetProperty(L"value")->IsValueNumber())
                         {
-                        constInfo.m_value =
-                            std::to_wstring(value->GetProperty(L"value")->AsDouble());
+                        constInfo.m_value = wxString{ std::format(
+                            L"{}", value->GetProperty(L"value")->AsDouble()) };
                         }
                     m_constants.insert(std::move(constInfo));
                     }
@@ -682,7 +747,7 @@ namespace Wisteria
         else if (columnStr.starts_with(L"{{") && columnStr.ends_with(L"}}"))
             {
             columnStr = columnStr.substr(2, columnStr.length() - 4);
-            columnStr = ExpandConstants(columnStr);
+            columnStr = ExpandConstantsForFormula(columnStr);
             const auto calcStr = CalcFormula(columnStr, dataset);
             if (const auto* const strVal{ std::get_if<wxString>(&calcStr) }; strVal != nullptr)
                 {
@@ -837,12 +902,14 @@ namespace Wisteria
                 wxString firstValue = re.GetMatch(formula, 2);
                 if (firstValue.starts_with(L"`") && firstValue.ends_with(L"`"))
                     {
-                    firstValue = ExpandConstants(firstValue.substr(1, firstValue.length() - 2));
+                    firstValue =
+                        ExpandConstantsForFormula(firstValue.substr(1, firstValue.length() - 2));
                     }
                 wxString secondValue = re.GetMatch(formula, 3);
                 if (secondValue.starts_with(L"`") && secondValue.ends_with(L"`"))
                     {
-                    secondValue = ExpandConstants(secondValue.substr(1, secondValue.length() - 2));
+                    secondValue =
+                        ExpandConstantsForFormula(secondValue.substr(1, secondValue.length() - 2));
                     }
                 double secondDouble{ 0 };
                 if (secondValue.ToCDouble(&secondDouble))
@@ -862,9 +929,11 @@ namespace Wisteria
                                                      endOfNumber - firstNumber)
                             .ToCDouble(&firstDouble))
                         {
-                        return prefix + wxNumberFormatter::ToString(
-                                            (firstDouble + secondDouble), 2,
-                                            wxNumberFormatter::Style::Style_NoTrailingZeroes);
+                        // rounded to two decimal places, using '.' as the decimal separator
+                        // so that the result can be used inside of other formulas
+                        return prefix + wxString{
+                            std::format(L"{}", std::round((firstDouble + secondDouble) * 100) / 100)
+                        };
                         }
                     }
                 }
@@ -955,6 +1024,18 @@ namespace Wisteria
     //---------------------------------------------------
     wxString ReportBuilder::ExpandConstants(wxString str) const
         {
+        return ExpandConstantsImpl(std::move(str), false);
+        }
+
+    //---------------------------------------------------
+    wxString ReportBuilder::ExpandConstantsForFormula(wxString str) const
+        {
+        return ExpandConstantsImpl(std::move(str), true);
+        }
+
+    //---------------------------------------------------
+    wxString ReportBuilder::ExpandConstantsImpl(wxString str, const bool formulaNumbers) const
+        {
         const wxRegEx re(L"{{([^}]+)}}");
         size_t start{ 0 }, len{ 0 };
         std::wstring_view processText(str.wc_str());
@@ -983,12 +1064,16 @@ namespace Wisteria
                         }
                     else
                         {
+                        // formula arguments always use '.' as the decimal separator
+                        // and no thousands separators, regardless of locale
                         replacements.insert_or_assign(
                             std::wstring(processText.substr(start, len)),
-                            wxNumberFormatter::ToString(
-                                *dVal, 2,
-                                wxNumberFormatter::Style::Style_WithThousandsSep |
-                                    wxNumberFormatter::Style::Style_NoTrailingZeroes));
+                            formulaNumbers ?
+                                wxString{ std::format(L"{}", *dVal) } :
+                                wxNumberFormatter::ToString(
+                                    *dVal, 2,
+                                    wxNumberFormatter::Style::Style_WithThousandsSep |
+                                        wxNumberFormatter::Style::Style_NoTrailingZeroes));
                         }
                     }
                 }

@@ -43,6 +43,7 @@ SET(TEST_SRC_FILES
     polygontests.cpp
     proconroadmaprendertests.cpp
     racetrackchartrendertests.cpp
+    reportbuilderformulatests.cpp
     sankeydiagramrendertests.cpp
     scalechartrendertests.cpp
     scatterplotrendertests.cpp

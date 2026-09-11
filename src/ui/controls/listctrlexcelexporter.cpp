@@ -9,6 +9,8 @@
 #include "listctrlexcelexporter.h"
 #include <cmath>
 #include <cwctype>
+#include <format>
+#include <limits>
 #include <wx/intl.h>
 
 namespace Wisteria::UI
@@ -602,7 +604,7 @@ namespace Wisteria::UI
             return false;
             }
 
-        return cleaned.ToDouble(&value);
+        return cleaned.ToCDouble(&value);
         }
 
     //------------------------------------------------------
@@ -614,10 +616,15 @@ namespace Wisteria::UI
         data.m_styleIndex = GetOrAddStyle(cellStyle);
         data.m_numberFormat = cellStyle.m_numberFormat;
 
-        if (IsCellNumeric(row, column))
+        // non-finite values have no spreadsheet representation,
+        // so those cells are written as their display text instead
+        const double numericValue{ IsCellNumeric(row, column) ?
+                                       GetCellNumericValue(row, column) :
+                                       std::numeric_limits<double>::quiet_NaN() };
+        if (std::isfinite(numericValue))
             {
             data.m_type = CellData::CellType::Number;
-            data.m_numericValue = GetCellNumericValue(row, column);
+            data.m_numericValue = numericValue;
 
             // convert percentage values for Excel
             // (Excel's % format multiplies by 100, so we need to divide by 100)
@@ -780,10 +787,11 @@ namespace Wisteria::UI
                     {
                 case CellData::CellType::Number:
                     {
-                    // format number with full precision
-                    xml +=
-                        wxString::Format(L"      <c r=\"%s\" s=\"%zu\"><v>%.15g</v></c>\n", cellRef,
-                                         cellData.m_styleIndex, cellData.m_numericValue);
+                    // format number with full precision, always using '.' as the decimal
+                    xml += wxString::Format(
+                        L"      <c r=\"%s\" s=\"%zu\"><v>%s</v></c>\n", cellRef,
+                        cellData.m_styleIndex,
+                        wxString{ std::format(L"{:.15g}", cellData.m_numericValue) });
                     break;
                     }
                 case CellData::CellType::String:

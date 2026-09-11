@@ -9,6 +9,7 @@
 #include "wisteriadoc.h"
 #include "wisteriaapp.h"
 #include "wisteriaview.h"
+#include <cmath>
 #include <variant>
 
 wxIMPLEMENT_DYNAMIC_CLASS(WisteriaDoc, wxDocument);
@@ -274,7 +275,7 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
             auto cObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
             cObj->Add(L"name", c.m_name);
             double dVal{};
-            if (c.m_value.ToDouble(&dVal))
+            if (c.m_value.ToCDouble(&dVal))
                 {
                 cObj->Add(L"value", dVal);
                 }
@@ -459,6 +460,13 @@ wxString WisteriaDoc::EscapeJsonStr(const wxString& str)
             }
         }
     return escaped;
+    }
+
+//-------------------------------------------
+wxString WisteriaDoc::DoubleToJsonStr(const double value)
+    {
+    // JSON has no representation for NaN or infinity
+    return std::isfinite(value) ? wxString::FromCDouble(value) : wxString{ L"null" };
     }
 
 //-------------------------------------------
@@ -756,7 +764,7 @@ wxString WisteriaDoc::BuildHeaderInfoJsonStr(const Wisteria::GraphItems::HeaderI
             {
             hdr += L", ";
             }
-        hdr += wxString::Format(L"\"font-size\": %g", header.GetFont().GetFractionalPointSize());
+        hdr += L"\"font-size\": " + DoubleToJsonStr(header.GetFont().GetFractionalPointSize());
         }
     if (header.GetFontColor().IsOk() && header.GetFontColor() != *wxBLACK)
         {
@@ -772,7 +780,7 @@ wxString WisteriaDoc::BuildHeaderInfoJsonStr(const Wisteria::GraphItems::HeaderI
             {
             hdr += L", ";
             }
-        hdr += wxString::Format(L"\"relative-scaling\": %g", header.GetRelativeScaling());
+        hdr += L"\"relative-scaling\": " + DoubleToJsonStr(header.GetRelativeScaling());
         }
     if (header.GetLabelAlignment() != Wisteria::TextAlignment::FlushLeft)
         {
@@ -844,7 +852,7 @@ wxString WisteriaDoc::SaveLabelPropertiesToStr(const Wisteria::GraphItems::Label
             {
             json += L", ";
             }
-        json += wxString::Format(L"\"font-size\": %g", label.GetFont().GetFractionalPointSize());
+        json += L"\"font-size\": " + DoubleToJsonStr(label.GetFont().GetFractionalPointSize());
         }
 
     // color (font color, if not default black)
@@ -888,7 +896,7 @@ wxString WisteriaDoc::SaveLabelPropertiesToStr(const Wisteria::GraphItems::Label
             {
             json += L", ";
             }
-        json += wxString::Format(L"\"line-spacing\": %g", label.GetLineSpacing());
+        json += L"\"line-spacing\": " + DoubleToJsonStr(label.GetLineSpacing());
         }
 
     // text-alignment (default is flush-left)
@@ -1043,7 +1051,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveLabel(const Wisteria::GraphItems::Label* la
                 }
             if (!compare_doubles(si.GetFillPercent(), math_constants::full))
                 {
-                tmpl += wxString::Format(L", \"fill-percent\": %g", si.GetFillPercent());
+                tmpl += L", \"fill-percent\": " + DoubleToJsonStr(si.GetFillPercent());
                 }
             if (!si.GetText().empty())
                 {
@@ -1613,7 +1621,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveCommonAxis(const Wisteria::GraphItems::Axis
             first = false;
             const auto labelTextTmpl = label.GetPropertyTemplate(L"text");
             const auto& labelText = labelTextTmpl.empty() ? label.GetText() : labelTextTmpl;
-            tmpl += wxString::Format(L"{\"value\": %g, \"label\": \"%s\"}", value,
+            tmpl += wxString::Format(L"{\"value\": %s, \"label\": \"%s\"}", DoubleToJsonStr(value),
                                      EscapeJsonStr(labelText));
             }
         tmpl += L"]";
@@ -1688,8 +1696,9 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveCommonAxis(const Wisteria::GraphItems::Axis
                     tmpl += L", ";
                     }
                 const auto& b = brackets[i];
-                tmpl += wxString::Format(L"{\"start\": %g, \"end\": %g", b.GetStartPosition(),
-                                         b.GetEndPosition());
+                tmpl += wxString::Format(L"{\"start\": %s, \"end\": %s",
+                                         DoubleToJsonStr(b.GetStartPosition()),
+                                         DoubleToJsonStr(b.GetEndPosition()));
                 if (!b.GetLabel().GetText().empty())
                     {
                     tmpl += L", \"label\": \"" + EscapeJsonStr(b.GetLabel().GetText()) + L"\"";
@@ -2711,7 +2720,8 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
         // range
         if (hasRange)
             {
-            axisObj += wxString::Format(L", \"range\": {\"start\": %g, \"end\": %g", rStart, rEnd);
+            axisObj += wxString::Format(L", \"range\": {\"start\": %s, \"end\": %s",
+                                        DoubleToJsonStr(rStart), DoubleToJsonStr(rEnd));
             if (axis->GetPrecision() != 0)
                 {
                 axisObj += wxString::Format(L", \"precision\": %d",
@@ -2719,7 +2729,7 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
                 }
             if (!compare_doubles(axis->GetInterval(), 0.0))
                 {
-                axisObj += wxString::Format(L", \"interval\": %g", axis->GetInterval());
+                axisObj += L", \"interval\": " + DoubleToJsonStr(axis->GetInterval());
                 }
             if (axis->GetDisplayInterval() != 1)
                 {
@@ -2743,8 +2753,8 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
                 first = false;
                 const auto ltTmpl = label.GetPropertyTemplate(L"text");
                 const auto& ltText = ltTmpl.empty() ? label.GetText() : ltTmpl;
-                axisObj += wxString::Format(L"{\"value\": %g, \"label\": \"%s\"}", value,
-                                            EscapeJsonStr(ltText));
+                axisObj += wxString::Format(L"{\"value\": %s, \"label\": \"%s\"}",
+                                            DoubleToJsonStr(value), EscapeJsonStr(ltText));
                 }
             axisObj += L"]";
             }
@@ -2791,8 +2801,9 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
                         axisObj += L", ";
                         }
                     const auto& b = brackets[i];
-                    axisObj += wxString::Format(L"{\"start\": %g, \"end\": %g",
-                                                b.GetStartPosition(), b.GetEndPosition());
+                    axisObj += wxString::Format(L"{\"start\": %s, \"end\": %s",
+                                                DoubleToJsonStr(b.GetStartPosition()),
+                                                DoubleToJsonStr(b.GetEndPosition()));
                     if (!b.GetLabel().GetText().empty())
                         {
                         axisObj +=
@@ -2837,7 +2848,7 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
             continue;
             }
         wxString rlObj = L"{\"axis-type\": \"" + atStr.value() + L"\"";
-        rlObj += wxString::Format(L", \"position\": %g", rl.GetAxisPosition());
+        rlObj += L", \"position\": " + DoubleToJsonStr(rl.GetAxisPosition());
         if (!rl.GetLabel().empty())
             {
             rlObj += L", \"label\": \"" + EscapeJsonStr(rl.GetLabel()) + L"\"";
@@ -2875,8 +2886,9 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
             continue;
             }
         wxString raObj = L"{\"axis-type\": \"" + atStr.value() + L"\"";
-        raObj += wxString::Format(L", \"start\": %g, \"end\": %g", ra.GetAxisPosition(),
-                                  ra.GetAxisPosition2());
+        raObj +=
+            wxString::Format(L", \"start\": %s, \"end\": %s", DoubleToJsonStr(ra.GetAxisPosition()),
+                             DoubleToJsonStr(ra.GetAxisPosition2()));
         if (!ra.GetLabel().empty())
             {
             raObj += L", \"label\": \"" + EscapeJsonStr(ra.GetLabel()) + L"\"";
@@ -2957,8 +2969,8 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
             wxString annObj = L"{\"label\": " + SaveLabelPropertiesToStr(*label);
             // anchor point
             const auto anchor = ann.GetAnchorPoint();
-            annObj +=
-                wxString::Format(L", \"anchor\": {\"x\": %g, \"y\": %g}", anchor.m_x, anchor.m_y);
+            annObj += wxString::Format(L", \"anchor\": {\"x\": %s, \"y\": %s}",
+                                       DoubleToJsonStr(anchor.m_x), DoubleToJsonStr(anchor.m_y));
             // interest points
             const auto& interestPts = ann.GetInterestPoints();
             if (!interestPts.empty())
@@ -2970,7 +2982,8 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
                         {
                         ptsStr += L", ";
                         }
-                    ptsStr += wxString::Format(L"{\"x\": %g, \"y\": %g}", pt.m_x, pt.m_y);
+                    ptsStr += wxString::Format(L"{\"x\": %s, \"y\": %s}", DoubleToJsonStr(pt.m_x),
+                                               DoubleToJsonStr(pt.m_y));
                     }
                 annObj += L", \"interest-points\": [" + ptsStr + L"]";
                 }
@@ -3469,7 +3482,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                     {
                     scaleValsArr += L", ";
                     }
-                scaleValsArr += std::to_wstring(val);
+                scaleValsArr += DoubleToJsonStr(val);
                 }
             scaleValsArr += L"]";
             node->Add(L"main-scale-values", wxSimpleJSON::Create(scaleValsArr));
@@ -3532,7 +3545,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                         }
                     scalesArr +=
                         L"\"start\": " +
-                        std::to_wstring(scaleBar.GetCustomScalingAxisStartPosition().value());
+                        DoubleToJsonStr(scaleBar.GetCustomScalingAxisStartPosition().value());
                     }
 
                 wxString blocksArr = L"[";
@@ -3546,7 +3559,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                     const auto& labelText =
                         labelTmpl.empty() ? block.GetDecal().GetText() : labelTmpl;
 
-                    blocksArr += L"{\"length\": " + std::to_wstring(block.GetLength()) +
+                    blocksArr += L"{\"length\": " + DoubleToJsonStr(block.GetLength()) +
                                  L", \"color\": \"" + ColorToStr(block.GetBrush().GetColour()) +
                                  L"\"";
                     if (!labelText.empty())
@@ -4334,7 +4347,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                     }
                 else if (shp.GetFillPercent() < math_constants::full)
                     {
-                    shapesArr += wxString::Format(L", \"fill-percent\": %g", shp.GetFillPercent());
+                    shapesArr += L", \"fill-percent\": " + DoubleToJsonStr(shp.GetFillPercent());
                     }
                 shapesArr += L"}";
                 }

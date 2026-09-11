@@ -669,7 +669,8 @@ namespace Wisteria::UI
                     const auto originNode = node->GetProperty(L"origin");
                     const auto& valueNode = originNode->IsOk() ? originNode : node;
                     origin = valueNode->IsValueNumber() ?
-                                 wxString{ std::to_wstring(valueNode->AsDouble()) } :
+                                 wxString{ std::to_wstring(
+                                     static_cast<long long>(valueNode->AsDouble())) } :
                                  valueNode->AsString();
                     // split off the dimension prefix so it can be restored on save
                     if (origin.Lower().StartsWith(L"column:"))

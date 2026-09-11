@@ -8,6 +8,7 @@
 
 #include "xml_format.h"
 #include "wx/fontenum.h"
+#include <wx/xlocale.h>
 
 //------------------------------------------------
 wxString XmlFormat::FormatColorAttributes(const wxColour& color)
@@ -667,7 +668,8 @@ double XmlFormat::GetDouble(const wchar_t* sectionStart, const wchar_t* sectionE
                 return defaultValue;
                 }
             wchar_t* dummy = nullptr;
-            return std::wcstod(currentPos, &dummy);
+            // values are always written with '.' as the decimal separator
+            return wxStrtod_l(currentPos, &dummy, wxCLocale);
             }
 
         wxMessageBox(

@@ -9,6 +9,7 @@
 #include "reportbuilder.h"
 #include "../data/pivot.h"
 #include "../data/subset.h"
+#include <format>
 #include <utility>
 
 namespace Wisteria
@@ -1602,7 +1603,8 @@ namespace Wisteria
                     }
                 else if (filterValue->IsValueNumber())
                     {
-                    info.m_values.push_back(std::to_wstring(filterValue->AsDouble()));
+                    info.m_values.push_back(
+                        wxString{ std::format(L"{}", filterValue->AsDouble()) });
                     }
                 }
             return info;
@@ -1639,11 +1641,12 @@ namespace Wisteria
                     const bool isDate = (filterValue->IsValueString() &&
                                          (dt.ParseDateTime(filterValue->AsString()) ||
                                           dt.ParseDate(filterValue->AsString())));
-                    cFilter.m_values.push_back(
-                        isDate ? Data::DatasetValueType(dt) :
-                        filterValue->IsValueString() ?
-                                 Data::DatasetValueType(ExpandConstants(filterValue->AsString())) :
-                                 Data::DatasetValueType(filterValue->AsDouble()));
+                    cFilter.m_values.push_back(isDate ?
+                                                   Data::DatasetValueType(dt) :
+                                               filterValue->IsValueString() ?
+                                                   Data::DatasetValueType(ExpandConstantsForFormula(
+                                                       filterValue->AsString())) :
+                                                   Data::DatasetValueType(filterValue->AsDouble()));
                     }
 
                 return cFilter;
@@ -1904,8 +1907,8 @@ namespace Wisteria
                             }
                         else if (formula->GetProperty(L"value")->IsValueNumber())
                             {
-                            formulaOpt.m_value =
-                                std::to_wstring(formula->GetProperty(L"value")->AsDouble());
+                            formulaOpt.m_value = wxString{ std::format(
+                                L"{}", formula->GetProperty(L"value")->AsDouble()) };
                             }
                         transformOpts.m_formulas.push_back(std::move(formulaOpt));
                         }

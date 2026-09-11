@@ -53,6 +53,8 @@
 #include "wisteriadoc.h"
 #include "wisteriaview.h"
 #include <array>
+#include <format>
+#include <wx/numformatter.h>
 #include <wx/rearrangectrl.h>
 
 //-------------------------------------------
@@ -92,7 +94,14 @@ void WisteriaView::PopulateConstantsGrid()
         m_constantsGrid->AppendRows(1);
         m_constantsGrid->SetCellValue(row, 0, wxString{});
         m_constantsGrid->SetCellValue(row, 1, c.m_name);
-        m_constantsGrid->SetCellValue(row, 2, c.m_value);
+        // numeric constants are stored with '.' as the decimal separator,
+        // but shown using the locale's decimal separator
+        wxString shownValue{ c.m_value };
+        if (double numVal{ 0 }; c.m_value.ToCDouble(&numVal))
+            {
+            shownValue.Replace(L".", wxString(1, wxNumberFormatter::GetDecimalSeparator()));
+            }
+        m_constantsGrid->SetCellValue(row, 2, shownValue);
         m_constantsGrid->SetCellValue(row, 3, m_reportBuilder.GetExpandedValue(c.m_name));
         setDatasetChoiceEditor(row);
         ++row;
@@ -106,7 +115,10 @@ void WisteriaView::PopulateConstantsGrid()
             m_constantsGrid->AppendRows(1);
             m_constantsGrid->SetCellValue(row, 0, dsName);
             m_constantsGrid->SetCellValue(row, 1, f.m_name);
-            m_constantsGrid->SetCellValue(row, 2, f.m_value);
+            // dataset formulas are stored with '.' as the decimal separator and ','
+            // as the parameter separator, but shown using the locale's formatting
+            m_constantsGrid->SetCellValue(row, 2,
+                                          Wisteria::ReportBuilder::FormatFormulaFromUS(f.m_value));
             m_constantsGrid->SetCellValue(row, 3, m_reportBuilder.GetExpandedValue(f.m_name));
             setDatasetChoiceEditor(row);
             ++row;
@@ -135,6 +147,15 @@ void WisteriaView::OnConstantEdited(wxGridEvent& event)
     const wxString newDsName = m_constantsGrid->GetCellValue(row, 0);
     const wxString name = m_constantsGrid->GetCellValue(row, 1);
     const wxString value = m_constantsGrid->GetCellValue(row, 2);
+    // a constant that is a single number is entered in the locale's format,
+    // but stored with '.' as the decimal separator
+    const wxString storedValue{ [&value]()
+                                {
+                                    double numVal{ 0 };
+                                    return wxNumberFormatter::FromString(value, &numVal) ?
+                                               wxString{ std::format(L"{}", numVal) } :
+                                               value;
+                                }() };
 
     // if dataset column was edited...
     if (col == 0)
@@ -175,19 +196,22 @@ void WisteriaView::OnConstantEdited(wxGridEvent& event)
             {
             // moving to top-level constants
             auto& constants = m_reportBuilder.GetConstants();
-            constants.emplace(name, value);
+            constants.emplace(name, storedValue);
             // force a reset of the calculated values mapped to the constants
             m_reportBuilder.SetConstants(constants);
             }
         else
             {
             // moving to a dataset's formulas
+            // dataset formulas are entered in the locale's format, but stored
+            // with '.' as the decimal separator and ',' as the parameter separator
+            const wxString storedFormula{ Wisteria::ReportBuilder::FormatFormulaToUS(value) };
             auto& allTxOpts = m_reportBuilder.GetDatasetTransformOptions();
-            allTxOpts[newDsName].m_formulas.emplace_back(name, value);
+            allTxOpts[newDsName].m_formulas.emplace_back(name, storedFormula);
             m_reportBuilder.SetDatasetTransformOptions(newDsName, allTxOpts[newDsName]);
             try
                 {
-                m_reportBuilder.RecalcFormula(name, value, newDsName);
+                m_reportBuilder.RecalcFormula(name, storedFormula, newDsName);
                 }
             catch (const std::exception& exc)
                 {
@@ -205,14 +229,14 @@ void WisteriaView::OnConstantEdited(wxGridEvent& event)
             {
             const wxString oldName{ event.GetString() };
             constants.erase({ oldName, value });
-            constants.insert({ name, value });
+            constants.insert({ name, storedValue });
             }
         // ...or value changed
         else
             {
             auto pos = constants.find({ name, value });
             auto nh = constants.extract(pos);
-            nh.value().m_value = value;
+            nh.value().m_value = storedValue;
             constants.insert(std::move(nh));
             }
 
@@ -249,13 +273,17 @@ void WisteriaView::OnConstantEdited(wxGridEvent& event)
             }
         else if (col == 2)
             {
-            txIt->second.m_formulas[formulaIdx].m_value = value;
+            // dataset formulas are entered in the locale's format, but stored
+            // with '.' as the decimal separator and ',' as the parameter separator
+            txIt->second.m_formulas[formulaIdx].m_value =
+                Wisteria::ReportBuilder::FormatFormulaToUS(value);
             }
 
         m_reportBuilder.SetDatasetTransformOptions(newDsName, txIt->second);
         try
             {
-            m_reportBuilder.RecalcFormula(name, value, newDsName);
+            m_reportBuilder.RecalcFormula(name, txIt->second.m_formulas[formulaIdx].m_value,
+                                          newDsName);
             }
         catch (const std::exception& exc)
             {
@@ -403,12 +431,12 @@ void WisteriaView::OnEditDataset([[maybe_unused]] wxCommandEvent& event)
         // edit an imported dataset
         // (lazy preview of existing dataset)
         const auto existingDataset = foundDs->second;
-        Wisteria::UI::DatasetImportDlg importDlg(
-            m_frame, foundDsImportOptions->second.m_filePath,
-            foundDsImportOptions->second.m_importInfo,
-            foundDsImportOptions->second.m_columnPreviewInfo,
-            foundDsImportOptions->second.m_worksheet, existingDataset, wxID_ANY,
-            _(L"Edit Import Options"));
+        Wisteria::UI::DatasetImportDlg importDlg(m_frame, foundDsImportOptions->second.m_filePath,
+                                                 foundDsImportOptions->second.m_importInfo,
+                                                 foundDsImportOptions->second.m_columnPreviewInfo,
+                                                 foundDsImportOptions->second.m_worksheet,
+                                                 existingDataset, wxID_ANY,
+                                                 _(L"Edit Import Options"));
         if (importDlg.ShowModal() != wxID_OK)
             {
             return;
