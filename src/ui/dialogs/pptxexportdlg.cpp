@@ -207,6 +207,7 @@ namespace Wisteria::UI
             new wxCheckBox(transitionsBox->GetStaticBox(), wxID_ANY,
                            _(L"Advance automatically after"), wxDefaultPosition, wxDefaultSize, 0,
                            wxGenericValidator{ &m_options.m_advanceAutomatically });
+        m_advanceAutomaticallyCheck->SetValue(m_options.m_advanceAutomatically);
         advanceAutoSizer->Add(m_advanceAutomaticallyCheck, wxSizerFlags{}.CenterVertical());
         m_advanceSecondsCtrl = new wxSpinCtrl(
             transitionsBox->GetStaticBox(), wxID_ANY, std::to_wstring(m_options.m_advanceSeconds),
@@ -302,7 +303,7 @@ namespace Wisteria::UI
         const int themeSelection{ m_titleSlideThemeChoice->GetSelection() };
         const auto& themeEntries = Colors::Schemes::ColorSchemeCatalog::GetEntries();
         m_options.m_titleSlideTheme =
-            (themeSelection >= 1 && static_cast<size_t>(themeSelection) <= themeEntries.size()) ?
+            (themeSelection >= 1 && std::cmp_less_equal(themeSelection, themeEntries.size())) ?
                 themeEntries[static_cast<size_t>(themeSelection) - 1].second :
                 wxString{};
 

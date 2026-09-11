@@ -7,7 +7,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "pptxreportprintout.h"
-#include "../math/mathematics.h"
 #include "../math/safe_math.h"
 #include "colorschemenames.h"
 #include "reportprintout.h"
@@ -113,6 +112,20 @@ wxString Wisteria::ReportPowerPointExport::EscapeXml(const wxString& str)
     }
 
 //------------------------------------------------------
+wxString Wisteria::ReportPowerPointExport::EscapeXmlAttribute(const wxString& str)
+    {
+    wxString collapsed{ str };
+    collapsed.Replace(L"\r\n", L" ");
+    collapsed.Replace(L"\r", L" ");
+    collapsed.Replace(L"\n", L" ");
+    collapsed.Replace(L"\t", L" ");
+    while (collapsed.Replace(L"  ", L" ") > 0)
+        {
+        }
+    return EscapeXml(collapsed.Trim(true).Trim(false));
+    }
+
+//------------------------------------------------------
 wxString Wisteria::ReportPowerPointExport::BuildRelationshipsXml(
     const std::vector<std::tuple<wxString, wxString, wxString>>& relationships)
     {
@@ -135,7 +148,6 @@ wxString Wisteria::ReportPowerPointExport::CollectAccessibilityText(Canvas* canv
         {
         return wxString{};
         }
-    canvas->ApplyAutoAccessibilityAttributes();
 
     wxArrayString lines;
     const auto addTitles = [&lines](const std::vector<GraphItems::Label>& titles)
@@ -196,29 +208,19 @@ void Wisteria::ReportPowerPointExport::RenderCanvas(Canvas* canvas, const wxSize
 
     const wxWindowUpdateLocker updateLocker{ canvas };
 
-    // Temporarily resize the canvas to the slide dimensions. FitToSaveOptionsChanger
-    // is not used here because it clamps to Canvas::GetDefaultCanvasWidthDIPs()/
-    // GetDefaultCanvasHeightDIPs(), a thumbnail-sized default far smaller than a
-    // slide, which left widescreen slides only partially filled.
+    // temporarily lay the canvas out at the render size
     const int origMinWidth{ canvas->GetCanvasMinWidthDIPs() };
     const int origMinHeight{ canvas->GetCanvasMinHeightDIPs() };
     const wxSize origSize{ canvas->GetSize() };
     if (canvas->IsFittingToPageWhenPrinting())
         {
-        const auto scaledHeight{ geometry::rescaled_height(
-            std::make_pair(static_cast<double>(safeSize.GetWidth()),
-                           static_cast<double>(safeSize.GetHeight())),
-            safeSize.GetWidth()) };
-        if (scaledHeight > 0)
-            {
-            canvas->SetCanvasMinWidthDIPs(safeSize.GetWidth());
-            canvas->SetCanvasMinHeightDIPs(scaledHeight);
-            // calling SetSize before CalcRowDimensions() is needed because some
-            // internals look at the window size rather than the min width/height
-            canvas->SetSize(canvas->FromDIP(wxSize(safeSize.GetWidth(), scaledHeight)));
-            canvas->CalcRowDimensions();
-            canvas->SetSize(canvas->FromDIP(wxSize(safeSize.GetWidth(), scaledHeight)));
-            }
+        canvas->SetCanvasMinWidthDIPs(safeSize.GetWidth());
+        canvas->SetCanvasMinHeightDIPs(safeSize.GetHeight());
+        // calling SetSize before CalcRowDimensions() is needed because some
+        // internals look at the window size rather than the min width/height
+        canvas->SetSize(canvas->FromDIP(safeSize));
+        canvas->CalcRowDimensions();
+        canvas->SetSize(canvas->FromDIP(safeSize));
         }
 
         // PNG first, mirroring the raster path in Canvas::Save so the layout the
@@ -437,7 +439,8 @@ wxString Wisteria::ReportPowerPointExport::ColorToHex(const wxColour& color)
 
 //------------------------------------------------------
 wxString Wisteria::ReportPowerPointExport::BuildTitleSlideXml(
-    const PowerPointExportOptions& options, const long long slideCx, const long long slideCy)
+    const PowerPointExportOptions& options, const long long slideCx, const long long slideCy,
+    const wxString& transitionXml)
     {
     const auto colorScheme{ Colors::Schemes::ColorSchemeCatalog::FromKey(
         options.m_titleSlideTheme) };
@@ -558,7 +561,7 @@ wxString Wisteria::ReportPowerPointExport::BuildTitleSlideXml(
             isThemed ? solidFillXml(titleColor, 100) : wxString{}, EscapeXml(options.m_publisher));
         }
 
-    // slide background: a diagonal gradient between the theme's first two colors
+    // diagonal gradient background between the theme's first two colors
     wxString bgXml;
     if (isThemed)
         {
@@ -616,8 +619,10 @@ wxString Wisteria::ReportPowerPointExport::BuildTitleSlideXml(
         L"%s%s%s%s%s%s"
         L"</p:spTree></p:cSld>"
         L"<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr>"
+        L"%s"
         L"</p:sld>",
-        bgXml, accentCircleXml, accentBarXml, titleBox, titleRuleXml, subtitleBox, publisherBox);
+        bgXml, accentCircleXml, accentBarXml, titleBox, titleRuleXml, subtitleBox, publisherBox,
+        transitionXml);
     }
 
 //------------------------------------------------------
@@ -691,9 +696,9 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
 
     const bool includeTitleSlide{ options.m_includeTitleSlide && !options.m_title.empty() };
 
-    // presentation relationship ids: master (rId1), presProps (rId2),
-    // optional notesMaster (rId3), optional title slide (rId9),
-    // then one per report page starting at rId10
+    // Presentation relationship IDs are rId1 for the master, rId2 for presProps,
+    // rId3 for the optional notes master, rId9 for the optional title slide,
+    // and rId10 onward for the report pages.
     const wxString notesMasterRelId{ L"rId3" };
     const wxString titleSlideRelId{ L"rId9" };
     constexpr size_t SLIDE_REL_START{ 10 };
@@ -742,9 +747,12 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
         }
     if (anyNotes)
         {
-        contentTypes += L"<Override PartName=\"/ppt/notesMasters/notesMaster1.xml\" "
-                        L"ContentType=\"application/vnd.openxmlformats-officedocument."
-                        L"presentationml.notesMaster+xml\"/>";
+        contentTypes +=
+            L"<Override PartName=\"/ppt/notesMasters/notesMaster1.xml\" "
+            L"ContentType=\"application/vnd.openxmlformats-officedocument."
+            L"presentationml.notesMaster+xml\"/>"
+            L"<Override PartName=\"/ppt/theme/theme2.xml\" "
+            L"ContentType=\"application/vnd.openxmlformats-officedocument.theme+xml\"/>";
         for (size_t pageIndex = 0; pageIndex < pages.size(); ++pageIndex)
             {
             if (!rendered[pageIndex].m_notes.empty())
@@ -814,14 +822,15 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
         }
     presProps += L"</p:presentationPr>";
 
+    // slide IDs must be >= 256 per the OOXML schema (ST_SlideId minInclusive)
     wxString sldIdLst;
     if (includeTitleSlide)
         {
-        sldIdLst += wxString::Format(L"<p:sldId id=\"255\" r:id=\"%s\"/>", titleSlideRelId);
+        sldIdLst += wxString::Format(L"<p:sldId id=\"256\" r:id=\"%s\"/>", titleSlideRelId);
         }
     for (size_t pageIndex = 0; pageIndex < pages.size(); ++pageIndex)
         {
-        sldIdLst += wxString::Format(L"<p:sldId id=\"%zu\" r:id=\"rId%zu\"/>", 256 + pageIndex,
+        sldIdLst += wxString::Format(L"<p:sldId id=\"%zu\" r:id=\"rId%zu\"/>", 257 + pageIndex,
                                      SLIDE_REL_START + pageIndex);
         }
 
@@ -885,15 +894,15 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
           { L"rId2", wxString{ REL_THEME }, L"../theme/theme1.xml" } }) };
     const wxString layoutRels{ BuildRelationshipsXml(
         { { L"rId1", wxString{ REL_SLIDE_MASTER }, L"../slideMasters/slideMaster1.xml" } }) };
+    // PowerPoint refuses to open a package where the notes master shares the slide master's theme
     const wxString notesMasterRels{ BuildRelationshipsXml(
-        { { L"rId1", wxString{ REL_THEME }, L"../theme/theme1.xml" } }) };
+        { { L"rId1", wxString{ REL_THEME }, L"../theme/theme2.xml" } }) };
     const wxString titleSlideRels{ BuildRelationshipsXml(
         { { L"rId1", wxString{ REL_SLIDE_LAYOUT }, L"../slideLayouts/slideLayout1.xml" } }) };
-    const wxString titleSlideXml{ includeTitleSlide ?
-                                      BuildTitleSlideXml(options, slideCx, slideCy) :
-                                      wxString{} };
-
     const wxString transitionXml{ BuildTransitionXml(options) };
+    const wxString titleSlideXml{ includeTitleSlide ?
+                                      BuildTitleSlideXml(options, slideCx, slideCy, transitionXml) :
+                                      wxString{} };
 
     // write the package
     wxFFileOutputStream fileStream{ filePath };
@@ -919,7 +928,7 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
     const auto addBinary = [&zipStream](const wxString& partPath, const void* data,
                                         const size_t length) -> bool
     {
-        // image bytes are already compressed, store them without extra deflation
+        // PNG bytes are already compressed, so store them without extra deflation
         zipStream.SetLevel(0);
         if (!zipStream.PutNextEntry(new wxZipEntry{ partPath }))
             {
@@ -945,7 +954,8 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
     if (anyNotes)
         {
         ok = ok && addText(L"ppt/notesMasters/notesMaster1.xml", wxString{ NOTES_MASTER_XML }) &&
-             addText(L"ppt/notesMasters/_rels/notesMaster1.xml.rels", notesMasterRels);
+             addText(L"ppt/notesMasters/_rels/notesMaster1.xml.rels", notesMasterRels) &&
+             addText(L"ppt/theme/theme2.xml", wxString{ THEME_XML });
         }
     if (includeTitleSlide)
         {
@@ -959,13 +969,10 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
         const RenderedPage& page{ rendered[pageIndex] };
         const bool slideHasNotes{ anyNotes && !page.m_notes.empty() };
 
-        const wxScopedCharBuffer svgUtf8{ page.m_svg.utf8_str() };
         ok = addBinary(wxString::Format(L"ppt/media/image%zu.png", oneBased), page.m_png.GetData(),
                        page.m_png.GetDataLen()) &&
              ok;
-        ok = addBinary(wxString::Format(L"ppt/media/image%zu.svg", oneBased), svgUtf8.data(),
-                       svgUtf8.length()) &&
-             ok;
+        ok = addText(wxString::Format(L"ppt/media/image%zu.svg", oneBased), page.m_svg) && ok;
 
         std::vector<std::tuple<wxString, wxString, wxString>> slideRels{
             { L"rId1", wxString{ REL_SLIDE_LAYOUT }, L"../slideLayouts/slideLayout1.xml" },
@@ -1025,13 +1032,14 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
             L"<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr>"
             L"%s"
             L"</p:sld>",
-            oneBased, EscapeXml(slideTitle), EscapeXml(altText), placement, transitionXml) };
+            oneBased, EscapeXmlAttribute(slideTitle), EscapeXmlAttribute(altText), placement,
+            transitionXml) };
         ok = addText(wxString::Format(L"ppt/slides/slide%zu.xml", oneBased), slideXml) && ok;
 
         if (slideHasNotes)
             {
             wxString noteParagraphs;
-            // disable the '\' escape char: notes text is free-form, not escaped input
+            // notes text is free-form, so don't treat '\' as an escape character
             const wxArrayString noteLines{ wxSplit(page.m_notes, L'\n', L'\0') };
             for (const auto& noteLine : noteLines)
                 {

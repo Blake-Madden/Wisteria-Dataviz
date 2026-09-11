@@ -59,7 +59,7 @@ namespace Wisteria
             Fast
             };
 
-        /// @brief English Metric Units per inch; slide dimensions in @c presentation.xml
+        /// @brief English Metric Units per inch. Slide dimensions in @c presentation.xml
         ///     are expressed in EMUs.
         constexpr static double EMU_PER_INCH{ 914400.0 };
         /// @brief PowerPoint's maximum slide dimension, in inches.
@@ -208,6 +208,11 @@ namespace Wisteria
         ///     control characters that are illegal in XML 1.0.
         [[nodiscard]]
         static wxString EscapeXml(const wxString& str);
+        /// @brief Escapes text for a single-line XML attribute value (e.g., @c title or
+        ///     @c descr on @c \<p:cNvPr\>). Collapses embedded newlines/tabs down to single
+        ///     spaces before escaping.
+        [[nodiscard]]
+        static wxString EscapeXmlAttribute(const wxString& str);
         [[nodiscard]]
         static wxString BuildRelationshipsXml(
             const std::vector<std::tuple<wxString, wxString, wxString>>& relationships);
@@ -221,13 +226,13 @@ namespace Wisteria
         ///     render and restored afterward.
         static void RenderCanvas(Canvas* canvas, wxSize renderSize, wxString& svgOut,
                                  wxMemoryBuffer& pngOut);
-        /// @brief The <p:transition> element (or MCE AlternateContent for Morph) for a slide,
-        ///      or an empty string when there is nothing to emit.
+        /// @returns The @c \<p:transition\> element (or MCE @c AlternateContent for Morph)
+        ///     for a slide, or an empty string when there is nothing to emit.
         [[nodiscard]]
         static wxString BuildTransitionXml(const PowerPointExportOptions& options);
         /// @brief Positions the page picture within the slide.
-        //  @details Fills the slide when the aspect matches; otherwise,  scales to
-        //      contain and centers (letterbox on the slide bg).
+        /// @details Fills the slide when the aspect ratios match. Otherwise, scales the
+        ///     picture to fit and centers it, letterboxed on the slide background.
         [[nodiscard]]
         static wxString BuildPicturePlacementXml(long long slideCx, long long slideCy,
                                                  int imageWidth, int imageHeight);
@@ -236,9 +241,12 @@ namespace Wisteria
         ///     set, at the bottom of the slide. When @c options.m_titleSlideTheme names a
         ///     known color scheme, the slide also gets a gradient background, a left
         ///     accent bar, a decorative accent circle, and themed text colors.
+        ///     @p transitionXml gives the title slide the same transition and
+        ///     advance timing as the report slides.
         [[nodiscard]]
         static wxString BuildTitleSlideXml(const PowerPointExportOptions& options,
-                                           long long slideCx, long long slideCy);
+                                           long long slideCx, long long slideCy,
+                                           const wxString& transitionXml);
         /// @returns @p color as an uppercase @c "RRGGBB" hex string (no leading @c '#'),
         ///     suitable for an OOXML @c \<a:srgbClr val="..."/\> attribute.
         [[nodiscard]]
