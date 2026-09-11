@@ -1590,11 +1590,11 @@ namespace Wisteria::Data
             for (const auto& col : GetContinuousColumns())
                 {
                 currentRow
-                    .append(wrapText(std::isnan(col.GetValue(i)) ?
+                    // always '.' as the decimal separator (and no thousands separators)
+                    // so that the file can be read by other programs and by our own import
+                    .append(wrapText(!std::isfinite(col.GetValue(i)) ?
                                          wxString{} :
-                                         wxNumberFormatter::ToString(
-                                             col.GetValue(i), 6,
-                                             wxNumberFormatter::Style::Style_NoTrailingZeroes)))
+                                         wxString{ std::format(L"{}", col.GetValue(i)) }))
                     .append(1, delimiter);
                 }
             if (!currentRow.empty() && currentRow[currentRow.length() - 1] == delimiter)
