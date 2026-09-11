@@ -174,6 +174,11 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     /// @param datasetPath The path to the dataset to open.
     void StartProjectFromDataset(const wxString& datasetPath);
 
+    /// @brief Handler for the Open button's dropdown arrow.
+    ///     Pops up a menu of recently opened files.
+    /// @param event The dropdown event.
+    void OnOpenDropdown(wxCommandEvent& event);
+
   private:
     bool OnInit() override;
     int OnExit() override;

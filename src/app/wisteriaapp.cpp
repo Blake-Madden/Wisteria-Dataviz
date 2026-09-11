@@ -190,6 +190,8 @@ void WisteriaApp::LoadInterface()
     // let Open accept a dataset as well as a project file (bound on the
     // document manager, which owns the default wxID_OPEN handler)
     GetDocManager()->Bind(wxEVT_MENU, &WisteriaApp::OnOpenProjectOrDataset, this, wxID_OPEN);
+    GetMainFrame()->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaApp::OnOpenDropdown, this,
+                         wxID_OPEN);
 
     wxIcon appIcon;
     const auto appSvg = GetResourceManager().GetSVG(L"wisteria.svg");
@@ -453,6 +455,41 @@ void WisteriaApp::OnOpenProjectOrDataset([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
+void WisteriaApp::OnOpenDropdown(wxCommandEvent& event)
+    {
+    auto& dropdownEvent = dynamic_cast<wxRibbonButtonBarEvent&>(event);
+
+    wxMenu mruMenu;
+    auto* fileHistory = GetDocManager()->GetFileHistory();
+    const size_t fileCount = fileHistory->GetCount();
+    if (fileCount == 0)
+        {
+        mruMenu.Append(wxID_ANY, _(L"No Recently Opened Files"))->Enable(false);
+        }
+    else
+        {
+        for (size_t i = 0; i < fileCount; ++i)
+            {
+            const wxString filePath{ fileHistory->GetHistoryFile(i) };
+            auto* item = mruMenu.Append(wxID_ANY, wxFileName{ filePath }.GetFullName());
+            mruMenu.Bind(
+                wxEVT_MENU,
+                [this, filePath]([[maybe_unused]]
+                                 wxCommandEvent& event)
+                {
+                    if (GetDocManager()->CreateDocument(filePath, wxDOC_SILENT) == nullptr)
+                        {
+                        GetDocManager()->OnOpenFileFailure();
+                        }
+                },
+                item->GetId());
+            }
+        }
+
+    dropdownEvent.PopupMenu(&mruMenu);
+    }
+
+//-------------------------------------------
 void WisteriaApp::StartProjectFromDataset(const wxString& datasetPath)
     {
     // seed the chosen dataset so that WisteriaView::OnCreate() skips its own
@@ -671,15 +708,13 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
     projectButtonBar->AddButton(wxID_NEW, _(L"New"), ReadSvgIcon(L"wisteria.svg"),
                                 _(L"Create a new project"));
 
-    projectButtonBar->AddButton(wxID_OPEN, _(L"Open"), ReadSvgIcon(L"file-open.svg"),
-                                _(L"Open a data file"));
+    projectButtonBar->AddHybridButton(wxID_OPEN, _(L"Open"), ReadSvgIcon(L"file-open.svg"),
+                                      _(L"Open a data file"));
 
     if (isProjectRibbon)
         {
         projectButtonBar->AddHybridButton(ID_SAVE_PROJECT, _(L"Save"),
                                           ReadSvgIcon(L"file-save.svg"), _(L"Save the project"));
-        projectButtonBar->AddButton(ID_REFRESH_ALL, _(L"Refresh All"), ReadSvgIcon(L"reload.svg"),
-                                    _(L"Reload the project"));
         projectButtonBar->AddButton(ID_SVG_EXPORT, _(L"SVG Export"), ReadSvgIcon(L"report.svg"),
                                     _(L"Export all pages to SVG"));
         projectButtonBar->AddButton(ID_PDF_EXPORT, _(L"PDF Export"), ReadSvgIcon(L"pdf.svg"),
@@ -687,6 +722,8 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         projectButtonBar->AddButton(ID_PPTX_EXPORT, _(L"PowerPoint Export"),
                                     ReadSvgIcon(L"powerpoint.svg"),
                                     _(L"Export all pages to PowerPoint"));
+        projectButtonBar->AddButton(ID_REFRESH_ALL, _(L"Refresh All"), ReadSvgIcon(L"reload.svg"),
+                                    _(L"Reload the project"));
         projectButtonBar->AddButton(ID_PROJECT_SETTINGS, _(L"Project Settings"),
                                     ReadSvgIcon(L"project-settings.svg"),
                                     _(L"Edit the project settings"));

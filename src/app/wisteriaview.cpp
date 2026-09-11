@@ -161,6 +161,9 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         wxEVT_RIBBONBUTTONBAR_CLICKED, []([[maybe_unused]] wxRibbonButtonBarEvent&)
         { wxGetApp().GetMainFrameEx()->ActivateLogTab(); }, ID_VIEW_LOG_REPORT);
 
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaApp::OnOpenDropdown, &wxGetApp(),
+                  wxID_OPEN);
+
     // bind copy/paste (route accelerator events to the active canvas)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnCopyItem, this, wxID_COPY);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPasteItem, this, wxID_PASTE);
