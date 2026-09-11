@@ -8,6 +8,7 @@
 
 #include "insertgraphdlg.h"
 #include "../../app/wisteriaapp.h"
+#include "../../base/colorschemenames.h"
 #include "../../base/reportenumconvert.h"
 #include "../../graphs/graph2d.h"
 #include "axisoptionspanel.h"
@@ -2253,200 +2254,51 @@ namespace Wisteria::UI
         {
         wxArrayString names;
         names.Add(_(L"Default"));
-        names.Add(_(L"Arctic Chill"));
-        names.Add(_(L"Back to School"));
-        names.Add(_(L"Box of Chocolates"));
-        names.Add(_(L"Campfire"));
-        names.Add(_(L"Coffee Shop"));
-        names.Add(_(L"Cosmopolitan"));
-        names.Add(_(L"Day and Night"));
-        names.Add(_(L"Decade 1920s"));
-        names.Add(_(L"Decade 1940s"));
-        names.Add(_(L"Decade 1950s"));
-        names.Add(_(L"Decade 1960s"));
-        names.Add(_(L"Decade 1970s"));
-        names.Add(_(L"Decade 1980s"));
-        names.Add(_(L"Decade 1990s"));
-        names.Add(_(L"Decade 2000s"));
-        names.Add(_(L"Dusk"));
-        names.Add(_(L"Earth Tones"));
-        names.Add(_(L"Fresh Flowers"));
-        names.Add(_(L"Ice Cream"));
-        names.Add(_(L"Meadow Sunset"));
-        names.Add(_(L"Nautical"));
-        names.Add(_(L"October"));
-        names.Add(_(L"Produce Section"));
-        names.Add(_(L"Rolling Thunder"));
-        names.Add(_(L"Seasons"));
-        names.Add(_(L"Semesters"));
-        names.Add(_(L"Shabby Chic"));
-        names.Add(_(L"Slytherin"));
-        names.Add(_(L"Spring"));
-        names.Add(_(L"Tasty Waves"));
-        names.Add(_(L"Typewriter"));
-        names.Add(_(L"Urban Oasis"));
+        for (const auto& entry : Colors::Schemes::ColorSchemeCatalog::GetEntries())
+            {
+            names.Add(entry.first);
+            }
         return names;
         }
 
     //-------------------------------------------
-    // clang-format off
     std::shared_ptr<Colors::Schemes::ColorScheme>
     InsertGraphDlg::ColorSchemeFromIndex(const int index)
         {
-        switch (index)
-            {
-        case 1:  return std::make_shared<Colors::Schemes::ArcticChill>();
-        case 2:  return std::make_shared<Colors::Schemes::BackToSchool>();
-        case 3:  return std::make_shared<Colors::Schemes::BoxOfChocolates>();
-        case 4:  return std::make_shared<Colors::Schemes::Campfire>();
-        case 5:  return std::make_shared<Colors::Schemes::CoffeeShop>();
-        case 6:  return std::make_shared<Colors::Schemes::Cosmopolitan>();
-        case 7:  return std::make_shared<Colors::Schemes::DayAndNight>();
-        case 8:  return std::make_shared<Colors::Schemes::Decade1920s>();
-        case 9:  return std::make_shared<Colors::Schemes::Decade1940s>();
-        case 10: return std::make_shared<Colors::Schemes::Decade1950s>();
-        case 11: return std::make_shared<Colors::Schemes::Decade1960s>();
-        case 12: return std::make_shared<Colors::Schemes::Decade1970s>();
-        case 13: return std::make_shared<Colors::Schemes::Decade1980s>();
-        case 14: return std::make_shared<Colors::Schemes::Decade1990s>();
-        case 15: return std::make_shared<Colors::Schemes::Decade2000s>();
-        case 16: return std::make_shared<Colors::Schemes::Dusk>();
-        case 17: return std::make_shared<Colors::Schemes::EarthTones>();
-        case 18: return std::make_shared<Colors::Schemes::FreshFlowers>();
-        case 19: return std::make_shared<Colors::Schemes::IceCream>();
-        case 20: return std::make_shared<Colors::Schemes::MeadowSunset>();
-        case 21: return std::make_shared<Colors::Schemes::Nautical>();
-        case 22: return std::make_shared<Colors::Schemes::October>();
-        case 23: return std::make_shared<Colors::Schemes::ProduceSection>();
-        case 24: return std::make_shared<Colors::Schemes::RollingThunder>();
-        case 25: return std::make_shared<Colors::Schemes::Seasons>();
-        case 26: return std::make_shared<Colors::Schemes::Semesters>();
-        case 27: return std::make_shared<Colors::Schemes::ShabbyChic>();
-        case 28: return std::make_shared<Colors::Schemes::Slytherin>();
-        case 29: return std::make_shared<Colors::Schemes::Spring>();
-        case 30: return std::make_shared<Colors::Schemes::TastyWaves>();
-        case 31: return std::make_shared<Colors::Schemes::Typewriter>();
-        case 32: return std::make_shared<Colors::Schemes::UrbanOasis>();
-        case 0:  [[fallthrough]];
-        default: return nullptr;
-            }
+        const auto& entries = Colors::Schemes::ColorSchemeCatalog::GetEntries();
+        return (index >= 1 && static_cast<size_t>(index) <= entries.size()) ?
+                   Colors::Schemes::ColorSchemeCatalog::FromKey(
+                       entries[static_cast<size_t>(index) - 1].second) :
+                   nullptr;
         }
 
     //-------------------------------------------
-    int InsertGraphDlg::ColorSchemeToIndex(
-        const std::shared_ptr<Colors::Schemes::ColorScheme>& scheme)
+    int
+    InsertGraphDlg::ColorSchemeToIndex(const std::shared_ptr<Colors::Schemes::ColorScheme>& scheme)
         {
-        if (scheme == nullptr)
-            { return 0; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::ArcticChill)))
-            { return 1; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::BackToSchool)))
-            { return 2; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::BoxOfChocolates)))
-            { return 3; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Campfire)))
-            { return 4; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::CoffeeShop)))
-            { return 5; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Cosmopolitan)))
-            { return 6; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::DayAndNight)))
-            { return 7; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Decade1920s)))
-            { return 8; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Decade1940s)))
-            { return 9; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Decade1950s)))
-            { return 10; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Decade1960s)))
-            { return 11; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Decade1970s)))
-            { return 12; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Decade1980s)))
-            { return 13; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Decade1990s)))
-            { return 14; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Decade2000s)))
-            { return 15; }
-        // default
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Dusk)) ||
-            *scheme == Colors::Schemes::Dusk{})
-            { return 16; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::EarthTones)))
-            { return 17; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::FreshFlowers)))
-            { return 18; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::IceCream)))
-            { return 19; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::MeadowSunset)))
-            { return 20; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Nautical)))
-            { return 21; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::October)))
-            { return 22; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::ProduceSection)))
-            { return 23; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::RollingThunder)))
-            { return 24; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Seasons)))
-            { return 25; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Semesters)))
-            { return 26; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::ShabbyChic)))
-            { return 27; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Slytherin)))
-            { return 28; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Spring)))
-            { return 29; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::TastyWaves)))
-            { return 30; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::Typewriter)))
-            { return 31; }
-        if (scheme->IsKindOf(wxCLASSINFO(Colors::Schemes::UrbanOasis)))
-            { return 32; }
+        const wxString key{ Colors::Schemes::ColorSchemeCatalog::ToKey(scheme) };
+        if (key.empty())
+            {
+            return 0;
+            }
+        const auto& entries = Colors::Schemes::ColorSchemeCatalog::GetEntries();
+        for (size_t i = 0; i < entries.size(); ++i)
+            {
+            if (entries[i].second == key)
+                {
+                return static_cast<int>(i) + 1;
+                }
+            }
         return 0;
         }
 
     //-------------------------------------------
     wxString InsertGraphDlg::ColorSchemeToName(const int index)
         {
-        switch (index)
-            {
-        case 1:  return wxString{ L"arcticchill" };
-        case 2:  return wxString{ L"backtoschool" };
-        case 3:  return wxString{ L"boxofchocolates" };
-        case 4:  return wxString{ L"campfire" };
-        case 5:  return wxString{ L"coffeeshop" };
-        case 6:  return wxString{ L"cosmopolitan" };
-        case 7:  return wxString{ L"dayandnight" };
-        case 8:  return wxString{ L"decade1920s" };
-        case 9:  return wxString{ L"decade1940s" };
-        case 10: return wxString{ L"decade1950s" };
-        case 11: return wxString{ L"decade1960s" };
-        case 12: return wxString{ L"decade1970s" };
-        case 13: return wxString{ L"decade1980s" };
-        case 14: return wxString{ L"decade1990s" };
-        case 15: return wxString{ L"decade2000s" };
-        case 16: return wxString{ L"dusk" };
-        case 17: return wxString{ L"earthtones" };
-        case 18: return wxString{ L"freshflowers" };
-        case 19: return wxString{ L"icecream" };
-        case 20: return wxString{ L"meadowsunset" };
-        case 21: return wxString{ L"nautical" };
-        case 22: return wxString{ L"october" };
-        case 23: return wxString{ L"producesection" };
-        case 24: return wxString{ L"rollingthunder" };
-        case 25: return wxString{ L"seasons" };
-        case 26: return wxString{ L"semesters" };
-        case 27: return wxString{ L"shabbychic" };
-        case 28: return wxString{ L"slytherin" };
-        case 29: return wxString{ L"spring" };
-        case 30: return wxString{ L"tastywaves" };
-        case 31: return wxString{ L"typewriter" };
-        case 32: return wxString{ L"urbanoasis" };
-        case 0:  [[fallthrough]];
-        default: return wxString{};
-            }
+        const auto& entries = Colors::Schemes::ColorSchemeCatalog::GetEntries();
+        return (index >= 1 && static_cast<size_t>(index) <= entries.size()) ?
+                   entries[static_cast<size_t>(index) - 1].second :
+                   wxString{};
         }
 
     //-------------------------------------------
@@ -2500,8 +2352,8 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    int InsertGraphDlg::ShapeSchemeToIndex(
-        const std::shared_ptr<Icons::Schemes::IconScheme>& scheme)
+    int
+    InsertGraphDlg::ShapeSchemeToIndex(const std::shared_ptr<Icons::Schemes::IconScheme>& scheme)
         {
         if (scheme == nullptr)
             {
@@ -2523,8 +2375,7 @@ namespace Wisteria::UI
             }
         if (m_useCustomShapeScheme && m_customShapes.empty())
             {
-            wxMessageBox(_(L"Please add at least one shape."),
-                         _(L"No Shapes Specified"),
+            wxMessageBox(_(L"Please add at least one shape."), _(L"No Shapes Specified"),
                          wxOK | wxICON_WARNING, this);
             return false;
             }

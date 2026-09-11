@@ -9,6 +9,7 @@ SET(WISTERIA_SRC
     ../../src/base/colorbrewer.cpp
     ../../src/base/colorlookup.cpp
     ../../src/base/colors.cpp
+    ../../src/base/colorschemenames.cpp
     ../../src/base/commonaxisbuilder.cpp
     ../../src/base/fillableshape.cpp
     ../../src/base/graphitems.cpp
