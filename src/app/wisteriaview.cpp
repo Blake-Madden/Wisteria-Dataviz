@@ -1882,6 +1882,35 @@ WisteriaView::GetLegendSideAndHint(Wisteria::UI::LegendPlacement placement)
     }
 
 //-------------------------------------------
+std::unique_ptr<Wisteria::GraphItems::GraphItemBase>
+WisteriaView::BuildLegend(const Wisteria::UI::InsertGraphDlg& dlg,
+                          const Wisteria::UI::LegendPlacement legendPlacement,
+                          const std::function<std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                              const Wisteria::Graphs::LegendOptions&)>& createLegend)
+    {
+    if (legendPlacement == Wisteria::UI::LegendPlacement::None)
+        {
+        return nullptr;
+        }
+    const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
+    return createLegend(Wisteria::Graphs::LegendOptions{}
+                            .IncludeHeader(dlg.IsLegendIncludingHeader())
+                            .Title(dlg.GetLegendTitle())
+                            .RingPerimeter(dlg.GetLegendRingPerimeter())
+                            .Placement(side)
+                            .PlacementHint(hint));
+    }
+
+//-------------------------------------------
+std::unique_ptr<Wisteria::GraphItems::GraphItemBase>
+WisteriaView::BuildLegend(const Wisteria::UI::InsertGraphDlg& dlg, Wisteria::Graphs::Graph2D& plot,
+                          const Wisteria::UI::LegendPlacement legendPlacement)
+    {
+    return BuildLegend(dlg, legendPlacement, [&plot](const Wisteria::Graphs::LegendOptions& options)
+                       { return plot.CreateLegend(options); });
+    }
+
+//-------------------------------------------
 void WisteriaView::ClearGraphAndLegend(Wisteria::Canvas* canvas,
                                        const Wisteria::Graphs::Graph2D& graph, size_t graphRow,
                                        size_t graphCol)
@@ -2151,28 +2180,20 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                dlg.GetUseEnhancedLegend() ?
+        auto legend =
+            BuildLegend(dlg, legendPlacement,
+                        [&plot, &dlg](const Wisteria::Graphs::LegendOptions& options)
+                            -> std::unique_ptr<Wisteria::GraphItems::GraphItemBase>
+                        {
+                            return dlg.GetUseEnhancedLegend() ?
                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateEnhancedLegend(Wisteria::Graphs::LegendOptions{}
-                                                   .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                                   .Title(dlg.GetLegendTitle())
-                                                   .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                                   .Placement(side)
-                                                   .PlacementHint(hint))) :
+                                           plot->CreateEnhancedLegend(options)) :
                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                                           plot->CreateLegend(options));
+                        });
+        PlaceGraphWithLegend(canvas, plot, std::move(legend), dlg.GetSelectedRow(),
+                             dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -2221,19 +2242,8 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -3251,21 +3261,10 @@ void WisteriaView::EditScatterPlot(const Wisteria::Graphs::Graph2D& graph, Wiste
                              oldGroupName);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -3318,19 +3317,8 @@ void WisteriaView::OnInsertBubblePlot([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -3393,21 +3381,10 @@ void WisteriaView::EditBubblePlot(const Wisteria::Graphs::Graph2D& graph, Wister
                              oldGroupName);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -3492,30 +3469,22 @@ void WisteriaView::EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph,
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                dlg.GetUseEnhancedLegend() ?
+        auto legend =
+            BuildLegend(dlg, legendPlacement,
+                        [&plot, &dlg](const Wisteria::Graphs::LegendOptions& options)
+                            -> std::unique_ptr<Wisteria::GraphItems::GraphItemBase>
+                        {
+                            return dlg.GetUseEnhancedLegend() ?
                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateEnhancedLegend(Wisteria::Graphs::LegendOptions{}
-                                                   .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                                   .Title(dlg.GetLegendTitle())
-                                                   .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                                   .Placement(side)
-                                                   .PlacementHint(hint))) :
+                                           plot->CreateEnhancedLegend(options)) :
                 std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                                           plot->CreateLegend(options));
+                        });
+        PlaceGraphWithLegend(canvas, plot, std::move(legend), dlg.GetSelectedRow(),
+                             dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -3573,19 +3542,8 @@ void WisteriaView::OnInsertLinePlot([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -3652,21 +3610,10 @@ void WisteriaView::EditLinePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -3710,19 +3657,8 @@ void WisteriaView::OnInsertMultiSeriesLinePlot([[maybe_unused]] wxCommandEvent& 
         plot->SetPropertyTemplate(L"variables.x", dlg.GetXVariable());
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -3778,21 +3714,10 @@ void WisteriaView::EditMultiSeriesLinePlot(const Wisteria::Graphs::Graph2D& grap
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -3845,19 +3770,8 @@ void WisteriaView::OnInsertWCurvePlot([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -3919,21 +3833,10 @@ void WisteriaView::EditWCurvePlot(const Wisteria::Graphs::Graph2D& graph, Wister
                              oldGroupName);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -3988,19 +3891,8 @@ void WisteriaView::OnInsertLRRoadmap([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -4064,21 +3956,10 @@ void WisteriaView::EditLRRoadmap(const Wisteria::Graphs::Graph2D& graph, Wisteri
                                                      wxString{});
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -4142,19 +4023,8 @@ void WisteriaView::OnInsertProConRoadmap([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -4227,21 +4097,10 @@ void WisteriaView::EditProConRoadmap(const Wisteria::Graphs::Graph2D& graph,
             oldRoadmap != nullptr ? oldRoadmap->GetNegativeValueColumnName() : wxString{});
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -4328,19 +4187,8 @@ void WisteriaView::OnInsertGanttChart([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -4449,21 +4297,10 @@ void WisteriaView::EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -4904,19 +4741,8 @@ void WisteriaView::OnInsertBoxPlot([[maybe_unused]] wxCommandEvent& event)
                                  L"horizontal");
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -5072,21 +4898,10 @@ void WisteriaView::EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
                                  L"horizontal");
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -5310,19 +5125,8 @@ void WisteriaView::OnInsertCatBarChart([[maybe_unused]] wxCommandEvent& event)
                                  L"horizontal");
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -5644,21 +5448,10 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
                                  L"horizontal");
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -5757,19 +5550,8 @@ void WisteriaView::OnInsertLikertChart([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -5872,22 +5654,11 @@ void WisteriaView::EditLikertChart(const Wisteria::Graphs::Graph2D& graph, Wiste
                              oldExpanded(L"variables.group"));
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
-            graphRow, graphCol, legendPlacement);
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement), graphRow,
+                             graphCol, legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -5936,19 +5707,8 @@ void WisteriaView::OnInsertHeatMap([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -6006,21 +5766,10 @@ void WisteriaView::EditHeatMap(const Wisteria::Graphs::Graph2D& graph, Wisteria:
                              oldGroupName);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -6085,19 +5834,8 @@ void WisteriaView::OnInsertHistogram([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -6171,21 +5909,10 @@ void WisteriaView::EditHistogram(const Wisteria::Graphs::Graph2D& graph, Wisteri
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -6259,19 +5986,8 @@ void WisteriaView::OnInsertScaleChart([[maybe_unused]] wxCommandEvent& event)
         plot->SetData(dlg.GetSelectedDataset(), dlg.GetScoreVariable(), groupCol);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -6353,21 +6069,10 @@ void WisteriaView::EditScaleChart(const Wisteria::Graphs::Graph2D& graph, Wister
                              oldGroupName);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -6523,23 +6228,18 @@ void WisteriaView::OnInsertChoroplethMap([[maybe_unused]] wxCommandEvent& event)
         const bool wantsLegend = dlg.IsMappingData() || dlg.IsUsingProportionalSymbols();
         const auto legendPlacement =
             wantsLegend ? dlg.GetLegendPlacement() : Wisteria::UI::LegendPlacement::None;
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legendObject;
-        if (legendPlacement != Wisteria::UI::LegendPlacement::None)
+        auto legendObject =
+            BuildLegend(dlg, legendPlacement,
+                        [&plot, &dlg](const Wisteria::Graphs::LegendOptions& options)
+                            -> std::unique_ptr<Wisteria::GraphItems::GraphItemBase>
             {
-            const auto legendOptions = Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint);
-            legendObject = dlg.GetSymbolColumn().empty() ?
+                            return dlg.GetSymbolColumn().empty() ?
                                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                                   plot->CreateLegend(legendOptions)) :
+                                           plot->CreateLegend(options)) :
                                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                                   plot->CreateChoroplethLegend(legendOptions));
-            }
+                                           plot->CreateChoroplethLegend(options));
+                        });
 
         PlaceGraphWithLegend(canvas, plot, std::move(legendObject), dlg.GetSelectedRow(),
                              dlg.GetSelectedColumn(), legendPlacement);
@@ -6676,23 +6376,18 @@ void WisteriaView::EditChoroplethMap(const Wisteria::Graphs::Graph2D& graph,
         const bool wantsLegend = dlg.IsMappingData() || dlg.IsUsingProportionalSymbols();
         const auto legendPlacement =
             wantsLegend ? dlg.GetLegendPlacement() : Wisteria::UI::LegendPlacement::None;
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legendObject;
-        if (legendPlacement != Wisteria::UI::LegendPlacement::None)
+        auto legendObject =
+            BuildLegend(dlg, legendPlacement,
+                        [&plot, &newSymbolColumn](const Wisteria::Graphs::LegendOptions& options)
+                            -> std::unique_ptr<Wisteria::GraphItems::GraphItemBase>
             {
-            const auto legendOptions = Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint);
-            legendObject = newSymbolColumn.empty() ?
+                            return newSymbolColumn.empty() ?
                                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                                   plot->CreateLegend(legendOptions)) :
+                                           plot->CreateLegend(options)) :
                                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                                   plot->CreateChoroplethLegend(legendOptions));
-            }
+                                           plot->CreateChoroplethLegend(options));
+                        });
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
         PlaceGraphWithLegend(canvas, plot, std::move(legendObject), dlg.GetSelectedRow(),
@@ -6799,19 +6494,8 @@ void WisteriaView::OnInsertWLSparkline([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -6871,21 +6555,10 @@ void WisteriaView::EditWLSparkline(const Wisteria::Graphs::Graph2D& graph, Wiste
                              oldWL != nullptr ? oldWL->GetPostseasonColumnName() : wxString{});
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -6930,19 +6603,8 @@ void WisteriaView::OnInsertStemAndLeaf([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -6995,21 +6657,10 @@ void WisteriaView::EditStemAndLeaf(const Wisteria::Graphs::Graph2D& graph, Wiste
                              oldGroupName);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -7160,19 +6811,8 @@ void WisteriaView::OnInsertPieChart([[maybe_unused]] wxCommandEvent& event)
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -7325,21 +6965,10 @@ void WisteriaView::EditPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria
                              oldPie != nullptr ? oldPie->GetGroupColumn2Name() : wxString{});
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -7372,19 +7001,8 @@ void WisteriaView::OnInsertWaffleChart([[maybe_unused]] wxCommandEvent& event)
         dlg.ApplyPageOptions(*plot);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -7423,19 +7041,8 @@ void WisteriaView::EditWaffleChart(const Wisteria::Graphs::Graph2D& graph, Wiste
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -7600,18 +7207,8 @@ void WisteriaView::OnInsertNightingaleRoseChart([[maybe_unused]] wxCommandEvent&
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -7683,18 +7280,8 @@ void WisteriaView::EditNightingaleRoseChart(const Wisteria::Graphs::Graph2D& gra
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -7764,19 +7351,8 @@ void WisteriaView::OnInsertWilmarthBridgePlot([[maybe_unused]] wxCommandEvent& e
             }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
@@ -7863,19 +7439,8 @@ void WisteriaView::EditWilmarthBridgePlot(const Wisteria::Graphs::Graph2D& graph
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         const auto legendPlacement = dlg.GetLegendPlacement();
-        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
 
-        PlaceGraphWithLegend(
-            canvas, plot,
-            (legendPlacement != Wisteria::UI::LegendPlacement::None) ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
-                    plot->CreateLegend(Wisteria::Graphs::LegendOptions{}
-                                           .IncludeHeader(dlg.IsLegendIncludingHeader())
-                                           .Title(dlg.GetLegendTitle())
-                                           .RingPerimeter(dlg.GetLegendRingPerimeter())
-                                           .Placement(side)
-                                           .PlacementHint(hint))) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)

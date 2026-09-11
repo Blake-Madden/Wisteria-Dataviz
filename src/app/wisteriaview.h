@@ -13,6 +13,7 @@
 #include "../ui/controls/sidebar.h"
 #include "../ui/dialogs/editors/insertgraphdlg.h"
 #include "../util/windowcontainer.h"
+#include <functional>
 #include <optional>
 #include <vector>
 #include <wx/docview.h>
@@ -276,6 +277,33 @@ class WisteriaView final : public wxView
     [[nodiscard]]
     static std::pair<Wisteria::Side, Wisteria::LegendCanvasPlacementHint>
     GetLegendSideAndHint(Wisteria::UI::LegendPlacement placement);
+
+    /// @brief Builds a graph's legend (via Graph2D::CreateLegend()), based on the
+    ///     dialog's legend settings.
+    /// @param dlg The graph dialog containing the legend settings.
+    /// @param plot The graph to create the legend from.
+    /// @param legendPlacement The placement the legend was requested at.
+    /// @returns The legend, or @c nullptr if @p legendPlacement is LegendPlacement::None.
+    [[nodiscard]]
+    static std::unique_ptr<Wisteria::GraphItems::GraphItemBase>
+    BuildLegend(const Wisteria::UI::InsertGraphDlg& dlg, Wisteria::Graphs::Graph2D& plot,
+                Wisteria::UI::LegendPlacement legendPlacement);
+
+    /// @brief Builds a graph's legend from a caller-supplied factory, based on the
+    ///     dialog's legend settings.
+    /// @details Use this overload for graphs that offer more than one kind of legend
+    ///     (e.g., Chernoff faces' enhanced legend, or a choropleth map's symbol legend),
+    ///     where the caller needs to pick which @c Create*Legend() method to call.
+    /// @param dlg The graph dialog containing the legend settings.
+    /// @param legendPlacement The placement the legend was requested at.
+    /// @param createLegend Builds the legend from the resolved legend options.
+    /// @returns The legend, or @c nullptr if @p legendPlacement is LegendPlacement::None.
+    [[nodiscard]]
+    static std::unique_ptr<Wisteria::GraphItems::GraphItemBase>
+    BuildLegend(const Wisteria::UI::InsertGraphDlg& dlg,
+                Wisteria::UI::LegendPlacement legendPlacement,
+                const std::function<std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                    const Wisteria::Graphs::LegendOptions&)>& createLegend);
 
     /// @brief Clears a graph and its legend from a canvas.
     /// @param canvas The canvas to clear from.
