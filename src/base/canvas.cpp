@@ -1065,8 +1065,27 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 auto& objectsPos = currentRow[i];
                 if (objectsPos != nullptr)
                     {
-                    // set the scaling from the canvas and get the bounding box for it to fit in
-                    objectsPos->SetScaling(GetScaling());
+                    // set the scaling from the canvas and get the bounding box for it to fit in,
+                    // unless it's a label whose scaling has been explicitly locked
+                    const bool isLockedLabel{
+                        [&objectsPos]()
+                        {
+                            if (objectsPos->IsKindOf(wxCLASSINFO(GraphItems::Label)))
+                                {
+                                const auto* label =
+                                    dynamic_cast<const GraphItems::Label*>(objectsPos.get());
+                                if (label != nullptr)
+                                    {
+                                    return label->IsBoundingBoxScalingLocked();
+                                    }
+                                }
+                            return false;
+                        }()
+                    };
+                    if (!isLockedLabel)
+                        {
+                        objectsPos->SetScaling(GetScaling());
+                        }
                     const auto currentObjHeight =
                         objectsPos->GetCanvasHeightProportion() ?
                             objectsPos->GetCanvasHeightProportion().value() *
