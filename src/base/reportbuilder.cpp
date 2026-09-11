@@ -262,6 +262,22 @@ namespace Wisteria
                 boolAttr(L"loop", m_powerPointExportOptions.m_loopContinuously);
             m_powerPointExportOptions.m_includeAccessibilityNotes = boolAttr(
                 L"accessibility-notes", m_powerPointExportOptions.m_includeAccessibilityNotes);
+            m_powerPointExportOptions.m_includeTitleSlide =
+                boolAttr(L"title-slide", m_powerPointExportOptions.m_includeTitleSlide);
+            if (const auto themeNode = pptxExportNode->GetProperty(L"title-slide-theme");
+                themeNode->IsOk())
+                {
+                m_powerPointExportOptions.m_titleSlideTheme = themeNode->AsString();
+                }
+            if (const auto authorNode = pptxExportNode->GetProperty(L"author"); authorNode->IsOk())
+                {
+                m_powerPointExportOptions.m_author = authorNode->AsString();
+                }
+            if (const auto publisherNode = pptxExportNode->GetProperty(L"publisher");
+                publisherNode->IsOk())
+                {
+                m_powerPointExportOptions.m_publisher = publisherNode->AsString();
+                }
             }
 
         // start loading the pages

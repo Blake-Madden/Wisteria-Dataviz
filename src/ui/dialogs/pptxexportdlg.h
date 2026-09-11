@@ -19,8 +19,9 @@
 namespace Wisteria::UI
     {
     /** @brief Options dialog for exporting to PowerPoint.
-        @details Prompts the user for slide size, document metadata, slide
-            transitions, auto-advance/loop behavior, and speaker notes.*/
+        @details Prompts the user for slide size, document metadata, an optional
+            title slide (with a named color theme), slide transitions, auto-advance/loop
+            behavior, and speaker notes.*/
     class PptxExportDlg final : public DialogWithHelp
         {
       public:
@@ -47,6 +48,7 @@ namespace Wisteria::UI
         void CreateControls();
         void UpdateSlideSizeControls();
         void UpdateTransitionControls();
+        void UpdateTitleSlideControls();
 
         bool Validate() final;
 
@@ -57,6 +59,10 @@ namespace Wisteria::UI
         wxSpinCtrlDouble* m_customWidthCtrl{ nullptr };
         wxStaticText* m_customHeightLabel{ nullptr };
         wxSpinCtrlDouble* m_customHeightCtrl{ nullptr };
+
+        wxCheckBox* m_titleSlideCheck{ nullptr };
+        wxStaticText* m_titleSlideThemeLabel{ nullptr };
+        wxChoice* m_titleSlideThemeChoice{ nullptr };
 
         wxChoice* m_transitionChoice{ nullptr };
         wxStaticText* m_transitionSpeedLabel{ nullptr };

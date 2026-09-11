@@ -151,6 +151,10 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
         pptxNode->Add(L"advance-seconds", static_cast<double>(pptxOpts.m_advanceSeconds));
         pptxNode->Add(L"loop", pptxOpts.m_loopContinuously);
         pptxNode->Add(L"accessibility-notes", pptxOpts.m_includeAccessibilityNotes);
+        pptxNode->Add(L"title-slide", pptxOpts.m_includeTitleSlide);
+        pptxNode->Add(L"title-slide-theme", pptxOpts.m_titleSlideTheme);
+        pptxNode->Add(L"author", pptxOpts.m_author);
+        pptxNode->Add(L"publisher", pptxOpts.m_publisher);
         root->Add(L"powerpoint-export", pptxNode);
         }
 

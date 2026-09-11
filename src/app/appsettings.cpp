@@ -210,6 +210,14 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                 boolAttr(L"loop", m_powerPointExportOptions.m_loopContinuously);
             m_powerPointExportOptions.m_includeAccessibilityNotes = boolAttr(
                 L"accessibility-notes", m_powerPointExportOptions.m_includeAccessibilityNotes);
+            m_powerPointExportOptions.m_includeTitleSlide =
+                boolAttr(L"title-slide", m_powerPointExportOptions.m_includeTitleSlide);
+            m_powerPointExportOptions.m_titleSlideTheme = child->GetAttribute(
+                L"title-slide-theme", m_powerPointExportOptions.m_titleSlideTheme);
+            m_powerPointExportOptions.m_author =
+                child->GetAttribute(L"author", m_powerPointExportOptions.m_author);
+            m_powerPointExportOptions.m_publisher =
+                child->GetAttribute(L"publisher", m_powerPointExportOptions.m_publisher);
             }
         }
 
@@ -297,6 +305,11 @@ bool AppSettings::SaveSettingsFile(const wxString& filePath)
     pptxNode->AddAttribute(L"loop", m_powerPointExportOptions.m_loopContinuously ? L"1" : L"0");
     pptxNode->AddAttribute(L"accessibility-notes",
                            m_powerPointExportOptions.m_includeAccessibilityNotes ? L"1" : L"0");
+    pptxNode->AddAttribute(L"title-slide",
+                           m_powerPointExportOptions.m_includeTitleSlide ? L"1" : L"0");
+    pptxNode->AddAttribute(L"title-slide-theme", m_powerPointExportOptions.m_titleSlideTheme);
+    pptxNode->AddAttribute(L"author", m_powerPointExportOptions.m_author);
+    pptxNode->AddAttribute(L"publisher", m_powerPointExportOptions.m_publisher);
     root->AddChild(pptxNode);
 
     if (!doc.Save(filePath))

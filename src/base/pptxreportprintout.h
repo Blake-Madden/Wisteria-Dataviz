@@ -73,6 +73,20 @@ namespace Wisteria
         wxString m_subject;
         /// @brief The document keywords.
         wxString m_keywords;
+        /// @brief The document publisher, shown as the extended-properties "Company"
+        ///     field and, when set, at the bottom of the title slide.
+        wxString m_publisher;
+
+        // title slide
+        //------------
+
+        /// @brief Whether to add a title slide (deck title, author, and publisher)
+        ///     before the report pages. Has no effect when @c m_title is empty.
+        bool m_includeTitleSlide{ true };
+        /// @brief The lowercase key of a named color scheme (e.g. @c L"dusk") used to give
+        ///     the title slide a themed background, accent bar, and colored title text.
+        ///     Empty means the title slide is plain (white background, dark text).
+        wxString m_titleSlideTheme;
 
         // slide size
         //-----------
@@ -217,6 +231,18 @@ namespace Wisteria
         [[nodiscard]]
         static wxString BuildPicturePlacementXml(long long slideCx, long long slideCy,
                                                  int imageWidth, int imageHeight);
+        /// @brief The title slide's @c \<p:sld\> content: the deck title, centered, with
+        ///     the author beneath it as a subtitle when set, and the publisher, when
+        ///     set, at the bottom of the slide. When @c options.m_titleSlideTheme names a
+        ///     known color scheme, the slide also gets a gradient background, a left
+        ///     accent bar, a decorative accent circle, and themed text colors.
+        [[nodiscard]]
+        static wxString BuildTitleSlideXml(const PowerPointExportOptions& options,
+                                           long long slideCx, long long slideCy);
+        /// @returns @p color as an uppercase @c "RRGGBB" hex string (no leading @c '#'),
+        ///     suitable for an OOXML @c \<a:srgbClr val="..."/\> attribute.
+        [[nodiscard]]
+        static wxString ColorToHex(const wxColour& color);
         };
     } // namespace Wisteria
 

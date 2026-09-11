@@ -1206,6 +1206,7 @@ void WisteriaView::OnPptxExport([[maybe_unused]] wxCommandEvent& event)
 
     const bool pptxOptionsChanged =
         (savedOptions.m_author != options.m_author) ||
+        (savedOptions.m_publisher != options.m_publisher) ||
         (savedOptions.m_slideSize != options.m_slideSize) ||
         (savedOptions.m_customWidthInches != options.m_customWidthInches) ||
         (savedOptions.m_customHeightInches != options.m_customHeightInches) ||
@@ -1215,7 +1216,9 @@ void WisteriaView::OnPptxExport([[maybe_unused]] wxCommandEvent& event)
         (savedOptions.m_advanceAutomatically != options.m_advanceAutomatically) ||
         (savedOptions.m_advanceSeconds != options.m_advanceSeconds) ||
         (savedOptions.m_loopContinuously != options.m_loopContinuously) ||
-        (savedOptions.m_includeAccessibilityNotes != options.m_includeAccessibilityNotes);
+        (savedOptions.m_includeAccessibilityNotes != options.m_includeAccessibilityNotes) ||
+        (savedOptions.m_includeTitleSlide != options.m_includeTitleSlide) ||
+        (savedOptions.m_titleSlideTheme != options.m_titleSlideTheme);
     if (pptxOptionsChanged)
         {
         savedOptions = options;

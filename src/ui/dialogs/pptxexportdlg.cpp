@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "pptxexportdlg.h"
+#include "../../base/colorschemenames.h"
 #include <utility>
 #include <wx/valgen.h>
 #include <wx/wupdlock.h>
@@ -108,9 +109,55 @@ namespace Wisteria::UI
                            wxDefaultSize, 0, wxGenericValidator{ &m_options.m_keywords });
         docInfoGrid->Add(keywordsCtrl, wxSizerFlags{}.Expand());
 
+        docInfoGrid->Add(
+            new wxStaticText(docInfoBox->GetStaticBox(), wxID_STATIC, _(L"Publisher:")),
+            wxSizerFlags{}.CenterVertical());
+        auto* publisherCtrl =
+            new wxTextCtrl(docInfoBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+                           wxDefaultSize, 0, wxGenericValidator{ &m_options.m_publisher });
+        docInfoGrid->Add(publisherCtrl, wxSizerFlags{}.Expand());
+
         docInfoBox->Add(docInfoGrid, wxSizerFlags{}.Expand().Border());
 
+        m_titleSlideCheck = new wxCheckBox(
+            docInfoBox->GetStaticBox(), wxID_ANY, _(L"Include a title slide"), wxDefaultPosition,
+            wxDefaultSize, 0, wxGenericValidator{ &m_options.m_includeTitleSlide });
+        m_titleSlideCheck->SetValue(m_options.m_includeTitleSlide);
+        docInfoBox->Add(m_titleSlideCheck, wxSizerFlags{}.Border(wxTOP));
+
+        auto* themeSizer = new wxBoxSizer(wxHORIZONTAL);
+        m_titleSlideThemeLabel =
+            new wxStaticText(docInfoBox->GetStaticBox(), wxID_STATIC, _(L"Theme:"));
+        themeSizer->Add(m_titleSlideThemeLabel, wxSizerFlags{}.CenterVertical());
+        wxArrayString themeChoices;
+        themeChoices.Add(_(L"None"));
+        for (const auto& entry : Colors::Schemes::ColorSchemeCatalog::GetEntries())
+            {
+            themeChoices.Add(entry.first);
+            }
+        m_titleSlideThemeChoice = new wxChoice(docInfoBox->GetStaticBox(), wxID_ANY,
+                                               wxDefaultPosition, wxDefaultSize, themeChoices);
+        int themeSelection{ 0 };
+        if (!m_options.m_titleSlideTheme.empty())
+            {
+            const auto& entries = Colors::Schemes::ColorSchemeCatalog::GetEntries();
+            for (size_t i = 0; i < entries.size(); ++i)
+                {
+                if (entries[i].second.CmpNoCase(m_options.m_titleSlideTheme) == 0)
+                    {
+                    themeSelection = static_cast<int>(i) + 1;
+                    break;
+                    }
+                }
+            }
+        m_titleSlideThemeChoice->SetSelection(themeSelection);
+        themeSizer->Add(m_titleSlideThemeChoice, wxSizerFlags{}.CenterVertical().Border(wxLEFT));
+        docInfoBox->Add(themeSizer, wxSizerFlags{}.Border(wxTOP));
+
         mainSizer->Add(docInfoBox, wxSizerFlags{}.Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM));
+
+        m_titleSlideCheck->Bind(wxEVT_CHECKBOX,
+                                [this](wxCommandEvent&) { UpdateTitleSlideControls(); });
 
         // transitions
         auto* transitionsBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Transitions"));
@@ -199,6 +246,7 @@ namespace Wisteria::UI
 
         UpdateSlideSizeControls();
         UpdateTransitionControls();
+        UpdateTitleSlideControls();
         }
 
     //------------------------------------------------------
@@ -211,6 +259,16 @@ namespace Wisteria::UI
         m_customWidthCtrl->Enable(isCustom);
         m_customHeightLabel->Enable(isCustom);
         m_customHeightCtrl->Enable(isCustom);
+        }
+
+    //------------------------------------------------------
+    void PptxExportDlg::UpdateTitleSlideControls()
+        {
+        const wxWindowUpdateLocker noUpdates{ this };
+
+        const bool includeTitleSlide{ m_titleSlideCheck->GetValue() };
+        m_titleSlideThemeLabel->Enable(includeTitleSlide);
+        m_titleSlideThemeChoice->Enable(includeTitleSlide);
         }
 
     //------------------------------------------------------
@@ -240,6 +298,13 @@ namespace Wisteria::UI
             static_cast<PowerPointExportOptions::Transition>(m_transitionChoice->GetSelection());
         m_options.m_transitionSpeed = static_cast<PowerPointExportOptions::TransitionSpeed>(
             m_transitionSpeedChoice->GetSelection());
+
+        const int themeSelection{ m_titleSlideThemeChoice->GetSelection() };
+        const auto& themeEntries = Colors::Schemes::ColorSchemeCatalog::GetEntries();
+        m_options.m_titleSlideTheme =
+            (themeSelection >= 1 && static_cast<size_t>(themeSelection) <= themeEntries.size()) ?
+                themeEntries[static_cast<size_t>(themeSelection) - 1].second :
+                wxString{};
 
         return wxDialog::Validate();
         }
