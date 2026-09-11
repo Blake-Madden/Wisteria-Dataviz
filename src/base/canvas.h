@@ -1024,6 +1024,8 @@ namespace Wisteria
         constexpr static double ZOOM_FACTOR{ 1.5 };
         int m_zoomLevel{ 0 };
 
+        constexpr static int PAGE_SHADOW_OFFSET_DIPS{ 10 };
+
         // the current drawing rect
         wxRect m_rectDIPs;
         // centering offset in device pixels (used for SetDeviceOrigin in OnPaint)

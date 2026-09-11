@@ -898,10 +898,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     safe_divide<double>(GetCanvasMinHeightDIPs(), GetCanvasMinWidthDIPs());
                 // Constrain the width so the proportional height fits in the viewport;
                 // prevents the canvas from growing taller than the screen on wide monitors.
+                // Reserve a margin on both axes so the page's drop-shadow decoration
+                // (drawn past the right and bottom edges) isn't clipped by the viewport.
+                const auto shadowMarginDIPs = 2 * PAGE_SHADOW_OFFSET_DIPS;
                 const auto clientHeightDIPs = gdc.ToDIP(GetClientRect().GetHeight());
-                const auto maxWidthForViewport =
-                    static_cast<int>(safe_divide<double>(clientHeightDIPs, heightToWidthRatio));
-                m_rectDIPs.SetWidth(std::min(m_rectDIPs.GetWidth(), maxWidthForViewport));
+                const auto maxWidthForViewport = static_cast<int>(safe_divide<double>(
+                    std::max(clientHeightDIPs - shadowMarginDIPs, 1), heightToWidthRatio));
+                m_rectDIPs.SetWidth(
+                    std::min(m_rectDIPs.GetWidth() - shadowMarginDIPs, maxWidthForViewport));
                 m_rectDIPs.SetHeight(static_cast<int>(m_rectDIPs.GetWidth() * heightToWidthRatio));
                 }
             else
@@ -1279,7 +1283,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             }
 
         const wxSize clientSizePx(GetClientRect().GetWidth(), GetClientRect().GetHeight());
-        const auto contentSizePx = GetCanvasRect(dc).GetSize();
+        auto contentSizePx = GetCanvasRect(dc).GetSize();
+        // when the page overflows the viewport, include room for the drop-shadow
+        // decoration so it can be scrolled into view rather than clipped at the edge
+        if (IsMaintainingAspectRatio())
+            {
+            const auto shadowOffsetPx = dc.FromDIP(PAGE_SHADOW_OFFSET_DIPS);
+            contentSizePx.IncBy(shadowOffsetPx, shadowOffsetPx);
+            }
         SetVirtualSize(wxSize(std::max(clientSizePx.GetWidth(), contentSizePx.GetWidth()),
                               std::max(clientSizePx.GetHeight(), contentSizePx.GetHeight())));
         }
@@ -1708,7 +1719,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 return;
                 }
             const auto canvasRect = GetCanvasRect(dc);
-            const auto shadowOffset = dc.FromDIP(10);
+            const auto shadowOffset = dc.FromDIP(PAGE_SHADOW_OFFSET_DIPS);
                 {
                 const wxDCPenChanger pd{ dc, *wxTRANSPARENT_PEN };
                 const wxDCBrushChanger bc{ dc, wxBrush{ wxColour(128, 128, 128, 64) } };
@@ -2444,10 +2455,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             {
             const auto heightToWidthRatio =
                 safe_divide<double>(GetCanvasMinHeightDIPs(), GetCanvasMinWidthDIPs());
+            // reserve a margin on both axes so the page's drop-shadow decoration
+            // (drawn past the right and bottom edges) isn't clipped by the viewport
+            const auto shadowMarginDIPs = 2 * PAGE_SHADOW_OFFSET_DIPS;
             const auto clientHeightDIPs = gdc.ToDIP(GetClientRect().GetHeight());
-            const auto maxWidthForViewport =
-                static_cast<int>(safe_divide<double>(clientHeightDIPs, heightToWidthRatio));
-            m_rectDIPs.SetWidth(std::min(m_rectDIPs.GetWidth(), maxWidthForViewport));
+            const auto maxWidthForViewport = static_cast<int>(safe_divide<double>(
+                std::max(clientHeightDIPs - shadowMarginDIPs, 1), heightToWidthRatio));
+            m_rectDIPs.SetWidth(
+                std::min(m_rectDIPs.GetWidth() - shadowMarginDIPs, maxWidthForViewport));
             m_rectDIPs.SetHeight(static_cast<int>(m_rectDIPs.GetWidth() * heightToWidthRatio));
             }
         else
