@@ -148,10 +148,30 @@ namespace Wisteria::UI
         bool TransferDataToWindow() final;
 
       private:
+        /// @brief The raw content of the data file for one worksheet/read, captured once
+        ///     and reused for both column-type deduction and the preview import, so the
+        ///     file is only read and parsed a single time per refresh.
+        struct RawFileContent
+            {
+            /// @brief The worksheet/file data, delimited as text (used for column-type
+            ///     deduction via Data::Dataset::ReadColumnInfoRaw()).
+            wxString m_text;
+            /// @brief The worksheet's cells, row by row, for the preview import via
+            ///     Data::Dataset::ImportMatrix(). Set only for Excel/ODS files;
+            ///     unset means import from @c m_text instead (plain text files).
+            std::optional<std::vector<std::vector<std::wstring>>> m_matrix;
+            };
+
+        /// @brief Reads the current file's worksheet (or full text) once.
+        /// @param worksheet The worksheet to read, for Excel/ODS files.
+        /// @returns The file's content, for reuse by both RefreshPreview() and UpdateGrid().
+        [[nodiscard]]
+        RawFileContent ReadRawFileContent(const std::variant<wxString, size_t>& worksheet) const;
+
         void CreateControls();
         void RefreshPreview();
         void RefreshPreviewFromColumnInfo();
-        void UpdateGrid();
+        void UpdateGrid(RawFileContent rawContent);
         void PopulatePreviewFromDataset(const std::shared_ptr<const Data::Dataset>& dataset);
         void ApplyColumnHeaderIcons(DatasetGridTable* table);
         void ApplyExcludedColumnStyling();

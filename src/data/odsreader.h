@@ -64,6 +64,30 @@ namespace Wisteria::Data
         std::vector<std::vector<std::wstring>>
         ReadWorksheetMatrix(const std::variant<wxString, size_t>& worksheet);
 
+        /// @brief Both representations of a worksheet, as read by ReadWorksheetContent().
+        struct WorksheetContent
+            {
+            /// @brief The worksheet data, delimited as text.
+            wxString m_text;
+            /// @brief The worksheet's cells, row by row.
+            std::vector<std::vector<std::wstring>> m_matrix;
+            };
+
+        /** @brief Reads a worksheet as both delimited text and a cell matrix.
+            @details Prefer this over calling ReadWorksheet() and ReadWorksheetMatrix()
+                separately when both forms are needed (e.g., deducing column types from
+                the text form and then importing from the matrix form), as this only
+                parses the worksheet's XML once.
+            @param worksheet The name or 1-based index of the worksheet to read.
+            @param delimiter The character to delimit the columns with (for the text form).
+            @returns The worksheet's text and matrix representations.
+            @throws std::runtime_error If the worksheet can't be found, throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
+        [[nodiscard]]
+        WorksheetContent ReadWorksheetContent(const std::variant<wxString, size_t>& worksheet,
+                                              wchar_t delimiter = L'\t');
+
       private:
         /// @brief Loads and parses a worksheet from `content.xml` into a cell matrix.
         /// @param worksheet The name or 1-based index of the worksheet to read.

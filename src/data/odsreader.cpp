@@ -85,4 +85,19 @@ namespace Wisteria::Data
         auto wkData = ReadWorksheetData(worksheet);
         return lily_of_the_valley::ods_extract_text::extract_worksheet_matrix(wkData);
         }
+
+    //---------------------------------------------------
+    OdsReader::WorksheetContent
+    OdsReader::ReadWorksheetContent(const std::variant<wxString, size_t>& worksheet,
+                                    const wchar_t delimiter)
+        {
+        auto wkData = ReadWorksheetData(worksheet);
+        // get_worksheet_text() must run before extract_worksheet_matrix(), which
+        // destructively moves each cell's value out of wkData
+        WorksheetContent content;
+        content.m_text =
+            lily_of_the_valley::ods_extract_text::get_worksheet_text(wkData, delimiter);
+        content.m_matrix = lily_of_the_valley::ods_extract_text::extract_worksheet_matrix(wkData);
+        return content;
+        }
     } // namespace Wisteria::Data

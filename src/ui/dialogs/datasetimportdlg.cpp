@@ -439,6 +439,38 @@ namespace Wisteria::UI
         }
 
     //----------------------------------------------
+    DatasetImportDlg::RawFileContent
+    DatasetImportDlg::ReadRawFileContent(const std::variant<wxString, size_t>& worksheet) const
+        {
+        RawFileContent content;
+        if (m_fileExt.CmpNoCase(L"xlsx") == 0)
+            {
+            Data::ExcelReader xlReader(m_filePath);
+            auto worksheetContent = xlReader.ReadWorksheetContent(worksheet);
+            content.m_text = std::move(worksheetContent.m_text);
+            content.m_matrix = std::move(worksheetContent.m_matrix);
+            }
+        else if (m_fileExt.CmpNoCase(L"ods") == 0)
+            {
+            Data::OdsReader odsReader(m_filePath);
+            auto worksheetContent = odsReader.ReadWorksheetContent(worksheet);
+            content.m_text = std::move(worksheetContent.m_text);
+            content.m_matrix = std::move(worksheetContent.m_matrix);
+            }
+        else
+            {
+            if (wxFile theFile(m_filePath);
+                !theFile.IsOpened() || !theFile.ReadAll(&content.m_text))
+                {
+                throw std::runtime_error(wxString::Format(L"'%s':\n%s", m_filePath,
+                                                          wxSysErrorMsg(theFile.GetLastError()))
+                                             .ToUTF8());
+                }
+            }
+        return content;
+        }
+
+    //----------------------------------------------
     void DatasetImportDlg::OnOptionChanged([[maybe_unused]] wxCommandEvent& event)
         {
         m_hasChanges = true;
@@ -684,9 +716,12 @@ namespace Wisteria::UI
 
             const auto worksheet = GetWorksheet();
 
-            // read column info from file
-            const auto freshColumnInfo = Data::Dataset::ReadColumnInfo(
-                m_filePath, previewInfo, Settings::PREVIEW_MAX_ROWS, worksheet);
+            // read the file once and reuse its content for both column-type deduction
+            // (below) and the preview import
+            auto rawContent = ReadRawFileContent(worksheet);
+            const auto freshColumnInfo = Data::Dataset::ReadColumnInfoRaw(
+                rawContent.m_text, Data::Dataset::GetDelimiterFromExtension(m_filePath),
+                previewInfo, Settings::PREVIEW_MAX_ROWS);
 
             // preserve user overrides (exclusion, type) from previous m_columnInfo
             const auto previousColumnInfo = std::move(m_columnInfo);
@@ -774,7 +809,7 @@ namespace Wisteria::UI
                 m_idColumnChoice->SetSelection(0);
                 }
 
-            UpdateGrid();
+            UpdateGrid(std::move(rawContent));
             }
         catch (const std::exception& exc)
             {
@@ -871,7 +906,7 @@ namespace Wisteria::UI
         }
 
     //----------------------------------------------
-    void DatasetImportDlg::UpdateGrid()
+    void DatasetImportDlg::UpdateGrid(RawFileContent rawContent)
         {
         TransferDataFromWindow();
         // convert to full ImportInfo from current m_columnInfo
@@ -894,11 +929,20 @@ namespace Wisteria::UI
             importInfo.IdColumn(m_idColumnChoice->GetStringSelection());
             }
 
-        const auto worksheet = GetWorksheet();
-
-        // import data for preview
+        // import data for preview from the already-read content
         m_previewDataset = std::make_shared<Data::Dataset>();
-        m_previewDataset->Import(m_filePath, importInfo, worksheet, Settings::PREVIEW_MAX_ROWS);
+        if (rawContent.m_matrix.has_value())
+            {
+            m_previewDataset->ImportMatrix(std::move(rawContent.m_matrix.value()), importInfo,
+                                           Settings::PREVIEW_MAX_ROWS);
+            }
+        else
+            {
+            m_previewDataset->ImportTextRaw(rawContent.m_text, importInfo,
+                                            Data::Dataset::GetDelimiterFromExtension(m_filePath),
+                                            Settings::PREVIEW_MAX_ROWS);
+            m_previewDataset->SetName(wxFileName{ m_filePath }.GetName().ToStdWstring());
+            }
 
         // update grid
         auto* table = new DatasetGridTable(m_previewDataset, m_columnInfo);

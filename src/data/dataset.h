@@ -1922,6 +1922,21 @@ namespace Wisteria::Data
         void ImportOds(const wxString& filePath, const std::variant<wxString, size_t>& worksheet,
                        const ImportInfo& info,
                        std::optional<size_t> rowPreviewCount = std::nullopt);
+        /** @brief Imports an already-loaded worksheet matrix (e.g., from
+                @c ExcelReader::ReadWorksheetMatrix() or @c OdsReader::ReadWorksheetMatrix())
+                into the dataset, without re-reading the source file.
+            @param dataMatrix The worksheet rows. The first row after @c info.m_skipRows is
+                taken as the column names, the rest are data.
+            @param info The definition for which columns to import and how to map them.\n
+                Note that ImportInfoFromPreview() and ReadColumnInfo() can be used to
+                gather this information.
+            @param rowPreviewCount If specified, only the first @p rowPreviewCount data
+                rows are imported (useful for previews).
+            @throws std::runtime_error If named columns aren't found, throws an exception.\n
+                The exception's @c what() message is UTF-8 encoded, so pass it to
+                @c wxString::FromUTF8() when formatting it for an error message.*/
+        void ImportMatrix(std::vector<std::vector<std::wstring>> dataMatrix, const ImportInfo& info,
+                          std::optional<size_t> rowPreviewCount = std::nullopt);
         /** @brief Exports the dataset to a text file.
             @details Columns are exported in the following order:
                 - ID

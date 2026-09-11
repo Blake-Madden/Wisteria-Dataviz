@@ -1618,9 +1618,7 @@ namespace Wisteria::Data
                               const ImportInfo& info, std::optional<size_t> rowPreviewCount)
         {
         Data::ExcelReader xlReader(filePath);
-        auto dataMatrix = xlReader.ReadWorksheetMatrix(worksheet);
-        Reset();
-        LoadWorksheetMatrix(std::move(dataMatrix), info, rowPreviewCount);
+        ImportMatrix(xlReader.ReadWorksheetMatrix(worksheet), info, rowPreviewCount);
         }
 
     //----------------------------------------------
@@ -1629,7 +1627,13 @@ namespace Wisteria::Data
                             std::optional<size_t> rowPreviewCount)
         {
         Data::OdsReader odsReader(filePath);
-        auto dataMatrix = odsReader.ReadWorksheetMatrix(worksheet);
+        ImportMatrix(odsReader.ReadWorksheetMatrix(worksheet), info, rowPreviewCount);
+        }
+
+    //----------------------------------------------
+    void Dataset::ImportMatrix(std::vector<std::vector<std::wstring>> dataMatrix,
+                               const ImportInfo& info, std::optional<size_t> rowPreviewCount)
+        {
         Reset();
         LoadWorksheetMatrix(std::move(dataMatrix), info, rowPreviewCount);
         }
