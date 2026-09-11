@@ -170,6 +170,27 @@ namespace Wisteria::UI
         void WarnAboutColumnChanges(const std::vector<wxString>& previousNames,
                                     const wxString& previousId);
 
+        /// @brief Repopulates the ID column choice from the current column info,
+        ///     without touching the current selection.
+        void PopulateIdColumnChoice();
+        /// @brief Applies the currency symbols (if any) from @c m_columnInfo to the
+        ///     numeric columns of a preview table.
+        void ApplyCurrencySymbols(DatasetGridTable* table) const;
+        /// @brief Installs a preview table into the grid and refreshes its
+        ///     decorations (icons, sizing, and optionally excluded-column styling).
+        void FinalizeGridDisplay(DatasetGridTable* table, bool applyExcludedStyling);
+
+        /// @returns The currently-selected ID column's name, or an empty string
+        ///     if "(None)" is selected.
+        [[nodiscard]]
+        wxString GetSelectedIdColumnName() const;
+        /// @returns The names of the columns currently in @c m_columnInfo.
+        [[nodiscard]]
+        std::vector<wxString> GetColumnNames() const;
+        /// @returns The missing-data codes parsed from @c m_mdValues.
+        [[nodiscard]]
+        std::vector<std::wstring> ParseMDCodes() const;
+
         /// @brief Joins missing-data codes into a comma-separated string for display.
         /// @param codes The codes to join.
         /// @returns The joined string (empty if @p codes is empty).

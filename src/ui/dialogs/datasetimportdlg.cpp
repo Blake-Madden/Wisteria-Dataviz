@@ -150,6 +150,83 @@ namespace Wisteria::UI
         }
 
     //----------------------------------------------
+    std::vector<std::wstring> DatasetImportDlg::ParseMDCodes() const
+        {
+        std::vector<std::wstring> mdCodes;
+        wxStringTokenizer mdTokenizer(m_mdValues, L" ,;", wxTOKEN_STRTOK);
+        while (mdTokenizer.HasMoreTokens())
+            {
+            mdCodes.push_back(mdTokenizer.GetNextToken().ToStdWstring());
+            }
+        return mdCodes;
+        }
+
+    //----------------------------------------------
+    wxString DatasetImportDlg::GetSelectedIdColumnName() const
+        {
+        return (m_idColumnChoice->GetSelection() > 0) ? m_idColumnChoice->GetStringSelection() :
+                                                        wxString{};
+        }
+
+    //----------------------------------------------
+    std::vector<wxString> DatasetImportDlg::GetColumnNames() const
+        {
+        std::vector<wxString> names;
+        names.reserve(m_columnInfo.size());
+        for (const auto& col : m_columnInfo)
+            {
+            names.push_back(col.m_name);
+            }
+        return names;
+        }
+
+    //----------------------------------------------
+    void DatasetImportDlg::PopulateIdColumnChoice()
+        {
+        m_idColumnChoice->Clear();
+        m_idColumnChoice->Append(_(L"(None)"));
+        for (const auto& col : m_columnInfo)
+            {
+            if (col.m_type == Data::Dataset::ColumnImportType::String)
+                {
+                m_idColumnChoice->Append(col.m_name);
+                }
+            }
+        }
+
+    //----------------------------------------------
+    void DatasetImportDlg::ApplyCurrencySymbols(DatasetGridTable* table) const
+        {
+        size_t contIdx{ 0 };
+        for (const auto& col : m_columnInfo)
+            {
+            if (col.m_type == Data::Dataset::ColumnImportType::Numeric)
+                {
+                if (!col.m_currencySymbol.empty())
+                    {
+                    table->SetCurrencySymbol(contIdx, col.m_currencySymbol);
+                    }
+                ++contIdx;
+                }
+            }
+        }
+
+    //----------------------------------------------
+    void DatasetImportDlg::FinalizeGridDisplay(DatasetGridTable* table, bool applyExcludedStyling)
+        {
+        m_previewGrid->SetTable(table, true);
+        m_previewGrid->SetSelectionMode(wxGrid::wxGridSelectColumns);
+        ApplyColumnHeaderIcons(table);
+        m_previewGrid->AutoSizeColumns(false);
+        AdjustGridColumnsForIcons();
+        if (applyExcludedStyling)
+            {
+            ApplyExcludedColumnStyling();
+            }
+        m_previewGrid->ForceRefresh();
+        }
+
+    //----------------------------------------------
     void DatasetImportDlg::CreateControls()
         {
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
@@ -259,17 +336,8 @@ namespace Wisteria::UI
         optionsSizer->Add(new wxStaticText(this, wxID_ANY, _(L"ID column:")),
                           wxSizerFlags{}.CenterVertical());
         m_idColumnChoice = new wxChoice(this, wxID_ANY);
-        m_idColumnChoice->Append(_(L"(None)"));
+        PopulateIdColumnChoice();
         m_idColumnChoice->SetSelection(0);
-        m_idColumnChoice->Clear();
-        m_idColumnChoice->Append(_(L"(None)"));
-        for (const auto& col : m_columnInfo)
-            {
-            if (col.m_type == Data::Dataset::ColumnImportType::String)
-                {
-                m_idColumnChoice->Append(col.m_name);
-                }
-            }
         optionsSizer->Add(m_idColumnChoice, wxSizerFlags{});
 
         mainSizer->Add(optionsSizer,
@@ -410,6 +478,8 @@ namespace Wisteria::UI
         m_hasChanges = true;
         TransferDataFromWindow();
 
+        const wxBusyCursor wait;
+
         // for spreadsheets, re-read the worksheet list and verify the current
         // selection still exists before touching any other state
         if (m_fileExt.CmpNoCase(L"xlsx") == 0 || m_fileExt.CmpNoCase(L"ods") == 0)
@@ -461,15 +531,8 @@ namespace Wisteria::UI
             }
 
         // snapshot current state so we can diff after the refresh
-        std::vector<wxString> previousNames;
-        previousNames.reserve(m_columnInfo.size());
-        for (const auto& col : m_columnInfo)
-            {
-            previousNames.push_back(col.m_name);
-            }
-        const wxString previousId = (m_idColumnChoice->GetSelection() > 0) ?
-                                        m_idColumnChoice->GetStringSelection() :
-                                        wxString{};
+        const std::vector<wxString> previousNames = GetColumnNames();
+        const wxString previousId = GetSelectedIdColumnName();
 
         RefreshPreview();
 
@@ -498,16 +561,11 @@ namespace Wisteria::UI
 
         TransferDataFromWindow();
 
+        const wxBusyCursor wait;
+
         // snapshot current state so we can diff after switching files
-        std::vector<wxString> previousNames;
-        previousNames.reserve(m_columnInfo.size());
-        for (const auto& col : m_columnInfo)
-            {
-            previousNames.push_back(col.m_name);
-            }
-        const wxString previousId = (m_idColumnChoice->GetSelection() > 0) ?
-                                        m_idColumnChoice->GetStringSelection() :
-                                        wxString{};
+        const std::vector<wxString> previousNames = GetColumnNames();
+        const wxString previousId = GetSelectedIdColumnName();
 
         const wxString previousFilePath = m_filePath;
         const wxString previousFileExt = m_fileExt;
@@ -605,6 +663,7 @@ namespace Wisteria::UI
     void DatasetImportDlg::RefreshPreview()
         {
         TransferDataFromWindow();
+        const wxBusyCursor wait;
         try
             {
             // build partial ImportInfo for column deduction
@@ -620,13 +679,7 @@ namespace Wisteria::UI
                 }
             else
                 {
-                std::vector<std::wstring> mdCodes;
-                wxStringTokenizer mdTokenizer(m_mdValues, L" ,;", wxTOKEN_STRTOK);
-                while (mdTokenizer.HasMoreTokens())
-                    {
-                    mdCodes.push_back(mdTokenizer.GetNextToken().ToStdWstring());
-                    }
-                previewInfo.MDCodes(mdCodes);
+                previewInfo.MDCodes(ParseMDCodes());
                 }
 
             const auto worksheet = GetWorksheet();
@@ -709,18 +762,8 @@ namespace Wisteria::UI
                 }
 
             // update the ID column choice with discovered column names
-            const wxString previousId = (m_idColumnChoice->GetSelection() > 0) ?
-                                            m_idColumnChoice->GetStringSelection() :
-                                            wxString{};
-            m_idColumnChoice->Clear();
-            m_idColumnChoice->Append(_(L"(None)"));
-            for (const auto& col : m_columnInfo)
-                {
-                if (col.m_type == Data::Dataset::ColumnImportType::String)
-                    {
-                    m_idColumnChoice->Append(col.m_name);
-                    }
-                }
+            const wxString previousId = GetSelectedIdColumnName();
+            PopulateIdColumnChoice();
             if (!previousId.empty())
                 {
                 const int idx = m_idColumnChoice->FindString(previousId);
@@ -739,12 +782,7 @@ namespace Wisteria::UI
             m_previewDataset = std::make_shared<Data::Dataset>();
             m_columnInfo.clear();
             auto* table = new DatasetGridTable(m_previewDataset);
-            m_previewGrid->SetTable(table, true);
-            m_previewGrid->SetSelectionMode(wxGrid::wxGridSelectColumns);
-            ApplyColumnHeaderIcons(table);
-            m_previewGrid->AutoSizeColumns(false);
-            AdjustGridColumnsForIcons();
-            m_previewGrid->ForceRefresh();
+            FinalizeGridDisplay(table, /* applyExcludedStyling */ false);
             wxLogWarning(L"%s", wxString::FromUTF8(exc.what()));
             wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Import Error"), wxOK | wxICON_ERROR,
                          this);
@@ -777,6 +815,8 @@ namespace Wisteria::UI
                 RefreshPreview();
                 return;
                 }
+
+            const wxBusyCursor wait;
 
             // copy only the top N rows for preview
             Data::DatasetClone cloner;
@@ -819,28 +859,8 @@ namespace Wisteria::UI
             // update grid
             auto* table = new DatasetGridTable(m_previewDataset, m_columnInfo);
             table->SetMaxRows(Settings::PREVIEW_MAX_ROWS);
-
-            // apply currency symbols to continuous columns
-            size_t contIdx{ 0 };
-            for (const auto& col : m_columnInfo)
-                {
-                if (col.m_type == Data::Dataset::ColumnImportType::Numeric)
-                    {
-                    if (!col.m_currencySymbol.empty())
-                        {
-                        table->SetCurrencySymbol(contIdx, col.m_currencySymbol);
-                        }
-                    ++contIdx;
-                    }
-                }
-
-            m_previewGrid->SetTable(table, true);
-            m_previewGrid->SetSelectionMode(wxGrid::wxGridSelectColumns);
-            ApplyColumnHeaderIcons(table);
-            m_previewGrid->AutoSizeColumns(false);
-            AdjustGridColumnsForIcons();
-            ApplyExcludedColumnStyling();
-            m_previewGrid->ForceRefresh();
+            ApplyCurrencySymbols(table);
+            FinalizeGridDisplay(table, /* applyExcludedStyling */ true);
             }
         catch (const std::exception& exc)
             {
@@ -867,13 +887,7 @@ namespace Wisteria::UI
             }
         else
             {
-            std::vector<std::wstring> mdCodes;
-            wxStringTokenizer mdTokenizer(m_mdValues, L" ,;", wxTOKEN_STRTOK);
-            while (mdTokenizer.HasMoreTokens())
-                {
-                mdCodes.push_back(mdTokenizer.GetNextToken().ToStdWstring());
-                }
-            importInfo.MDCodes(mdCodes);
+            importInfo.MDCodes(ParseMDCodes());
             }
         if (m_idColumnChoice->GetSelection() > 0)
             {
@@ -889,28 +903,8 @@ namespace Wisteria::UI
         // update grid
         auto* table = new DatasetGridTable(m_previewDataset, m_columnInfo);
         table->SetMaxRows(Settings::PREVIEW_MAX_ROWS);
-
-        // apply currency symbols to continuous columns
-        size_t contIdx{ 0 };
-        for (const auto& col : m_columnInfo)
-            {
-            if (col.m_type == Data::Dataset::ColumnImportType::Numeric)
-                {
-                if (!col.m_currencySymbol.empty())
-                    {
-                    table->SetCurrencySymbol(contIdx, col.m_currencySymbol);
-                    }
-                ++contIdx;
-                }
-            }
-
-        m_previewGrid->SetTable(table, true);
-        m_previewGrid->SetSelectionMode(wxGrid::wxGridSelectColumns);
-        ApplyColumnHeaderIcons(table);
-        m_previewGrid->AutoSizeColumns(false);
-        AdjustGridColumnsForIcons();
-        ApplyExcludedColumnStyling();
-        m_previewGrid->ForceRefresh();
+        ApplyCurrencySymbols(table);
+        FinalizeGridDisplay(table, /* applyExcludedStyling */ true);
         }
 
     //----------------------------------------------
@@ -1171,13 +1165,7 @@ namespace Wisteria::UI
             }
         else
             {
-            std::vector<std::wstring> mdCodes;
-            wxStringTokenizer mdTokenizer(m_mdValues, L" ,;", wxTOKEN_STRTOK);
-            while (mdTokenizer.HasMoreTokens())
-                {
-                mdCodes.push_back(mdTokenizer.GetNextToken().ToStdWstring());
-                }
-            importInfo.MDCodes(mdCodes);
+            importInfo.MDCodes(ParseMDCodes());
             }
         if (m_idColumnChoice->GetSelection() > 0)
             {
