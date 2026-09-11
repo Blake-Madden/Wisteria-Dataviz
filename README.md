@@ -64,7 +64,7 @@ Report authoring
 
 - **Page layout manager** for assembling multi-page graphical reports — each project can contain any number of pages, with insert/edit/delete/reorder support
 - Each page is a `Wisteria::Canvas` that can hold multiple graphs, tables, labels, images, shapes, and common axes side-by-side or in a grid layout
-- **PDF export** of the entire report (single- or multi-page), preserving vector graphics and using embedded fonts
+- **PDF, SVG, and PowerPoint export** of the entire report (single- or multi-page), preserving vector graphics and using embedded fonts
 - **SVG export** of individual canvases for high-fidelity scalable output
 - Raster image export (PNG, JPEG, BMP, TIFF, etc.) with configurable size, DPI, and background
 - Full **print and print preview** support, with customizable headers/footers and page setup

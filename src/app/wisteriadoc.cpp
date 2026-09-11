@@ -136,6 +136,24 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
         root->Add(L"pdf-export", pdfNode);
         }
 
+        // powerpoint-export (per-project)
+        {
+        const auto& pptxOpts = view->GetReportBuilder().GetPowerPointExportOptions();
+        auto pptxNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+        pptxNode->Add(L"slide-size", static_cast<double>(static_cast<int>(pptxOpts.m_slideSize)));
+        pptxNode->Add(L"custom-width", pptxOpts.m_customWidthInches);
+        pptxNode->Add(L"custom-height", pptxOpts.m_customHeightInches);
+        pptxNode->Add(L"transition", static_cast<double>(static_cast<int>(pptxOpts.m_transition)));
+        pptxNode->Add(L"transition-speed",
+                      static_cast<double>(static_cast<int>(pptxOpts.m_transitionSpeed)));
+        pptxNode->Add(L"advance-on-click", pptxOpts.m_advanceOnClick);
+        pptxNode->Add(L"advance-automatically", pptxOpts.m_advanceAutomatically);
+        pptxNode->Add(L"advance-seconds", static_cast<double>(pptxOpts.m_advanceSeconds));
+        pptxNode->Add(L"loop", pptxOpts.m_loopContinuously);
+        pptxNode->Add(L"accessibility-notes", pptxOpts.m_includeAccessibilityNotes);
+        root->Add(L"powerpoint-export", pptxNode);
+        }
+
     // datasets
     //---------
     const auto& datasets = view->GetReportBuilder().GetDatasets();

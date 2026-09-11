@@ -684,6 +684,9 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                     _(L"Export all pages to SVG"));
         projectButtonBar->AddButton(ID_PDF_EXPORT, _(L"PDF Export"), ReadSvgIcon(L"pdf.svg"),
                                     _(L"Export all pages to PDF"));
+        projectButtonBar->AddButton(ID_PPTX_EXPORT, _(L"PowerPoint Export"),
+                                    ReadSvgIcon(L"powerpoint.svg"),
+                                    _(L"Export all pages to PowerPoint"));
         projectButtonBar->AddButton(ID_PROJECT_SETTINGS, _(L"Project Settings"),
                                     ReadSvgIcon(L"project-settings.svg"),
                                     _(L"Edit the project settings"));

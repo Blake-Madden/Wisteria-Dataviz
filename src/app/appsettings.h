@@ -9,6 +9,7 @@
 #ifndef WISTERIA_APPSETTINGS_H
 #define WISTERIA_APPSETTINGS_H
 
+#include "../base/pptxreportprintout.h"
 #include "../base/svgreportprintout.h"
 #include <wx/filename.h>
 #include <wx/gdicmn.h>
@@ -149,6 +150,23 @@ class AppSettings
         return m_svgExportOptions;
         }
 
+    // PowerPoint export options
+    //---------------------------
+
+    /// @returns The PowerPoint export options.
+    [[nodiscard]]
+    Wisteria::PowerPointExportOptions& GetPowerPointExportOptions() noexcept
+        {
+        return m_powerPointExportOptions;
+        }
+
+    /// @private
+    [[nodiscard]]
+    const Wisteria::PowerPointExportOptions& GetPowerPointExportOptions() const noexcept
+        {
+        return m_powerPointExportOptions;
+        }
+
   private:
     wxString m_settingsFilePath;
     bool m_appWindowMaximized{ true };
@@ -160,6 +178,7 @@ class AppSettings
     bool m_logVerbose{ false };
 
     Wisteria::SVGReportOptions m_svgExportOptions{ wxString{} };
+    Wisteria::PowerPointExportOptions m_powerPointExportOptions;
     };
 
 #endif // WISTERIA_APPSETTINGS_H

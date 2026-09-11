@@ -50,6 +50,7 @@
 #include "../ui/dialogs/editors/pivotwiderrdlg.h"
 #include "../ui/dialogs/editors/subsetdlg.h"
 #include "../ui/dialogs/pdfexportdlg.h"
+#include "../ui/dialogs/pptxexportdlg.h"
 #include "../ui/dialogs/projectsettingsdlg.h"
 #include "../ui/dialogs/svgexportdlg.h"
 #include "wisteriaapp.h"
@@ -179,6 +180,10 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     // bind PDF export button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPdfExport, this, ID_PDF_EXPORT);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPdfExport, this, ID_PDF_EXPORT);
+
+    // bind PowerPoint export button
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPptxExport, this, ID_PPTX_EXPORT);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPptxExport, this, ID_PPTX_EXPORT);
 
     // bind project settings button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnProjectSettings, this,
@@ -435,6 +440,10 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         pdfOpts.m_paperSize = appSettings->GetPaperId();
         pdfOpts.m_paperOrientation =
             static_cast<wxPrintOrientation>(appSettings->GetPrintOrientation());
+        }
+    if (!GetReportBuilder().HasLoadedPowerPointExportOptions())
+        {
+        GetReportBuilder().GetPowerPointExportOptions() = appSettings->GetPowerPointExportOptions();
         }
 
     if (initialDataset != nullptr)
@@ -1134,11 +1143,13 @@ void WisteriaView::OnPdfExport([[maybe_unused]] wxCommandEvent& event)
         }
 
     const bool pdfPaperChanged =
+        (savedPdfOptions.m_author != options.m_author) ||
         (savedPdfOptions.m_paperSize != options.m_paperSize) ||
         (savedPdfOptions.m_paperOrientation != options.m_paperOrientation) ||
         (savedPdfOptions.m_compress != options.m_compress);
     if (pdfPaperChanged)
         {
+        savedPdfOptions.m_author = options.m_author;
         savedPdfOptions.m_paperSize = options.m_paperSize;
         savedPdfOptions.m_paperOrientation = options.m_paperOrientation;
         savedPdfOptions.m_compress = options.m_compress;
@@ -1147,6 +1158,72 @@ void WisteriaView::OnPdfExport([[maybe_unused]] wxCommandEvent& event)
     Wisteria::ReportPDFExport pdfReport(m_pages, fileDlg.GetPath(), options);
 
     if (docInfoChanged || pdfPaperChanged)
+        {
+        GetDocument()->Modify(true);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnPptxExport([[maybe_unused]] wxCommandEvent& event)
+    {
+    if (m_pages.empty())
+        {
+        return;
+        }
+
+    Wisteria::PowerPointExportOptions& savedOptions =
+        GetReportBuilder().GetPowerPointExportOptions();
+    Wisteria::PowerPointExportOptions options = savedOptions;
+    options.m_title = GetReportBuilder().GetName().empty() ? GetDocument()->GetUserReadableName() :
+                                                             GetReportBuilder().GetName();
+    options.m_subject = GetReportBuilder().GetSubject();
+    options.m_keywords = GetReportBuilder().GetKeywords();
+
+    Wisteria::UI::PptxExportDlg pptxOptionsDlg(m_frame, options);
+    if (pptxOptionsDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+    options = pptxOptionsDlg.GetOptions();
+
+    wxFileDialog fileDlg(m_frame, _(L"Export to PowerPoint"), wxString{},
+                         GetDocument()->GetUserReadableName(),
+                         _(L"PowerPoint files (*.pptx)|*.pptx"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    if (fileDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    const bool docInfoChanged = (GetReportBuilder().GetName() != options.m_title ||
+                                 GetReportBuilder().GetSubject() != options.m_subject ||
+                                 GetReportBuilder().GetKeywords() != options.m_keywords);
+    if (docInfoChanged)
+        {
+        GetReportBuilder().SetName(options.m_title);
+        GetReportBuilder().SetSubject(options.m_subject);
+        GetReportBuilder().SetKeywords(options.m_keywords);
+        }
+
+    const bool pptxOptionsChanged =
+        (savedOptions.m_author != options.m_author) ||
+        (savedOptions.m_slideSize != options.m_slideSize) ||
+        (savedOptions.m_customWidthInches != options.m_customWidthInches) ||
+        (savedOptions.m_customHeightInches != options.m_customHeightInches) ||
+        (savedOptions.m_transition != options.m_transition) ||
+        (savedOptions.m_transitionSpeed != options.m_transitionSpeed) ||
+        (savedOptions.m_advanceOnClick != options.m_advanceOnClick) ||
+        (savedOptions.m_advanceAutomatically != options.m_advanceAutomatically) ||
+        (savedOptions.m_advanceSeconds != options.m_advanceSeconds) ||
+        (savedOptions.m_loopContinuously != options.m_loopContinuously) ||
+        (savedOptions.m_includeAccessibilityNotes != options.m_includeAccessibilityNotes);
+    if (pptxOptionsChanged)
+        {
+        savedOptions = options;
+        }
+
+    Wisteria::ReportPowerPointExport pptxReport(m_pages, fileDlg.GetPath(), options);
+
+    if (docInfoChanged || pptxOptionsChanged)
         {
         GetDocument()->Modify(true);
         }
@@ -2187,9 +2264,9 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
                             -> std::unique_ptr<Wisteria::GraphItems::GraphItemBase>
                         {
                             return dlg.GetUseEnhancedLegend() ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                       std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
                                            plot->CreateEnhancedLegend(options)) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                       std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
                                            plot->CreateLegend(options));
                         });
         PlaceGraphWithLegend(canvas, plot, std::move(legend), dlg.GetSelectedRow(),
@@ -2244,7 +2321,7 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -3265,7 +3342,7 @@ void WisteriaView::EditScatterPlot(const Wisteria::Graphs::Graph2D& graph, Wiste
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -3319,7 +3396,7 @@ void WisteriaView::OnInsertBubblePlot([[maybe_unused]] wxCommandEvent& event)
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -3385,7 +3462,7 @@ void WisteriaView::EditBubblePlot(const Wisteria::Graphs::Graph2D& graph, Wister
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -3478,9 +3555,9 @@ void WisteriaView::EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph,
                             -> std::unique_ptr<Wisteria::GraphItems::GraphItemBase>
                         {
                             return dlg.GetUseEnhancedLegend() ?
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                       std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
                                            plot->CreateEnhancedLegend(options)) :
-                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                       std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
                                            plot->CreateLegend(options));
                         });
         PlaceGraphWithLegend(canvas, plot, std::move(legend), dlg.GetSelectedRow(),
@@ -3544,7 +3621,7 @@ void WisteriaView::OnInsertLinePlot([[maybe_unused]] wxCommandEvent& event)
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -3614,7 +3691,7 @@ void WisteriaView::EditLinePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -3659,7 +3736,7 @@ void WisteriaView::OnInsertMultiSeriesLinePlot([[maybe_unused]] wxCommandEvent& 
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -3718,7 +3795,7 @@ void WisteriaView::EditMultiSeriesLinePlot(const Wisteria::Graphs::Graph2D& grap
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -3772,7 +3849,7 @@ void WisteriaView::OnInsertWCurvePlot([[maybe_unused]] wxCommandEvent& event)
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -3837,7 +3914,7 @@ void WisteriaView::EditWCurvePlot(const Wisteria::Graphs::Graph2D& graph, Wister
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -3893,7 +3970,7 @@ void WisteriaView::OnInsertLRRoadmap([[maybe_unused]] wxCommandEvent& event)
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -3960,7 +4037,7 @@ void WisteriaView::EditLRRoadmap(const Wisteria::Graphs::Graph2D& graph, Wisteri
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -4025,7 +4102,7 @@ void WisteriaView::OnInsertProConRoadmap([[maybe_unused]] wxCommandEvent& event)
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -4101,7 +4178,7 @@ void WisteriaView::EditProConRoadmap(const Wisteria::Graphs::Graph2D& graph,
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -4189,7 +4266,7 @@ void WisteriaView::OnInsertGanttChart([[maybe_unused]] wxCommandEvent& event)
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -4301,7 +4378,7 @@ void WisteriaView::EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -4743,7 +4820,7 @@ void WisteriaView::OnInsertBoxPlot([[maybe_unused]] wxCommandEvent& event)
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -4902,7 +4979,7 @@ void WisteriaView::EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -5127,7 +5204,7 @@ void WisteriaView::OnInsertCatBarChart([[maybe_unused]] wxCommandEvent& event)
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -5452,7 +5529,7 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -5552,7 +5629,7 @@ void WisteriaView::OnInsertLikertChart([[maybe_unused]] wxCommandEvent& event)
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -5709,7 +5786,7 @@ void WisteriaView::OnInsertHeatMap([[maybe_unused]] wxCommandEvent& event)
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -5770,7 +5847,7 @@ void WisteriaView::EditHeatMap(const Wisteria::Graphs::Graph2D& graph, Wisteria:
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -5836,7 +5913,7 @@ void WisteriaView::OnInsertHistogram([[maybe_unused]] wxCommandEvent& event)
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -5913,7 +5990,7 @@ void WisteriaView::EditHistogram(const Wisteria::Graphs::Graph2D& graph, Wisteri
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -5988,7 +6065,7 @@ void WisteriaView::OnInsertScaleChart([[maybe_unused]] wxCommandEvent& event)
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -6073,7 +6150,7 @@ void WisteriaView::EditScaleChart(const Wisteria::Graphs::Graph2D& graph, Wister
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -6233,11 +6310,11 @@ void WisteriaView::OnInsertChoroplethMap([[maybe_unused]] wxCommandEvent& event)
             BuildLegend(dlg, legendPlacement,
                         [&plot, &dlg](const Wisteria::Graphs::LegendOptions& options)
                             -> std::unique_ptr<Wisteria::GraphItems::GraphItemBase>
-            {
+                        {
                             return dlg.GetSymbolColumn().empty() ?
-                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                       std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
                                            plot->CreateLegend(options)) :
-                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                       std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
                                            plot->CreateChoroplethLegend(options));
                         });
 
@@ -6381,11 +6458,11 @@ void WisteriaView::EditChoroplethMap(const Wisteria::Graphs::Graph2D& graph,
             BuildLegend(dlg, legendPlacement,
                         [&plot, &newSymbolColumn](const Wisteria::Graphs::LegendOptions& options)
                             -> std::unique_ptr<Wisteria::GraphItems::GraphItemBase>
-            {
+                        {
                             return newSymbolColumn.empty() ?
-                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                       std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
                                            plot->CreateLegend(options)) :
-                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                       std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
                                            plot->CreateChoroplethLegend(options));
                         });
 
@@ -6496,7 +6573,7 @@ void WisteriaView::OnInsertWLSparkline([[maybe_unused]] wxCommandEvent& event)
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -6559,7 +6636,7 @@ void WisteriaView::EditWLSparkline(const Wisteria::Graphs::Graph2D& graph, Wiste
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -6605,7 +6682,7 @@ void WisteriaView::OnInsertStemAndLeaf([[maybe_unused]] wxCommandEvent& event)
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -6661,7 +6738,7 @@ void WisteriaView::EditStemAndLeaf(const Wisteria::Graphs::Graph2D& graph, Wiste
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -6813,7 +6890,7 @@ void WisteriaView::OnInsertPieChart([[maybe_unused]] wxCommandEvent& event)
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -6969,7 +7046,7 @@ void WisteriaView::EditPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -7003,7 +7080,7 @@ void WisteriaView::OnInsertWaffleChart([[maybe_unused]] wxCommandEvent& event)
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -7043,7 +7120,7 @@ void WisteriaView::EditWaffleChart(const Wisteria::Graphs::Graph2D& graph, Wiste
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -7209,7 +7286,7 @@ void WisteriaView::OnInsertNightingaleRoseChart([[maybe_unused]] wxCommandEvent&
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -7282,7 +7359,7 @@ void WisteriaView::EditNightingaleRoseChart(const Wisteria::Graphs::Graph2D& gra
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -7353,7 +7430,7 @@ void WisteriaView::OnInsertWilmarthBridgePlot([[maybe_unused]] wxCommandEvent& e
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -7441,7 +7518,7 @@ void WisteriaView::EditWilmarthBridgePlot(const Wisteria::Graphs::Graph2D& graph
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
-            dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {

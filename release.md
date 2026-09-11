@@ -7,6 +7,7 @@
 - Added Race Track Chart.
 - Added Wilmarth Bridge Plot.
 - Added "Serpentine" features to bar charts.
+- Added PowerPoint exporting.
 - Added showcasing support to Sankey diagrams.
 - Added word balloon styles to labels.
 - Added new shapes:

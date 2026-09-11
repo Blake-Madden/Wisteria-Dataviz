@@ -50,6 +50,7 @@
 #include "colorbrewer.h"
 #include "commonaxisbuilder.h"
 #include "fillableshape.h"
+#include "pptxreportprintout.h"
 #include "svgreportprintout.h"
 #include <map>
 #include <utility>
@@ -700,6 +701,36 @@ namespace Wisteria
         bool HasLoadedPdfExportOptions() const noexcept
             {
             return m_pdfExportOptionsLoaded;
+            }
+
+        /// @returns The PowerPoint export options for the report.
+        [[nodiscard]]
+        const PowerPointExportOptions& GetPowerPointExportOptions() const noexcept
+            {
+            return m_powerPointExportOptions;
+            }
+
+        /// @returns The PowerPoint export options for the report (mutable).
+        [[nodiscard]]
+        PowerPointExportOptions& GetPowerPointExportOptions() noexcept
+            {
+            return m_powerPointExportOptions;
+            }
+
+        /// @brief Sets the PowerPoint export options for the report.
+        /// @param options The new PowerPoint export options.
+        void SetPowerPointExportOptions(const PowerPointExportOptions& options)
+            {
+            m_powerPointExportOptions = options;
+            }
+
+        /// @returns @c true if the PowerPoint export options were read from the loaded
+        ///     project file. When @c false, the options are still at their defaults and
+        ///     the caller should seed them (e.g., from the global application settings).
+        [[nodiscard]]
+        bool HasLoadedPowerPointExportOptions() const noexcept
+            {
+            return m_powerPointExportOptionsLoaded;
             }
 
         /** @brief Expands embedded placeholders in strings into their values.
@@ -1427,8 +1458,10 @@ namespace Wisteria
 
         SVGReportOptions m_svgExportOptions{ wxString{} };
         PdfExportOptions m_pdfExportOptions{};
+        PowerPointExportOptions m_powerPointExportOptions{};
         bool m_svgExportOptionsLoaded{ false };
         bool m_pdfExportOptionsLoaded{ false };
+        bool m_powerPointExportOptionsLoaded{ false };
 
         size_t m_pageNumber{ 1 };
 

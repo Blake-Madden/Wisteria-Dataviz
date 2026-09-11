@@ -25,6 +25,7 @@ SET(APP_WISTERIA_SRC
     src/base/pdfreportprintout.cpp
     src/base/points.cpp
     src/base/polygon.cpp
+    src/base/pptxreportprintout.cpp
     src/base/report_builder_basic_graphs.cpp
     src/base/report_builder_formulas.cpp
     src/base/report_builder_stat_graphs.cpp
@@ -161,6 +162,7 @@ SET(APP_WISTERIA_SRC
     src/ui/dialogs/odspreviewdlg.cpp
     src/ui/dialogs/opacitydlg.cpp
     src/ui/dialogs/pdfexportdlg.cpp
+    src/ui/dialogs/pptxexportdlg.cpp
     src/ui/dialogs/printerheaderfooterdlg.cpp
     src/ui/dialogs/projectsettingsdlg.cpp
     src/ui/dialogs/radioboxdlg.cpp

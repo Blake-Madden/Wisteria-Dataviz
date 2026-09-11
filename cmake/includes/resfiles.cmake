@@ -70,6 +70,7 @@ piechart-subgrouped.svg
 piechart.svg
 pivot-longer.svg
 pivot-wider.svg
+powerpoint.svg
 print-setup.svg
 print.svg
 project-settings.svg

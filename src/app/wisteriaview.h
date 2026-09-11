@@ -104,6 +104,7 @@ class WisteriaView final : public wxView
     void OnPrintSetup(wxCommandEvent& event);
     void OnSvgExport(wxCommandEvent& event);
     void OnPdfExport(wxCommandEvent& event);
+    void OnPptxExport(wxCommandEvent& event);
     void OnProjectSettings(wxCommandEvent& event);
     void OnInsertDataset(wxCommandEvent& event);
     void OnEditDataset(wxCommandEvent& event);

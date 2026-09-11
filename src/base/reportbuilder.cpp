@@ -23,8 +23,10 @@ namespace Wisteria
         m_datasets.clear();
         m_svgExportOptions = SVGReportOptions{ wxString{} };
         m_pdfExportOptions = PdfExportOptions{};
+        m_powerPointExportOptions = PowerPointExportOptions{};
         m_svgExportOptionsLoaded = false;
         m_pdfExportOptionsLoaded = false;
+        m_powerPointExportOptionsLoaded = false;
         m_dpiScaleFactor = parent->GetDPIScaleFactor();
 
         m_configFilePath = filePath;
@@ -194,6 +196,72 @@ namespace Wisteria
                 {
                 m_pdfExportOptions.m_compress = compressNode->AsBool(m_pdfExportOptions.m_compress);
                 }
+            }
+
+        // PowerPoint export options
+        if (const auto pptxExportNode = json->GetProperty(L"powerpoint-export");
+            pptxExportNode->IsOk())
+            {
+            m_powerPointExportOptionsLoaded = true;
+            const auto boolAttr = [&pptxExportNode](const wxString& name, const bool fallback)
+            {
+                const auto prop = pptxExportNode->GetProperty(name);
+                return prop->IsOk() ? prop->AsBool(fallback) : fallback;
+            };
+            const auto numberAttr = [&pptxExportNode](const wxString& name) -> std::optional<double>
+            {
+                const auto prop = pptxExportNode->GetProperty(name);
+                return prop->IsOk() ? std::optional<double>{ prop->AsDouble(-1) } : std::nullopt;
+            };
+
+            if (const auto slideSize = numberAttr(L"slide-size"); slideSize && *slideSize >= 0)
+                {
+                const auto value{ static_cast<int>(*slideSize) };
+                m_powerPointExportOptions.m_slideSize =
+                    (value == 0) ? PowerPointExportOptions::SlideSize::Widescreen16x9 :
+                    (value == 1) ? PowerPointExportOptions::SlideSize::Standard4x3 :
+                                   PowerPointExportOptions::SlideSize::Custom;
+                }
+            if (const auto customWidth = numberAttr(L"custom-width");
+                customWidth && *customWidth > 0)
+                {
+                m_powerPointExportOptions.m_customWidthInches = *customWidth;
+                }
+            if (const auto customHeight = numberAttr(L"custom-height");
+                customHeight && *customHeight > 0)
+                {
+                m_powerPointExportOptions.m_customHeightInches = *customHeight;
+                }
+            if (const auto transition = numberAttr(L"transition");
+                transition && *transition >= 0 &&
+                *transition <= static_cast<double>(
+                                   static_cast<int>(PowerPointExportOptions::Transition::Morph)))
+                {
+                m_powerPointExportOptions.m_transition =
+                    static_cast<PowerPointExportOptions::Transition>(static_cast<int>(*transition));
+                }
+            if (const auto transitionSpeed = numberAttr(L"transition-speed");
+                transitionSpeed && *transitionSpeed >= 0 &&
+                *transitionSpeed <= static_cast<double>(static_cast<int>(
+                                        PowerPointExportOptions::TransitionSpeed::Fast)))
+                {
+                m_powerPointExportOptions.m_transitionSpeed =
+                    static_cast<PowerPointExportOptions::TransitionSpeed>(
+                        static_cast<int>(*transitionSpeed));
+                }
+            m_powerPointExportOptions.m_advanceOnClick =
+                boolAttr(L"advance-on-click", m_powerPointExportOptions.m_advanceOnClick);
+            m_powerPointExportOptions.m_advanceAutomatically = boolAttr(
+                L"advance-automatically", m_powerPointExportOptions.m_advanceAutomatically);
+            if (const auto advanceSeconds = numberAttr(L"advance-seconds");
+                advanceSeconds && *advanceSeconds > 0)
+                {
+                m_powerPointExportOptions.m_advanceSeconds = static_cast<int>(*advanceSeconds);
+                }
+            m_powerPointExportOptions.m_loopContinuously =
+                boolAttr(L"loop", m_powerPointExportOptions.m_loopContinuously);
+            m_powerPointExportOptions.m_includeAccessibilityNotes = boolAttr(
+                L"accessibility-notes", m_powerPointExportOptions.m_includeAccessibilityNotes);
             }
 
         // start loading the pages

@@ -141,6 +141,76 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                     }
                 }
             }
+        else if (child->GetName() == L"powerpoint-export")
+            {
+            const auto boolAttr = [&child](const wxString& name, const bool fallback)
+            { return child->GetAttribute(name, fallback ? L"1" : L"0") == L"1"; };
+            long val{ 0 };
+            if (child
+                    ->GetAttribute(L"slide-size", std::to_wstring(static_cast<int>(
+                                                      m_powerPointExportOptions.m_slideSize)))
+                    .ToLong(&val))
+                {
+                m_powerPointExportOptions.m_slideSize =
+                    (val == 0) ? Wisteria::PowerPointExportOptions::SlideSize::Widescreen16x9 :
+                    (val == 1) ? Wisteria::PowerPointExportOptions::SlideSize::Standard4x3 :
+                                 Wisteria::PowerPointExportOptions::SlideSize::Custom;
+                }
+            double dval{ 0 };
+            if (child
+                    ->GetAttribute(L"custom-width",
+                                   std::to_wstring(m_powerPointExportOptions.m_customWidthInches))
+                    .ToDouble(&dval) &&
+                dval > 0)
+                {
+                m_powerPointExportOptions.m_customWidthInches = dval;
+                }
+            if (child
+                    ->GetAttribute(L"custom-height",
+                                   std::to_wstring(m_powerPointExportOptions.m_customHeightInches))
+                    .ToDouble(&dval) &&
+                dval > 0)
+                {
+                m_powerPointExportOptions.m_customHeightInches = dval;
+                }
+            if (child
+                    ->GetAttribute(L"transition", std::to_wstring(static_cast<int>(
+                                                      m_powerPointExportOptions.m_transition)))
+                    .ToLong(&val) &&
+                val >= 0 &&
+                val <= static_cast<int>(Wisteria::PowerPointExportOptions::Transition::Morph))
+                {
+                m_powerPointExportOptions.m_transition =
+                    static_cast<Wisteria::PowerPointExportOptions::Transition>(val);
+                }
+            if (child
+                    ->GetAttribute(L"transition-speed",
+                                   std::to_wstring(static_cast<int>(
+                                       m_powerPointExportOptions.m_transitionSpeed)))
+                    .ToLong(&val) &&
+                val >= 0 &&
+                val <= static_cast<int>(Wisteria::PowerPointExportOptions::TransitionSpeed::Fast))
+                {
+                m_powerPointExportOptions.m_transitionSpeed =
+                    static_cast<Wisteria::PowerPointExportOptions::TransitionSpeed>(val);
+                }
+            m_powerPointExportOptions.m_advanceOnClick =
+                boolAttr(L"advance-on-click", m_powerPointExportOptions.m_advanceOnClick);
+            m_powerPointExportOptions.m_advanceAutomatically = boolAttr(
+                L"advance-automatically", m_powerPointExportOptions.m_advanceAutomatically);
+            if (child
+                    ->GetAttribute(L"advance-seconds",
+                                   std::to_wstring(m_powerPointExportOptions.m_advanceSeconds))
+                    .ToLong(&val) &&
+                val > 0)
+                {
+                m_powerPointExportOptions.m_advanceSeconds = static_cast<int>(val);
+                }
+            m_powerPointExportOptions.m_loopContinuously =
+                boolAttr(L"loop", m_powerPointExportOptions.m_loopContinuously);
+            m_powerPointExportOptions.m_includeAccessibilityNotes = boolAttr(
+                L"accessibility-notes", m_powerPointExportOptions.m_includeAccessibilityNotes);
+            }
         }
 
     wxLogVerbose(L"Settings loaded from: %s", filePath);
@@ -206,6 +276,28 @@ bool AppSettings::SaveSettingsFile(const wxString& filePath)
         m_svgExportOptions.m_layout == Wisteria::SVGReportOptions::PageLayout::Duplex ? L"1" :
                                                                                         L"2");
     root->AddChild(svgNode);
+
+    auto* pptxNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"powerpoint-export");
+    pptxNode->AddAttribute(
+        L"slide-size", std::to_wstring(static_cast<int>(m_powerPointExportOptions.m_slideSize)));
+    pptxNode->AddAttribute(L"custom-width",
+                           std::to_wstring(m_powerPointExportOptions.m_customWidthInches));
+    pptxNode->AddAttribute(L"custom-height",
+                           std::to_wstring(m_powerPointExportOptions.m_customHeightInches));
+    pptxNode->AddAttribute(
+        L"transition", std::to_wstring(static_cast<int>(m_powerPointExportOptions.m_transition)));
+    pptxNode->AddAttribute(L"transition-speed", std::to_wstring(static_cast<int>(
+                                                    m_powerPointExportOptions.m_transitionSpeed)));
+    pptxNode->AddAttribute(L"advance-on-click",
+                           m_powerPointExportOptions.m_advanceOnClick ? L"1" : L"0");
+    pptxNode->AddAttribute(L"advance-automatically",
+                           m_powerPointExportOptions.m_advanceAutomatically ? L"1" : L"0");
+    pptxNode->AddAttribute(L"advance-seconds",
+                           std::to_wstring(m_powerPointExportOptions.m_advanceSeconds));
+    pptxNode->AddAttribute(L"loop", m_powerPointExportOptions.m_loopContinuously ? L"1" : L"0");
+    pptxNode->AddAttribute(L"accessibility-notes",
+                           m_powerPointExportOptions.m_includeAccessibilityNotes ? L"1" : L"0");
+    root->AddChild(pptxNode);
 
     if (!doc.Save(filePath))
         {
