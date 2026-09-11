@@ -1721,7 +1721,13 @@ namespace Wisteria::Graphs
            several bar rows. The band is a single stroked path, not a rectangle per
            run, so the outline follows only the ribbon's outside. The path is
            stroked three times, back to front. First the drop shadow, then the
-           outline at full thickness, then the fill just inside it. */
+           outline at full thickness, then the fill just inside it.
+
+           A hand-crafted effect (watercolor, marker, etc.) or a stipple-shape fill
+           instead paints each run as its own effect-rendered rectangle, drawn
+           separately from this object. In that case the ribbon's body is hidden and
+           it draws only the fold arrows, while still standing in for hit testing and
+           the bounding box. */
         class SerpentineRibbon final : public GraphItems::GraphItemBase
             {
           public:
@@ -1734,11 +1740,14 @@ namespace Wisteria::Graphs
                @param showFoldArrows @c true to draw a curved direction arrow inside the
                    band at each turn.
                @param barsAreHorizontal @c true when the runs travel left to right,
-                   @c false when they travel bottom to top. */
+                   @c false when they travel bottom to top.
+               @param hideBody @c true to skip drawing the band's shadow, outline, and
+                   fill, leaving only the fold arrows (used when the runs are instead
+                   drawn as separate hand-crafted-effect rectangles). */
             SerpentineRibbon(const GraphItems::GraphItemInfo& itemInfo,
                              std::vector<wxPoint> centerLine, std::vector<wxRect> segmentRects,
                              double thickness, wxCoord shadowOffset, bool showFoldArrows,
-                             bool barsAreHorizontal);
+                             bool barsAreHorizontal, bool hideBody = false);
 
             /// @private
             [[nodiscard]]
@@ -1773,6 +1782,7 @@ namespace Wisteria::Graphs
             wxCoord m_shadowOffset{ 0 };
             bool m_showFoldArrows{ false };
             bool m_barsAreHorizontal{ false };
+            bool m_bodyHidden{ false };
             };
 
         wxPoint DrawBar(Bar& bar, size_t barIndex, BarRenderInfo& barRenderInfo,
@@ -1781,9 +1791,12 @@ namespace Wisteria::Graphs
                              BarRenderInfo& barRenderInfo, BarBlockRenderInfo& barBlockRenderInfo,
                              bool measureOnly = false);
         void DrawBarGroups(BarRenderInfo& barRenderInfo);
-        /// @brief Draws a folded bar as a switchback ribbon of solid rectangles.
-        /// @details The bar's effect and shape are ignored. Every run is a plain
-        ///     solid-filled rectangle, joined to the next by a connector at the plot edge.
+        /// @brief Draws a folded bar as a switchback ribbon of rectangles.
+        /// @details The bar's shape is ignored. Every run is drawn as a rectangle.
+        ///     A hand-crafted effect (watercolor, thick watercolor, marker, or pencil) or
+        ///     a stipple-shape fill is applied to each run individually, with a connecting
+        ///     rectangle bridging every turn so the runs still read as one band. Every
+        ///     other effect is rendered as one continuous, solid-filled band across all runs.
         /// @returns The middle of the end of the ribbon, where the bar's value label goes.
         /// @param bar The bar being drawn.
         /// @param barRenderInfo The current render state.
@@ -1840,6 +1853,14 @@ namespace Wisteria::Graphs
         bool DrawBarBlockImageEffect(const Bar& bar, size_t barIndex, const BarBlock& barBlock,
                                      const BlockColors& colors, const wxRect& drawArea,
                                      const BarRenderInfo& barRenderInfo);
+        /// @brief Tiles the stipple shape icon across a rectangle.
+        /// @param rect The rectangle to tile the icon across.
+        /// @param tileHorizontally @c true to lay the icons out left to right across the
+        ///     rectangle's width, @c false to stack them bottom to top across its height.
+        /// @param colors The resolved block colors (only the opacity is used).
+        /// @param barRenderInfo The current render state (bar width and DC).
+        void DrawStippleShapeRun(const wxRect& rect, bool tileHorizontally,
+                                 const BlockColors& colors, const BarRenderInfo& barRenderInfo);
         /// @brief Draws a bar block as a color-filled polygon, shaped as a rectangle or an arrow.
         /// @returns @c false if no polygon could be built for the bar's shape, in which case the
         ///     caller must return without adding a decal.

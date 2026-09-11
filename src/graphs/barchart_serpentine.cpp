@@ -614,11 +614,91 @@ namespace Wisteria::Graphs
             return barBlockRenderInfo.m_middlePointOfBarEnd;
             }
 
+        // the decal rides on the first run, so save its rect before the segments are consumed
+        const wxRect firstRunRect{ segmentRects.front() };
+
+        const bool useHandCraftedEffect{ IsBoxEffectStylized(bar.GetEffect()) };
+        const bool useStippleShapeEffect{ bar.GetEffect() == BoxEffect::StippleShape };
+        const bool drawRunsSeparately{ useHandCraftedEffect || useStippleShapeEffect };
+        // A hand-crafted effect (watercolor, marker, etc.) or a stipple-shape fill paints
+        // each run as its own effect-rendered rectangle, the same way an ordinary bar
+        // block would be drawn. A connector rectangle bridges each turn, so the runs
+        // still read as one continuous band instead of a row of separate bars. The
+        // ribbon itself is left to draw only the fold arrows in that case.
+        if (drawRunsSeparately)
+            {
+            const auto drawHandCraftedRect =
+                [this, &bar, &barBlock, &blockColors, &barRenderInfo](const wxRect& rect)
+            {
+                Wisteria::GraphItems::GraphItemInfo blockInfo{
+                    barBlock.GetSelectionLabel().GetText()
+                };
+                blockInfo.Pen(Colors::ColorBrewer::GetColor(Colors::Color::Black))
+                    .Brush(blockColors.m_brush)
+                    .Scaling(GetScaling())
+                    .Outline(true, true, true, true)
+                    .ShowLabelWhenSelected(true);
+                std::array<wxPoint, 4> boxPoints{};
+                GraphItems::Polygon::GetRectPoints(rect, boxPoints);
+                barRenderInfo.m_barRect = rect;
+                ApplyBoxEffectToPolygon(std::make_unique<GraphItems::Polygon>(blockInfo, boxPoints),
+                                        bar, barBlock, blockColors, GetDrawArea(), barRenderInfo);
+            };
+            // A run is shaped like an ordinary bar for this orientation, but a
+            // connector bridging two rows (or columns) has the opposite aspect
+            // ratio, so its stipple icons tile along the other axis.
+            const auto drawRect = [this, useStippleShapeEffect, &blockColors, &barRenderInfo,
+                                   &drawHandCraftedRect,
+                                   isHorizontal](const wxRect& rect, const bool isConnector)
+            {
+                if (useStippleShapeEffect)
+                    {
+                    DrawStippleShapeRun(rect, isConnector ? !isHorizontal : isHorizontal,
+                                        blockColors, barRenderInfo);
+                    }
+                else
+                    {
+                    drawHandCraftedRect(rect);
+                    }
+            };
+
+            for (const auto& segmentRect : segmentRects)
+                {
+                drawRect(segmentRect, false);
+                }
+
+            const wxCoord halfWidth{ barWidth / 2 };
+            for (size_t i = 0; i + 1 < segmentRects.size(); ++i)
+                {
+                const auto& rectA = segmentRects[i];
+                const auto& rectB = segmentRects[i + 1];
+                if (isHorizontal)
+                    {
+                    // runs travel left-right, so the turn bridges two rows vertically
+                    // at whichever end (left or right) the run exits from
+                    const wxCoord turnX{ segments[i].m_forward ? rectA.GetRight() :
+                                                                 rectA.GetLeft() };
+                    const wxCoord yTop{ std::min(rectA.GetTop(), rectB.GetTop()) };
+                    const wxCoord yBottom{ std::max(rectA.GetBottom(), rectB.GetBottom()) };
+                    drawRect(wxRect(turnX - halfWidth, yTop, barWidth, yBottom - yTop), true);
+                    }
+                else
+                    {
+                    // runs travel bottom-to-top, so the turn bridges two columns
+                    // horizontally at whichever end (top or bottom) the run exits from
+                    const wxCoord turnY{ segments[i].m_forward ? rectA.GetTop() :
+                                                                 rectA.GetBottom() };
+                    const wxCoord xLeft{ std::min(rectA.GetLeft(), rectB.GetLeft()) };
+                    const wxCoord xRight{ std::max(rectA.GetRight(), rectB.GetRight()) };
+                    drawRect(wxRect(xLeft, turnY - halfWidth, xRight - xLeft, barWidth), true);
+                    }
+                }
+
+            barRenderInfo.m_barRect = segmentRects.back();
+            }
+
         wxBrush ribbonBrush{ barBlock.GetBrush() };
         ribbonBrush.SetColour(blockColors.m_fill);
-
-        // the decal rides on the first run, so save its rect before the ribbon takes it
-        const wxRect firstRunRect{ segmentRects.front() };
 
         // outline the ribbon like an ordinary bar block, so folded and unfolded bars match
         const wxPen contrastPen{ Wisteria::Colors::ColorContrast::IsLight(GetPlotOrCanvasColor()) ?
@@ -647,7 +727,8 @@ namespace Wisteria::Graphs
                 .DPIScaling(GetDPIScaleFactor())
                 .ShowLabelWhenSelected(true),
             std::move(centerLine), std::move(segmentRects), barRenderInfo.m_barWidth,
-            barRenderInfo.m_scaledShadowOffset, m_showSerpentineFoldArrows, isHorizontal);
+            barRenderInfo.m_scaledShadowOffset, m_showSerpentineFoldArrows, isHorizontal,
+            drawRunsSeparately);
         // Turns land on the plot edge, so the outline pen straddling it sits half
         // outside. Pad the clip by that much so corners are not shaved flat.
         wxRect ribbonClipRect{ GetDrawArea() };
@@ -670,11 +751,11 @@ namespace Wisteria::Graphs
                                                  std::vector<wxRect> segmentRects,
                                                  const double thickness, const wxCoord shadowOffset,
                                                  const bool showFoldArrows,
-                                                 const bool barsAreHorizontal)
+                                                 const bool barsAreHorizontal, const bool hideBody)
         : GraphItems::GraphItemBase(itemInfo), m_centerLine(std::move(centerLine)),
           m_segmentRects(std::move(segmentRects)), m_thickness(thickness),
           m_shadowOffset(shadowOffset), m_showFoldArrows(showFoldArrows),
-          m_barsAreHorizontal(barsAreHorizontal)
+          m_barsAreHorizontal(barsAreHorizontal), m_bodyHidden(hideBody)
         {
         for (const auto& segmentRect : m_segmentRects)
             {
@@ -783,6 +864,14 @@ namespace Wisteria::Graphs
             gc->Clip(clipRect.GetX(), clipRect.GetY(), clipRect.GetWidth(), clipRect.GetHeight());
             }
         gc->SetBrush(*wxTRANSPARENT_BRUSH);
+
+        // the body is drawn elsewhere as separate hand-crafted-effect rectangles,
+        // so only the fold arrows belong to this object
+        if (m_bodyHidden)
+            {
+            DrawFoldArrows(gc);
+            return m_boundingBox;
+            }
 
         const auto strokeBand =
             [gc](const wxGraphicsPath& path, const wxColour& color, const double width)

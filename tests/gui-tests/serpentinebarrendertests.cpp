@@ -77,6 +77,7 @@ namespace
         BarChart::SerpentineMode m_mode{ BarChart::SerpentineMode::Serpentine };
         double m_threshold{ 3.0 };
         bool m_reverseScalingAxis{ false };
+        BoxEffect m_effect{ BoxEffect::Solid };
         };
 
     [[nodiscard]]
@@ -93,7 +94,7 @@ namespace
                 axisPosition,
                 { BarChart::BarBlock{ BarChart::BarBlockInfo(barLength).Brush(barColor) } },
                 wxString{}, Label(wxString::Format(L"Bar %d", static_cast<int>(axisPosition))),
-                BoxEffect::Solid);
+                spec.m_effect);
             chart->AddBar(theBar);
             axisPosition += 1;
             }
@@ -513,3 +514,101 @@ TEST_CASE("BarChart serpentine fold arrows are draw-time only", "[barchart][serp
         }
     }
 
+TEST_CASE("BarChart serpentine draws hand-crafted effects as connected rectangles",
+          "[barchart][serpentine]")
+    {
+    const std::vector<std::pair<std::string, BoxEffect>> effects{
+        { "watercolor", BoxEffect::WaterColor },
+        { "thick-watercolor", BoxEffect::ThickWaterColor },
+        { "marker", BoxEffect::Marker },
+        { "pencil", BoxEffect::Pencil }
+    };
+    for (const auto& [name, effect] : effects)
+        {
+        SECTION(name)
+            {
+            SerpSpec solidSpec;
+            solidSpec.m_barLengths = { 5, 6, 4, 30 };
+            solidSpec.m_mode = BarChart::SerpentineMode::Serpentine;
+            solidSpec.m_effect = BoxEffect::Solid;
+
+            auto* solidCanvas = MakeCanvas();
+            auto solidChart = BuildBarChart(solidCanvas, solidSpec);
+            const auto solidPrint = LayOutAndCapture(solidCanvas, solidChart);
+            REQUIRE(solidPrint.m_foldedBarCount == 1);
+            const auto runCount = solidChart->GetSerpentineFoldCount(3);
+            REQUIRE(runCount >= 2);
+
+            SerpSpec stylizedSpec{ solidSpec };
+            stylizedSpec.m_effect = effect;
+            auto* stylizedCanvas = MakeCanvas();
+            auto stylizedChart = BuildBarChart(stylizedCanvas, stylizedSpec);
+            const auto stylizedPrint = LayOutAndCapture(stylizedCanvas, stylizedChart);
+
+            INFO("solid:    " << solidPrint.ToString());
+            INFO("stylized: " << stylizedPrint.ToString());
+            // the hand-crafted effect only changes how the fold is drawn, not
+            // where it is laid out
+            CHECK(stylizedPrint.m_scalingAxis == solidPrint.m_scalingAxis);
+            CHECK(stylizedPrint.m_barAxis == solidPrint.m_barAxis);
+            CHECK(stylizedPrint.m_extraRowCount == solidPrint.m_extraRowCount);
+            CHECK(stylizedPrint.m_foldedBarCount == solidPrint.m_foldedBarCount);
+            CHECK(stylizedChart->GetSerpentineFoldCount(3) == runCount);
+            // each run becomes its own effect-rendered rectangle, plus a connector
+            // rectangle bridging every turn between them, on top of the ribbon
+            // object that still carries the fold arrows and hit testing
+            const auto turnCount{ runCount - 1 };
+            CHECK(stylizedPrint.m_objectCount == solidPrint.m_objectCount + runCount + turnCount);
+
+            // a second pass converges on the same drawing
+            const auto secondPrint = LayOutAndCapture(stylizedCanvas, stylizedChart);
+            CHECK(secondPrint == stylizedPrint);
+            }
+        }
+    }
+
+TEST_CASE("BarChart serpentine draws a stipple-shape fill as connected runs",
+          "[barchart][serpentine]")
+    {
+    for (const auto orientation : { Orientation::Vertical, Orientation::Horizontal })
+        {
+        SECTION(orientation == Orientation::Vertical ? "vertical" : "horizontal")
+            {
+            SerpSpec solidSpec;
+            solidSpec.m_orientation = orientation;
+            solidSpec.m_barLengths = { 5, 6, 4, 30 };
+            solidSpec.m_mode = BarChart::SerpentineMode::Serpentine;
+            solidSpec.m_effect = BoxEffect::Solid;
+
+            auto* solidCanvas = MakeCanvas();
+            auto solidChart = BuildBarChart(solidCanvas, solidSpec);
+            const auto solidPrint = LayOutAndCapture(solidCanvas, solidChart);
+            REQUIRE(solidPrint.m_foldedBarCount == 1);
+            const auto runCount = solidChart->GetSerpentineFoldCount(3);
+            REQUIRE(runCount >= 2);
+
+            SerpSpec stippleSpec{ solidSpec };
+            stippleSpec.m_effect = BoxEffect::StippleShape;
+            auto* stippleCanvas = MakeCanvas();
+            auto stippleChart = BuildBarChart(stippleCanvas, stippleSpec);
+            const auto stipplePrint = LayOutAndCapture(stippleCanvas, stippleChart);
+
+            INFO("solid:   " << solidPrint.ToString());
+            INFO("stipple: " << stipplePrint.ToString());
+            // the stipple fill only changes how the fold is drawn, not where it is laid out
+            CHECK(stipplePrint.m_scalingAxis == solidPrint.m_scalingAxis);
+            CHECK(stipplePrint.m_barAxis == solidPrint.m_barAxis);
+            CHECK(stipplePrint.m_extraRowCount == solidPrint.m_extraRowCount);
+            CHECK(stipplePrint.m_foldedBarCount == solidPrint.m_foldedBarCount);
+            CHECK(stippleChart->GetSerpentineFoldCount(3) == runCount);
+            // every run and every connector tiles in at least one icon, plus the
+            // ribbon object that still carries the fold arrows and hit testing
+            const auto turnCount{ runCount - 1 };
+            CHECK(stipplePrint.m_objectCount >= solidPrint.m_objectCount + runCount + turnCount);
+
+            // a second pass converges on the same drawing
+            const auto secondPrint = LayOutAndCapture(stippleCanvas, stippleChart);
+            CHECK(secondPrint == stipplePrint);
+            }
+        }
+    }

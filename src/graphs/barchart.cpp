@@ -1110,81 +1110,88 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             }
         if (bar.GetEffect() == BoxEffect::StippleShape)
             {
-            auto shapeWidth{ barRenderInfo.m_barWidth };
-            auto shapeHeight{ barRenderInfo.m_barWidth };
-            if (isHorizontal)
-                {
-                // These particular icons are drawn with a ratio where the width
-                // is 60% of the height if the drawing area is square. To prevent
-                // having large gaps between the icons, adjust the width of the icons'
-                // drawing areas so that they aren't drawn inside squares.
-                if (GetStippleShape() == Icons::IconShape::BusinessWoman ||
-                    GetStippleShape() == Icons::IconShape::Woman ||
-                    GetStippleShape() == Icons::IconShape::Man)
-                    {
-                    shapeWidth *= 0.6;
-                    }
-                else if (GetStippleShape() == Icons::IconShape::Ruler)
-                    {
-                    shapeWidth *= 0.4;
-                    }
-                // likewise, handle icons that are wider than others
-                if (GetStippleShape() == Icons::IconShape::Blackboard)
-                    {
-                    shapeHeight *= 0.6;
-                    }
-                else if (GetStippleShape() == Icons::IconShape::Car)
-                    {
-                    shapeHeight *= 0.9;
-                    }
-                }
-
-            const auto addStipple =
-                [this, &barRenderInfo, &barRect, opacityToApply, shapeWidth,
-                 shapeHeight](const wxPoint& anchorPt, const wxSize& stippleImgSize)
-            {
-                auto shape = std::make_unique<Wisteria::GraphItems::Shape>(
-                    Wisteria::GraphItems::GraphItemInfo{}
-                        .Pen(wxNullPen)
-                        .Brush(Colors::ColorContrast::ChangeOpacity(GetStippleShapeColor(),
-                                                                    opacityToApply))
-                        .AnchorPoint(anchorPt)
-                        .Anchoring(Anchoring::TopLeftCorner)
-                        .DPIScaling(GetDPIScaleFactor())
-                        .Scaling(GetScaling()),
-                    GetStippleShape(), stippleImgSize);
-                shape->SetBoundingBox(wxRect{ anchorPt, wxSize{ static_cast<int>(shapeWidth),
-                                                                static_cast<int>(shapeHeight) } },
-                                      barRenderInfo.m_dc, GetScaling());
-                shape->SetClippingRect(barRect);
-                AddObject(std::move(shape));
-            };
-
-            if (isHorizontal)
-                {
-                auto currentXLeft = barRect.GetX();
-                while (currentXLeft < (barRect.GetX() + barRect.GetWidth()))
-                    {
-                    const wxSize stippleImgSize(shapeWidth, shapeHeight);
-                    addStipple(wxPoint{ currentXLeft, barRect.GetY() }, stippleImgSize);
-                    currentXLeft += stippleImgSize.GetWidth();
-                    }
-                }
-            else
-                {
-                auto currentYTop = (barRect.GetY() + barRect.GetHeight()) - shapeHeight;
-                while ((currentYTop + shapeHeight) > barRect.GetY())
-                    {
-                    const wxSize stippleImgSize(barRenderInfo.m_barWidth, shapeHeight);
-                    addStipple(wxPoint{ barRect.GetX(), static_cast<int>(currentYTop) },
-                               stippleImgSize);
-                    currentYTop -= stippleImgSize.GetHeight();
-                    }
-                }
+            DrawStippleShapeRun(barRect, isHorizontal, colors, barRenderInfo);
             return true;
             }
 
         return false;
+        }
+
+    //-----------------------------------
+    void BarChart::DrawStippleShapeRun(const wxRect& rect, const bool tileHorizontally,
+                                       const BlockColors& colors,
+                                       const BarRenderInfo& barRenderInfo)
+        {
+        auto shapeWidth{ barRenderInfo.m_barWidth };
+        auto shapeHeight{ barRenderInfo.m_barWidth };
+        if (tileHorizontally)
+            {
+            // These particular icons are drawn with a ratio where the width
+            // is 60% of the height if the drawing area is square. To prevent
+            // having large gaps between the icons, adjust the width of the icons'
+            // drawing areas so that they aren't drawn inside squares.
+            if (GetStippleShape() == Icons::IconShape::BusinessWoman ||
+                GetStippleShape() == Icons::IconShape::Woman ||
+                GetStippleShape() == Icons::IconShape::Man)
+                {
+                shapeWidth *= 0.6;
+                }
+            else if (GetStippleShape() == Icons::IconShape::Ruler)
+                {
+                shapeWidth *= 0.4;
+                }
+            // likewise, handle icons that are wider than others
+            if (GetStippleShape() == Icons::IconShape::Blackboard)
+                {
+                shapeHeight *= 0.6;
+                }
+            else if (GetStippleShape() == Icons::IconShape::Car)
+                {
+                shapeHeight *= 0.9;
+                }
+            }
+
+        const auto addStipple = [this, &barRenderInfo, &rect, opacityToApply = colors.m_opacity,
+                                 shapeWidth,
+                                 shapeHeight](const wxPoint& anchorPt, const wxSize& stippleImgSize)
+        {
+            auto shape = std::make_unique<Wisteria::GraphItems::Shape>(
+                Wisteria::GraphItems::GraphItemInfo{}
+                    .Pen(wxNullPen)
+                    .Brush(Colors::ColorContrast::ChangeOpacity(GetStippleShapeColor(),
+                                                                opacityToApply))
+                    .AnchorPoint(anchorPt)
+                    .Anchoring(Anchoring::TopLeftCorner)
+                    .DPIScaling(GetDPIScaleFactor())
+                    .Scaling(GetScaling()),
+                GetStippleShape(), stippleImgSize);
+            shape->SetBoundingBox(wxRect{ anchorPt, wxSize{ static_cast<int>(shapeWidth),
+                                                            static_cast<int>(shapeHeight) } },
+                                  barRenderInfo.m_dc, GetScaling());
+            shape->SetClippingRect(rect);
+            AddObject(std::move(shape));
+        };
+
+        if (tileHorizontally)
+            {
+            auto currentXLeft = rect.GetX();
+            while (currentXLeft < (rect.GetX() + rect.GetWidth()))
+                {
+                const wxSize stippleImgSize(shapeWidth, shapeHeight);
+                addStipple(wxPoint{ currentXLeft, rect.GetY() }, stippleImgSize);
+                currentXLeft += stippleImgSize.GetWidth();
+                }
+            }
+        else
+            {
+            auto currentYTop = (rect.GetY() + rect.GetHeight()) - shapeHeight;
+            while ((currentYTop + shapeHeight) > rect.GetY())
+                {
+                const wxSize stippleImgSize(barRenderInfo.m_barWidth, shapeHeight);
+                addStipple(wxPoint{ rect.GetX(), static_cast<int>(currentYTop) }, stippleImgSize);
+                currentYTop -= stippleImgSize.GetHeight();
+                }
+            }
         }
 
     //-----------------------------------
