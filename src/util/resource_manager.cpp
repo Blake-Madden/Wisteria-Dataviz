@@ -145,6 +145,31 @@ wxBitmapBundle ResourceManager::GetSVG(wxString path)
     }
 
 //-------------------------------------------------------
+wxString ResourceManager::GetSVGMarkup(wxString path) const
+    {
+    // not an absolute path, then see if using a resource folder and look in there
+    if (!wxFile::Exists(path))
+        {
+        const wxFileName fn{ m_resourceFile };
+        if (!fn.HasExt())
+            {
+            path = GetResourceFilePath(path);
+            }
+        }
+    if (wxFile::Exists(path))
+        {
+        wxString fileText;
+        if (wxFile theFile{ path }; theFile.IsOpened() && theFile.ReadAll(&fileText))
+            {
+            return fileText;
+            }
+        return {};
+        }
+
+    return m_zipCatalog.ReadTextFile(path);
+    }
+
+//-------------------------------------------------------
 wxBitmapBundle ResourceManager::CreateColorIcon(const wxColour& color)
     {
     wxASSERT(color.IsOk());
