@@ -99,13 +99,6 @@ class ResourceManager
     [[nodiscard]]
     wxBitmapBundle GetSVG(wxString path);
 
-    /// @returns The raw SVG markup (XML text) for the provided path, suitable for
-    ///     inlining into HTML.
-    /// @param path The path to the SVG file.\n
-    ///     Can be relative to the ZIP file loaded by this class, or a local file.
-    [[nodiscard]]
-    wxString GetSVGMarkup(wxString path) const;
-
     /** @returns A list of files in a given folder
             (relative to its location in the loaded archive's folder structure).
         @param path The name of the folder (in the attached archive file) to iterate.*/

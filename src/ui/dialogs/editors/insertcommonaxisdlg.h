@@ -82,6 +82,13 @@ namespace Wisteria::UI
         /// @param axis The axis to read settings from.
         void LoadFromAxis(const GraphItems::Axis& axis);
 
+        /// @returns A new common axis built from the dialog's current settings
+        ///     (selected graphs, axis type, and axis display options), or @c nullptr
+        ///     if fewer than two of the selected graphs are still present on the canvas.
+        /// @note Call after ShowModal() returns wxID_OK.
+        [[nodiscard]]
+        std::unique_ptr<GraphItems::Axis> BuildCommonAxis();
+
       private:
         void CreateControls() final;
         bool Validate() final;

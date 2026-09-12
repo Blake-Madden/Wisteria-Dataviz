@@ -8,6 +8,9 @@
 
 #include "insertimgdlg.h"
 #include "../../app/wisteriaapp.h"
+#include "../../app/wisteriadoc.h"
+#include "../../base/reportenumconvert.h"
+#include <wx/filename.h>
 #include <wx/tokenzr.h>
 #include <wx/valgen.h>
 
@@ -380,5 +383,111 @@ namespace Wisteria::UI
         {
         ApplyAccessibilityOptions(image);
         image.SetResizeMethod(GetResizeMethod());
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Wisteria::GraphItems::Image> InsertImageDlg::BuildImage(WisteriaDoc* doc)
+        {
+        const auto paths = GetImagePaths();
+        if (paths.empty())
+            {
+            return nullptr;
+            }
+
+        const wxString projectDir = (doc == nullptr || doc->GetFilename().empty()) ?
+                                        wxString{} :
+                                        wxFileName{ doc->GetFilename() }.GetPathWithSep();
+
+        std::vector<wxBitmap> bmps;
+        for (const auto& path : paths)
+            {
+            wxString resolvedPath = path;
+            if (!wxFileName{ path }.IsAbsolute() && !projectDir.empty())
+                {
+                resolvedPath = projectDir + path;
+                }
+            auto loadedBmp = Wisteria::GraphItems::Image::LoadFile(resolvedPath);
+            if (loadedBmp.IsOk())
+                {
+                bmps.emplace_back(loadedBmp);
+                }
+            }
+        if (bmps.empty())
+            {
+            return nullptr;
+            }
+
+        wxImage resultImg;
+        if (bmps.size() == 1)
+            {
+            resultImg = bmps[0].ConvertToImage();
+            }
+        else if (GetStitchDirection() == Wisteria::Orientation::Vertical)
+            {
+            resultImg = Wisteria::GraphItems::Image::StitchVertically(bmps);
+            }
+        else
+            {
+            resultImg = Wisteria::GraphItems::Image::StitchHorizontally(bmps);
+            }
+
+        const auto effect = GetImageEffect();
+        if (effect != Wisteria::ImageEffect::NoEffect)
+            {
+            resultImg = Wisteria::GraphItems::Image::ApplyEffect(effect, resultImg);
+            }
+
+        auto image = std::make_shared<Wisteria::GraphItems::Image>(resultImg);
+        ApplyPageOptions(*image);
+        ApplyToImage(*image);
+
+        if (doc != nullptr)
+            {
+            if (paths.GetCount() == 1)
+                {
+                image->SetPropertyTemplate(L"image-import.path", doc->MakeRelativePath(paths[0]));
+                }
+            else
+                {
+                wxString joined;
+                for (size_t idx = 0; idx < paths.GetCount(); ++idx)
+                    {
+                    if (idx > 0)
+                        {
+                        joined += L"\t";
+                        }
+                    joined += doc->MakeRelativePath(paths[idx]);
+                    }
+                image->SetPropertyTemplate(L"image-import.paths", joined);
+                image->SetPropertyTemplate(
+                    L"image-import.stitch",
+                    (GetStitchDirection() == Wisteria::Orientation::Vertical) ? L"vertical" :
+                                                                                L"horizontal");
+                }
+            }
+
+        if (effect != Wisteria::ImageEffect::NoEffect)
+            {
+            const auto effectStr = Wisteria::ReportEnumConvert::ConvertImageEffectToString(effect);
+            if (effectStr.has_value())
+                {
+                image->SetPropertyTemplate(L"image-import.effect", effectStr.value());
+                }
+            }
+
+        if (IsCustomSizeEnabled())
+            {
+            const auto reqWidth = GetImageWidth();
+            const auto reqHeight = GetImageHeight();
+            const auto bestSz = Wisteria::GraphItems::Image::ToBestSize(
+                resultImg.GetSize(), wxSize{ reqWidth, reqHeight });
+            image->SetSize(bestSz);
+            image->SetPropertyTemplate(L"size.width", std::to_wstring(reqWidth));
+            image->SetPropertyTemplate(L"size.height", std::to_wstring(reqHeight));
+            }
+
+        image->SetDPIScaleFactor(GetCanvas()->FromDIP(1));
+
+        return image;
         }
     } // namespace Wisteria::UI

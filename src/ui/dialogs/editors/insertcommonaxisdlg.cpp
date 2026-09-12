@@ -202,6 +202,117 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::unique_ptr<GraphItems::Axis> InsertCommonAxisDlg::BuildCommonAxis()
+        {
+        const auto childIds = GetChildGraphIds();
+        const auto [rows, cols] = GetCanvas()->GetFixedObjectsGridSize();
+        std::vector<std::shared_ptr<Graphs::Graph2D>> childGraphs;
+        for (const auto childId : childIds)
+            {
+            for (size_t row = 0; row < rows; ++row)
+                {
+                for (size_t col = 0; col < cols; ++col)
+                    {
+                    auto item = GetCanvas()->GetFixedObject(row, col);
+                    if (item != nullptr && item->GetId() == childId)
+                        {
+                        auto graph = std::dynamic_pointer_cast<Graphs::Graph2D>(item);
+                        if (graph != nullptr)
+                            {
+                            childGraphs.push_back(graph);
+                            }
+                        }
+                    }
+                }
+            }
+
+        if (childGraphs.size() < 2)
+            {
+            return nullptr;
+            }
+
+        const auto axisType = GetAxisType();
+        auto commonAxis = (axisType == AxisType::BottomXAxis || axisType == AxisType::TopXAxis) ?
+                              CommonAxisBuilder::BuildXAxis(GetCanvas(), childGraphs, axisType,
+                                                            GetCommonPerpendicularAxis()) :
+                              CommonAxisBuilder::BuildYAxis(GetCanvas(), childGraphs, axisType);
+
+        if (commonAxis == nullptr)
+            {
+            return nullptr;
+            }
+
+        const auto axesMap = GetAxes();
+        const auto axisIt = axesMap.find(axisType);
+        if (axisIt != axesMap.end())
+            {
+            const auto& edited = axisIt->second;
+            commonAxis->GetAxisLinePen() = edited.GetAxisLinePen();
+            commonAxis->SetCapStyle(edited.GetCapStyle());
+            commonAxis->Reverse(edited.IsReversed());
+            commonAxis->GetGridlinePen() = edited.GetGridlinePen();
+            commonAxis->SetTickMarkDisplay(edited.GetTickMarkDisplay());
+            commonAxis->SetLabelDisplay(edited.GetLabelDisplay());
+            commonAxis->SetNumberDisplay(edited.GetNumberDisplay());
+            commonAxis->SetAxisLabelOrientation(edited.GetAxisLabelOrientation());
+            commonAxis->SetPerpendicularLabelAxisAlignment(
+                edited.GetPerpendicularLabelAxisAlignment());
+            commonAxis->SetPrecision(edited.GetPrecision());
+            commonAxis->SetDoubleSidedAxisLabels(edited.HasDoubleSidedAxisLabels());
+            commonAxis->ShowOuterLabels(edited.IsShowingOuterLabels());
+            commonAxis->StackLabels(edited.IsStackingLabels());
+            commonAxis->SetLabelLineLength(edited.GetLabelLineLength());
+            commonAxis->GetTitle() = edited.GetTitle();
+            commonAxis->GetHeader() = edited.GetHeader();
+            commonAxis->GetFooter() = edited.GetFooter();
+            for (const auto& bracket : edited.GetBrackets())
+                {
+                commonAxis->AddBracket(bracket);
+                }
+            commonAxis->SetBracketsAreDynamic(edited.AreBracketsDynamic());
+            const auto bracketDs = edited.GetPropertyTemplate(L"brackets.dataset");
+            if (!bracketDs.empty())
+                {
+                commonAxis->SetPropertyTemplate(L"brackets.dataset", bracketDs);
+                }
+            const auto bracketLabel = edited.GetPropertyTemplate(L"bracket.label");
+            if (!bracketLabel.empty())
+                {
+                commonAxis->SetPropertyTemplate(L"bracket.label", bracketLabel);
+                }
+            const auto bracketValue = edited.GetPropertyTemplate(L"bracket.value");
+            if (!bracketValue.empty())
+                {
+                commonAxis->SetPropertyTemplate(L"bracket.value", bracketValue);
+                }
+            if (edited.AreBracketsSimplified())
+                {
+                commonAxis->SimplifyBrackets();
+                }
+            }
+
+        ApplyPageOptions(*commonAxis);
+
+        wxString childIdsStr;
+        for (size_t idx = 0; idx < childIds.size(); ++idx)
+            {
+            if (idx > 0)
+                {
+                childIdsStr += L",";
+                }
+            childIdsStr += std::to_wstring(childIds[idx]);
+            }
+        commonAxis->SetPropertyTemplate(L"child-ids", childIdsStr);
+        if (GetCommonPerpendicularAxis())
+            {
+            commonAxis->SetPropertyTemplate(L"common-perpendicular-axis", L"true");
+            }
+
+        commonAxis->FitCanvasRowHeightToContent(true);
+        return commonAxis;
+        }
+
+    //-------------------------------------------
     void InsertCommonAxisDlg::LoadFromAxis(const GraphItems::Axis& axis)
         {
         // axis type

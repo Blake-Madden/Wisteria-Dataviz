@@ -18,6 +18,8 @@
 #include <wx/spinctrl.h>
 #include <wx/wx.h>
 
+class WisteriaDoc;
+
 namespace Wisteria::UI
     {
     /// @brief Flags controlling which sections are visible in InsertImageDlg.
@@ -156,6 +158,15 @@ namespace Wisteria::UI
         /// @brief Applies the dialog settings to an image.
         /// @param image The image to update.
         void ApplyToImage(Wisteria::GraphItems::Image& image) const;
+
+        /// @returns A new image built from the dialog's current settings (file paths,
+        ///     stitching, effects, custom size), or @c nullptr if no valid image files
+        ///     were selected.
+        /// @param doc The project document, used to resolve/cache relative image paths
+        ///     (may be @c nullptr, in which case paths are treated as already-resolved).
+        /// @note Call after ShowModal() returns wxID_OK.
+        [[nodiscard]]
+        std::shared_ptr<Wisteria::GraphItems::Image> BuildImage(WisteriaDoc* doc);
 
       private:
         void CreateControls() final;

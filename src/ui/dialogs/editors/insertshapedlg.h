@@ -160,6 +160,13 @@ namespace Wisteria::UI
         /// @param shapeInfo The shape info to read settings from.
         void LoadFromShapeInfo(const Wisteria::GraphItems::ShapeInfo& shapeInfo);
 
+        /// @returns A new Shape or FillableShape (depending on IsFillable()) built from
+        ///     the dialog's current settings, with any `{{constant}}` references in its
+        ///     label expanded via the attached report builder (if any).
+        /// @note Call after ShowModal() returns wxID_OK.
+        [[nodiscard]]
+        std::shared_ptr<Wisteria::GraphItems::GraphItemBase> BuildShape();
+
       private:
         void CreateControls() final;
         bool Validate() final;

@@ -388,6 +388,67 @@ namespace Wisteria::UI
     bool InsertShapeDlg::Validate() { return true; }
 
     //-------------------------------------------
+    std::shared_ptr<Wisteria::GraphItems::GraphItemBase> InsertShapeDlg::BuildShape()
+        {
+        const auto labelText = GetLabelText();
+        const auto expanded = (GetReportBuilder() != nullptr) ?
+                                  GetReportBuilder()->ExpandConstants(labelText) :
+                                  labelText;
+
+        const wxPen shapePen{ GetPenColor(), GetPenWidth(), GetPenStyle() };
+        const auto shapeWidth = std::to_wstring(GetShapeWidth());
+        const auto shapeHeight = std::to_wstring(GetShapeHeight());
+
+        std::shared_ptr<Wisteria::GraphItems::GraphItemBase> shape;
+        if (IsFillable())
+            {
+            auto fillableShape = std::make_shared<Wisteria::GraphItems::FillableShape>(
+                Wisteria::GraphItems::GraphItemInfo{ expanded }
+                    .Anchoring(Wisteria::Anchoring::TopLeftCorner)
+                    .Pen(shapePen)
+                    .Brush(wxBrush{ GetBrushColor(), GetBrushStyle() })
+                    .FontColor(GetLabelFontColor())
+                    .DPIScaling(GetCanvas()->FromDIP(1)),
+                GetIconShape(), wxSize{ GetShapeWidth(), GetShapeHeight() }, GetFillPercent());
+            fillableShape->SetPageHorizontalAlignment(GetHorizontalAlignment());
+            fillableShape->SetPageVerticalAlignment(GetVerticalAlignment());
+            fillableShape->SetFixedWidthOnCanvas(true);
+            fillableShape->SetPropertyTemplate(L"size.width", shapeWidth);
+            fillableShape->SetPropertyTemplate(L"size.height", shapeHeight);
+            if (expanded != labelText)
+                {
+                fillableShape->SetPropertyTemplate(L"label.text", labelText);
+                }
+            ApplyAccessibilityOptions(*fillableShape);
+            shape = fillableShape;
+            }
+        else
+            {
+            auto plainShape = std::make_shared<Wisteria::GraphItems::Shape>(
+                Wisteria::GraphItems::GraphItemInfo{ expanded }
+                    .Anchoring(Wisteria::Anchoring::TopLeftCorner)
+                    .Pen(shapePen)
+                    .Brush(wxBrush{ GetBrushColor(), GetBrushStyle() })
+                    .FontColor(GetLabelFontColor())
+                    .DPIScaling(GetCanvas()->FromDIP(1)),
+                GetIconShape(), wxSize{ GetShapeWidth(), GetShapeHeight() });
+            plainShape->SetPageHorizontalAlignment(GetHorizontalAlignment());
+            plainShape->SetPageVerticalAlignment(GetVerticalAlignment());
+            plainShape->SetFixedWidthOnCanvas(true);
+            plainShape->SetPropertyTemplate(L"size.width", shapeWidth);
+            plainShape->SetPropertyTemplate(L"size.height", shapeHeight);
+            if (expanded != labelText)
+                {
+                plainShape->SetPropertyTemplate(L"label.text", labelText);
+                }
+            ApplyAccessibilityOptions(*plainShape);
+            shape = plainShape;
+            }
+
+        return shape;
+        }
+
+    //-------------------------------------------
     Icons::IconShape InsertShapeDlg::GetIconShape() const noexcept
         {
         if (m_shapeIndex >= 0 && static_cast<size_t>(m_shapeIndex) < m_shapeMap.size())

@@ -597,6 +597,68 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::shared_ptr<Wisteria::GraphItems::Label> InsertLabelDlg::BuildLabel()
+        {
+        auto label = std::make_shared<Wisteria::GraphItems::Label>(
+            Wisteria::GraphItems::GraphItemInfo{ GetLabelText() });
+        ApplyPageOptions(*label);
+        ApplyToLabel(*label);
+
+        const auto rawText = GetLabelText();
+        const auto expanded = (GetReportBuilder() != nullptr) ?
+                                  GetReportBuilder()->ExpandConstants(rawText) :
+                                  rawText;
+        if (expanded != rawText)
+            {
+            label->SetPropertyTemplate(L"text", rawText);
+            }
+        label->SetText(expanded);
+        label->SetDPIScaleFactor(GetCanvas()->FromDIP(1));
+
+        return label;
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Wisteria::GraphItems::Label>
+    InsertLabelDlg::BuildSpacerLabel(Canvas* canvas, const Wisteria::SpacerType type)
+        {
+        return (type == Wisteria::SpacerType::EmptySpacer) ?
+                   std::make_shared<Wisteria::GraphItems::Label>(
+                       Wisteria::GraphItems::GraphItemInfo{}
+                           .DPIScaling(canvas->FromDIP(1))
+                           .Scaling(0.0)
+                           .FixedWidthOnCanvas(true)
+                           .CanvasHeightProportion(0)
+                           .Show(false)) :
+                   std::make_shared<Wisteria::GraphItems::Label>(
+                       Wisteria::GraphItems::GraphItemInfo{}
+                           .DPIScaling(canvas->FromDIP(1))
+                           .Scaling(1.0)
+                           .Show(false));
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Wisteria::GraphItems::Label>
+    InsertLabelDlg::BuildDividerLabel(Canvas* canvas, const Wisteria::DividerType type)
+        {
+        const bool isVertical = (type == Wisteria::DividerType::VerticalSingleLine ||
+                                 type == Wisteria::DividerType::VerticalDoubleLine);
+        const bool isDouble = (type == Wisteria::DividerType::HorizontalDoubleLine ||
+                               type == Wisteria::DividerType::VerticalDoubleLine);
+
+        return std::make_shared<Wisteria::GraphItems::Label>(
+            Wisteria::GraphItems::GraphItemInfo{}
+                .DPIScaling(canvas->FromDIP(1))
+                .Scaling(1.0)
+                .Pen(wxPen{ *wxBLACK, 2 })
+                .CanvasPadding(5, 5, 5, 5)
+                .Padding((isDouble && !isVertical) ? 4 : 0, 0, 0, (isDouble && isVertical) ? 4 : 0)
+                .FixedWidthOnCanvas(isVertical)
+                .FitCanvasHeightToContent(!isVertical)
+                .Outline(!isVertical, isVertical && isDouble, !isVertical && isDouble, isVertical));
+        }
+
+    //-------------------------------------------
     int InsertLabelDlg::GetTopShapeOffset() const
         {
         return m_topShapeOffsetSpin != nullptr ? m_topShapeOffsetSpin->GetValue() : 0;

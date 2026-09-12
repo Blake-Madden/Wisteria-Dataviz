@@ -229,6 +229,28 @@ namespace Wisteria::UI
         /// @param label The label to update.
         void ApplyToLabel(Wisteria::GraphItems::Label& label);
 
+        /// @returns A new label built from the dialog's current settings
+        ///     (text, font, alignment, header, page options, etc.), with any
+        ///     `{{constant}}` references in the text expanded via the attached
+        ///     report builder (if any).
+        /// @note Call after ShowModal() returns wxID_OK.
+        [[nodiscard]]
+        std::shared_ptr<Wisteria::GraphItems::Label> BuildLabel();
+
+        /// @returns A new spacer (or empty spacer) label.
+        /// @param canvas The canvas the label will be placed on.
+        /// @param type Which kind of spacer to build.
+        [[nodiscard]]
+        static std::shared_ptr<Wisteria::GraphItems::Label>
+        BuildSpacerLabel(Canvas* canvas, Wisteria::SpacerType type);
+
+        /// @returns A new divider line label.
+        /// @param canvas The canvas the label will be placed on.
+        /// @param type Which kind of divider to build.
+        [[nodiscard]]
+        static std::shared_ptr<Wisteria::GraphItems::Label>
+        BuildDividerLabel(Canvas* canvas, Wisteria::DividerType type);
+
       private:
         void CreateControls() final;
         void CreateLabelPage();
