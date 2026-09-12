@@ -32,6 +32,25 @@ namespace Wisteria::GraphItems
     class Label;
     } // namespace Wisteria::GraphItems
 
+namespace Wisteria
+    {
+    /// @brief A single entry in the object gallery's catalog.
+    struct GalleryItemInfo
+        {
+        /// @brief The type of object this entry represents.
+        GalleryItemType m_id{ GalleryItemType::Label };
+        /// @brief The display name shown under the gallery tile.
+        wxString m_displayName;
+        /// @brief The SVG filename (relative to the resource archive/folder)
+        ///     used as the tile's icon.
+        wxString m_svgName;
+        /// @brief The ribbon-style group this entry is shown under.
+        GalleryGroup m_group{ GalleryGroup::Objects };
+        /// @brief Special-case handling for this entry, if any.
+        GalleryItemBehavior m_behavior{ GalleryItemBehavior::None };
+        };
+    } // namespace Wisteria
+
 class WisteriaApp;
 
 /// @brief Main frame with an embedded log tab.
@@ -119,6 +138,11 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     ///     string if the type is not recognized.
     [[nodiscard]]
     static wxString GetItemIconName(const Wisteria::GraphItems::GraphItemBase* item);
+
+    /// @returns The catalog of every object type shown in the object gallery
+    ///     (grouped and ordered the same way as the ribbon).
+    [[nodiscard]]
+    static const std::vector<Wisteria::GalleryItemInfo>& GetGalleryItemCatalog();
 
     /// @returns Which kind of spacer @p label matches, or Wisteria::SpacerType::NotSpacer
     ///     if it's a regular label (e.g., has text, or is a visible empty-text

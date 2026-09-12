@@ -101,6 +101,7 @@ SET(WISTERIA_SRC
     src/import/spreadsheet_extract_text.cpp
     src/import/xlsx_extract_text.cpp
     src/ui/controls/listctrlexcelexporter.cpp
+    src/ui/controls/objectgallery.cpp
     src/ui/controls/thumbnail.cpp
     src/ui/dialogs/editors/accessibilityoptionspanel.cpp
     src/ui/dialogs/editors/axisoptionspanel.cpp

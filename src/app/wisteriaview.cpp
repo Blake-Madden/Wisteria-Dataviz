@@ -1328,7 +1328,8 @@ void WisteriaView::OnInsertPage([[maybe_unused]] wxCommandEvent& event)
         pageNames.Add(m_sideBar->GetFolderText(i));
         }
 
-    Wisteria::UI::InsertPageDlg dlg(nullptr, pageNames, m_frame);
+    Wisteria::UI::InsertPageDlg dlg(nullptr, pageNames, &m_reportBuilder,
+                                    dynamic_cast<WisteriaDoc*>(GetDocument()), m_frame);
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -1346,6 +1347,7 @@ void WisteriaView::OnInsertPage([[maybe_unused]] wxCommandEvent& event)
         AddPageToProject(dlg.GetRows(), dlg.GetColumns(), dlg.GetPageName(), insertIndex);
     if (newCanvas != nullptr)
         {
+        dlg.ApplyGridEdits(newCanvas);
         newCanvas->SetLayer(dlg.GetLayer());
         newCanvas->SetWatermark(
             Wisteria::Canvas::Watermark{ dlg.GetWatermarkLabel(), dlg.GetWatermarkColor() });
@@ -1375,8 +1377,9 @@ void WisteriaView::OnEditPage([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    Wisteria::UI::InsertPageDlg dlg(canvas, wxArrayString{}, m_frame, wxID_ANY, _(L"Edit Page"),
-                                    wxDefaultPosition, wxDefaultSize,
+    Wisteria::UI::InsertPageDlg dlg(canvas, wxArrayString{}, &m_reportBuilder,
+                                    dynamic_cast<WisteriaDoc*>(GetDocument()), m_frame, wxID_ANY,
+                                    _(L"Edit Page"), wxDefaultPosition, wxDefaultSize,
                                     wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                     Wisteria::UI::InsertPageDlg::EditMode::Edit);
     if (m_sideBar->GetSelectedFolder())
@@ -2100,6 +2103,19 @@ void WisteriaView::PlaceGraphWithLegend(
     std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend, const size_t graphRow,
     const size_t graphCol, const Wisteria::UI::LegendPlacement legendPlacement) const
     {
+    PlaceGraphAndLegendInGrid(canvas, plot, std::move(legend), graphRow, graphCol, legendPlacement);
+
+    UpdateCanvas(canvas);
+
+    GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+void WisteriaView::PlaceGraphAndLegendInGrid(
+    Wisteria::Canvas* canvas, const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
+    std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend, const size_t graphRow,
+    const size_t graphCol, const Wisteria::UI::LegendPlacement legendPlacement)
+    {
     auto [gridRows, gridCols] = canvas->GetFixedObjectsGridSize();
 
     // The legend occupies its own cell in the canvas grid, adjacent to the graph.
@@ -2189,10 +2205,6 @@ void WisteriaView::PlaceGraphWithLegend(
     // a legend that was dropped or moved to another side leaves its row or column
     // empty, so close the gap around the outside of the grid
     canvas->RemoveEmptyOuterCells();
-
-    UpdateCanvas(canvas);
-
-    GetDocument()->Modify(true);
     }
 
 //-------------------------------------------
@@ -7542,7 +7554,7 @@ void WisteriaView::OnInsertLabel([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    Wisteria::UI::InsertLabelDlg dlg(canvas, nullptr, m_frame);
+    Wisteria::UI::InsertLabelDlg dlg(canvas, &m_reportBuilder, m_frame);
     SetDialogIcon(dlg, L"label.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -7551,21 +7563,7 @@ void WisteriaView::OnInsertLabel([[maybe_unused]] wxCommandEvent& event)
 
     dlg.ApplyGridSize();
 
-    auto label = std::make_shared<Wisteria::GraphItems::Label>(
-        Wisteria::GraphItems::GraphItemInfo{ dlg.GetLabelText() });
-    dlg.ApplyPageOptions(*label);
-    dlg.ApplyToLabel(*label);
-
-    const auto rawText = dlg.GetLabelText();
-    const auto expanded = m_reportBuilder.ExpandConstants(rawText);
-    if (expanded != rawText)
-        {
-        label->SetPropertyTemplate(L"text", rawText);
-        }
-    label->SetText(expanded);
-    label->SetDPIScaleFactor(canvas->FromDIP(1));
-
-    canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), label);
+    canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), dlg.BuildLabel());
     UpdateCanvas(canvas);
 
     GetDocument()->Modify(true);
@@ -7583,8 +7581,9 @@ void WisteriaView::EditLabel(const Wisteria::GraphItems::Label& label, Wisteria:
         // reuse the label dialog purely for its "Placement" (cell-picker) page;
         // a spacer takes no other properties, so the Label/Shapes pages are hidden
         Wisteria::UI::InsertLabelDlg dlg(
-            canvas, nullptr, m_frame, isEmptySpacer ? _(L"Edit Empty Spacer") : _(L"Edit Spacer"),
-            wxID_ANY, wxDefaultPosition, wxDefaultSize,
+            canvas, &m_reportBuilder, m_frame,
+            isEmptySpacer ? _(L"Edit Empty Spacer") : _(L"Edit Spacer"), wxID_ANY,
+            wxDefaultPosition, wxDefaultSize,
             wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
             Wisteria::UI::InsertItemDlg::EditMode::Edit, Wisteria::UI::LabelDlgIncludePageOptions);
         SetDialogIcon(dlg, L"spacer.svg");
@@ -7595,7 +7594,8 @@ void WisteriaView::EditLabel(const Wisteria::GraphItems::Label& label, Wisteria:
             return;
             }
 
-        canvas->SetFixedObject(labelRow, labelCol, BuildSpacerLabel(canvas, spacerType));
+        canvas->SetFixedObject(labelRow, labelCol,
+                               Wisteria::UI::InsertLabelDlg::BuildSpacerLabel(canvas, spacerType));
         UpdateCanvas(canvas);
 
         GetDocument()->Modify(true);
@@ -7605,12 +7605,12 @@ void WisteriaView::EditLabel(const Wisteria::GraphItems::Label& label, Wisteria:
     const auto dividerType = WisteriaApp::GetDividerType(label);
     if (dividerType != Wisteria::DividerType::NotDivider)
         {
-        auto newLabel = BuildDividerLabel(canvas, dividerType);
+        auto newLabel = Wisteria::UI::InsertLabelDlg::BuildDividerLabel(canvas, dividerType);
 
         // reuse the label dialog purely for its "Placement" page; a divider's text/font/
         // shapes aren't applicable, so the Label/Shapes pages are hidden
         Wisteria::UI::InsertLabelDlg dlg(
-            canvas, nullptr, m_frame, _(L"Edit Divider"), wxID_ANY, wxDefaultPosition,
+            canvas, &m_reportBuilder, m_frame, _(L"Edit Divider"), wxID_ANY, wxDefaultPosition,
             wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
             Wisteria::UI::InsertItemDlg::EditMode::Edit, Wisteria::UI::LabelDlgIncludePageOptions);
         SetDialogIcon(dlg, WisteriaApp::GetItemIconName(&label));
@@ -7631,7 +7631,7 @@ void WisteriaView::EditLabel(const Wisteria::GraphItems::Label& label, Wisteria:
         return;
         }
 
-    Wisteria::UI::InsertLabelDlg dlg(canvas, nullptr, m_frame, _(L"Edit Label"), wxID_ANY,
+    Wisteria::UI::InsertLabelDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Label"), wxID_ANY,
                                      wxDefaultPosition, wxDefaultSize,
                                      wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                      Wisteria::UI::InsertItemDlg::EditMode::Edit);
@@ -7644,21 +7644,7 @@ void WisteriaView::EditLabel(const Wisteria::GraphItems::Label& label, Wisteria:
         return;
         }
 
-    auto newLabel = std::make_shared<Wisteria::GraphItems::Label>(
-        Wisteria::GraphItems::GraphItemInfo{ dlg.GetLabelText() });
-    dlg.ApplyPageOptions(*newLabel);
-    dlg.ApplyToLabel(*newLabel);
-
-    const auto rawText = dlg.GetLabelText();
-    const auto expanded = m_reportBuilder.ExpandConstants(rawText);
-    if (expanded != rawText)
-        {
-        newLabel->SetPropertyTemplate(L"text", rawText);
-        }
-    newLabel->SetText(expanded);
-    newLabel->SetDPIScaleFactor(canvas->FromDIP(1));
-
-    canvas->SetFixedObject(labelRow, labelCol, newLabel);
+    canvas->SetFixedObject(labelRow, labelCol, dlg.BuildLabel());
     UpdateCanvas(canvas);
 
     GetDocument()->Modify(true);
@@ -7674,8 +7660,8 @@ void WisteriaView::OnInsertSpacer([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertLabelDlg dlg(
-        canvas, nullptr, m_frame, _(L"Insert Spacer"), wxID_ANY, wxDefaultPosition, wxDefaultSize,
-        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        canvas, &m_reportBuilder, m_frame, _(L"Insert Spacer"), wxID_ANY, wxDefaultPosition,
+        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Insert, Wisteria::UI::LabelDlgIncludePageOptions);
     SetDialogIcon(dlg, L"spacer.svg");
     if (dlg.ShowModal() != wxID_OK)
@@ -7685,28 +7671,12 @@ void WisteriaView::OnInsertSpacer([[maybe_unused]] wxCommandEvent& event)
 
     dlg.ApplyGridSize();
 
-    canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
-                           BuildSpacerLabel(canvas, Wisteria::SpacerType::Spacer));
+    canvas->SetFixedObject(
+        dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+        Wisteria::UI::InsertLabelDlg::BuildSpacerLabel(canvas, Wisteria::SpacerType::Spacer));
     UpdateCanvas(canvas);
 
     GetDocument()->Modify(true);
-    }
-
-//-------------------------------------------
-std::shared_ptr<Wisteria::GraphItems::Label>
-WisteriaView::BuildSpacerLabel(Wisteria::Canvas* canvas, const Wisteria::SpacerType type)
-    {
-    return (type == Wisteria::SpacerType::EmptySpacer) ?
-               std::make_shared<Wisteria::GraphItems::Label>(Wisteria::GraphItems::GraphItemInfo{}
-                                                                 .DPIScaling(canvas->FromDIP(1))
-                                                                 .Scaling(0.0)
-                                                                 .FixedWidthOnCanvas(true)
-                                                                 .CanvasHeightProportion(0)
-                                                                 .Show(false)) :
-               std::make_shared<Wisteria::GraphItems::Label>(Wisteria::GraphItems::GraphItemInfo{}
-                                                                 .DPIScaling(canvas->FromDIP(1))
-                                                                 .Scaling(1.0)
-                                                                 .Show(false));
     }
 
 //-------------------------------------------
@@ -7731,11 +7701,11 @@ void WisteriaView::OnInsertDivider(wxCommandEvent& event)
         (type == Wisteria::DividerType::VerticalSingleLine)   ? L"divider-vertical-single.svg" :
                                                                 L"divider-vertical-double.svg";
 
-    auto label = BuildDividerLabel(canvas, type);
+    auto label = Wisteria::UI::InsertLabelDlg::BuildDividerLabel(canvas, type);
 
     Wisteria::UI::InsertLabelDlg dlg(
-        canvas, nullptr, m_frame, _(L"Insert Divider"), wxID_ANY, wxDefaultPosition, wxDefaultSize,
-        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        canvas, &m_reportBuilder, m_frame, _(L"Insert Divider"), wxID_ANY, wxDefaultPosition,
+        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Insert, Wisteria::UI::LabelDlgIncludePageOptions);
     SetDialogIcon(dlg, iconName);
     dlg.LoadFromLabel(*label);
@@ -7751,27 +7721,6 @@ void WisteriaView::OnInsertDivider(wxCommandEvent& event)
     UpdateCanvas(canvas);
 
     GetDocument()->Modify(true);
-    }
-
-//-------------------------------------------
-std::shared_ptr<Wisteria::GraphItems::Label>
-WisteriaView::BuildDividerLabel(Wisteria::Canvas* canvas, const Wisteria::DividerType type)
-    {
-    const bool isVertical = (type == Wisteria::DividerType::VerticalSingleLine ||
-                             type == Wisteria::DividerType::VerticalDoubleLine);
-    const bool isDouble = (type == Wisteria::DividerType::HorizontalDoubleLine ||
-                           type == Wisteria::DividerType::VerticalDoubleLine);
-
-    return std::make_shared<Wisteria::GraphItems::Label>(
-        Wisteria::GraphItems::GraphItemInfo{}
-            .DPIScaling(canvas->FromDIP(1))
-            .Scaling(1.0)
-            .Pen(wxPen{ *wxBLACK, 2 })
-            .CanvasPadding(5, 5, 5, 5)
-            .Padding((isDouble && !isVertical) ? 4 : 0, 0, 0, (isDouble && isVertical) ? 4 : 0)
-            .FixedWidthOnCanvas(isVertical)
-            .FitCanvasHeightToContent(!isVertical)
-            .Outline(!isVertical, isVertical && isDouble, !isVertical && isDouble, isVertical));
     }
 
 //-------------------------------------------
@@ -7798,106 +7747,11 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
 
     dlg.ApplyGridSize();
 
-    const auto paths = dlg.GetImagePaths();
-    if (paths.empty())
+    auto image = dlg.BuildImage(doc);
+    if (image == nullptr)
         {
         return;
         }
-
-    // resolve relative paths against the project directory
-    const wxString projectDir =
-        doc->GetFilename().empty() ? wxString{} : wxFileName{ doc->GetFilename() }.GetPathWithSep();
-
-    // load and optionally stitch multiple images
-    std::vector<wxBitmap> bmps;
-    for (const auto& path : paths)
-        {
-        wxString resolvedPath = path;
-        if (!wxFileName{ path }.IsAbsolute() && !projectDir.empty())
-            {
-            resolvedPath = projectDir + path;
-            }
-        auto loadedBmp = Wisteria::GraphItems::Image::LoadFile(resolvedPath);
-        if (loadedBmp.IsOk())
-            {
-            bmps.emplace_back(loadedBmp);
-            }
-        }
-    if (bmps.empty())
-        {
-        return;
-        }
-
-    wxImage resultImg;
-    if (bmps.size() == 1)
-        {
-        resultImg = bmps[0].ConvertToImage();
-        }
-    else if (dlg.GetStitchDirection() == Wisteria::Orientation::Vertical)
-        {
-        resultImg = Wisteria::GraphItems::Image::StitchVertically(bmps);
-        }
-    else
-        {
-        resultImg = Wisteria::GraphItems::Image::StitchHorizontally(bmps);
-        }
-
-    const auto effect = dlg.GetImageEffect();
-    if (effect != Wisteria::ImageEffect::NoEffect)
-        {
-        resultImg = Wisteria::GraphItems::Image::ApplyEffect(effect, resultImg);
-        }
-
-    auto image = std::make_shared<Wisteria::GraphItems::Image>(resultImg);
-    dlg.ApplyPageOptions(*image);
-    dlg.ApplyToImage(*image);
-
-    // cache import paths for round-tripping
-    if (paths.GetCount() == 1)
-        {
-        image->SetPropertyTemplate(L"image-import.path", doc->MakeRelativePath(paths[0]));
-        }
-    else
-        {
-        wxString joined;
-        for (size_t idx = 0; idx < paths.GetCount(); ++idx)
-            {
-            if (idx > 0)
-                {
-                joined += L"\t";
-                }
-            joined += doc->MakeRelativePath(paths[idx]);
-            }
-        image->SetPropertyTemplate(L"image-import.paths", joined);
-        image->SetPropertyTemplate(L"image-import.stitch",
-                                   (dlg.GetStitchDirection() == Wisteria::Orientation::Vertical) ?
-                                       L"vertical" :
-                                       L"horizontal");
-        }
-
-    // cache effect for round-tripping
-    if (effect != Wisteria::ImageEffect::NoEffect)
-        {
-        const auto effectStr = Wisteria::ReportEnumConvert::ConvertImageEffectToString(effect);
-        if (effectStr.has_value())
-            {
-            image->SetPropertyTemplate(L"image-import.effect", effectStr.value());
-            }
-        }
-
-    // apply custom size
-    if (dlg.IsCustomSizeEnabled())
-        {
-        const auto reqWidth = dlg.GetImageWidth();
-        const auto reqHeight = dlg.GetImageHeight();
-        const auto bestSz = Wisteria::GraphItems::Image::ToBestSize(resultImg.GetSize(),
-                                                                    wxSize{ reqWidth, reqHeight });
-        image->SetSize(bestSz);
-        image->SetPropertyTemplate(L"size.width", std::to_wstring(reqWidth));
-        image->SetPropertyTemplate(L"size.height", std::to_wstring(reqHeight));
-        }
-
-    image->SetDPIScaleFactor(canvas->FromDIP(1));
 
     canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), image);
     UpdateCanvas(canvas);
@@ -7929,106 +7783,11 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canva
         return;
         }
 
-    const auto paths = dlg.GetImagePaths();
-    if (paths.empty())
+    auto newImage = dlg.BuildImage(doc);
+    if (newImage == nullptr)
         {
         return;
         }
-
-    // resolve relative paths against the project directory
-    const wxString projectDir2 =
-        doc->GetFilename().empty() ? wxString{} : wxFileName{ doc->GetFilename() }.GetPathWithSep();
-
-    // load and optionally stitch multiple images
-    std::vector<wxBitmap> bmps;
-    for (const auto& path : paths)
-        {
-        wxString resolvedPath = path;
-        if (!wxFileName{ path }.IsAbsolute() && !projectDir2.empty())
-            {
-            resolvedPath = projectDir2 + path;
-            }
-        auto loadedBmp = Wisteria::GraphItems::Image::LoadFile(resolvedPath);
-        if (loadedBmp.IsOk())
-            {
-            bmps.emplace_back(loadedBmp);
-            }
-        }
-    if (bmps.empty())
-        {
-        return;
-        }
-
-    wxImage resultImg;
-    if (bmps.size() == 1)
-        {
-        resultImg = bmps[0].ConvertToImage();
-        }
-    else if (dlg.GetStitchDirection() == Wisteria::Orientation::Vertical)
-        {
-        resultImg = Wisteria::GraphItems::Image::StitchVertically(bmps);
-        }
-    else
-        {
-        resultImg = Wisteria::GraphItems::Image::StitchHorizontally(bmps);
-        }
-
-    const auto effect = dlg.GetImageEffect();
-    if (effect != Wisteria::ImageEffect::NoEffect)
-        {
-        resultImg = Wisteria::GraphItems::Image::ApplyEffect(effect, resultImg);
-        }
-
-    auto newImage = std::make_shared<Wisteria::GraphItems::Image>(resultImg);
-    dlg.ApplyPageOptions(*newImage);
-    dlg.ApplyToImage(*newImage);
-
-    // cache import paths for round-tripping
-    if (paths.GetCount() == 1)
-        {
-        newImage->SetPropertyTemplate(L"image-import.path", doc->MakeRelativePath(paths[0]));
-        }
-    else
-        {
-        wxString joined;
-        for (size_t idx = 0; idx < paths.GetCount(); ++idx)
-            {
-            if (idx > 0)
-                {
-                joined += L"\t";
-                }
-            joined += doc->MakeRelativePath(paths[idx]);
-            }
-        newImage->SetPropertyTemplate(L"image-import.paths", joined);
-        newImage->SetPropertyTemplate(
-            L"image-import.stitch", (dlg.GetStitchDirection() == Wisteria::Orientation::Vertical) ?
-                                        L"vertical" :
-                                        L"horizontal");
-        }
-
-    // cache effect for round-tripping
-    if (effect != Wisteria::ImageEffect::NoEffect)
-        {
-        const auto effectStr = Wisteria::ReportEnumConvert::ConvertImageEffectToString(effect);
-        if (effectStr.has_value())
-            {
-            newImage->SetPropertyTemplate(L"image-import.effect", effectStr.value());
-            }
-        }
-
-    // apply custom size
-    if (dlg.IsCustomSizeEnabled())
-        {
-        const auto reqWidth = dlg.GetImageWidth();
-        const auto reqHeight = dlg.GetImageHeight();
-        const auto bestSz = Wisteria::GraphItems::Image::ToBestSize(resultImg.GetSize(),
-                                                                    wxSize{ reqWidth, reqHeight });
-        newImage->SetSize(bestSz);
-        newImage->SetPropertyTemplate(L"size.width", std::to_wstring(reqWidth));
-        newImage->SetPropertyTemplate(L"size.height", std::to_wstring(reqHeight));
-        }
-
-    newImage->SetDPIScaleFactor(canvas->FromDIP(1));
 
     canvas->SetFixedObject(imageRow, imageCol, newImage);
     UpdateCanvas(canvas);
@@ -8045,7 +7804,7 @@ void WisteriaView::OnInsertShape([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    Wisteria::UI::InsertShapeDlg dlg(canvas, nullptr, m_frame);
+    Wisteria::UI::InsertShapeDlg dlg(canvas, &m_reportBuilder, m_frame);
     SetDialogIcon(dlg, L"shape.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -8054,61 +7813,7 @@ void WisteriaView::OnInsertShape([[maybe_unused]] wxCommandEvent& event)
 
     dlg.ApplyGridSize();
 
-    const auto labelText = dlg.GetLabelText();
-    const auto expanded = m_reportBuilder.ExpandConstants(labelText);
-
-    const wxPen shapePen{ dlg.GetPenColor(), dlg.GetPenWidth(), dlg.GetPenStyle() };
-
-    // cache the user-specified size for round-tripping
-    const auto shapeWidth = std::to_wstring(dlg.GetShapeWidth());
-    const auto shapeHeight = std::to_wstring(dlg.GetShapeHeight());
-
-    if (dlg.IsFillable())
-        {
-        auto shape = std::make_shared<Wisteria::GraphItems::FillableShape>(
-            Wisteria::GraphItems::GraphItemInfo{ expanded }
-                .Anchoring(Wisteria::Anchoring::TopLeftCorner)
-                .Pen(shapePen)
-                .Brush(wxBrush{ dlg.GetBrushColor(), dlg.GetBrushStyle() })
-                .FontColor(dlg.GetLabelFontColor())
-                .DPIScaling(canvas->FromDIP(1)),
-            dlg.GetIconShape(), wxSize{ dlg.GetShapeWidth(), dlg.GetShapeHeight() },
-            dlg.GetFillPercent());
-        shape->SetPageHorizontalAlignment(dlg.GetHorizontalAlignment());
-        shape->SetPageVerticalAlignment(dlg.GetVerticalAlignment());
-        shape->SetFixedWidthOnCanvas(true);
-        shape->SetPropertyTemplate(L"size.width", shapeWidth);
-        shape->SetPropertyTemplate(L"size.height", shapeHeight);
-        if (expanded != labelText)
-            {
-            shape->SetPropertyTemplate(L"label.text", labelText);
-            }
-        dlg.ApplyAccessibilityOptions(*shape);
-        canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), shape);
-        }
-    else
-        {
-        auto shape = std::make_shared<Wisteria::GraphItems::Shape>(
-            Wisteria::GraphItems::GraphItemInfo{ expanded }
-                .Anchoring(Wisteria::Anchoring::TopLeftCorner)
-                .Pen(shapePen)
-                .Brush(wxBrush{ dlg.GetBrushColor(), dlg.GetBrushStyle() })
-                .FontColor(dlg.GetLabelFontColor())
-                .DPIScaling(canvas->FromDIP(1)),
-            dlg.GetIconShape(), wxSize{ dlg.GetShapeWidth(), dlg.GetShapeHeight() });
-        shape->SetPageHorizontalAlignment(dlg.GetHorizontalAlignment());
-        shape->SetPageVerticalAlignment(dlg.GetVerticalAlignment());
-        shape->SetFixedWidthOnCanvas(true);
-        shape->SetPropertyTemplate(L"size.width", shapeWidth);
-        shape->SetPropertyTemplate(L"size.height", shapeHeight);
-        if (expanded != labelText)
-            {
-            shape->SetPropertyTemplate(L"label.text", labelText);
-            }
-        dlg.ApplyAccessibilityOptions(*shape);
-        canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), shape);
-        }
-
+    canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), dlg.BuildShape());
     UpdateCanvas(canvas);
 
     GetDocument()->Modify(true);
@@ -8118,7 +7823,7 @@ void WisteriaView::OnInsertShape([[maybe_unused]] wxCommandEvent& event)
 void WisteriaView::EditShape(const Wisteria::GraphItems::Shape& shape, Wisteria::Canvas* canvas,
                              const size_t shapeRow, const size_t shapeCol) const
     {
-    Wisteria::UI::InsertShapeDlg dlg(canvas, nullptr, m_frame, _(L"Edit Shape"), wxID_ANY,
+    Wisteria::UI::InsertShapeDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Shape"), wxID_ANY,
                                      wxDefaultPosition, wxDefaultSize,
                                      wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                      Wisteria::UI::InsertItemDlg::EditMode::Edit);
@@ -8131,58 +7836,7 @@ void WisteriaView::EditShape(const Wisteria::GraphItems::Shape& shape, Wisteria:
         return;
         }
 
-    const auto labelText = dlg.GetLabelText();
-    const auto expanded = m_reportBuilder.ExpandConstants(labelText);
-    const wxPen shapePen{ dlg.GetPenColor(), dlg.GetPenWidth(), dlg.GetPenStyle() };
-    const auto shapeWidth = std::to_wstring(dlg.GetShapeWidth());
-    const auto shapeHeight = std::to_wstring(dlg.GetShapeHeight());
-
-    if (dlg.IsFillable())
-        {
-        auto newShape = std::make_shared<Wisteria::GraphItems::FillableShape>(
-            Wisteria::GraphItems::GraphItemInfo{ expanded }
-                .Anchoring(Wisteria::Anchoring::TopLeftCorner)
-                .Pen(shapePen)
-                .Brush(wxBrush{ dlg.GetBrushColor(), dlg.GetBrushStyle() })
-                .FontColor(dlg.GetLabelFontColor())
-                .DPIScaling(canvas->FromDIP(1)),
-            dlg.GetIconShape(), wxSize{ dlg.GetShapeWidth(), dlg.GetShapeHeight() },
-            dlg.GetFillPercent());
-        newShape->SetPageHorizontalAlignment(dlg.GetHorizontalAlignment());
-        newShape->SetPageVerticalAlignment(dlg.GetVerticalAlignment());
-        newShape->SetFixedWidthOnCanvas(true);
-        newShape->SetPropertyTemplate(L"size.width", shapeWidth);
-        newShape->SetPropertyTemplate(L"size.height", shapeHeight);
-        if (expanded != labelText)
-            {
-            newShape->SetPropertyTemplate(L"label.text", labelText);
-            }
-        dlg.ApplyAccessibilityOptions(*newShape);
-        canvas->SetFixedObject(shapeRow, shapeCol, newShape);
-        }
-    else
-        {
-        auto newShape = std::make_shared<Wisteria::GraphItems::Shape>(
-            Wisteria::GraphItems::GraphItemInfo{ expanded }
-                .Anchoring(Wisteria::Anchoring::TopLeftCorner)
-                .Pen(shapePen)
-                .Brush(wxBrush{ dlg.GetBrushColor(), dlg.GetBrushStyle() })
-                .FontColor(dlg.GetLabelFontColor())
-                .DPIScaling(canvas->FromDIP(1)),
-            dlg.GetIconShape(), wxSize{ dlg.GetShapeWidth(), dlg.GetShapeHeight() });
-        newShape->SetPageHorizontalAlignment(dlg.GetHorizontalAlignment());
-        newShape->SetPageVerticalAlignment(dlg.GetVerticalAlignment());
-        newShape->SetFixedWidthOnCanvas(true);
-        newShape->SetPropertyTemplate(L"size.width", shapeWidth);
-        newShape->SetPropertyTemplate(L"size.height", shapeHeight);
-        if (expanded != labelText)
-            {
-            newShape->SetPropertyTemplate(L"label.text", labelText);
-            }
-        dlg.ApplyAccessibilityOptions(*newShape);
-        canvas->SetFixedObject(shapeRow, shapeCol, newShape);
-        }
-
+    canvas->SetFixedObject(shapeRow, shapeCol, dlg.BuildShape());
     UpdateCanvas(canvas);
 
     GetDocument()->Modify(true);
@@ -8193,8 +7847,8 @@ void WisteriaView::EditFillableShape(const Wisteria::GraphItems::FillableShape& 
                                      Wisteria::Canvas* canvas, const size_t shapeRow,
                                      const size_t shapeCol) const
     {
-    Wisteria::UI::InsertShapeDlg dlg(canvas, nullptr, m_frame, _(L"Edit Fillable Shape"), wxID_ANY,
-                                     wxDefaultPosition, wxDefaultSize,
+    Wisteria::UI::InsertShapeDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Fillable Shape"),
+                                     wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                      wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                      Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"shape.svg");
@@ -8206,58 +7860,7 @@ void WisteriaView::EditFillableShape(const Wisteria::GraphItems::FillableShape& 
         return;
         }
 
-    const auto labelText = dlg.GetLabelText();
-    const auto expanded = m_reportBuilder.ExpandConstants(labelText);
-    const wxPen shapePen{ dlg.GetPenColor(), dlg.GetPenWidth(), dlg.GetPenStyle() };
-    const auto shapeWidth = std::to_wstring(dlg.GetShapeWidth());
-    const auto shapeHeight = std::to_wstring(dlg.GetShapeHeight());
-
-    if (dlg.IsFillable())
-        {
-        auto newShape = std::make_shared<Wisteria::GraphItems::FillableShape>(
-            Wisteria::GraphItems::GraphItemInfo{ expanded }
-                .Anchoring(Wisteria::Anchoring::TopLeftCorner)
-                .Pen(shapePen)
-                .Brush(wxBrush{ dlg.GetBrushColor(), dlg.GetBrushStyle() })
-                .FontColor(dlg.GetLabelFontColor())
-                .DPIScaling(canvas->FromDIP(1)),
-            dlg.GetIconShape(), wxSize{ dlg.GetShapeWidth(), dlg.GetShapeHeight() },
-            dlg.GetFillPercent());
-        newShape->SetPageHorizontalAlignment(dlg.GetHorizontalAlignment());
-        newShape->SetPageVerticalAlignment(dlg.GetVerticalAlignment());
-        newShape->SetFixedWidthOnCanvas(true);
-        newShape->SetPropertyTemplate(L"size.width", shapeWidth);
-        newShape->SetPropertyTemplate(L"size.height", shapeHeight);
-        if (expanded != labelText)
-            {
-            newShape->SetPropertyTemplate(L"label.text", labelText);
-            }
-        dlg.ApplyAccessibilityOptions(*newShape);
-        canvas->SetFixedObject(shapeRow, shapeCol, newShape);
-        }
-    else
-        {
-        auto newShape = std::make_shared<Wisteria::GraphItems::Shape>(
-            Wisteria::GraphItems::GraphItemInfo{ expanded }
-                .Anchoring(Wisteria::Anchoring::TopLeftCorner)
-                .Pen(shapePen)
-                .Brush(wxBrush{ dlg.GetBrushColor(), dlg.GetBrushStyle() })
-                .FontColor(dlg.GetLabelFontColor())
-                .DPIScaling(canvas->FromDIP(1)),
-            dlg.GetIconShape(), wxSize{ dlg.GetShapeWidth(), dlg.GetShapeHeight() });
-        newShape->SetPageHorizontalAlignment(dlg.GetHorizontalAlignment());
-        newShape->SetPageVerticalAlignment(dlg.GetVerticalAlignment());
-        newShape->SetFixedWidthOnCanvas(true);
-        newShape->SetPropertyTemplate(L"size.width", shapeWidth);
-        newShape->SetPropertyTemplate(L"size.height", shapeHeight);
-        if (expanded != labelText)
-            {
-            newShape->SetPropertyTemplate(L"label.text", labelText);
-            }
-        dlg.ApplyAccessibilityOptions(*newShape);
-        canvas->SetFixedObject(shapeRow, shapeCol, newShape);
-        }
-
+    canvas->SetFixedObject(shapeRow, shapeCol, dlg.BuildShape());
     UpdateCanvas(canvas);
 
     GetDocument()->Modify(true);
@@ -8281,117 +7884,12 @@ void WisteriaView::OnInsertCommonAxis([[maybe_unused]] wxCommandEvent& event)
 
     dlg.ApplyGridSize();
 
-    // collect child graphs from canvas by ID
-    const auto childIds = dlg.GetChildGraphIds();
-    const auto [rows, cols] = canvas->GetFixedObjectsGridSize();
-    std::vector<std::shared_ptr<Wisteria::Graphs::Graph2D>> childGraphs;
-    for (const auto childId : childIds)
-        {
-        for (size_t row = 0; row < rows; ++row)
-            {
-            for (size_t col = 0; col < cols; ++col)
-                {
-                auto item = canvas->GetFixedObject(row, col);
-                if (item != nullptr && item->GetId() == childId)
-                    {
-                    auto graph = std::dynamic_pointer_cast<Wisteria::Graphs::Graph2D>(item);
-                    if (graph != nullptr)
-                        {
-                        childGraphs.push_back(graph);
-                        }
-                    }
-                }
-            }
-        }
-
-    if (childGraphs.size() < 2)
-        {
-        return;
-        }
-
-    // build the common axis
-    const auto axisType = dlg.GetAxisType();
-    auto commonAxis =
-        (axisType == Wisteria::AxisType::BottomXAxis || axisType == Wisteria::AxisType::TopXAxis) ?
-            Wisteria::CommonAxisBuilder::BuildXAxis(canvas, childGraphs, axisType,
-                                                    dlg.GetCommonPerpendicularAxis()) :
-            Wisteria::CommonAxisBuilder::BuildYAxis(canvas, childGraphs, axisType);
-
+    auto commonAxis = dlg.BuildCommonAxis();
     if (commonAxis == nullptr)
         {
         return;
         }
 
-    // apply axis display options from the panel
-    const auto axesMap = dlg.GetAxes();
-    const auto axisIt = axesMap.find(axisType);
-    if (axisIt != axesMap.end())
-        {
-        const auto& edited = axisIt->second;
-        commonAxis->GetAxisLinePen() = edited.GetAxisLinePen();
-        commonAxis->SetCapStyle(edited.GetCapStyle());
-        commonAxis->Reverse(edited.IsReversed());
-        commonAxis->GetGridlinePen() = edited.GetGridlinePen();
-        commonAxis->SetTickMarkDisplay(edited.GetTickMarkDisplay());
-        commonAxis->SetLabelDisplay(edited.GetLabelDisplay());
-        commonAxis->SetNumberDisplay(edited.GetNumberDisplay());
-        commonAxis->SetAxisLabelOrientation(edited.GetAxisLabelOrientation());
-        commonAxis->SetPerpendicularLabelAxisAlignment(edited.GetPerpendicularLabelAxisAlignment());
-        commonAxis->SetPrecision(edited.GetPrecision());
-        commonAxis->SetDoubleSidedAxisLabels(edited.HasDoubleSidedAxisLabels());
-        commonAxis->ShowOuterLabels(edited.IsShowingOuterLabels());
-        commonAxis->StackLabels(edited.IsStackingLabels());
-        commonAxis->SetLabelLineLength(edited.GetLabelLineLength());
-        commonAxis->GetTitle() = edited.GetTitle();
-        commonAxis->GetHeader() = edited.GetHeader();
-        commonAxis->GetFooter() = edited.GetFooter();
-        for (const auto& bracket : edited.GetBrackets())
-            {
-            commonAxis->AddBracket(bracket);
-            }
-        commonAxis->SetBracketsAreDynamic(edited.AreBracketsDynamic());
-        // preserve bracket property templates for round-tripping
-        const auto bracketDs = edited.GetPropertyTemplate(L"brackets.dataset");
-        if (!bracketDs.empty())
-            {
-            commonAxis->SetPropertyTemplate(L"brackets.dataset", bracketDs);
-            }
-        const auto bracketLabel = edited.GetPropertyTemplate(L"bracket.label");
-        if (!bracketLabel.empty())
-            {
-            commonAxis->SetPropertyTemplate(L"bracket.label", bracketLabel);
-            }
-        const auto bracketValue = edited.GetPropertyTemplate(L"bracket.value");
-        if (!bracketValue.empty())
-            {
-            commonAxis->SetPropertyTemplate(L"bracket.value", bracketValue);
-            }
-        if (edited.AreBracketsSimplified())
-            {
-            commonAxis->SimplifyBrackets();
-            }
-        }
-
-    // apply page options
-    dlg.ApplyPageOptions(*commonAxis);
-
-    // store property templates for round-tripping
-    wxString childIdsStr;
-    for (size_t idx = 0; idx < childIds.size(); ++idx)
-        {
-        if (idx > 0)
-            {
-            childIdsStr += L",";
-            }
-        childIdsStr += std::to_wstring(childIds[idx]);
-        }
-    commonAxis->SetPropertyTemplate(L"child-ids", childIdsStr);
-    if (dlg.GetCommonPerpendicularAxis())
-        {
-        commonAxis->SetPropertyTemplate(L"common-perpendicular-axis", L"true");
-        }
-
-    commonAxis->FitCanvasRowHeightToContent(true);
     canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), std::move(commonAxis));
 
     UpdateCanvas(canvas);
@@ -8416,117 +7914,12 @@ void WisteriaView::EditCommonAxis(Wisteria::GraphItems::Axis& axis, Wisteria::Ca
         return;
         }
 
-    // collect child graphs from canvas by ID
-    const auto childIds = dlg.GetChildGraphIds();
-    const auto [rows, cols] = canvas->GetFixedObjectsGridSize();
-    std::vector<std::shared_ptr<Wisteria::Graphs::Graph2D>> childGraphs;
-    for (const auto childId : childIds)
-        {
-        for (size_t row = 0; row < rows; ++row)
-            {
-            for (size_t col = 0; col < cols; ++col)
-                {
-                auto item = canvas->GetFixedObject(row, col);
-                if (item != nullptr && item->GetId() == childId)
-                    {
-                    auto graph = std::dynamic_pointer_cast<Wisteria::Graphs::Graph2D>(item);
-                    if (graph != nullptr)
-                        {
-                        childGraphs.push_back(graph);
-                        }
-                    }
-                }
-            }
-        }
-
-    if (childGraphs.size() < 2)
-        {
-        return;
-        }
-
-    // rebuild the common axis
-    const auto axisType = dlg.GetAxisType();
-    auto commonAxis =
-        (axisType == Wisteria::AxisType::BottomXAxis || axisType == Wisteria::AxisType::TopXAxis) ?
-            Wisteria::CommonAxisBuilder::BuildXAxis(canvas, childGraphs, axisType,
-                                                    dlg.GetCommonPerpendicularAxis()) :
-            Wisteria::CommonAxisBuilder::BuildYAxis(canvas, childGraphs, axisType);
-
+    auto commonAxis = dlg.BuildCommonAxis();
     if (commonAxis == nullptr)
         {
         return;
         }
 
-    // apply axis display options from the panel
-    const auto axesMap = dlg.GetAxes();
-    const auto axisIt = axesMap.find(axisType);
-    if (axisIt != axesMap.end())
-        {
-        const auto& edited = axisIt->second;
-        commonAxis->GetAxisLinePen() = edited.GetAxisLinePen();
-        commonAxis->SetCapStyle(edited.GetCapStyle());
-        commonAxis->Reverse(edited.IsReversed());
-        commonAxis->GetGridlinePen() = edited.GetGridlinePen();
-        commonAxis->SetTickMarkDisplay(edited.GetTickMarkDisplay());
-        commonAxis->SetLabelDisplay(edited.GetLabelDisplay());
-        commonAxis->SetNumberDisplay(edited.GetNumberDisplay());
-        commonAxis->SetAxisLabelOrientation(edited.GetAxisLabelOrientation());
-        commonAxis->SetPerpendicularLabelAxisAlignment(edited.GetPerpendicularLabelAxisAlignment());
-        commonAxis->SetPrecision(edited.GetPrecision());
-        commonAxis->SetDoubleSidedAxisLabels(edited.HasDoubleSidedAxisLabels());
-        commonAxis->ShowOuterLabels(edited.IsShowingOuterLabels());
-        commonAxis->StackLabels(edited.IsStackingLabels());
-        commonAxis->SetLabelLineLength(edited.GetLabelLineLength());
-        commonAxis->GetTitle() = edited.GetTitle();
-        commonAxis->GetHeader() = edited.GetHeader();
-        commonAxis->GetFooter() = edited.GetFooter();
-        for (const auto& bracket : edited.GetBrackets())
-            {
-            commonAxis->AddBracket(bracket);
-            }
-        commonAxis->SetBracketsAreDynamic(edited.AreBracketsDynamic());
-        // preserve bracket property templates for round-tripping
-        const auto bracketDs = edited.GetPropertyTemplate(L"brackets.dataset");
-        if (!bracketDs.empty())
-            {
-            commonAxis->SetPropertyTemplate(L"brackets.dataset", bracketDs);
-            }
-        const auto bracketLabel = edited.GetPropertyTemplate(L"bracket.label");
-        if (!bracketLabel.empty())
-            {
-            commonAxis->SetPropertyTemplate(L"bracket.label", bracketLabel);
-            }
-        const auto bracketValue = edited.GetPropertyTemplate(L"bracket.value");
-        if (!bracketValue.empty())
-            {
-            commonAxis->SetPropertyTemplate(L"bracket.value", bracketValue);
-            }
-        if (edited.AreBracketsSimplified())
-            {
-            commonAxis->SimplifyBrackets();
-            }
-        }
-
-    // apply page options
-    dlg.ApplyPageOptions(*commonAxis);
-
-    // store property templates for round-tripping
-    wxString childIdsStr;
-    for (size_t idx = 0; idx < childIds.size(); ++idx)
-        {
-        if (idx > 0)
-            {
-            childIdsStr += L",";
-            }
-        childIdsStr += std::to_wstring(childIds[idx]);
-        }
-    commonAxis->SetPropertyTemplate(L"child-ids", childIdsStr);
-    if (dlg.GetCommonPerpendicularAxis())
-        {
-        commonAxis->SetPropertyTemplate(L"common-perpendicular-axis", L"true");
-        }
-
-    commonAxis->FitCanvasRowHeightToContent(true);
     canvas->SetFixedObject(axisRow, axisCol, std::move(commonAxis));
 
     UpdateCanvas(canvas);

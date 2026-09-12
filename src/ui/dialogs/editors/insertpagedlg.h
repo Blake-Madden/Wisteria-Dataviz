@@ -13,12 +13,20 @@
 #define INSERT_PAGE_DIALOG_H
 
 #include "../../base/canvas.h"
+#include "../../controls/objectgallery.h"
 #include "../../controls/thumbnail.h"
 #include "../dialogwithhelp.h"
 #include <utility>
 #include <wx/clrpicker.h>
 #include <wx/spinctrl.h>
 #include <wx/wx.h>
+
+class WisteriaDoc;
+
+namespace Wisteria
+    {
+    class ReportBuilder;
+    } // namespace Wisteria
 
 namespace Wisteria::UI
     {
@@ -45,8 +53,9 @@ namespace Wisteria::UI
             @param size The window size.
             @param style The window style (i.e., decorations and flags).
             @param editMode Whether the page is being inserted or edited.*/
-        explicit InsertPageDlg(Canvas* canvas, const wxArrayString& pageNames, wxWindow* parent,
-                               wxWindowID id = wxID_ANY,
+        explicit InsertPageDlg(Canvas* canvas, const wxArrayString& pageNames,
+                               const Wisteria::ReportBuilder* reportBuilder, WisteriaDoc* doc,
+                               wxWindow* parent, wxWindowID id = wxID_ANY,
                                const wxString& caption = _(L"Insert Page"),
                                const wxPoint& pos = wxDefaultPosition,
                                const wxSize& size = wxDefaultSize,
@@ -194,8 +203,32 @@ namespace Wisteria::UI
         [[nodiscard]]
         std::pair<size_t, size_t> CellFromPoint(const wxPoint& pt) const;
 
+        /// @returns A hidden, temporary canvas mirroring m_fixedObjectsGrid's current
+        ///     contents, for the object gallery's nested item dialogs to safely query
+        ///     and (via ApplyGridSize()) resize.
+        /// @note Caller is responsible for calling Destroy() on the returned canvas.
+        [[nodiscard]]
+        Canvas* CreateStagingCanvas();
+        /// @brief Copies @p stagingCanvas's grid (which may have grown) back into
+        ///     m_fixedObjectsGrid, growing m_rowCount/m_columnCount to match if needed.
+        void SyncFromCanvas(Canvas* stagingCanvas);
+        /// @brief Enables/disables the gallery's Axis tile based on how many graphs
+        ///     are currently in m_fixedObjectsGrid.
+        void UpdateAxisGalleryState();
+
+        void OnGalleryItemDropped(Wisteria::UI::ObjectGalleryItemDroppedEvent& event);
+        bool DropLabel(Canvas* stagingCanvas, size_t row, size_t col);
+        bool DropSpacer(Canvas* stagingCanvas, size_t row, size_t col);
+        bool DropDivider(Canvas* stagingCanvas, size_t row, size_t col, Wisteria::DividerType type);
+        bool DropShape(Canvas* stagingCanvas, size_t row, size_t col);
+        bool DropImage(Canvas* stagingCanvas, size_t row, size_t col);
+        bool DropAxis(Canvas* stagingCanvas, size_t row, size_t col);
+
         Canvas* m_canvas{ nullptr };
+        const Wisteria::ReportBuilder* m_reportBuilder{ nullptr };
+        WisteriaDoc* m_doc{ nullptr };
         wxPanel* m_previewPanel{ nullptr };
+        Wisteria::UI::ObjectGalleryCtrl* m_galleryPanel{ nullptr };
         wxColourPickerCtrl* m_watermarkColorPicker{ nullptr };
         wxColourPickerCtrl* m_bgColorPicker{ nullptr };
         wxStaticText* m_bgOpacityLabel{ nullptr };

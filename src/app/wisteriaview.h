@@ -165,22 +165,8 @@ class WisteriaView final : public wxView
     void EditLabel(const Wisteria::GraphItems::Label& label, Wisteria::Canvas* canvas,
                    size_t labelRow, size_t labelCol) const;
     void OnInsertSpacer(wxCommandEvent& event);
-
-    /// @returns A new spacer (or empty spacer) label.
-    /// @param canvas The canvas the label will be placed on.
-    /// @param type Which kind of spacer to build.
-    [[nodiscard]]
-    static std::shared_ptr<Wisteria::GraphItems::Label> BuildSpacerLabel(Wisteria::Canvas* canvas,
-                                                                         Wisteria::SpacerType type);
     void OnDividerDropdown(wxCommandEvent& event);
     void OnInsertDivider(wxCommandEvent& event);
-
-    /// @returns A new divider line label.
-    /// @param canvas The canvas the label will be placed on.
-    /// @param type Which kind of divider to build.
-    [[nodiscard]]
-    static std::shared_ptr<Wisteria::GraphItems::Label>
-    BuildDividerLabel(Wisteria::Canvas* canvas, Wisteria::DividerType type);
     void OnInsertImage(wxCommandEvent& event);
     void EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canvas* canvas, size_t imageRow,
                    size_t imageCol) const;
@@ -242,6 +228,25 @@ class WisteriaView final : public wxView
                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend,
                               size_t graphRow, size_t graphCol,
                               Wisteria::UI::LegendPlacement legendPlacement) const;
+
+  public:
+    /// @brief Places a graph and its optional legend into a canvas's grid, growing the
+    ///     grid to make room for the legend if needed.
+    /// @details This is the canvas/grid-mutating core of PlaceGraphWithLegend(),
+    ///     without the live-view refresh (UpdateCanvas()) or document-modified flagging.
+    ///     So it can also be used against a disposable staging canvas (e.g., the object gallery).
+    /// @param canvas The canvas whose grid to place into.
+    /// @param plot The graph to place.
+    /// @param legend The graph's legend, or @c nullptr for none.
+    /// @param graphRow The row to place the graph at.
+    /// @param graphCol The column to place the graph at.
+    /// @param legendPlacement Where the legend goes, relative to the graph.
+    static void PlaceGraphAndLegendInGrid(
+        Wisteria::Canvas* canvas, const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
+        std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend, size_t graphRow,
+        size_t graphCol, Wisteria::UI::LegendPlacement legendPlacement);
+
+  private:
     void UpdateGraphButtonStates() const;
     void UpdateDatasetButtonStates() const;
     void AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
@@ -267,6 +272,7 @@ class WisteriaView final : public wxView
     void PopulateConstantsGrid();
     void BuildGraphMenus();
 
+  public:
     /// @brief Sets an icon (from an SVG) for a dialog.
     /// @param dlg The dialog to set the icon for.
     /// @param svgName The SVG resource name.
@@ -325,6 +331,7 @@ class WisteriaView final : public wxView
                                      Wisteria::Graphs::Graph2D& newGraph, const wxString& prop,
                                      const wxString& newVal, const wxString& oldExpanded);
 
+  private:
     /// @brief Builds the JSON for an aggregate's start/end position.
     /// @param pos The position (bare name, number, or "last-row"/"last-column").
     /// @param dimension The "row"/"column" prefix to apply to a named position.

@@ -8,6 +8,13 @@
 
 #include "insertpagedlg.h"
 #include "../../app/wisteriaapp.h"
+#include "../../app/wisteriadoc.h"
+#include "../../app/wisteriaview.h"
+#include "../../graphs/graph2d.h"
+#include "insertcommonaxisdlg.h"
+#include "insertimgdlg.h"
+#include "insertlabeldlg.h"
+#include "insertshapedlg.h"
 #include <wx/dcbuffer.h>
 #include <wx/graphics.h>
 #include <wx/valgen.h>
@@ -15,11 +22,13 @@
 namespace Wisteria::UI
     {
     //-------------------------------------------
-    InsertPageDlg::InsertPageDlg(Canvas* canvas, const wxArrayString& pageNames, wxWindow* parent,
-                                 const wxWindowID id, const wxString& caption, const wxPoint& pos,
-                                 const wxSize& size, const long style, EditMode editMode)
+    InsertPageDlg::InsertPageDlg(Canvas* canvas, const wxArrayString& pageNames,
+                                 const Wisteria::ReportBuilder* reportBuilder, WisteriaDoc* doc,
+                                 wxWindow* parent, const wxWindowID id, const wxString& caption,
+                                 const wxPoint& pos, const wxSize& size, const long style,
+                                 EditMode editMode)
         : DialogWithHelp(parent, id, caption, pos, size, style), m_canvas(canvas),
-          m_editMode(editMode), m_pageNames(pageNames)
+          m_reportBuilder(reportBuilder), m_doc(doc), m_editMode(editMode), m_pageNames(pageNames)
         {
         if (!m_pageNames.empty())
             {
@@ -594,6 +603,18 @@ namespace Wisteria::UI
         m_previewPanel->SetMinSize(wxSize{ previewWidth, previewHeight });
         contentSizer->Add(m_previewPanel, wxSizerFlags{ 1 }.Expand().Border());
 
+        // object gallery
+        const int galleryWidth = FromDIP(340);
+        m_galleryPanel =
+            new Wisteria::UI::ObjectGalleryCtrl(this, m_previewPanel, wxID_ANY, wxDefaultPosition,
+                                                wxSize{ galleryWidth, previewHeight });
+        m_galleryPanel->SetMinSize(wxSize{ galleryWidth, previewHeight });
+        contentSizer->Add(m_galleryPanel, wxSizerFlags{}.Expand().Border());
+
+        m_previewPanel->Bind(Wisteria::UI::wxEVT_OBJECTGALLERY_ITEM_DROPPED,
+                             &InsertPageDlg::OnGalleryItemDropped, this);
+        UpdateAxisGalleryState();
+
         mainSizer->Add(contentSizer, wxSizerFlags{ 1 }.Expand());
 
         // OK/Cancel buttons
@@ -709,5 +730,263 @@ namespace Wisteria::UI
                               ResizeFixedObjectsGrid();
                               m_previewPanel->Refresh();
                           });
+        }
+
+    //-------------------------------------------
+    Canvas* InsertPageDlg::CreateStagingCanvas()
+        {
+        auto* stagingCanvas = new Canvas(this, wxID_ANY);
+        stagingCanvas->Hide();
+        stagingCanvas->SetFixedObjectsGridSize(static_cast<size_t>(m_rowCount),
+                                               static_cast<size_t>(m_columnCount));
+        for (size_t row = 0; row < m_fixedObjectsGrid.size(); ++row)
+            {
+            for (size_t col = 0; col < m_fixedObjectsGrid[row].size(); ++col)
+                {
+                stagingCanvas->SetFixedObject(row, col, m_fixedObjectsGrid[row][col]);
+                }
+            }
+        return stagingCanvas;
+        }
+
+    //-------------------------------------------
+    void InsertPageDlg::SyncFromCanvas(Canvas* stagingCanvas)
+        {
+        const auto [rows, cols] = stagingCanvas->GetFixedObjectsGridSize();
+        if (std::cmp_greater(rows, m_rowCount) || std::cmp_greater(cols, m_columnCount))
+            {
+            m_rowCount = std::max(m_rowCount, static_cast<int>(rows));
+            m_columnCount = std::max(m_columnCount, static_cast<int>(cols));
+            ResizeFixedObjectsGrid();
+            }
+
+        for (size_t row = 0; row < rows; ++row)
+            {
+            for (size_t col = 0; col < cols; ++col)
+                {
+                m_fixedObjectsGrid[row][col] = stagingCanvas->GetFixedObject(row, col);
+                }
+            }
+        }
+
+    //-------------------------------------------
+    void InsertPageDlg::UpdateAxisGalleryState()
+        {
+        if (m_galleryPanel == nullptr)
+            {
+            return;
+            }
+
+        size_t graphCount{ 0 };
+        for (const auto& row : m_fixedObjectsGrid)
+            {
+            for (const auto& item : row)
+                {
+                if (item != nullptr &&
+                    std::dynamic_pointer_cast<Wisteria::Graphs::Graph2D>(item) != nullptr)
+                    {
+                    ++graphCount;
+                    }
+                }
+            }
+
+        m_galleryPanel->EnableItem(Wisteria::GalleryItemType::Axis, graphCount >= 2,
+                                   _(L"Requires two or more graphs already on this page"));
+        }
+
+    //-------------------------------------------
+    void InsertPageDlg::OnGalleryItemDropped(Wisteria::UI::ObjectGalleryItemDroppedEvent& event)
+        {
+        const auto clientPos = m_previewPanel->ScreenToClient(event.GetDropScreenPosition());
+        const auto [row, col] = CellFromPoint(clientPos);
+
+        auto* stagingCanvas = CreateStagingCanvas();
+
+        bool placed{ false };
+        switch (event.GetItemType())
+            {
+        case Wisteria::GalleryItemType::Label:
+            placed = DropLabel(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::Spacer:
+            placed = DropSpacer(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::DividerHorizontalSingle:
+            placed =
+                DropDivider(stagingCanvas, row, col, Wisteria::DividerType::HorizontalSingleLine);
+            break;
+        case Wisteria::GalleryItemType::DividerHorizontalDouble:
+            placed =
+                DropDivider(stagingCanvas, row, col, Wisteria::DividerType::HorizontalDoubleLine);
+            break;
+        case Wisteria::GalleryItemType::DividerVerticalSingle:
+            placed =
+                DropDivider(stagingCanvas, row, col, Wisteria::DividerType::VerticalSingleLine);
+            break;
+        case Wisteria::GalleryItemType::DividerVerticalDouble:
+            placed =
+                DropDivider(stagingCanvas, row, col, Wisteria::DividerType::VerticalDoubleLine);
+            break;
+        case Wisteria::GalleryItemType::Shape:
+            placed = DropShape(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::Image:
+            placed = DropImage(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::Axis:
+            placed = DropAxis(stagingCanvas, row, col);
+            break;
+        default:
+            // graph types are not wired up yet
+            break;
+            }
+
+        if (placed)
+            {
+            SyncFromCanvas(stagingCanvas);
+            SelectCell(row, col);
+            UpdateAxisGalleryState();
+            m_previewPanel->Refresh();
+            }
+
+        stagingCanvas->Destroy();
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropLabel(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertLabelDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"label.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        dlg.ApplyGridSize();
+        stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                                      dlg.BuildLabel());
+        return true;
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropSpacer(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertLabelDlg dlg(stagingCanvas, m_reportBuilder, this, _(L"Insert Spacer"),
+                                         wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                                         Wisteria::UI::InsertItemDlg::EditMode::Insert,
+                                         Wisteria::UI::LabelDlgIncludePageOptions);
+        WisteriaView::SetDialogIcon(dlg, L"spacer.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        dlg.ApplyGridSize();
+
+        stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                                      Wisteria::UI::InsertLabelDlg::BuildSpacerLabel(
+                                          stagingCanvas, Wisteria::SpacerType::Spacer));
+        return true;
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropDivider(Canvas* stagingCanvas, const size_t row, const size_t col,
+                                    const Wisteria::DividerType type)
+        {
+        const wxString iconName = (type == Wisteria::DividerType::HorizontalSingleLine) ?
+                                      L"divider-horizontal-single.svg" :
+                                  (type == Wisteria::DividerType::HorizontalDoubleLine) ?
+                                      L"divider-horizontal-double.svg" :
+                                  (type == Wisteria::DividerType::VerticalSingleLine) ?
+                                      L"divider-vertical-single.svg" :
+                                      L"divider-vertical-double.svg";
+
+        auto label = Wisteria::UI::InsertLabelDlg::BuildDividerLabel(stagingCanvas, type);
+
+        Wisteria::UI::InsertLabelDlg dlg(stagingCanvas, m_reportBuilder, this, _(L"Insert Divider"),
+                                         wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                                         Wisteria::UI::InsertItemDlg::EditMode::Insert,
+                                         Wisteria::UI::LabelDlgIncludePageOptions);
+        WisteriaView::SetDialogIcon(dlg, iconName);
+        dlg.LoadFromLabel(*label);
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        dlg.ApplyGridSize();
+        dlg.ApplyPageOptions(*label);
+
+        stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), label);
+        return true;
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropShape(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertShapeDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"shape.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        dlg.ApplyGridSize();
+        stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                                      dlg.BuildShape());
+        return true;
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropImage(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertImageDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"image.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        dlg.ApplyGridSize();
+
+        auto image = dlg.BuildImage(m_doc);
+        if (image == nullptr)
+            {
+            return false;
+            }
+
+        stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), image);
+        return true;
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropAxis(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertCommonAxisDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"axis.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        dlg.ApplyGridSize();
+
+        auto commonAxis = dlg.BuildCommonAxis();
+        if (commonAxis == nullptr)
+            {
+            return false;
+            }
+
+        stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                                      std::move(commonAxis));
+        return true;
         }
     } // namespace Wisteria::UI

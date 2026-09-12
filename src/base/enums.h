@@ -801,6 +801,79 @@ namespace Wisteria
         /// @brief A pair of vertical rules.
         VerticalDoubleLine
         };
+
+    /// @brief Which ribbon-style group an object gallery item belongs to.
+    enum class GalleryGroup
+        {
+        /// @brief Labels, images, shapes, axes, spacers, and dividers.
+        Objects,
+        /// @brief Everyday graphs (bar charts, pie charts, line plots, etc.).
+        Basic,
+        /// @brief Business graphs (Gantt charts, candlestick plots).
+        Business,
+        /// @brief Statistical graphs (histograms, box plots, scatter plots, etc.).
+        Statistical,
+        /// @brief Survey data graphs (Likert charts, word clouds, roadmaps).
+        Survey,
+        /// @brief Education graphs (scale charts).
+        Education,
+        /// @brief Social sciences graphs (W-curve plots, regression roadmaps).
+        Social,
+        /// @brief Sports graphs (win/loss sparklines).
+        Sports
+        };
+
+    /// @brief Special-case handling for an object gallery item.
+    enum class GalleryItemBehavior
+        {
+        /// @brief The item can always be dragged onto the page.
+        None,
+        /// @brief The item can only be dragged onto the page once it already
+        ///     contains two or more graphs (e.g., a common axis).
+        RequiresExistingGraphs
+        };
+
+    /// @brief Every type of object that can be dragged from the object gallery
+    ///     onto a page's grid.
+    enum class GalleryItemType
+        {
+        Label,
+        Image,
+        Shape,
+        Axis,
+        Spacer,
+        DividerHorizontalSingle,
+        DividerHorizontalDouble,
+        DividerVerticalSingle,
+        DividerVerticalDouble,
+        BarChart,
+        PieChart,
+        LinePlot,
+        MultiSeriesLinePlot,
+        Table,
+        SankeyDiagram,
+        WaffleChart,
+        RaceTrackChart,
+        NightingaleRoseChart,
+        ChoroplethMap,
+        GanttChart,
+        CandlestickPlot,
+        Histogram,
+        BoxPlot,
+        StemAndLeafPlot,
+        HeatMap,
+        ScatterPlot,
+        BubblePlot,
+        ChernoffFacesPlot,
+        WilmarthBridgePlot,
+        LikertChart,
+        WordCloud,
+        ProConRoadmap,
+        ScaleChart,
+        WCurvePlot,
+        LRRoadmap,
+        WinLossSparkline
+        };
     } // namespace Wisteria
 
 /** @}*/

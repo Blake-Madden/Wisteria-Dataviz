@@ -1194,6 +1194,83 @@ wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase*
     }
 
 //-------------------------------------------
+const std::vector<Wisteria::GalleryItemInfo>& WisteriaApp::GetGalleryItemCatalog()
+    {
+    using Wisteria::GalleryGroup;
+    using Wisteria::GalleryItemBehavior;
+    using Wisteria::GalleryItemType;
+
+    static const std::vector<Wisteria::GalleryItemInfo> catalog = {
+        // Objects
+        { GalleryItemType::Label, _(L"Label"), L"label.svg", GalleryGroup::Objects },
+        { GalleryItemType::Image, _(L"Image"), L"image.svg", GalleryGroup::Objects },
+        { GalleryItemType::Shape, _(L"Shape"), L"shape.svg", GalleryGroup::Objects },
+        { GalleryItemType::Axis, _(L"Axis"), L"axis.svg", GalleryGroup::Objects,
+          GalleryItemBehavior::RequiresExistingGraphs },
+        { GalleryItemType::Spacer, _(L"Spacer"), L"spacer.svg", GalleryGroup::Objects },
+        { GalleryItemType::DividerHorizontalSingle, _(L"Divider: Horizontal (Single)"),
+          L"divider-horizontal-single.svg", GalleryGroup::Objects },
+        { GalleryItemType::DividerHorizontalDouble, _(L"Divider: Horizontal (Double)"),
+          L"divider-horizontal-double.svg", GalleryGroup::Objects },
+        { GalleryItemType::DividerVerticalSingle, _(L"Divider: Vertical (Single)"),
+          L"divider-vertical-single.svg", GalleryGroup::Objects },
+        { GalleryItemType::DividerVerticalDouble, _(L"Divider: Vertical (Double)"),
+          L"divider-vertical-double.svg", GalleryGroup::Objects },
+        // Basic
+        { GalleryItemType::BarChart, _(L"Bar Chart"), L"barchart.svg", GalleryGroup::Basic },
+        { GalleryItemType::PieChart, _(L"Pie Chart"), L"piechart.svg", GalleryGroup::Basic },
+        { GalleryItemType::LinePlot, _(L"Line Plot"), L"lineplot.svg", GalleryGroup::Basic },
+        { GalleryItemType::MultiSeriesLinePlot, _(L"Multi-Series Line Plot"), L"lineplot.svg",
+          GalleryGroup::Basic },
+        { GalleryItemType::Table, _(L"Table"), L"table.svg", GalleryGroup::Basic },
+        { GalleryItemType::SankeyDiagram, _(L"Sankey Diagram"), L"sankey.svg",
+          GalleryGroup::Basic },
+        { GalleryItemType::WaffleChart, _(L"Waffle Chart"), L"waffle.svg", GalleryGroup::Basic },
+        { GalleryItemType::RaceTrackChart, _(L"Race Track Chart"), L"racetrack.svg",
+          GalleryGroup::Basic },
+        { GalleryItemType::NightingaleRoseChart, _(L"Nightingale Rose Chart"), L"rose.svg",
+          GalleryGroup::Basic },
+        { GalleryItemType::ChoroplethMap, _(L"Choropleth Map"), L"choropleth.svg",
+          GalleryGroup::Basic },
+        // Business
+        { GalleryItemType::GanttChart, _(L"Gantt Chart"), L"gantt.svg", GalleryGroup::Business },
+        { GalleryItemType::CandlestickPlot, _(L"Candlestick Plot"), L"candlestick.svg",
+          GalleryGroup::Business },
+        // Statistical
+        { GalleryItemType::Histogram, _(L"Histogram"), L"histogram.svg",
+          GalleryGroup::Statistical },
+        { GalleryItemType::BoxPlot, _(L"Box Plot"), L"boxplot.svg", GalleryGroup::Statistical },
+        { GalleryItemType::StemAndLeafPlot, _(L"Stem-and-Leaf Plot"), L"stem-leaf.svg",
+          GalleryGroup::Statistical },
+        { GalleryItemType::HeatMap, _(L"Heat Map"), L"heatmap.svg", GalleryGroup::Statistical },
+        { GalleryItemType::ScatterPlot, _(L"Scatter Plot"), L"scatterplot.svg",
+          GalleryGroup::Statistical },
+        { GalleryItemType::BubblePlot, _(L"Bubble Plot"), L"bubbleplot.svg",
+          GalleryGroup::Statistical },
+        { GalleryItemType::ChernoffFacesPlot, _(L"Chernoff Faces Plot"), L"chernoffplot.svg",
+          GalleryGroup::Statistical },
+        { GalleryItemType::WilmarthBridgePlot, _(L"Wilmarth Bridge Plot"), L"wilmarth-bridge.svg",
+          GalleryGroup::Statistical },
+        // Survey
+        { GalleryItemType::LikertChart, _(L"Likert Chart"), L"likert7.svg", GalleryGroup::Survey },
+        { GalleryItemType::WordCloud, _(L"Word Cloud"), L"wordcloud.svg", GalleryGroup::Survey },
+        { GalleryItemType::ProConRoadmap, _(L"Pro && Con Roadmap"), L"roadmap.svg",
+          GalleryGroup::Survey },
+        // Education
+        { GalleryItemType::ScaleChart, _(L"Scale Chart"), L"scale.svg", GalleryGroup::Education },
+        // Social Sciences
+        { GalleryItemType::WCurvePlot, _(L"W-Curve Plot"), L"wcurve.svg", GalleryGroup::Social },
+        { GalleryItemType::LRRoadmap, _(L"Linear Regression Roadmap"), L"roadmap.svg",
+          GalleryGroup::Social },
+        // Sports
+        { GalleryItemType::WinLossSparkline, _(L"Win/Loss Sparkline"), L"sparkline.svg",
+          GalleryGroup::Sports },
+    };
+
+    return catalog;
+    }
+
+//-------------------------------------------
 Wisteria::SpacerType WisteriaApp::GetSpacerType(const Wisteria::GraphItems::Label& label)
     {
     // a divider label (visible, possibly with empty text but an outline pen) is not a spacer
