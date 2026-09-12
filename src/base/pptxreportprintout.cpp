@@ -1040,7 +1040,7 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
             {
             wxString noteParagraphs;
             // notes text is free-form, so don't treat '\' as an escape character
-            const wxArrayString noteLines{ wxSplit(page.m_notes, L'\n', L'\0') };
+            const wxArrayString noteLines = wxSplit(page.m_notes, L'\n', L'\0');
             for (const auto& noteLine : noteLines)
                 {
                 if (noteLine.empty())
