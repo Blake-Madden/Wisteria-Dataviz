@@ -736,8 +736,11 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         printButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Setup"), ReadSvgIcon(L"print-setup.svg"),
                                   _(L"Configure print settings"));
 
+        // Pages tab
+        auto* pagesPage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Pages"));
+
         // Pages panel
-        auto* pagesPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Pages"));
+        auto* pagesPanel = new wxRibbonPanel(pagesPage, wxID_ANY, _(L"Pages"));
         auto* pagesButtonBar = new wxRibbonButtonBar(pagesPanel, ID_PAGES_BUTTONBAR);
 
         pagesButtonBar->AddButton(ID_INSERT_PAGE, _(L"Add"), ReadSvgIcon(L"page-add.svg"),
@@ -748,9 +751,11 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                   _(L"Delete the current page"));
         pagesButtonBar->AddButton(ID_REARRANGE_PAGES, _(L"Reorder"), ReadSvgIcon(L"sort.svg"),
                                   _(L"Reorder or remove the project's pages"));
+        pagesButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Setup"), ReadSvgIcon(L"print-setup.svg"),
+                                  _(L"Configure print settings"));
 
         // Objects panel (labels, images, shapes)
-        auto* objectsPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Objects"));
+        auto* objectsPanel = new wxRibbonPanel(pagesPage, wxID_ANY, _(L"Objects"));
         auto* objectsButtonBar = new wxRibbonButtonBar(objectsPanel, ID_OBJECTS_BUTTONBAR);
 
         objectsButtonBar->AddButton(ID_NEW_LABEL, _(L"Label"), ReadSvgIcon(L"label.svg"),
