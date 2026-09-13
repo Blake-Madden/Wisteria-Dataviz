@@ -149,6 +149,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         dynamic_cast<wxRibbonButtonBar*>(wxDocChildFrame::FindWindowById(ID_PAGES_BUTTONBAR));
     m_objectsButtonBar =
         dynamic_cast<wxRibbonButtonBar*>(wxDocChildFrame::FindWindowById(ID_OBJECTS_BUTTONBAR));
+    m_sourcesButtonBar =
+        dynamic_cast<wxRibbonButtonBar*>(wxDocChildFrame::FindWindowById(ID_SOURCES_BUTTONBAR));
 
     // build the graph dropdown menus
     BuildGraphMenus();
@@ -336,6 +338,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     // bind edit/delete item buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnEditItem, this, ID_EDIT_ITEM);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnDeleteItem, this, ID_DELETE_ITEM);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnGoToDatasource, this,
+                  ID_GOTO_DATASOURCE);
 
     // bind DELETE key to delete selected item
     m_frame->Bind(wxEVT_CHAR_HOOK,
@@ -356,6 +360,11 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
 
     // bind canvas double-click to edit the selected item
     m_frame->Bind(wxEVT_WISTERIA_CANVAS_DCLICK, &WisteriaView::OnCanvasDClick, this);
+
+    // refresh ribbon button states whenever the canvas selection changes
+    m_frame->Bind(wxEVT_WISTERIA_CANVAS_SELECTION_CHANGED,
+                  [this]([[maybe_unused]]
+                         wxCommandEvent& evt) { UpdateGraphButtonStates(); });
 
     m_frame->CenterOnScreen();
     if (wxGetApp().GetMainFrame()->IsMaximized())
@@ -1752,6 +1761,61 @@ bool WisteriaView::IsDatasetSelected() const noexcept
     }
 
 //-------------------------------------------
+bool WisteriaView::IsGraphSelected() const noexcept
+    {
+    auto* canvas = GetActiveCanvas();
+    if (canvas == nullptr)
+        {
+        return false;
+        }
+
+    const auto [gridRows, gridCols] = canvas->GetFixedObjectsGridSize();
+    std::shared_ptr<Wisteria::GraphItems::GraphItemBase> selectedItem;
+    size_t selectedCount{ 0 };
+    for (size_t row = 0; row < gridRows; ++row)
+        {
+        for (size_t col = 0; col < gridCols; ++col)
+            {
+            auto item = canvas->GetFixedObject(row, col);
+            if (item != nullptr && (item->IsSelected() || !item->GetSelectedIds().empty()))
+                {
+                ++selectedCount;
+                selectedItem = item;
+                }
+            }
+        }
+
+    return (selectedCount == 1 && selectedItem != nullptr &&
+            selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Graph2D)));
+    }
+
+//-------------------------------------------
+bool WisteriaView::IsCanvasItemSelected() const noexcept
+    {
+    auto* canvas = GetActiveCanvas();
+    if (canvas == nullptr)
+        {
+        return false;
+        }
+
+    const auto [gridRows, gridCols] = canvas->GetFixedObjectsGridSize();
+    size_t selectedCount{ 0 };
+    for (size_t row = 0; row < gridRows; ++row)
+        {
+        for (size_t col = 0; col < gridCols; ++col)
+            {
+            auto item = canvas->GetFixedObject(row, col);
+            if (item != nullptr && (item->IsSelected() || !item->GetSelectedIds().empty()))
+                {
+                ++selectedCount;
+                }
+            }
+        }
+
+    return selectedCount == 1;
+    }
+
+//-------------------------------------------
 void WisteriaView::UpdateDatasetButtonStates() const
     {
     const bool enabled = IsDatasetSelected();
@@ -1798,10 +1862,16 @@ void WisteriaView::UpdateGraphButtonStates() const
         m_objectsButtonBar->EnableButton(ID_NEW_COMMON_AXIS, true);
         m_objectsButtonBar->EnableButton(ID_NEW_SPACER, true);
         m_objectsButtonBar->EnableButton(ID_NEW_DIVIDER, true);
-        m_objectsButtonBar->EnableButton(wxID_COPY, true);
+        m_objectsButtonBar->EnableButton(wxID_COPY, IsCanvasItemSelected());
         m_objectsButtonBar->EnableButton(wxID_PASTE, true);
-        m_objectsButtonBar->EnableButton(ID_EDIT_ITEM, true);
-        m_objectsButtonBar->EnableButton(ID_DELETE_ITEM, true);
+        m_objectsButtonBar->EnableButton(ID_EDIT_ITEM, IsCanvasItemSelected());
+        m_objectsButtonBar->EnableButton(ID_DELETE_ITEM, IsCanvasItemSelected());
+        m_objectsButtonBar->EnableButton(ID_GOTO_DATASOURCE, IsGraphSelected());
+        }
+
+    if (m_sourcesButtonBar != nullptr)
+        {
+        m_sourcesButtonBar->EnableButton(ID_GOTO_DATASOURCE, IsGraphSelected());
         }
     }
 
@@ -2694,6 +2764,77 @@ void WisteriaView::OnDeleteItem([[maybe_unused]] wxCommandEvent& event)
     canvas->SetFixedObject(itemRow, itemCol, nullptr);
     UpdateCanvas(canvas);
     GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+void WisteriaView::OnGoToDatasource([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = GetActiveCanvas();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    // find the selected item in the canvas grid
+    const auto [gridRows, gridCols] = canvas->GetFixedObjectsGridSize();
+    std::shared_ptr<Wisteria::GraphItems::GraphItemBase> selectedItem;
+    size_t selectedCount{ 0 };
+    for (size_t row = 0; row < gridRows; ++row)
+        {
+        for (size_t col = 0; col < gridCols; ++col)
+            {
+            auto item = canvas->GetFixedObject(row, col);
+            if (item != nullptr && (item->IsSelected() || !item->GetSelectedIds().empty()))
+                {
+                ++selectedCount;
+                selectedItem = item;
+                }
+            }
+        }
+
+    if (selectedCount != 1 || selectedItem == nullptr)
+        {
+        return;
+        }
+
+    auto* graph = dynamic_cast<Wisteria::Graphs::Graph2D*>(selectedItem.get());
+    if (graph == nullptr)
+        {
+        return;
+        }
+
+    wxString dsName;
+    // choropleths' dataset is optional, can be used to simply show
+    // a map and its features
+    if (auto* choropleth = dynamic_cast<Wisteria::Graphs::ChoroplethMap*>(graph);
+        choropleth != nullptr)
+        {
+        dsName = choropleth->GetDataSourceName();
+        }
+    else if (const auto& dataset = graph->GetDataset(); dataset != nullptr)
+        {
+        for (const auto& [name, ds] : m_reportBuilder.GetDatasets())
+            {
+            if (ds.get() == dataset.get())
+                {
+                dsName = name;
+                break;
+                }
+            }
+        }
+
+    if (dsName.empty())
+        {
+        wxMessageBox(_(L"This graph isn't connected to a dataset."), _(L"Datasource"),
+                     wxOK | wxICON_INFORMATION, m_frame);
+        return;
+        }
+
+    if (const auto found = m_sideBar->FindSubItem(dsName);
+        found.first.has_value() && found.second.has_value())
+        {
+        m_sideBar->SelectSubItem(found);
+        }
     }
 
 //-------------------------------------------

@@ -326,6 +326,8 @@ constexpr wxWindowID ID_REFRESH_ALL{ wxID_HIGHEST + 81 };
 // Item editing
 constexpr wxWindowID ID_EDIT_ITEM{ wxID_HIGHEST + 39 };
 constexpr wxWindowID ID_DELETE_ITEM{ wxID_HIGHEST + 40 };
+constexpr wxWindowID ID_GOTO_DATASOURCE{ wxID_HIGHEST + 83 };
+constexpr wxWindowID ID_SOURCES_BUTTONBAR{ wxID_HIGHEST + 84 };
 
 // Objects (labels, images, shapes, common axes)
 constexpr wxWindowID ID_NEW_LABEL{ wxID_HIGHEST + 42 };

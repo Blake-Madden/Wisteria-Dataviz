@@ -180,6 +180,7 @@ class WisteriaView final : public wxView
                         size_t axisCol);
     void OnEditItem(wxCommandEvent& event);
     void OnDeleteItem(wxCommandEvent& event);
+    void OnGoToDatasource(wxCommandEvent& event);
     void OnCanvasDClick(wxCommandEvent& event);
     void EditScatterPlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                          size_t graphRow, size_t graphCol) const;
@@ -359,6 +360,12 @@ class WisteriaView final : public wxView
     [[nodiscard]]
     bool IsDatasetSelected() const noexcept;
 
+    [[nodiscard]]
+    bool IsGraphSelected() const noexcept;
+
+    [[nodiscard]]
+    bool IsCanvasItemSelected() const noexcept;
+
     static void UpdateCanvas(Wisteria::Canvas* canvas);
 
     wxDocChildFrame* m_frame{ nullptr };
@@ -369,6 +376,7 @@ class WisteriaView final : public wxView
     wxRibbonButtonBar* m_graphButtonBar{ nullptr };
     wxRibbonButtonBar* m_pagesButtonBar{ nullptr };
     wxRibbonButtonBar* m_objectsButtonBar{ nullptr };
+    wxRibbonButtonBar* m_sourcesButtonBar{ nullptr };
     wxGrid* m_constantsGrid{ nullptr };
     bool m_sidebarShown{ true };
 
