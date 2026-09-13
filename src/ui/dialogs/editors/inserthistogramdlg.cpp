@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "inserthistogramdlg.h"
+#include "../../app/wisteriaview.h"
 #include "../../graphs/histogram.h"
 #include "../variableselectdlg.h"
 #include <wx/valgen.h>
@@ -591,5 +592,68 @@ namespace Wisteria::UI
             }
 
         TransferDataToWindow();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::Histogram>
+    InsertHistogramDlg::BuildHistogram(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::Histogram>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+
+        const std::optional<wxString> groupCol =
+            GetGroupVariable().empty() ? std::nullopt : std::optional<wxString>(GetGroupVariable());
+        plot->SetData(GetSelectedDataset(), GetContinuousVariable(), groupCol,
+                      static_cast<Graphs::Histogram::BinningMethod>(GetBinningMethod()),
+                      static_cast<RoundingMethod>(GetRoundingMethod()),
+                      static_cast<Graphs::Histogram::IntervalDisplay>(GetIntervalDisplay()),
+                      static_cast<BinLabelDisplay>(GetBinLabelDisplay()), GetShowFullRange(),
+                      GetBinsStart(), std::make_pair(GetSuggestedBinCount(), GetMaxBinCount()),
+                      GetNeatIntervals());
+        plot->SetGhostOpacity(GetGhostOpacity());
+        if (!GetShowcasedBars().empty())
+            {
+            plot->ShowcaseBars(GetShowcasedBars(), HideLabelsOnGhostedBars());
+            }
+
+        if (oldGraph != nullptr)
+            {
+            ApplyAxisOverrides(*plot);
+
+            const auto* oldHistogram = dynamic_cast<const Graphs::Histogram*>(oldGraph);
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(),
+                                               oldGraph->GetPropertyTemplate(L"dataset"));
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.continuous", GetContinuousVariable(),
+                oldHistogram != nullptr ? oldHistogram->GetContinuousColumnName() : wxString{});
+            const auto oldGroupName = (oldHistogram != nullptr) ?
+                                          oldHistogram->GetGroupColumnName().value_or(wxString{}) :
+                                          wxString{};
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.group",
+                                               GetGroupVariable(), oldGroupName);
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.continuous", GetContinuousVariable());
+            if (!GetGroupVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.group", GetGroupVariable());
+                }
+            }
+
+        for (size_t i = 0; i < GetShowcasedBars().size(); ++i)
+            {
+            plot->SetPropertyTemplate(wxString::Format(_DT(L"showcase-bars[%zu]"), i),
+                                      GetShowcasedBars()[i]);
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

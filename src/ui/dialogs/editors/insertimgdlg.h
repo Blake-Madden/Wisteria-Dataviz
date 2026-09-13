@@ -164,7 +164,7 @@ namespace Wisteria::UI
         ///     were selected.
         /// @param doc The project document, used to resolve/cache relative image paths
         ///     (may be @c nullptr, in which case paths are treated as already-resolved).
-        /// @note Call after ShowModal() returns wxID_OK.
+        /// @note Call after @c ShowModal() returns @c wxID_OK.
         [[nodiscard]]
         std::shared_ptr<Wisteria::GraphItems::Image> BuildImage(WisteriaDoc* doc);
 

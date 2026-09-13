@@ -140,6 +140,8 @@ namespace Wisteria::Graphs
         // this is made private as this would never really be called
         Graph2D() = default;
 
+        friend class Wisteria::Canvas;
+
       public:
         /** @brief Constructor.
             @param canvas The parent canvas that the plot is being drawn on.*/

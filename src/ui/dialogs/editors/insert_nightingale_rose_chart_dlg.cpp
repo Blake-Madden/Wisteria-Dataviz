@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insert_nightingale_rose_chart_dlg.h"
+#include "../../app/wisteriaview.h"
 #include "../variableselectdlg.h"
 #include <iterator>
 #include <utility>
@@ -558,5 +559,76 @@ namespace Wisteria::UI
         RefreshGhostedWedgesList();
 
         TransferDataToWindow();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::NightingaleRoseChart>
+    InsertNightingaleRoseChartDlg::BuildNightingaleRoseChart(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::NightingaleRoseChart>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+
+        const std::optional<wxString> aggregateCol =
+            GetAggregateVariable().empty() ? std::nullopt :
+                                             std::optional<wxString>(GetAggregateVariable());
+        const std::optional<wxString> groupCol =
+            GetGroupVariable().empty() ? std::nullopt : std::optional<wxString>(GetGroupVariable());
+        plot->SetData(GetSelectedDataset(), aggregateCol, GetCategoryVariable(), groupCol);
+
+        if (oldGraph != nullptr)
+            {
+            ApplyAxisOverrides(*plot);
+            }
+
+        plot->SetRadialScaling(GetRadialScaling());
+        plot->SetSeriesDisplay(GetSeriesDisplay());
+        plot->SetStartAngle(GetStartAngle());
+        plot->ShowLabels(IsShowingLabels());
+        plot->SetGhostOpacity(GetGhostOpacity());
+        for (const auto& [ghostGroupLabel, ghostCategoryLabel] : GetGhostedWedges())
+            {
+            plot->GhostWedge(ghostGroupLabel, ghostCategoryLabel);
+            }
+
+        if (oldGraph != nullptr)
+            {
+            // carry forward property templates, preserving {{placeholders}}
+            const auto* oldChart = dynamic_cast<const Graphs::NightingaleRoseChart*>(oldGraph);
+
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(),
+                                               oldGraph->GetPropertyTemplate(L"dataset"));
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.category", GetCategoryVariable(),
+                oldChart != nullptr ? oldChart->GetCategoryColumnName() : wxString{});
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.aggregate", GetAggregateVariable(),
+                oldChart != nullptr ? oldChart->GetAggregateColumnName() : wxString{});
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.group", GetGroupVariable(),
+                oldChart != nullptr ? oldChart->GetGroupColumnName().value_or(wxString{}) :
+                                      wxString{});
+            }
+        else
+            {
+            // cache dataset and variable names for round-tripping
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.category", GetCategoryVariable());
+            if (!GetAggregateVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.aggregate", GetAggregateVariable());
+                }
+            if (!GetGroupVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.group", GetGroupVariable());
+                }
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

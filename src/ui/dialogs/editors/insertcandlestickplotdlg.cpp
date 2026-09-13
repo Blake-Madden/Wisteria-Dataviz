@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertcandlestickplotdlg.h"
+#include "../../app/wisteriaview.h"
 #include "../variableselectdlg.h"
 #include <wx/clrpicker.h>
 #include <wx/valgen.h>
@@ -395,5 +396,60 @@ namespace Wisteria::UI
             }
 
         TransferDataToWindow();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::CandlestickPlot>
+    InsertCandlestickPlotDlg::BuildCandlestickPlot(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::CandlestickPlot>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+        plot->SetPlotType(GetPlotType());
+        plot->GetGainBrush().SetColour(GetGainColor());
+        plot->GetLossBrush().SetColour(GetLossColor());
+
+        plot->SetData(GetSelectedDataset(), GetDateVariable(), GetOpenVariable(), GetHighVariable(),
+                      GetLowVariable(), GetCloseVariable());
+
+        if (oldGraph != nullptr)
+            {
+            ApplyAxisOverrides(*plot);
+
+            const auto oldExpanded = [this, oldGraph](const wxString& prop)
+            {
+                return (GetReportBuilder() != nullptr) ? GetReportBuilder()->ExpandConstants(
+                                                             oldGraph->GetPropertyTemplate(prop)) :
+                                                         wxString{};
+            };
+
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(), oldExpanded(L"dataset"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.date",
+                                               GetDateVariable(), oldExpanded(L"variables.date"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.open",
+                                               GetOpenVariable(), oldExpanded(L"variables.open"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.high",
+                                               GetHighVariable(), oldExpanded(L"variables.high"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.low", GetLowVariable(),
+                                               oldExpanded(L"variables.low"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.close",
+                                               GetCloseVariable(), oldExpanded(L"variables.close"));
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.date", GetDateVariable());
+            plot->SetPropertyTemplate(L"variables.open", GetOpenVariable());
+            plot->SetPropertyTemplate(L"variables.high", GetHighVariable());
+            plot->SetPropertyTemplate(L"variables.low", GetLowVariable());
+            plot->SetPropertyTemplate(L"variables.close", GetCloseVariable());
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

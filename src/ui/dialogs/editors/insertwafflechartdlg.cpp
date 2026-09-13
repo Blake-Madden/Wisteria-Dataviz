@@ -365,4 +365,24 @@ namespace Wisteria::UI
 
         TransferDataToWindow();
         }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::WaffleChart>
+    InsertWaffleChartDlg::BuildWaffleChart(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::WaffleChart>(GetCanvas(), GetShapes(),
+                                                          GetGridRounding(), GetRowCount());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+        if (oldGraph != nullptr)
+            {
+            ApplyAxisOverrides(*plot);
+            }
+
+        return plot;
+        }
     } // namespace Wisteria::UI

@@ -7,6 +7,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertpiechartdlg.h"
+#include "../../app/wisteriadoc.h"
+#include "../../app/wisteriaview.h"
 #include "../../base/image.h"
 #include "../../graphs/piechart.h"
 #include "../variableselectdlg.h"
@@ -980,5 +982,159 @@ namespace Wisteria::UI
             }
         OnShowcaseModeChanged();
         OnPieSliceEffectChanged();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::PieChart>
+    InsertPieChartDlg::BuildPieChart(WisteriaDoc* doc, const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::PieChart>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+
+        const std::optional<wxString> weightCol = GetWeightVariable().empty() ?
+                                                      std::nullopt :
+                                                      std::optional<wxString>(GetWeightVariable());
+        const std::optional<wxString> group2Col = GetGroup2Variable().empty() ?
+                                                      std::nullopt :
+                                                      std::optional<wxString>(GetGroup2Variable());
+        plot->SetData(GetSelectedDataset(), weightCol, GetGroupVariable(), group2Col);
+        ApplyAxisOverrides(*plot);
+
+        // apply styling options
+        plot->IncludeDonutHole(GetIncludeDonutHole());
+        plot->GetDonutHoleLabel() = GetDonutHoleLabel();
+        plot->SetDonutHoleColor(GetDonutHoleColor());
+        plot->SetDonutHoleProportion(GetDonutHoleProportion());
+        plot->UseColorLabels(GetUseColorLabels());
+        plot->SetOuterPieMidPointLabelDisplay(
+            static_cast<BinLabelDisplay>(GetOuterMidPointLabelDisplay()));
+        plot->SetOuterLabelDisplay(static_cast<BinLabelDisplay>(GetOuterLabelDisplay()));
+        plot->SetInnerPieMidPointLabelDisplay(
+            static_cast<BinLabelDisplay>(GetInnerMidPointLabelDisplay()));
+        plot->SetLabelPlacement(static_cast<LabelPlacement>(GetLabelPlacement()));
+        plot->SetPieStyle(static_cast<PieStyle>(GetPieStyle()));
+        plot->ShowOuterPieLabels(GetShowOuterPieLabels());
+        plot->ShowInnerPieLabels(GetShowInnerPieLabels());
+        plot->SetGhostOpacity(static_cast<uint8_t>(GetGhostOpacity()));
+
+        // pie slice effect and image scheme
+        plot->SetPieSliceEffect((GetPieSliceEffect() == 1) ? PieSliceEffect::Image :
+                                                             PieSliceEffect::Solid);
+        if (GetPieSliceEffect() == 1 && !GetImagePaths().empty() && doc != nullptr)
+            {
+            std::vector<wxBitmapBundle> images;
+            images.reserve(GetImagePaths().GetCount());
+            for (const auto& path : GetImagePaths())
+                {
+                if (path.empty())
+                    {
+                    // blank entry -- null image, slice falls back to its brush
+                    images.emplace_back();
+                    continue;
+                    }
+                wxImage img(doc->ResolveFilePath(path), wxBITMAP_TYPE_ANY);
+                if (img.IsOk())
+                    {
+                    images.emplace_back(wxBitmapBundle::FromBitmap(wxBitmap(img)));
+                    }
+                else
+                    {
+                    images.emplace_back();
+                    }
+                }
+            plot->SetImageScheme(std::make_shared<Images::Schemes::ImageScheme>(std::move(images)));
+
+            // cache the paths (tab-separated) for round-tripping; preserve blanks
+            wxString paths;
+            for (size_t idx = 0; idx < GetImagePaths().GetCount(); ++idx)
+                {
+                if (idx > 0)
+                    {
+                    paths += L"\t";
+                    }
+                paths += GetImagePaths()[idx];
+                }
+            plot->SetPropertyTemplate(L"image-paths", paths);
+            }
+
+            // showcase slices
+            {
+            using SM = Graphs::PieChart::ShowcaseMode;
+            const auto peri = static_cast<Perimeter>(GetShowcasedRingLabels());
+            const auto& newSlices = GetShowcaseSlices();
+            switch (static_cast<SM>(GetShowcaseMode()))
+                {
+            case SM::ExplicitList:
+                plot->ShowcaseOuterPieSlices(newSlices, peri);
+                for (size_t i = 0; i < newSlices.size(); ++i)
+                    {
+                    const auto prop = L"showcase-slices[" + std::to_wstring(i) + L"]";
+                    if (oldGraph != nullptr)
+                        {
+                        WisteriaView::CarryForwardProperty(*oldGraph, *plot, prop, newSlices[i],
+                                                           newSlices[i]);
+                        }
+                    else
+                        {
+                        plot->SetPropertyTemplate(prop, newSlices[i]);
+                        }
+                    }
+                break;
+            case SM::LargestOuter:
+                plot->ShowcaseLargestOuterPieSlices(peri);
+                break;
+            case SM::SmallestOuter:
+                plot->ShowcaseSmallestOuterPieSlices(peri);
+                break;
+            case SM::LargestInner:
+                plot->ShowcaseLargestInnerPieSlices(IsShowcaseByGroup(),
+                                                    IsShowcaseShowingOuterPieMidPointLabels());
+                break;
+            case SM::SmallestInner:
+                plot->ShowcaseSmallestInnerPieSlices(IsShowcaseByGroup(),
+                                                     IsShowcaseShowingOuterPieMidPointLabels());
+                break;
+            case SM::None:
+                break;
+                }
+            }
+
+        if (oldGraph != nullptr)
+            {
+            const auto* oldPie = dynamic_cast<const Graphs::PieChart*>(oldGraph);
+
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(),
+                                               oldGraph->GetPropertyTemplate(L"dataset"));
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.group-1", GetGroupVariable(),
+                oldPie != nullptr ? oldPie->GetGroupColumn1Name() : wxString{});
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.aggregate", GetWeightVariable(),
+                oldPie != nullptr ? oldPie->GetWeightColumnName() : wxString{});
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.group-2", GetGroup2Variable(),
+                oldPie != nullptr ? oldPie->GetGroupColumn2Name() : wxString{});
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.group-1", GetGroupVariable());
+            if (!GetWeightVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.aggregate", GetWeightVariable());
+                }
+            if (!GetGroup2Variable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.group-2", GetGroup2Variable());
+                }
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

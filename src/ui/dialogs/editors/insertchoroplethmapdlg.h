@@ -19,6 +19,11 @@
 #include <wx/spinctrl.h>
 #include <wx/wx.h>
 
+namespace Wisteria::Graphs
+    {
+    class ChoroplethMap;
+    } // namespace Wisteria::Graphs
+
 namespace Wisteria::UI
     {
     /** @brief Dialog for inserting a choropleth map into a canvas.
@@ -202,6 +207,14 @@ namespace Wisteria::UI
         /// @brief Populates all dialog controls from an existing choropleth map.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
+
+        /** @brief Constructs (or reconstructs) the choropleth map from the dialog's
+                current settings.
+            @param oldGraph The previous graph being edited, or @c null if inserting new.
+            @returns The newly constructed choropleth map.*/
+        [[nodiscard]]
+        std::shared_ptr<Graphs::ChoroplethMap>
+        BuildChoroplethMap(const Graphs::Graph2D* oldGraph = nullptr);
 
       protected:
         void CreateControls() override;

@@ -8,10 +8,14 @@
 
 #include "insertcatbarchartdlg.h"
 #include "../../app/wisteriaapp.h"
+#include "../../app/wisteriadoc.h"
+#include "../../app/wisteriaview.h"
 #include "../../base/reportenumconvert.h"
+#include "../../util/donttranslate.h"
 #include "../variableselectdlg.h"
 #include "insertimgdlg.h"
 #include "insertshapedlg.h"
+#include <map>
 #include <wx/clrpicker.h>
 #include <wx/filename.h>
 #include <wx/tokenzr.h>
@@ -2045,5 +2049,335 @@ namespace Wisteria::UI
                                          m_shapePerBarRadio->GetValue());
             }
         SyncBarShapesToList();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::CategoricalBarChart>
+    InsertCatBarChartDlg::BuildCatBarChart(WisteriaDoc* doc, const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::CategoricalBarChart>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+
+        plot->SetBarOrientation(GetBarOrientation());
+
+        const std::optional<wxString> weightCol = GetWeightVariable().empty() ?
+                                                      std::nullopt :
+                                                      std::optional<wxString>(GetWeightVariable());
+        const std::optional<wxString> groupCol =
+            GetGroupVariable().empty() ? std::nullopt : std::optional<wxString>(GetGroupVariable());
+        plot->SetData(GetSelectedDataset(), GetCategoricalVariable(), weightCol, groupCol,
+                      GetBarLabelDisplay());
+
+        if (IsApplyingBrushesToUngroupedBars())
+            {
+            plot->SetApplyBrushesToUngroupedBars(true);
+            }
+        if (IsConstrainingScalingAxisToBars())
+            {
+            plot->ConstrainScalingAxisToBars();
+            }
+        if (GetSerpentineMode() != Graphs::BarChart::SerpentineMode::None)
+            {
+            plot->SetSerpentineMode(GetSerpentineMode());
+            plot->SetSerpentineThreshold(GetSerpentineThreshold());
+            plot->ShowSerpentineFoldArrows(IsShowingSerpentineFoldArrows());
+            }
+        if (IsIncludingSpacesBetweenBars())
+            {
+            plot->IncludeSpacesBetweenBars();
+            }
+        if (!GetBarLabelSuffix().empty())
+            {
+            plot->SetBinLabelSuffix(GetBarLabelSuffix());
+            }
+
+        if (oldGraph != nullptr)
+            {
+            // restore bar-block decals
+            for (const auto& decalInfo : GetBarBlockDecals())
+                {
+                const auto barPos = plot->FindBar(decalInfo.m_barLabel);
+                if (barPos.has_value() &&
+                    decalInfo.m_blockIndex < plot->GetBars().at(barPos.value()).GetBlocks().size())
+                    {
+                    plot->GetBars()
+                        .at(barPos.value())
+                        .GetBlocks()
+                        .at(decalInfo.m_blockIndex)
+                        .SetDecal(decalInfo.m_decal);
+                    }
+                }
+            }
+
+        // apply per-bar shapes (bars not listed stay at the default Rectangle)
+        for (const auto& [label, shape] : GetBarShapes())
+            {
+            const auto barPos = plot->FindBar(label);
+            if (barPos.has_value())
+                {
+                plot->GetBars().at(barPos.value()).SetShape(shape);
+                }
+            }
+
+        using FormattedLabel =
+            std::remove_cvref_t<decltype(plot->GetBarAxis().GetCustomLabels())>::mapped_type;
+        std::map<wxString, FormattedLabel> rawToFormatted;
+
+        if (oldGraph != nullptr)
+            {
+            // ApplyAxisOverrides must come before any SortBars call so that the sort's
+            // custom axis labels are not overwritten by the stale labels saved from the
+            // original chart.
+            ApplyAxisOverrides(*plot);
+
+            // Pair raw bar labels with their formatted custom axis labels using the
+            // chart being edited, whose bars and axis labels share the same (sorted)
+            // positions. The new chart's bars are still at their categorical-code
+            // positions here, which do not match the sorted positions of the labels
+            // that ApplyAxisOverrides restored, so the pairing cannot be made
+            // through the new chart's own axis.
+            if (const auto* origChart = dynamic_cast<const Graphs::BarChart*>(oldGraph))
+                {
+                const auto& origCustomLabels = origChart->GetBarAxis().GetCustomLabels();
+                for (const auto& bar : origChart->GetBars())
+                    {
+                    const auto labelIt = origCustomLabels.find(bar.GetAxisPosition());
+                    if (labelIt != origCustomLabels.cend())
+                        {
+                        rawToFormatted.emplace(bar.GetAxisLabel().GetText(), labelIt->second);
+                        }
+                    }
+                }
+            }
+
+        // apply custom bar sort
+        if (HasCustomBarSort())
+            {
+            plot->SetPropertyTemplate(L"bar-sort", L"true");
+            if (oldGraph != nullptr)
+                {
+                // SortBars() always clears brackets and resets custom labels to raw
+                // data strings; both are restored after the call below.
+                // Brackets: snapshot now, discard if sort changed (positions will differ).
+                auto savedBrackets = plot->GetBarAxis().GetBrackets();
+                if (HasBarSortChanged())
+                    {
+                    savedBrackets.clear();
+                    }
+                if (GetBarSortComparison().has_value())
+                    {
+                    plot->SortBars(GetBarSortComparison().value(), GetBarSortDirection());
+                    }
+                else if (!GetBarSortLabels().empty())
+                    {
+                    plot->SortBars(GetBarSortLabels(), GetBarSortDirection());
+                    }
+                // Re-apply formatted labels at their new positions by matching bars
+                // on raw text (e.g., restores embedded newlines SortBars stripped).
+                for (const auto& bar : plot->GetBars())
+                    {
+                    const auto it = rawToFormatted.find(bar.GetAxisLabel().GetText());
+                    if (it != rawToFormatted.cend())
+                        {
+                        plot->GetBarAxis().SetCustomLabel(bar.GetAxisPosition(), it->second);
+                        }
+                    }
+                for (const auto& bracket : savedBrackets)
+                    {
+                    plot->GetBarAxis().AddBracket(bracket);
+                    }
+                }
+            else
+                {
+                if (GetBarSortComparison().has_value())
+                    {
+                    plot->SortBars(GetBarSortComparison().value(), GetBarSortDirection());
+                    }
+                else if (!GetBarSortLabels().empty())
+                    {
+                    plot->SortBars(GetBarSortLabels(), GetBarSortDirection());
+                    }
+                }
+            }
+        else if (oldGraph != nullptr)
+            {
+            // ApplyAxisOverrides() restored the saved bar axis which may carry stale
+            // custom labels from a previous sort. Re-sync from current bar positions
+            // using text-based matching so that formatted labels (e.g., with embedded
+            // newlines) survive even when bar positions differ from a previous sort.
+            auto& barAxis = plot->GetBarAxis();
+            barAxis.ClearCustomLabels();
+            for (const auto& bar : plot->GetBars())
+                {
+                const auto it = rawToFormatted.find(bar.GetAxisLabel().GetText());
+                barAxis.SetCustomLabel(bar.GetAxisPosition(), it != rawToFormatted.cend() ?
+                                                                  it->second :
+                                                                  bar.GetAxisLabel());
+                }
+            }
+
+        // brackets are tied to bar positions; clear stale ones if the sort changed
+        if (oldGraph != nullptr && HasBarSortChanged())
+            {
+            plot->GetBarAxis().ClearBrackets();
+            }
+
+        // restore bar groups and placement
+        if (oldGraph != nullptr)
+            {
+            plot->SetBarGroupPlacement(GetBarGroupPlacement());
+            }
+        for (const auto& group : GetBarGroups())
+            {
+            plot->AddBarGroup(
+                group.m_startLabel, group.m_endLabel,
+                group.m_decal.empty() ? std::nullopt : std::optional<wxString>(group.m_decal),
+                group.m_color.IsOk() ? std::optional<wxColour>(group.m_color) : std::nullopt,
+                group.m_color.IsOk() ? std::optional<wxBrush>(wxBrush(group.m_color)) :
+                                       std::nullopt);
+            }
+
+        plot->SetBarEffect(GetBoxEffect());
+
+        // apply stipple shape or image settings based on the selected effect
+        const auto boxEffect = GetBoxEffect();
+        if (boxEffect == BoxEffect::StippleShape)
+            {
+            plot->SetStippleShape(GetStippleShape());
+            plot->SetStippleShapeColor(GetStippleShapeColor());
+            }
+        else if (boxEffect == BoxEffect::StippleImage && !GetImagePaths().empty() && doc != nullptr)
+            {
+            wxImage img(doc->ResolveFilePath(GetImagePaths()[0]), wxBITMAP_TYPE_ANY);
+            if (img.IsOk() && GetImageEffect() != ImageEffect::NoEffect)
+                {
+                img = GraphItems::Image::ApplyEffect(GetImageEffect(), img);
+                }
+            if (img.IsOk())
+                {
+                plot->SetStippleBrush(wxBitmapBundle::FromBitmap(wxBitmap(img)));
+                }
+            }
+        else if ((boxEffect == BoxEffect::CommonImage || boxEffect == BoxEffect::Image) &&
+                 !GetImagePaths().empty() && doc != nullptr)
+            {
+            const auto imgEffect = GetImageEffect();
+            std::vector<wxBitmapBundle> images;
+            images.reserve(GetImagePaths().GetCount());
+            for (const auto& path : GetImagePaths())
+                {
+                wxImage img(doc->ResolveFilePath(path), wxBITMAP_TYPE_ANY);
+                if (img.IsOk() && imgEffect != ImageEffect::NoEffect)
+                    {
+                    img = GraphItems::Image::ApplyEffect(imgEffect, img);
+                    }
+                if (img.IsOk())
+                    {
+                    images.emplace_back(wxBitmapBundle::FromBitmap(wxBitmap(img)));
+                    }
+                }
+            plot->SetImageScheme(std::make_shared<Images::Schemes::ImageScheme>(std::move(images)));
+            }
+
+        plot->SetGhostOpacity(GetGhostOpacity());
+        if (!GetShowcaseBars().empty())
+            {
+            plot->ShowcaseBars(GetShowcaseBars(), HideLabelsOnGhostedBars());
+            }
+
+        // carry forward / cache dataset and variable names for round-tripping
+        if (oldGraph != nullptr)
+            {
+            const auto* oldBarChart = dynamic_cast<const Graphs::CategoricalBarChart*>(oldGraph);
+
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(),
+                                               oldGraph->GetPropertyTemplate(L"dataset"));
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.category", GetCategoricalVariable(),
+                oldBarChart != nullptr ? oldBarChart->GetCategoricalColumnName() : wxString{});
+            const auto oldWeightName = (oldBarChart != nullptr) ?
+                                           oldBarChart->GetWeightColumnName().value_or(wxString{}) :
+                                           wxString{};
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.aggregate",
+                                               GetWeightVariable(), oldWeightName);
+            const auto oldGroupName = (oldBarChart != nullptr) ?
+                                          oldBarChart->GetGroupColumnName().value_or(wxString{}) :
+                                          wxString{};
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.group",
+                                               GetGroupVariable(), oldGroupName);
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.category", GetCategoricalVariable());
+            if (!GetWeightVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.aggregate", GetWeightVariable());
+                }
+            if (!GetGroupVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.group", GetGroupVariable());
+                }
+            }
+
+        // showcase bars/lines/bins
+        for (size_t i = 0; i < GetShowcaseBars().size(); ++i)
+            {
+            plot->SetPropertyTemplate(wxString::Format(_DT(L"showcase-bars[%zu]"), i),
+                                      GetShowcaseBars()[i]);
+            }
+
+        // cache stipple shape and image settings for round-tripping
+        const auto shapeStr = ReportEnumConvert::ConvertIconToString(GetStippleShape());
+        if (shapeStr)
+            {
+            plot->SetPropertyTemplate(L"stipple-shape", shapeStr.value());
+            }
+        plot->SetPropertyTemplate(L"stipple-shape-color",
+                                  GetStippleShapeColor().GetAsString(wxC2S_HTML_SYNTAX));
+        if (!GetImagePaths().empty())
+            {
+            wxString paths;
+            for (size_t idx = 0; idx < GetImagePaths().GetCount(); ++idx)
+                {
+                if (!paths.empty())
+                    {
+                    paths += L"\t";
+                    }
+                paths += GetImagePaths()[idx];
+                }
+            plot->SetPropertyTemplate(L"image-paths", paths);
+            }
+        if (IsImageCustomSizeEnabled())
+            {
+            plot->SetPropertyTemplate(L"image-width", std::to_wstring(GetImageWidth()));
+            plot->SetPropertyTemplate(L"image-height", std::to_wstring(GetImageHeight()));
+            }
+            {
+            const auto resizeStr =
+                ReportEnumConvert::ConvertResizeMethodToString(GetImageResizeMethod());
+            if (resizeStr.has_value())
+                {
+                plot->SetPropertyTemplate(L"image-resize-method", resizeStr.value());
+                }
+            }
+            {
+            const auto effectStr = ReportEnumConvert::ConvertImageEffectToString(GetImageEffect());
+            if (effectStr.has_value())
+                {
+                plot->SetPropertyTemplate(L"image-effect", effectStr.value());
+                }
+            }
+        plot->SetPropertyTemplate(
+            L"image-stitch",
+            (GetImageStitchDirection() == Orientation::Vertical) ? L"vertical" : L"horizontal");
+
+        return plot;
         }
     } // namespace Wisteria::UI

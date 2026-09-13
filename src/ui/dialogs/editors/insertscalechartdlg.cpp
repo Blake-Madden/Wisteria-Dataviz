@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertscalechartdlg.h"
+#include "../../app/wisteriaview.h"
 #include "../../graphs/scalechart.h"
 #include "../variableselectdlg.h"
 #include <wx/clrpicker.h>
@@ -788,5 +789,78 @@ namespace Wisteria::UI
             }
 
         TransferDataToWindow();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::ScaleChart>
+    InsertScaleChartDlg::BuildScaleChart(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::ScaleChart>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+
+        plot->ShowcaseScore(GetShowcaseScore());
+
+        // add user-defined scales
+        for (const auto& scale : GetScales())
+            {
+            std::vector<Graphs::BarChart::BarBlock> blocks;
+            blocks.reserve(scale.m_blocks.size());
+            for (const auto& blk : scale.m_blocks)
+                {
+                blocks.emplace_back(Graphs::BarChart::BarBlockInfo(blk.m_length)
+                                        .Brush(blk.m_color)
+                                        .Decal(GraphItems::Label(
+                                            GraphItems::GraphItemInfo{ blk.m_label }.LabelFitting(
+                                                LabelFit::ScaleFontToFit))));
+                }
+            plot->AddScale(blocks, scale.m_startPosition, scale.m_header);
+            }
+
+        // main scale values, precision, and column headers
+        const auto mainScaleValues = GetMainScaleValues();
+        if (!mainScaleValues.empty())
+            {
+            plot->SetMainScaleValues(mainScaleValues,
+                                     static_cast<uint8_t>(GetMainScalePrecision()));
+            }
+        plot->SetMainScaleColumnHeader(GetMainScaleHeader());
+        plot->SetDataColumnHeader(GetDataColumnHeader());
+
+        const std::optional<wxString> groupCol =
+            GetGroupVariable().empty() ? std::nullopt : std::optional<wxString>(GetGroupVariable());
+        plot->SetData(GetSelectedDataset(), GetScoreVariable(), groupCol);
+
+        if (oldGraph != nullptr)
+            {
+            const auto* oldScaleChart = dynamic_cast<const Graphs::ScaleChart*>(oldGraph);
+
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(),
+                                               oldGraph->GetPropertyTemplate(L"dataset"));
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.score", GetScoreVariable(),
+                oldScaleChart != nullptr ? oldScaleChart->GetScoresColumnName() : wxString{});
+            const auto oldGroupName = (oldScaleChart != nullptr) ?
+                                          oldScaleChart->GetGroupColumnName().value_or(wxString{}) :
+                                          wxString{};
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.group",
+                                               GetGroupVariable(), oldGroupName);
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.score", GetScoreVariable());
+            if (!GetGroupVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.group", GetGroupVariable());
+                }
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

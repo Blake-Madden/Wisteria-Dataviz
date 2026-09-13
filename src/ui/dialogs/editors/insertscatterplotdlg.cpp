@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertscatterplotdlg.h"
+#include "../../app/wisteriaview.h"
 #include "../../graphs/scatterplot.h"
 #include "../variableselectdlg.h"
 #include <wx/valgen.h>
@@ -349,5 +350,60 @@ namespace Wisteria::UI
         m_confidenceLevel = scatter->GetConfidenceLevel();
 
         TransferDataToWindow();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::ScatterPlot>
+    InsertScatterPlotDlg::BuildScatterPlot(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::ScatterPlot>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+        plot->ShowRegressionLines(GetShowRegressionLines());
+        plot->ShowConfidenceBands(GetShowConfidenceBands());
+        plot->SetConfidenceLevel(GetConfidenceLevel());
+        plot->SetShapeScheme(GetShapeScheme());
+
+        const std::optional<wxString> groupCol =
+            GetGroupVariable().empty() ? std::nullopt : std::optional<wxString>(GetGroupVariable());
+        plot->SetData(GetSelectedDataset(), GetYVariable(), GetXVariable(), groupCol);
+
+        if (oldGraph != nullptr)
+            {
+            ApplyAxisOverrides(*plot);
+
+            const auto* oldScatter = dynamic_cast<const Graphs::ScatterPlot*>(oldGraph);
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(),
+                                               oldGraph->GetPropertyTemplate(L"dataset"));
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.x", GetXVariable(),
+                oldScatter != nullptr ? oldScatter->GetXColumnName() : wxString{});
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.y", GetYVariable(),
+                oldScatter != nullptr ? oldScatter->GetYColumnName() : wxString{});
+            const auto oldGroupName =
+                (oldScatter != nullptr && !oldScatter->GetSeriesList().empty()) ?
+                    oldScatter->GetSeriesList().front().GetGroupColumnName().value_or(wxString{}) :
+                    wxString{};
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.group",
+                                               GetGroupVariable(), oldGroupName);
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.y", GetYVariable());
+            plot->SetPropertyTemplate(L"variables.x", GetXVariable());
+            if (!GetGroupVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.group", GetGroupVariable());
+                }
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

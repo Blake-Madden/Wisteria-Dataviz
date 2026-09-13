@@ -149,6 +149,14 @@ namespace Wisteria::UI
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
 
+        /** @brief Constructs a linear regression roadmap from the dialog's current settings.
+            @param oldGraph The previous graph being replaced (if editing), used to
+                carry forward property templates; @c nullptr if inserting a new plot.
+            @returns The newly constructed plot.*/
+        [[nodiscard]]
+        std::shared_ptr<Graphs::LRRoadmap>
+        BuildLRRoadmap(const Graphs::Graph2D* oldGraph = nullptr);
+
       protected:
         void CreateControls() override;
 

@@ -16,6 +16,11 @@
 #include <vector>
 #include <wx/wx.h>
 
+namespace Wisteria::Graphs
+    {
+    class MultiSeriesLinePlot;
+    } // namespace Wisteria::Graphs
+
 namespace Wisteria::UI
     {
     /** @brief Dialog for inserting a multi-series line plot into a canvas cell.
@@ -89,6 +94,14 @@ namespace Wisteria::UI
         /// @brief Populates all dialog controls from an existing multi-series line plot.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
+
+        /// @brief Constructs a multi-series line plot from the dialog's current settings.
+        /// @param oldGraph The previous graph being replaced (if editing), used to
+        ///     carry forward property templates; @c nullptr if inserting a new plot.
+        /// @returns The newly constructed line plot.
+        [[nodiscard]]
+        std::shared_ptr<Graphs::MultiSeriesLinePlot>
+        BuildMultiSeriesLinePlot(const Graphs::Graph2D* oldGraph = nullptr);
 
       protected:
         void CreateControls() override;

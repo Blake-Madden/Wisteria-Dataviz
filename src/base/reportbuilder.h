@@ -781,7 +781,7 @@ namespace Wisteria
         ///     aggregates, cell updates, annotations, etc.) from the table's
         ///     cached property templates.
         /// @param table The table to apply the features to.
-        void ApplyTableFeatures(std::shared_ptr<Graphs::Table>& table);
+        void ApplyTableFeatures(std::shared_ptr<Graphs::Table>& table) const;
 
         /// @returns The path to the configuration (project) file.
         [[nodiscard]]

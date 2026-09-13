@@ -9,8 +9,10 @@
 #ifndef WISTERIA_APPSETTINGS_H
 #define WISTERIA_APPSETTINGS_H
 
+#include "../base/enums.h"
 #include "../base/pptxreportprintout.h"
 #include "../base/svgreportprintout.h"
+#include <set>
 #include <wx/filename.h>
 #include <wx/gdicmn.h>
 #include <wx/print.h>
@@ -167,6 +169,23 @@ class AppSettings
         return m_powerPointExportOptions;
         }
 
+    // Object gallery options
+    //-------------------------
+
+    /// @returns The object gallery groups that the user has collapsed.
+    [[nodiscard]]
+    const std::set<Wisteria::GalleryGroup>& GetCollapsedGalleryGroups() const noexcept
+        {
+        return m_collapsedGalleryGroups;
+        }
+
+    /// @brief Sets the object gallery groups that the user has collapsed.
+    /// @param groups The collapsed groups.
+    void SetCollapsedGalleryGroups(std::set<Wisteria::GalleryGroup> groups)
+        {
+        m_collapsedGalleryGroups = std::move(groups);
+        }
+
   private:
     wxString m_settingsFilePath;
     bool m_appWindowMaximized{ true };
@@ -179,6 +198,7 @@ class AppSettings
 
     Wisteria::SVGReportOptions m_svgExportOptions{ wxString{} };
     Wisteria::PowerPointExportOptions m_powerPointExportOptions;
+    std::set<Wisteria::GalleryGroup> m_collapsedGalleryGroups;
     };
 
 #endif // WISTERIA_APPSETTINGS_H

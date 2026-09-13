@@ -133,6 +133,15 @@ namespace Wisteria::UI
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
 
+        /// @returns A new candlestick plot built from the dialog's current settings.
+        /// @param oldGraph When editing, the graph being replaced (so its ID and
+        ///     any unchanged property templates are carried forward); @c nullptr
+        ///     when inserting a new plot.
+        /// @note Call after @c ShowModal() returns @c wxID_OK.
+        [[nodiscard]]
+        std::shared_ptr<Graphs::CandlestickPlot>
+        BuildCandlestickPlot(const Graphs::Graph2D* oldGraph = nullptr);
+
       protected:
         void CreateControls() override;
 

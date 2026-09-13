@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "canvas.h"
+#include "../graphs/graph2d.h"
 #include "../ui/dialogs/pdfexportdlg.h"
 #include "axis.h"
 #include "colorbrewer.h"
@@ -1673,6 +1674,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         if (object != nullptr)
             {
             object->SetOriginalCanvasScaling(object->GetScaling());
+            // A graph built against a different (e.g., temporary staging) canvas
+            // still points back to it. Connect it to this canvas now that it is
+            // actually being placed here, so it never queries a destroyed canvas
+            if (auto* graph = dynamic_cast<Graphs::Graph2D*>(object.get()); graph != nullptr)
+                {
+                graph->SetCanvas(this);
+                }
             }
         // resize the grid, if necessary
         auto currentColumnCount = (GetFixedObjects().empty() ? 0 : GetFixedObjects().at(0).size());

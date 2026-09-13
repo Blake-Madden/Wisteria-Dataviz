@@ -17,6 +17,8 @@
 #include <vector>
 #include <wx/wx.h>
 
+class WisteriaDoc;
+
 namespace Wisteria::UI
     {
     /** @brief Dialog for inserting a box plot into a canvas cell.
@@ -177,6 +179,16 @@ namespace Wisteria::UI
         /// @brief Populates all dialog controls from an existing box plot.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
+
+        /// @returns A new box plot built from the dialog's current settings.
+        /// @param doc The project document, used to resolve stipple-image file paths.
+        /// @param oldGraph When editing, the graph being replaced (so its ID and
+        ///     any unchanged property templates are carried forward); @c nullptr
+        ///     when inserting a new box plot.
+        /// @note Call after @c ShowModal() returns @c wxID_OK.
+        [[nodiscard]]
+        std::shared_ptr<Graphs::BoxPlot> BuildBoxPlot(WisteriaDoc* doc,
+                                                      const Graphs::Graph2D* oldGraph = nullptr);
 
       protected:
         void CreateControls() override;

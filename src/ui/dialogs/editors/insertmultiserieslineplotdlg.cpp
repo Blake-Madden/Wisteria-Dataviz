@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertmultiserieslineplotdlg.h"
+#include "../../app/wisteriaview.h"
 #include "../../graphs/multi_series_lineplot.h"
 #include "../variableselectdlg.h"
 #include <wx/valgen.h>
@@ -316,5 +317,57 @@ namespace Wisteria::UI
         m_autoSpline = linePlot->IsAutoSplining();
 
         TransferDataToWindow();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::MultiSeriesLinePlot>
+    InsertMultiSeriesLinePlotDlg::BuildMultiSeriesLinePlot(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::MultiSeriesLinePlot>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+        plot->AutoSpline(GetAutoSpline());
+        plot->SetShapeScheme(GetShapeScheme());
+
+        plot->SetData(GetSelectedDataset(), GetYVariables(), GetXVariable());
+
+        if (oldGraph != nullptr)
+            {
+            ApplyAxisOverrides(*plot);
+
+            const auto* oldLine = dynamic_cast<const Graphs::LinePlot*>(oldGraph);
+
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(),
+                                               oldGraph->GetPropertyTemplate(L"dataset"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.x", GetXVariable(),
+                                               oldLine != nullptr ? oldLine->GetXColumnName() :
+                                                                    wxString{});
+
+            // cache indexed Y variable templates
+            const auto& yVars = GetYVariables();
+            for (size_t i = 0; i < yVars.size(); ++i)
+                {
+                const auto key = wxString::Format(L"variables.y[%zu]", i);
+                WisteriaView::CarryForwardProperty(*oldGraph, *plot, key, yVars[i],
+                                                   oldGraph->GetPropertyTemplate(key));
+                }
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            const auto& yVars = GetYVariables();
+            for (size_t i = 0; i < yVars.size(); ++i)
+                {
+                plot->SetPropertyTemplate(wxString::Format(L"variables.y[%zu]", i), yVars[i]);
+                }
+            plot->SetPropertyTemplate(L"variables.x", GetXVariable());
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

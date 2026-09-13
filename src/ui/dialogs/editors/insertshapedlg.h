@@ -163,7 +163,7 @@ namespace Wisteria::UI
         /// @returns A new Shape or FillableShape (depending on IsFillable()) built from
         ///     the dialog's current settings, with any `{{constant}}` references in its
         ///     label expanded via the attached report builder (if any).
-        /// @note Call after ShowModal() returns wxID_OK.
+        /// @note Call after @c ShowModal() returns @c wxID_OK.
         [[nodiscard]]
         std::shared_ptr<Wisteria::GraphItems::GraphItemBase> BuildShape();
 

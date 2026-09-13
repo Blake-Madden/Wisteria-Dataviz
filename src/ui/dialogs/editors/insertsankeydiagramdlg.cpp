@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertsankeydiagramdlg.h"
+#include "../../app/wisteriaview.h"
 #include "../variableselectdlg.h"
 #include <wx/spinctrl.h>
 #include <wx/valgen.h>
@@ -674,5 +675,112 @@ namespace Wisteria::UI
 
         TransferDataToWindow();
         UpdateColumnHeaderUI();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::SankeyDiagram>
+    InsertSankeyDiagramDlg::BuildSankeyDiagram(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::SankeyDiagram>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+        plot->SetFlowShape(GetFlowShape());
+        plot->SetGroupLabelDisplay(GetGroupLabelDisplay());
+        plot->SetColumnHeaderDisplay(GetColumnHeaderDisplay());
+
+        const std::optional<wxString> fromWeightCol =
+            GetFromWeightVariable().empty() ? std::nullopt :
+                                              std::optional<wxString>(GetFromWeightVariable());
+        const std::optional<wxString> toWeightCol =
+            GetToWeightVariable().empty() ? std::nullopt :
+                                            std::optional<wxString>(GetToWeightVariable());
+        const std::optional<wxString> fromGroupCol =
+            GetFromGroupVariable().empty() ? std::nullopt :
+                                             std::optional<wxString>(GetFromGroupVariable());
+
+        plot->SetData(GetSelectedDataset(), GetFromVariable(), GetToVariable(), fromWeightCol,
+                      toWeightCol, fromGroupCol);
+
+        plot->SetColumnHeaders(GetColumnHeaders());
+
+        plot->SetGhostOpacity(static_cast<uint8_t>(GetGhostOpacity()));
+        if (!GetShowcaseStreams().empty())
+            {
+            plot->ShowcaseStreams(GetShowcaseStreams(), IsGhostingNonShowcasedLabels());
+            for (size_t i = 0; i < GetShowcaseStreams().size(); ++i)
+                {
+                plot->SetPropertyTemplate(L"showcase-streams[" + std::to_wstring(i) + L"]",
+                                          GetShowcaseStreams()[i]);
+                }
+            }
+
+        const auto colHeaders = GetColumnHeaders();
+
+        if (oldGraph != nullptr)
+            {
+            ApplyAxisOverrides(*plot);
+
+            // the dialog's variable/dataset getters return expanded values, so the
+            // old value passed to CarryForwardProperty must also be expanded for
+            // the "did the user change this" comparison to be meaningful
+            const auto oldExpanded = [this, oldGraph](const wxString& prop)
+            { return ExpandVariable(oldGraph->GetPropertyTemplate(prop)); };
+
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(), oldExpanded(L"dataset"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.from",
+                                               GetFromVariable(), oldExpanded(L"variables.from"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.to", GetToVariable(),
+                                               oldExpanded(L"variables.to"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.from-weight",
+                                               GetFromWeightVariable(),
+                                               oldExpanded(L"variables.from-weight"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.to-weight",
+                                               GetToWeightVariable(),
+                                               oldExpanded(L"variables.to-weight"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.from-group",
+                                               GetFromGroupVariable(),
+                                               oldExpanded(L"variables.from-group"));
+
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"column-headers[0]",
+                                               GetFromColumnLabelRaw(),
+                                               oldExpanded(L"column-headers[0]"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"column-headers[1]",
+                                               GetToColumnLabelRaw(),
+                                               oldExpanded(L"column-headers[1]"));
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.from", GetFromVariable());
+            plot->SetPropertyTemplate(L"variables.to", GetToVariable());
+            if (!GetFromWeightVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.from-weight", GetFromWeightVariable());
+                }
+            if (!GetToWeightVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.to-weight", GetToWeightVariable());
+                }
+            if (!GetFromGroupVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.from-group", GetFromGroupVariable());
+                }
+
+            if (GetFromColumnLabelRaw() != colHeaders[0])
+                {
+                plot->SetPropertyTemplate(L"column-headers[0]", GetFromColumnLabelRaw());
+                }
+            if (GetToColumnLabelRaw() != colHeaders[1])
+                {
+                plot->SetPropertyTemplate(L"column-headers[1]", GetToColumnLabelRaw());
+                }
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

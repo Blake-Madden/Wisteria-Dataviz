@@ -2225,55 +2225,7 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot =
-            std::make_shared<Wisteria::Graphs::ChernoffFacesPlot>(canvas, dlg.GetSkinColorDarker());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->SetSkinColorRange(dlg.GetSkinColorLighter(), dlg.GetSkinColorDarker());
-        plot->SetGender(dlg.GetGender());
-        plot->SetHairStyle(dlg.GetHairStyleFemale());
-        plot->SetHairStyle(dlg.GetHairStyleMale());
-        plot->SetEyeColor(dlg.GetEyeColor());
-        plot->SetHairColor(dlg.GetHairColor());
-        plot->SetLipstickColor(dlg.GetLipstickColor());
-        plot->ShowLabels(dlg.GetShowLabels());
-
-        plot->SetPropertyTemplate(L"enhanced-legend",
-                                  dlg.GetUseEnhancedLegend() ? L"true" : L"false");
-
-        using FID = Wisteria::Graphs::ChernoffFacesPlot::FeatureId;
-        const auto optVar = [&dlg](FID id) -> std::optional<wxString>
-        {
-            const auto var = dlg.GetFeatureVariable(id);
-            return var.empty() ? std::nullopt : std::optional<wxString>(var);
-        };
-
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetFeatureVariable(FID::FaceWidth),
-                      optVar(FID::FaceHeight), optVar(FID::EyeSize), optVar(FID::EyePosition),
-                      optVar(FID::EyebrowSlant), optVar(FID::PupilDirection), optVar(FID::NoseSize),
-                      optVar(FID::MouthWidth), optVar(FID::SmileFrown), optVar(FID::FaceColor),
-                      optVar(FID::EarSize), optVar(FID::HairStyle), optVar(FID::HairAddition));
-
-        // cache dataset and variable names for round-tripping
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        const std::pair<FID, wxString> featureProps[] = {
-            { FID::FaceWidth, L"face-width" },       { FID::FaceHeight, L"face-height" },
-            { FID::EyeSize, L"eye-size" },           { FID::EyePosition, L"eye-position" },
-            { FID::EyebrowSlant, L"eyebrow-slant" }, { FID::PupilDirection, L"pupil-position" },
-            { FID::NoseSize, L"nose-size" },         { FID::MouthWidth, L"mouth-width" },
-            { FID::SmileFrown, L"mouth-curvature" }, { FID::FaceColor, L"face-saturation" },
-            { FID::EarSize, L"ear-size" },           { FID::HairStyle, L"hair-style" },
-            { FID::HairAddition, L"hair-addition" }
-        };
-        for (const auto& [fid, propName] : featureProps)
-            {
-            const auto var = dlg.GetFeatureVariable(fid);
-            if (!var.empty())
-                {
-                plot->SetPropertyTemplate(L"variables." + propName, var);
-                }
-            }
-
+        auto plot = dlg.BuildChernoffFacesPlot();
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         auto legend =
@@ -2314,28 +2266,7 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::ScatterPlot>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->ShowRegressionLines(dlg.GetShowRegressionLines());
-        plot->ShowConfidenceBands(dlg.GetShowConfidenceBands());
-        plot->SetConfidenceLevel(dlg.GetConfidenceLevel());
-        plot->SetShapeScheme(dlg.GetShapeScheme());
-
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariable(), dlg.GetXVariable(), groupCol);
-
-        // cache dataset and variable names for round-tripping
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.y", dlg.GetYVariable());
-        plot->SetPropertyTemplate(L"variables.x", dlg.GetXVariable());
-        if (!dlg.GetGroupVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.group", dlg.GetGroupVariable());
-            }
-
+        auto plot = dlg.BuildScatterPlot();
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -2397,290 +2328,7 @@ void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto table = std::make_shared<Wisteria::Graphs::Table>(canvas);
-        dlg.ApplyGraphOptions(*table);
-        dlg.ApplyPageOptions(*table);
-
-        // resolve variables: each custom entry may be a plain column name or
-        // a formula such as {{Matches(`pat`)}}. Expand formulas per-entry.
-        std::vector<wxString> columns;
-        const auto varFormula = dlg.GetVariableFormula();
-        if (!varFormula.empty())
-            {
-            auto expanded =
-                m_reportBuilder.ExpandColumnSelections(varFormula, dlg.GetSelectedDataset());
-            if (expanded.has_value())
-                {
-                columns = std::move(expanded.value());
-                }
-            }
-        else
-            {
-            for (const auto& entry : dlg.GetSelectedVariables())
-                {
-                if (auto expanded =
-                        m_reportBuilder.ExpandColumnSelections(entry, dlg.GetSelectedDataset()))
-                    {
-                    columns.insert(columns.cend(), expanded.value().cbegin(),
-                                   expanded.value().cend());
-                    }
-                else
-                    {
-                    columns.push_back(entry);
-                    }
-                }
-            }
-
-        table->SetDefaultBorders(true, true, true, true);
-        table->SetData(dlg.GetSelectedDataset(), columns, dlg.GetTranspose());
-        dlg.ApplyAxisOverrides(*table);
-        table->SetMinWidthProportion(dlg.GetMinWidthProportion());
-        table->SetMinHeightProportion(dlg.GetMinHeightProportion());
-        table->ClearTrailingRowFormatting(dlg.GetClearTrailingRowFormatting());
-
-        if (dlg.GetBoldHeaderRow())
-            {
-            table->BoldRow(0);
-            }
-        if (dlg.GetCenterHeaderRow())
-            {
-            table->SetRowHorizontalPageAlignment(0, Wisteria::PageHorizontalAlignment::Centered);
-            }
-        if (dlg.GetBoldFirstColumn())
-            {
-            table->BoldColumn(0);
-            }
-        if (dlg.GetAlternateRowColors())
-            {
-            // apply from the template so start/stops are honored
-            const Wisteria::ReportTableLoader loader(m_reportBuilder);
-            loader.ApplyTableAlternateRowColor(
-                table, wxSimpleJSON::Create(dlg.GetAlternateRowColorTemplate(), true));
-            }
-
-        // cache property templates for round-tripping
-        table->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        if (!varFormula.empty())
-            {
-            table->SetPropertyTemplate(L"variables", wxString::Format(L"\"%s\"", varFormula));
-            }
-        else
-            {
-            // store the raw list entries (plain names and/or formulas) as a
-            // JSON array so that round-tripping preserves regex selections
-            const auto& entries = dlg.GetSelectedVariables();
-            wxString varsJson = L"[";
-            for (size_t i = 0; i < entries.size(); ++i)
-                {
-                if (i > 0)
-                    {
-                    varsJson += L", ";
-                    }
-                varsJson += wxString::Format(L"\"%s\"", entries[i]);
-                }
-            varsJson += L"]";
-            table->SetPropertyTemplate(L"variables", varsJson);
-            }
-        if (dlg.GetTranspose())
-            {
-            table->SetPropertyTemplate(L"transpose", L"true");
-            }
-        if (dlg.GetAlternateRowColors())
-            {
-            // use the full template so advanced sub-properties (start, stops) round-trip
-            table->SetPropertyTemplate(L"alternate-row-color", dlg.GetAlternateRowColorTemplate());
-            }
-        table->SetPropertyTemplate(L"ui.bold-header-row",
-                                   dlg.GetBoldHeaderRow() ? L"true" : L"false");
-        table->SetPropertyTemplate(L"ui.center-header-row",
-                                   dlg.GetCenterHeaderRow() ? L"true" : L"false");
-        table->SetPropertyTemplate(L"ui.bold-first-column",
-                                   dlg.GetBoldFirstColumn() ? L"true" : L"false");
-
-        const auto& footnotes = dlg.GetFootnotes();
-        if (!footnotes.empty())
-            {
-            wxString footnotesJson{ L"[" };
-            for (size_t i = 0; i < footnotes.size(); ++i)
-                {
-                if (i > 0)
-                    {
-                    footnotesJson += L",";
-                    }
-                footnotesJson += wxString::Format(L"{\"value\":\"%s\",\"footnote\":\"%s\"}",
-                                                  footnotes[i].first, footnotes[i].second);
-                }
-            footnotesJson += L"]";
-            table->SetPropertyTemplate(L"footnotes", footnotesJson);
-            for (const auto& [value, footnote] : footnotes)
-                {
-                table->AddFootnote(value, footnote);
-                }
-            }
-
-        const auto& aggregates = dlg.GetAggregates();
-        if (!aggregates.empty())
-            {
-            wxString aggregatesJson{ L"[" };
-            for (size_t i = 0; i < aggregates.size(); ++i)
-                {
-                const auto& agg = aggregates[i];
-                if (i > 0)
-                    {
-                    aggregatesJson += L", ";
-                    }
-
-                wxString aggTypeStr;
-                switch (agg.m_aggregateType)
-                    {
-                case Wisteria::AggregateType::Total:
-                    aggTypeStr = L"total";
-                    break;
-                case Wisteria::AggregateType::ChangePercent:
-                    aggTypeStr = L"percent-change";
-                    break;
-                case Wisteria::AggregateType::Ratio:
-                    aggTypeStr = L"ratio";
-                    break;
-                case Wisteria::AggregateType::Change:
-                    aggTypeStr = L"change";
-                    break;
-                    }
-
-                aggregatesJson += wxString::Format(
-                    L"{\"name\":\"%s\", \"type\":\"%s\", \"aggregate-type\":\"%s\", "
-                    L"\"start\":%s, \"end\":%s, \"use-adjacent-color\":%s, "
-                    L"\"background\":\"%s\"",
-                    agg.m_name, agg.m_type, aggTypeStr,
-                    BuildAggPosJson(agg.m_start,
-                                    agg.m_startDimension.empty() ? agg.m_type :
-                                                                   agg.m_startDimension,
-                                    agg.m_startOffset),
-                    BuildAggPosJson(agg.m_end,
-                                    agg.m_endDimension.empty() ? agg.m_type : agg.m_endDimension,
-                                    agg.m_endOffset),
-                    agg.m_useAdjacentColor ? L"true" : L"false",
-                    // keep the raw named/"{{constant}}" string if the color is unchanged
-                    (!agg.m_bkColorStr.empty() &&
-                     m_reportBuilder.ConvertColor(agg.m_bkColorStr) == agg.m_bkColor) ?
-                        agg.m_bkColorStr :
-                        agg.m_bkColor.GetAsString(wxC2S_HTML_SYNTAX));
-                if (agg.m_position.has_value())
-                    {
-                    aggregatesJson +=
-                        wxString::Format(L", \"position\":%zu", agg.m_position.value());
-                    }
-                aggregatesJson += L"}";
-
-                // apply to live graph
-                Wisteria::Graphs::Table::AggregateInfo aggInfo(agg.m_aggregateType);
-                if (agg.m_type.CmpNoCase(L"column") == 0)
-                    {
-                    auto startIdx = table->FindColumnIndex(agg.m_start);
-                    auto endIdx = table->FindColumnIndex(agg.m_end);
-                    if (!startIdx.has_value())
-                        {
-                        long val = 0;
-                        if (agg.m_start.ToLong(&val))
-                            {
-                            startIdx = val;
-                            }
-                        }
-                    if (!endIdx.has_value())
-                        {
-                        long val = 0;
-                        if (agg.m_end.ToLong(&val))
-                            {
-                            endIdx = val;
-                            }
-                        }
-
-                    if (startIdx.has_value())
-                        {
-                        aggInfo.FirstCell(startIdx.value());
-                        }
-                    if (endIdx.has_value())
-                        {
-                        aggInfo.LastCell(endIdx.value());
-                        }
-
-                    table->InsertAggregateColumn(
-                        aggInfo, agg.m_name, std::nullopt, agg.m_useAdjacentColor,
-                        (agg.m_bkColor.IsOk() ? std::optional<wxColour>(agg.m_bkColor) :
-                                                std::nullopt));
-                    }
-                else
-                    {
-                    auto startIdx = table->FindRowIndex(agg.m_start);
-                    auto endIdx = table->FindRowIndex(agg.m_end);
-                    if (!startIdx.has_value())
-                        {
-                        long val = 0;
-                        if (agg.m_start.ToLong(&val))
-                            {
-                            startIdx = val;
-                            }
-                        }
-                    if (!endIdx.has_value())
-                        {
-                        long val = 0;
-                        if (agg.m_end.ToLong(&val))
-                            {
-                            endIdx = val;
-                            }
-                        }
-
-                    if (startIdx.has_value())
-                        {
-                        aggInfo.FirstCell(startIdx.value());
-                        }
-                    if (endIdx.has_value())
-                        {
-                        aggInfo.LastCell(endIdx.value());
-                        }
-
-                    table->InsertAggregateRow(aggInfo, agg.m_name, std::nullopt,
-                                              (agg.m_bkColor.IsOk() ?
-                                                   std::optional<wxColour>(agg.m_bkColor) :
-                                                   std::nullopt));
-                    }
-                }
-            aggregatesJson += L"]";
-            table->SetPropertyTemplate(L"aggregates", aggregatesJson);
-            }
-
-        // cell annotations template
-        const auto& annotations = dlg.GetAnnotationEntries();
-        if (!annotations.empty())
-            {
-            wxString annJson{ L"[" };
-            for (size_t i = 0; i < annotations.size(); ++i)
-                {
-                if (i > 0)
-                    {
-                    annJson += L", ";
-                    }
-                const auto& ann{ annotations[i] };
-                annJson += Wisteria::ReportTableLoader::BuildAnnotationEntryJson(
-                    ann.m_value, ann.m_sideRight, ann.m_bgColor, static_cast<int>(ann.m_cellMode),
-                    ann.m_columnName, ann.m_topN, ann.m_rangeStart, ann.m_rangeEnd);
-                }
-            annJson += L"]";
-            table->SetPropertyTemplate(L"cell-annotations", annJson);
-            }
-
-        // re-apply procedural features from carried-forward templates
-        m_reportBuilder.ApplyTableFeatures(table);
-
-        // Side annotations live in the gutters beside the table; a left- or
-        // right-aligned table only has one gutter, so Table::DeduceGutterSide()
-        // collapses every note into it. Only force centering when both sides are
-        // in use — single-side annotations fit in the one available gutter
-        if (std::ranges::any_of(annotations, [](const auto& ann) { return !ann.m_sideRight; }) &&
-            std::ranges::any_of(annotations, [](const auto& ann) { return ann.m_sideRight; }))
-            {
-            table->SetPageHorizontalAlignment(Wisteria::PageHorizontalAlignment::Centered);
-            }
+        auto table = dlg.BuildTable();
 
         PlaceGraphWithLegend(canvas, table, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
@@ -2711,265 +2359,7 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
 
     try
         {
-        auto table = std::make_shared<Wisteria::Graphs::Table>(canvas);
-        table->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*table);
-        dlg.ApplyPageOptions(*table);
-
-        const auto* origTable = dynamic_cast<const Wisteria::Graphs::Table*>(&graph);
-
-        // resolve variables: each custom entry may be a plain column name or
-        // a formula such as {{Matches(`pat`)}}. Expand formulas per-entry.
-        std::vector<wxString> columns;
-        const auto varFormula = dlg.GetVariableFormula();
-        if (!varFormula.empty())
-            {
-            auto expanded =
-                m_reportBuilder.ExpandColumnSelections(varFormula, dlg.GetSelectedDataset());
-            if (expanded.has_value())
-                {
-                columns = std::move(expanded.value());
-                }
-            }
-        else
-            {
-            for (const auto& entry : dlg.GetSelectedVariables())
-                {
-                if (auto expanded =
-                        m_reportBuilder.ExpandColumnSelections(entry, dlg.GetSelectedDataset()))
-                    {
-                    columns.insert(columns.cend(), expanded.value().cbegin(),
-                                   expanded.value().cend());
-                    }
-                else
-                    {
-                    columns.push_back(entry);
-                    }
-                }
-            }
-
-        // set default borders before SetData so cells inherit them
-        if (origTable != nullptr)
-            {
-            table->SetDefaultBorders(
-                origTable->IsShowingTopBorder(), origTable->IsShowingRightBorder(),
-                origTable->IsShowingBottomBorder(), origTable->IsShowingLeftBorder());
-            }
-
-        table->SetData(dlg.GetSelectedDataset(), columns, dlg.GetTranspose());
-        dlg.ApplyAxisOverrides(*table);
-        table->SetMinWidthProportion(dlg.GetMinWidthProportion());
-        table->SetMinHeightProportion(dlg.GetMinHeightProportion());
-        table->ClearTrailingRowFormatting(dlg.GetClearTrailingRowFormatting());
-
-        // carry forward highlight pen from original table
-        if (origTable != nullptr)
-            {
-            table->GetHighlightPen() = origTable->GetHighlightPen();
-            }
-
-        // cache property templates for round-tripping
-        CarryForwardProperty(graph, *table, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-
-        if (!varFormula.empty())
-            {
-            table->SetPropertyTemplate(L"variables", wxString::Format(L"\"%s\"", varFormula));
-            }
-        else
-            {
-            // store the raw list entries (plain names and/or formulas) as a
-            // JSON array so that round-tripping preserves regex selections
-            const auto& entries = dlg.GetSelectedVariables();
-            wxString varsJson = L"[";
-            for (size_t i = 0; i < entries.size(); ++i)
-                {
-                if (i > 0)
-                    {
-                    varsJson += L", ";
-                    }
-                varsJson += wxString::Format(L"\"%s\"", entries[i]);
-                }
-            varsJson += L"]";
-            table->SetPropertyTemplate(L"variables", varsJson);
-            }
-
-        if (dlg.GetTranspose())
-            {
-            table->SetPropertyTemplate(L"transpose", L"true");
-            }
-        if (dlg.GetAlternateRowColors())
-            {
-            // use the full template so advanced sub-properties (start, stops) round-trip
-            table->SetPropertyTemplate(L"alternate-row-color", dlg.GetAlternateRowColorTemplate());
-            }
-
-        table->SetPropertyTemplate(L"ui.bold-header-row",
-                                   dlg.GetBoldHeaderRow() ? L"true" : L"false");
-        table->SetPropertyTemplate(L"ui.center-header-row",
-                                   dlg.GetCenterHeaderRow() ? L"true" : L"false");
-        table->SetPropertyTemplate(L"ui.bold-first-column",
-                                   dlg.GetBoldFirstColumn() ? L"true" : L"false");
-
-        // carry forward any advanced property templates from the original table
-        for (const auto& prop : { L"row-sort",
-                                  L"insert-group-header",
-                                  L"row-group",
-                                  L"column-group",
-                                  L"row-add",
-                                  L"row-suppression",
-                                  L"column-suppression",
-                                  L"row-formatting",
-                                  L"row-color",
-                                  L"row-bold",
-                                  L"row-borders",
-                                  L"row-content-align",
-                                  L"column-formatting",
-                                  L"column-color",
-                                  L"column-bold",
-                                  L"column-borders",
-                                  L"column-content-align",
-                                  L"column-highlight",
-                                  L"row-totals",
-                                  L"cell-update",
-                                  L"link-id" })
-            {
-            const auto cached = graph.GetPropertyTemplate(prop);
-            if (!cached.empty())
-                {
-                table->SetPropertyTemplate(wxString(prop), cached);
-                }
-            }
-
-        // set aggregates template
-        const auto& editAggregates = dlg.GetAggregates();
-        if (!editAggregates.empty())
-            {
-            wxString aggregatesJson{ L"[" };
-            for (size_t i = 0; i < editAggregates.size(); ++i)
-                {
-                const auto& agg = editAggregates[i];
-                if (i > 0)
-                    {
-                    aggregatesJson += L", ";
-                    }
-
-                wxString aggTypeStr;
-                switch (agg.m_aggregateType)
-                    {
-                case Wisteria::AggregateType::Total:
-                    aggTypeStr = L"total";
-                    break;
-                case Wisteria::AggregateType::ChangePercent:
-                    aggTypeStr = L"percent-change";
-                    break;
-                case Wisteria::AggregateType::Ratio:
-                    aggTypeStr = L"ratio";
-                    break;
-                case Wisteria::AggregateType::Change:
-                    aggTypeStr = L"change";
-                    break;
-                    }
-
-                aggregatesJson += wxString::Format(
-                    L"{\"name\":\"%s\", \"type\":\"%s\", \"aggregate-type\":\"%s\", "
-                    L"\"start\":%s, \"end\":%s, \"use-adjacent-color\":%s, "
-                    L"\"background\":\"%s\"",
-                    agg.m_name, agg.m_type, aggTypeStr,
-                    BuildAggPosJson(agg.m_start,
-                                    agg.m_startDimension.empty() ? agg.m_type :
-                                                                   agg.m_startDimension,
-                                    agg.m_startOffset),
-                    BuildAggPosJson(agg.m_end,
-                                    agg.m_endDimension.empty() ? agg.m_type : agg.m_endDimension,
-                                    agg.m_endOffset),
-                    agg.m_useAdjacentColor ? L"true" : L"false",
-                    // keep the raw named/"{{constant}}" string if the color is unchanged
-                    (!agg.m_bkColorStr.empty() &&
-                     m_reportBuilder.ConvertColor(agg.m_bkColorStr) == agg.m_bkColor) ?
-                        agg.m_bkColorStr :
-                        agg.m_bkColor.GetAsString(wxC2S_HTML_SYNTAX));
-                if (agg.m_position.has_value())
-                    {
-                    aggregatesJson +=
-                        wxString::Format(L", \"position\":%zu", agg.m_position.value());
-                    }
-                aggregatesJson += L"}";
-                }
-            aggregatesJson += L"]";
-            table->SetPropertyTemplate(L"aggregates", aggregatesJson);
-            }
-
-        // set footnotes template before ApplyTableFeatures so that
-        // ApplyTableFootnotes runs in the correct sequence (after
-        // cell-update/cell-annotations) and uses ExpandAndCache
-        const auto& editFootnotes = dlg.GetFootnotes();
-        if (!editFootnotes.empty())
-            {
-            wxString footnotesJson{ L"[" };
-            for (size_t i = 0; i < editFootnotes.size(); ++i)
-                {
-                if (i > 0)
-                    {
-                    footnotesJson += L",";
-                    }
-                footnotesJson += wxString::Format(L"{\"value\":\"%s\",\"footnote\":\"%s\"}",
-                                                  editFootnotes[i].first, editFootnotes[i].second);
-                }
-            footnotesJson += L"]";
-            table->SetPropertyTemplate(L"footnotes", footnotesJson);
-            }
-
-        // cell annotations template (set before ApplyTableFeatures so it runs in sequence)
-        const auto& editAnnotations = dlg.GetAnnotationEntries();
-        if (!editAnnotations.empty())
-            {
-            wxString annJson{ L"[" };
-            for (size_t i = 0; i < editAnnotations.size(); ++i)
-                {
-                if (i > 0)
-                    {
-                    annJson += L", ";
-                    }
-                const auto& ann{ editAnnotations[i] };
-                annJson += Wisteria::ReportTableLoader::BuildAnnotationEntryJson(
-                    ann.m_value, ann.m_sideRight, ann.m_bgColor, static_cast<int>(ann.m_cellMode),
-                    ann.m_columnName, ann.m_topN, ann.m_rangeStart, ann.m_rangeEnd);
-                }
-            annJson += L"]";
-            table->SetPropertyTemplate(L"cell-annotations", annJson);
-            }
-
-        // re-apply procedural features from carried-forward templates
-        // (alternate-row-color is applied here, in the correct order -
-        // before row additions and aggregates)
-        m_reportBuilder.ApplyTableFeatures(table);
-
-        // side annotations live in the gutters beside the table; a left- or
-        // right-aligned table only has one gutter, so Table::DeduceGutterSide()
-        // collapses every note into it. only force centering when both sides are
-        // in use — single-side annotations fit in the one available gutter
-        if (std::ranges::any_of(editAnnotations,
-                                [](const auto& ann) { return !ann.m_sideRight; }) &&
-            std::ranges::any_of(editAnnotations, [](const auto& ann) { return ann.m_sideRight; }))
-            {
-            table->SetPageHorizontalAlignment(Wisteria::PageHorizontalAlignment::Centered);
-            }
-
-        // apply dialog-driven formatting after procedural features,
-        // since aggregates and row additions change the table structure
-        if (dlg.GetBoldHeaderRow())
-            {
-            table->BoldRow(0);
-            }
-        if (dlg.GetCenterHeaderRow())
-            {
-            table->SetRowHorizontalPageAlignment(0, Wisteria::PageHorizontalAlignment::Centered);
-            }
-        if (dlg.GetBoldFirstColumn())
-            {
-            table->BoldColumn(0);
-            }
+        auto table = dlg.BuildTable(&graph);
 
         PlaceGraphWithLegend(canvas, table, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
@@ -3325,37 +2715,7 @@ void WisteriaView::EditScatterPlot(const Wisteria::Graphs::Graph2D& graph, Wiste
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::ScatterPlot>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->ShowRegressionLines(dlg.GetShowRegressionLines());
-        plot->ShowConfidenceBands(dlg.GetShowConfidenceBands());
-        plot->SetConfidenceLevel(dlg.GetConfidenceLevel());
-        plot->SetShapeScheme(dlg.GetShapeScheme());
-
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariable(), dlg.GetXVariable(), groupCol);
-        dlg.ApplyAxisOverrides(*plot);
-
-        // carry forward property templates, preserving {{placeholders}}
-        // unless the user changed the value
-        const auto* oldScatter = dynamic_cast<const Wisteria::Graphs::ScatterPlot*>(&graph);
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.x", dlg.GetXVariable(),
-                             oldScatter != nullptr ? oldScatter->GetXColumnName() : wxString{});
-        CarryForwardProperty(graph, *plot, L"variables.y", dlg.GetYVariable(),
-                             oldScatter != nullptr ? oldScatter->GetYColumnName() : wxString{});
-        const auto oldGroupName =
-            (oldScatter != nullptr && !oldScatter->GetSeriesList().empty()) ?
-                oldScatter->GetSeriesList().front().GetGroupColumnName().value_or(wxString{}) :
-                wxString{};
-        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
-                             oldGroupName);
-
+        auto plot = dlg.BuildScatterPlot(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -3387,31 +2747,7 @@ void WisteriaView::OnInsertBubblePlot([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::BubblePlot>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->ShowRegressionLines(dlg.GetShowRegressionLines());
-        plot->ShowConfidenceBands(dlg.GetShowConfidenceBands());
-        plot->SetConfidenceLevel(dlg.GetConfidenceLevel());
-        plot->SetShapeScheme(dlg.GetShapeScheme());
-        plot->SetMinBubbleRadius(dlg.GetMinBubbleRadius());
-        plot->SetMaxBubbleRadius(dlg.GetMaxBubbleRadius());
-
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariable(), dlg.GetXVariable(),
-                      dlg.GetSizeVariable(), groupCol);
-
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.y", dlg.GetYVariable());
-        plot->SetPropertyTemplate(L"variables.x", dlg.GetXVariable());
-        plot->SetPropertyTemplate(L"variables.size", dlg.GetSizeVariable());
-        if (!dlg.GetGroupVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.group", dlg.GetGroupVariable());
-            }
-
+        auto plot = dlg.BuildBubblePlot();
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -3442,40 +2778,7 @@ void WisteriaView::EditBubblePlot(const Wisteria::Graphs::Graph2D& graph, Wister
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::BubblePlot>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->ShowRegressionLines(dlg.GetShowRegressionLines());
-        plot->ShowConfidenceBands(dlg.GetShowConfidenceBands());
-        plot->SetConfidenceLevel(dlg.GetConfidenceLevel());
-        plot->SetShapeScheme(dlg.GetShapeScheme());
-        plot->SetMinBubbleRadius(dlg.GetMinBubbleRadius());
-        plot->SetMaxBubbleRadius(dlg.GetMaxBubbleRadius());
-
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariable(), dlg.GetXVariable(),
-                      dlg.GetSizeVariable(), groupCol);
-        dlg.ApplyAxisOverrides(*plot);
-
-        const auto* oldBubble = dynamic_cast<const Wisteria::Graphs::BubblePlot*>(&graph);
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.x", dlg.GetXVariable(),
-                             oldBubble != nullptr ? oldBubble->GetXColumnName() : wxString{});
-        CarryForwardProperty(graph, *plot, L"variables.y", dlg.GetYVariable(),
-                             oldBubble != nullptr ? oldBubble->GetYColumnName() : wxString{});
-        CarryForwardProperty(graph, *plot, L"variables.size", dlg.GetSizeVariable(),
-                             oldBubble != nullptr ? oldBubble->GetSizeColumnName() : wxString{});
-        const auto oldGroupName =
-            (oldBubble != nullptr && !oldBubble->GetSeriesList().empty()) ?
-                oldBubble->GetSeriesList().front().GetGroupColumnName().value_or(wxString{}) :
-                wxString{};
-        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
-                             oldGroupName);
-
+        auto plot = dlg.BuildBubblePlot(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -3510,60 +2813,7 @@ void WisteriaView::EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph,
 
     try
         {
-        auto plot =
-            std::make_shared<Wisteria::Graphs::ChernoffFacesPlot>(canvas, dlg.GetSkinColorDarker());
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->SetSkinColorRange(dlg.GetSkinColorLighter(), dlg.GetSkinColorDarker());
-        plot->SetGender(dlg.GetGender());
-        plot->SetHairStyle(dlg.GetHairStyleFemale());
-        plot->SetHairStyle(dlg.GetHairStyleMale());
-        plot->SetEyeColor(dlg.GetEyeColor());
-        plot->SetHairColor(dlg.GetHairColor());
-        plot->SetLipstickColor(dlg.GetLipstickColor());
-        plot->ShowLabels(dlg.GetShowLabels());
-
-        plot->SetPropertyTemplate(L"enhanced-legend",
-                                  dlg.GetUseEnhancedLegend() ? L"true" : L"false");
-
-        using FID = Wisteria::Graphs::ChernoffFacesPlot::FeatureId;
-        const auto optVar = [&dlg](FID id) -> std::optional<wxString>
-        {
-            const auto var = dlg.GetFeatureVariable(id);
-            return var.empty() ? std::nullopt : std::optional<wxString>(var);
-        };
-
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetFeatureVariable(FID::FaceWidth),
-                      optVar(FID::FaceHeight), optVar(FID::EyeSize), optVar(FID::EyePosition),
-                      optVar(FID::EyebrowSlant), optVar(FID::PupilDirection), optVar(FID::NoseSize),
-                      optVar(FID::MouthWidth), optVar(FID::SmileFrown), optVar(FID::FaceColor),
-                      optVar(FID::EarSize), optVar(FID::HairStyle), optVar(FID::HairAddition));
-        dlg.ApplyAxisOverrides(*plot);
-
-        // carry forward property templates, preserving {{placeholders}}
-        // unless the user changed the value
-        const auto* oldChernoff = dynamic_cast<const Wisteria::Graphs::ChernoffFacesPlot*>(&graph);
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-
-        const std::pair<FID, wxString> featureProps[] = {
-            { FID::FaceWidth, L"face-width" },       { FID::FaceHeight, L"face-height" },
-            { FID::EyeSize, L"eye-size" },           { FID::EyePosition, L"eye-position" },
-            { FID::EyebrowSlant, L"eyebrow-slant" }, { FID::PupilDirection, L"pupil-position" },
-            { FID::NoseSize, L"nose-size" },         { FID::MouthWidth, L"mouth-width" },
-            { FID::SmileFrown, L"mouth-curvature" }, { FID::FaceColor, L"face-saturation" },
-            { FID::EarSize, L"ear-size" },           { FID::HairStyle, L"hair-style" },
-            { FID::HairAddition, L"hair-addition" }
-        };
-        for (const auto& [fid, propName] : featureProps)
-            {
-            const auto var = dlg.GetFeatureVariable(fid);
-            const auto oldExpanded =
-                (oldChernoff != nullptr) ? oldChernoff->GetFeatureColumnName(fid) : wxString{};
-            CarryForwardProperty(graph, *plot, L"variables." + propName, var, oldExpanded);
-            }
-
+        auto plot = dlg.BuildChernoffFacesPlot(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -3606,37 +2856,7 @@ void WisteriaView::OnInsertLinePlot([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::LinePlot>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->AutoSpline(dlg.GetAutoSpline());
-        plot->SetShapeScheme(dlg.GetShapeScheme());
-
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariable(), dlg.GetXVariable(), groupCol);
-        plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        if (!dlg.GetShowcaseLines().empty())
-            {
-            plot->ShowcaseLines(dlg.GetShowcaseLines());
-            }
-
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.y", dlg.GetYVariable());
-        plot->SetPropertyTemplate(L"variables.x", dlg.GetXVariable());
-        if (!dlg.GetGroupVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.group", dlg.GetGroupVariable());
-            }
-
-        // showcase bars/lines/bins
-        for (size_t i = 0; i < dlg.GetShowcaseLines().size(); ++i)
-            {
-            plot->SetPropertyTemplate(wxString::Format(_DT(L"showcase-lines[%zu]"), i),
-                                      dlg.GetShowcaseLines()[i]);
-            }
-
+        auto plot = dlg.BuildLinePlot();
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -3667,44 +2887,7 @@ void WisteriaView::EditLinePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::LinePlot>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->AutoSpline(dlg.GetAutoSpline());
-        plot->SetShapeScheme(dlg.GetShapeScheme());
-
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariable(), dlg.GetXVariable(), groupCol);
-        plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        if (!dlg.GetShowcaseLines().empty())
-            {
-            plot->ShowcaseLines(dlg.GetShowcaseLines());
-            }
-        dlg.ApplyAxisOverrides(*plot);
-
-        const auto* oldLine = dynamic_cast<const Wisteria::Graphs::LinePlot*>(&graph);
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.x", dlg.GetXVariable(),
-                             oldLine != nullptr ? oldLine->GetXColumnName() : wxString{});
-        CarryForwardProperty(graph, *plot, L"variables.y", dlg.GetYVariable(),
-                             oldLine != nullptr ? oldLine->GetYColumnName() : wxString{});
-        const auto oldGroupName =
-            (oldLine != nullptr) ? oldLine->GetGroupColumnName().value_or(wxString{}) : wxString{};
-        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
-                             oldGroupName);
-
-        // showcase bars/lines/bins
-        for (size_t i = 0; i < dlg.GetShowcaseLines().size(); ++i)
-            {
-            plot->SetPropertyTemplate(wxString::Format(_DT(L"showcase-lines[%zu]"), i),
-                                      dlg.GetShowcaseLines()[i]);
-            }
-
+        auto plot = dlg.BuildLinePlot(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -3736,22 +2919,7 @@ void WisteriaView::OnInsertMultiSeriesLinePlot([[maybe_unused]] wxCommandEvent& 
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::MultiSeriesLinePlot>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->AutoSpline(dlg.GetAutoSpline());
-        plot->SetShapeScheme(dlg.GetShapeScheme());
-
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariables(), dlg.GetXVariable());
-
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        const auto& yVars = dlg.GetYVariables();
-        for (size_t i = 0; i < yVars.size(); ++i)
-            {
-            plot->SetPropertyTemplate(wxString::Format(L"variables.y[%zu]", i), yVars[i]);
-            }
-        plot->SetPropertyTemplate(L"variables.x", dlg.GetXVariable());
-
+        auto plot = dlg.BuildMultiSeriesLinePlot();
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -3784,31 +2952,7 @@ void WisteriaView::EditMultiSeriesLinePlot(const Wisteria::Graphs::Graph2D& grap
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::MultiSeriesLinePlot>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->AutoSpline(dlg.GetAutoSpline());
-        plot->SetShapeScheme(dlg.GetShapeScheme());
-
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariables(), dlg.GetXVariable());
-        dlg.ApplyAxisOverrides(*plot);
-
-        const auto* oldLine = dynamic_cast<const Wisteria::Graphs::LinePlot*>(&graph);
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.x", dlg.GetXVariable(),
-                             oldLine != nullptr ? oldLine->GetXColumnName() : wxString{});
-
-        // cache indexed Y variable templates
-        const auto& yVars = dlg.GetYVariables();
-        for (size_t i = 0; i < yVars.size(); ++i)
-            {
-            const auto key = wxString::Format(L"variables.y[%zu]", i);
-            CarryForwardProperty(graph, *plot, key, yVars[i], graph.GetPropertyTemplate(key));
-            }
-
+        auto plot = dlg.BuildMultiSeriesLinePlot(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -3840,31 +2984,7 @@ void WisteriaView::OnInsertWCurvePlot([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::WCurvePlot>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->SetShapeScheme(dlg.GetShapeScheme());
-
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariable(), dlg.GetXVariable(), groupCol);
-
-        plot->SetTimeIntervalLabel(dlg.GetTimeIntervalLabel());
-        plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        if (!dlg.GetShowcasedLines().empty())
-            {
-            plot->ShowcaseLines(dlg.GetShowcasedLines());
-            }
-
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.y", dlg.GetYVariable());
-        plot->SetPropertyTemplate(L"variables.x", dlg.GetXVariable());
-        if (!dlg.GetGroupVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.group", dlg.GetGroupVariable());
-            }
-
+        auto plot = dlg.BuildWCurvePlot();
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -3895,39 +3015,7 @@ void WisteriaView::EditWCurvePlot(const Wisteria::Graphs::Graph2D& graph, Wister
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::WCurvePlot>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->SetShapeScheme(dlg.GetShapeScheme());
-
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetYVariable(), dlg.GetXVariable(), groupCol);
-        dlg.ApplyAxisOverrides(*plot);
-
-        plot->SetTimeIntervalLabel(dlg.GetTimeIntervalLabel());
-        plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        if (!dlg.GetShowcasedLines().empty())
-            {
-            plot->ShowcaseLines(dlg.GetShowcasedLines());
-            }
-
-        const auto* oldWCurve = dynamic_cast<const Wisteria::Graphs::WCurvePlot*>(&graph);
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.x", dlg.GetXVariable(),
-                             oldWCurve != nullptr ? oldWCurve->GetXColumnName() : wxString{});
-        CarryForwardProperty(graph, *plot, L"variables.y", dlg.GetYVariable(),
-                             oldWCurve != nullptr ? oldWCurve->GetYColumnName() : wxString{});
-        const auto oldGroupName = (oldWCurve != nullptr) ?
-                                      oldWCurve->GetGroupColumnName().value_or(wxString{}) :
-                                      wxString{};
-        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
-                             oldGroupName);
-
+        auto plot = dlg.BuildWCurvePlot(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -3959,33 +3047,7 @@ void WisteriaView::OnInsertLRRoadmap([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::LRRoadmap>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> pValueCol =
-            dlg.GetPValueVariable().empty() ? std::nullopt :
-                                              std::optional<wxString>(dlg.GetPValueVariable());
-        const std::optional<wxString> dvName =
-            dlg.GetDVName().empty() ? std::nullopt : std::optional<wxString>(dlg.GetDVName());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetPredictorVariable(),
-                      dlg.GetCoefficientVariable(), pValueCol, dlg.GetPLevel(),
-                      dlg.GetPredictorsToInclude(), dvName);
-        dlg.ApplyAxisOverrides(*plot);
-
-        if (dlg.GetAddDefaultCaption())
-            {
-            plot->AddDefaultCaption();
-            }
-
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.predictor", dlg.GetPredictorVariable());
-        plot->SetPropertyTemplate(L"variables.coefficient", dlg.GetCoefficientVariable());
-        if (!dlg.GetPValueVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.pvalue", dlg.GetPValueVariable());
-            }
-
+        auto plot = dlg.BuildLRRoadmap();
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -4017,40 +3079,7 @@ void WisteriaView::EditLRRoadmap(const Wisteria::Graphs::Graph2D& graph, Wisteri
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::LRRoadmap>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> pValueCol =
-            dlg.GetPValueVariable().empty() ? std::nullopt :
-                                              std::optional<wxString>(dlg.GetPValueVariable());
-        const std::optional<wxString> dvName =
-            dlg.GetDVName().empty() ? std::nullopt : std::optional<wxString>(dlg.GetDVName());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetPredictorVariable(),
-                      dlg.GetCoefficientVariable(), pValueCol, dlg.GetPLevel(),
-                      dlg.GetPredictorsToInclude(), dvName);
-        dlg.ApplyAxisOverrides(*plot);
-
-        if (dlg.GetAddDefaultCaption())
-            {
-            plot->AddDefaultCaption();
-            }
-
-        const auto* oldRoadmap = dynamic_cast<const Wisteria::Graphs::LRRoadmap*>(&graph);
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.predictor", dlg.GetPredictorVariable(),
-                             oldRoadmap != nullptr ? oldRoadmap->GetPredictorColumnName() :
-                                                     wxString{});
-        CarryForwardProperty(graph, *plot, L"variables.coefficient", dlg.GetCoefficientVariable(),
-                             oldRoadmap != nullptr ? oldRoadmap->GetCoefficientColumnName() :
-                                                     wxString{});
-        CarryForwardProperty(graph, *plot, L"variables.pvalue", dlg.GetPValueVariable(),
-                             oldRoadmap != nullptr ? oldRoadmap->GetPValueColumnName() :
-                                                     wxString{});
-
+        auto plot = dlg.BuildLRRoadmap(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -4082,42 +3111,7 @@ void WisteriaView::OnInsertProConRoadmap([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::ProConRoadmap>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> posValueCol =
-            dlg.GetPositiveValueVariable().empty() ?
-                std::nullopt :
-                std::optional<wxString>(dlg.GetPositiveValueVariable());
-        const std::optional<wxString> negValueCol =
-            dlg.GetNegativeValueVariable().empty() ?
-                std::nullopt :
-                std::optional<wxString>(dlg.GetNegativeValueVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetPositiveVariable(), posValueCol,
-                      dlg.GetNegativeVariable(), negValueCol, dlg.GetMinimumCount());
-        dlg.ApplyAxisOverrides(*plot);
-
-        plot->SetPositiveLegendLabel(dlg.GetPositiveLabel());
-        plot->SetNegativeLegendLabel(dlg.GetNegativeLabel());
-
-        if (dlg.GetAddDefaultCaption())
-            {
-            plot->AddDefaultCaption();
-            }
-
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.positive", dlg.GetPositiveVariable());
-        if (!dlg.GetPositiveValueVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.positive-value", dlg.GetPositiveValueVariable());
-            }
-        plot->SetPropertyTemplate(L"variables.negative", dlg.GetNegativeVariable());
-        if (!dlg.GetNegativeValueVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.negative-value", dlg.GetNegativeValueVariable());
-            }
-
+        auto plot = dlg.BuildProConRoadmap();
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -4150,48 +3144,7 @@ void WisteriaView::EditProConRoadmap(const Wisteria::Graphs::Graph2D& graph,
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::ProConRoadmap>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> posValueCol =
-            dlg.GetPositiveValueVariable().empty() ?
-                std::nullopt :
-                std::optional<wxString>(dlg.GetPositiveValueVariable());
-        const std::optional<wxString> negValueCol =
-            dlg.GetNegativeValueVariable().empty() ?
-                std::nullopt :
-                std::optional<wxString>(dlg.GetNegativeValueVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetPositiveVariable(), posValueCol,
-                      dlg.GetNegativeVariable(), negValueCol, dlg.GetMinimumCount());
-        dlg.ApplyAxisOverrides(*plot);
-
-        plot->SetPositiveLegendLabel(dlg.GetPositiveLabel());
-        plot->SetNegativeLegendLabel(dlg.GetNegativeLabel());
-
-        if (dlg.GetAddDefaultCaption())
-            {
-            plot->AddDefaultCaption();
-            }
-
-        const auto* oldRoadmap = dynamic_cast<const Wisteria::Graphs::ProConRoadmap*>(&graph);
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.positive", dlg.GetPositiveVariable(),
-                             oldRoadmap != nullptr ? oldRoadmap->GetPositiveColumnName() :
-                                                     wxString{});
-        CarryForwardProperty(
-            graph, *plot, L"variables.positive-value", dlg.GetPositiveValueVariable(),
-            oldRoadmap != nullptr ? oldRoadmap->GetPositiveValueColumnName() : wxString{});
-        CarryForwardProperty(graph, *plot, L"variables.negative", dlg.GetNegativeVariable(),
-                             oldRoadmap != nullptr ? oldRoadmap->GetNegativeColumnName() :
-                                                     wxString{});
-        CarryForwardProperty(
-            graph, *plot, L"variables.negative-value", dlg.GetNegativeValueVariable(),
-            oldRoadmap != nullptr ? oldRoadmap->GetNegativeValueColumnName() : wxString{});
-
+        auto plot = dlg.BuildProConRoadmap(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -4223,65 +3176,7 @@ void WisteriaView::OnInsertGanttChart([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::GanttChart>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->SetLabelDisplay(dlg.GetTaskLabelDisplay());
-        const std::optional<wxString> resourceCol =
-            dlg.GetResourceVariable().empty() ? std::nullopt :
-                                                std::optional<wxString>(dlg.GetResourceVariable());
-        const std::optional<wxString> descCol =
-            dlg.GetDescriptionVariable().empty() ?
-                std::nullopt :
-                std::optional<wxString>(dlg.GetDescriptionVariable());
-        const std::optional<wxString> compCol =
-            dlg.GetCompletionVariable().empty() ?
-                std::nullopt :
-                std::optional<wxString>(dlg.GetCompletionVariable());
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetDateInterval(), dlg.GetFiscalYearType(),
-                      dlg.GetTaskVariable(), dlg.GetStartDateVariable(), dlg.GetEndDateVariable(),
-                      resourceCol, descCol, compCol, groupCol);
-
-        plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        if (!dlg.GetShowcasedLabels().empty())
-            {
-            plot->ShowcaseBars(dlg.GetShowcasedLabels(), dlg.HideLabelsOnGhostedBars());
-            }
-
-        for (const auto& [label, shape] : dlg.GetBarShapes())
-            {
-            const auto barPos = plot->FindBar(label);
-            if (barPos.has_value())
-                {
-                plot->GetBars().at(barPos.value()).SetShape(shape);
-                }
-            }
-
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.task", dlg.GetTaskVariable());
-        plot->SetPropertyTemplate(L"variables.start-date", dlg.GetStartDateVariable());
-        plot->SetPropertyTemplate(L"variables.end-date", dlg.GetEndDateVariable());
-        if (!dlg.GetResourceVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.resource", dlg.GetResourceVariable());
-            }
-        if (!dlg.GetDescriptionVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.description", dlg.GetDescriptionVariable());
-            }
-        if (!dlg.GetCompletionVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.completion", dlg.GetCompletionVariable());
-            }
-        if (!dlg.GetGroupVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.group", dlg.GetGroupVariable());
-            }
-
+        auto plot = dlg.BuildGanttChart();
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -4312,86 +3207,7 @@ void WisteriaView::EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::GanttChart>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->SetLabelDisplay(dlg.GetTaskLabelDisplay());
-        const std::optional<wxString> resourceCol =
-            dlg.GetResourceVariable().empty() ? std::nullopt :
-                                                std::optional<wxString>(dlg.GetResourceVariable());
-        const std::optional<wxString> descCol =
-            dlg.GetDescriptionVariable().empty() ?
-                std::nullopt :
-                std::optional<wxString>(dlg.GetDescriptionVariable());
-        const std::optional<wxString> compCol =
-            dlg.GetCompletionVariable().empty() ?
-                std::nullopt :
-                std::optional<wxString>(dlg.GetCompletionVariable());
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetDateInterval(), dlg.GetFiscalYearType(),
-                      dlg.GetTaskVariable(), dlg.GetStartDateVariable(), dlg.GetEndDateVariable(),
-                      resourceCol, descCol, compCol, groupCol);
-
-        plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        if (!dlg.GetShowcasedLabels().empty())
-            {
-            plot->ShowcaseBars(dlg.GetShowcasedLabels(), dlg.HideLabelsOnGhostedBars());
-            }
-
-        dlg.ApplyAxisOverrides(*plot);
-
-        // the dialog's variable/dataset getters return expanded values, so the
-        // old value passed to CarryForwardProperty must also be expanded for
-        // the "did the user change this" comparison to be meaningful
-        const auto oldExpanded = [this, &graph](const wxString& prop)
-        { return m_reportBuilder.ExpandConstants(graph.GetPropertyTemplate(prop)); };
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             oldExpanded(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.task", dlg.GetTaskVariable(),
-                             oldExpanded(L"variables.task"));
-        CarryForwardProperty(graph, *plot, L"variables.start-date", dlg.GetStartDateVariable(),
-                             oldExpanded(L"variables.start-date"));
-        CarryForwardProperty(graph, *plot, L"variables.end-date", dlg.GetEndDateVariable(),
-                             oldExpanded(L"variables.end-date"));
-        CarryForwardProperty(graph, *plot, L"variables.resource", dlg.GetResourceVariable(),
-                             oldExpanded(L"variables.resource"));
-        CarryForwardProperty(graph, *plot, L"variables.description", dlg.GetDescriptionVariable(),
-                             oldExpanded(L"variables.description"));
-        CarryForwardProperty(graph, *plot, L"variables.completion", dlg.GetCompletionVariable(),
-                             oldExpanded(L"variables.completion"));
-        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
-                             oldExpanded(L"variables.group"));
-
-        // restore bar-block decals
-        for (const auto& decalInfo : dlg.GetBarBlockDecals())
-            {
-            const auto barPos = plot->FindBar(decalInfo.m_barLabel);
-            if (barPos.has_value() &&
-                decalInfo.m_blockIndex < plot->GetBars().at(barPos.value()).GetBlocks().size())
-                {
-                plot->GetBars()
-                    .at(barPos.value())
-                    .GetBlocks()
-                    .at(decalInfo.m_blockIndex)
-                    .SetDecal(decalInfo.m_decal);
-                }
-            }
-
-        // restore per-bar shapes (bars not listed stay at the default Rectangle)
-        for (const auto& [label, shape] : dlg.GetBarShapes())
-            {
-            const auto barPos = plot->FindBar(label);
-            if (barPos.has_value())
-                {
-                plot->GetBars().at(barPos.value()).SetShape(shape);
-                }
-            }
-
+        auto plot = dlg.BuildGanttChart(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -4423,23 +3239,7 @@ void WisteriaView::OnInsertCandlestickPlot([[maybe_unused]] wxCommandEvent& even
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::CandlestickPlot>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->SetPlotType(dlg.GetPlotType());
-        plot->GetGainBrush().SetColour(dlg.GetGainColor());
-        plot->GetLossBrush().SetColour(dlg.GetLossColor());
-
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetDateVariable(), dlg.GetOpenVariable(),
-                      dlg.GetHighVariable(), dlg.GetLowVariable(), dlg.GetCloseVariable());
-
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.date", dlg.GetDateVariable());
-        plot->SetPropertyTemplate(L"variables.open", dlg.GetOpenVariable());
-        plot->SetPropertyTemplate(L"variables.high", dlg.GetHighVariable());
-        plot->SetPropertyTemplate(L"variables.low", dlg.GetLowVariable());
-        plot->SetPropertyTemplate(L"variables.close", dlg.GetCloseVariable());
-
+        auto plot = dlg.BuildCandlestickPlot();
         canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
 
         UpdateCanvas(canvas);
@@ -4472,37 +3272,7 @@ void WisteriaView::EditCandlestickPlot(const Wisteria::Graphs::Graph2D& graph,
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::CandlestickPlot>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->SetPlotType(dlg.GetPlotType());
-        plot->GetGainBrush().SetColour(dlg.GetGainColor());
-        plot->GetLossBrush().SetColour(dlg.GetLossColor());
-
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetDateVariable(), dlg.GetOpenVariable(),
-                      dlg.GetHighVariable(), dlg.GetLowVariable(), dlg.GetCloseVariable());
-        dlg.ApplyAxisOverrides(*plot);
-
-        // the dialog's variable/dataset getters return expanded values, so the
-        // old value passed to CarryForwardProperty must also be expanded for
-        // the "did the user change this" comparison to be meaningful
-        const auto oldExpanded = [this, &graph](const wxString& prop)
-        { return m_reportBuilder.ExpandConstants(graph.GetPropertyTemplate(prop)); };
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             oldExpanded(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.date", dlg.GetDateVariable(),
-                             oldExpanded(L"variables.date"));
-        CarryForwardProperty(graph, *plot, L"variables.open", dlg.GetOpenVariable(),
-                             oldExpanded(L"variables.open"));
-        CarryForwardProperty(graph, *plot, L"variables.high", dlg.GetHighVariable(),
-                             oldExpanded(L"variables.high"));
-        CarryForwardProperty(graph, *plot, L"variables.low", dlg.GetLowVariable(),
-                             oldExpanded(L"variables.low"));
-        CarryForwardProperty(graph, *plot, L"variables.close", dlg.GetCloseVariable(),
-                             oldExpanded(L"variables.close"));
-
+        auto plot = dlg.BuildCandlestickPlot(&graph);
         canvas->SetFixedObject(graphRow, graphCol, plot);
 
         UpdateCanvas(canvas);
@@ -4533,66 +3303,7 @@ void WisteriaView::OnInsertSankeyDiagram([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::SankeyDiagram>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->SetFlowShape(dlg.GetFlowShape());
-        plot->SetGroupLabelDisplay(dlg.GetGroupLabelDisplay());
-        plot->SetColumnHeaderDisplay(dlg.GetColumnHeaderDisplay());
-
-        const std::optional<wxString> fromWeightCol =
-            dlg.GetFromWeightVariable().empty() ?
-                std::nullopt :
-                std::optional<wxString>(dlg.GetFromWeightVariable());
-        const std::optional<wxString> toWeightCol =
-            dlg.GetToWeightVariable().empty() ? std::nullopt :
-                                                std::optional<wxString>(dlg.GetToWeightVariable());
-        const std::optional<wxString> fromGroupCol =
-            dlg.GetFromGroupVariable().empty() ?
-                std::nullopt :
-                std::optional<wxString>(dlg.GetFromGroupVariable());
-
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetFromVariable(), dlg.GetToVariable(),
-                      fromWeightCol, toWeightCol, fromGroupCol);
-
-        plot->SetColumnHeaders(dlg.GetColumnHeaders());
-
-        plot->SetGhostOpacity(static_cast<uint8_t>(dlg.GetGhostOpacity()));
-        if (!dlg.GetShowcaseStreams().empty())
-            {
-            plot->ShowcaseStreams(dlg.GetShowcaseStreams(), dlg.IsGhostingNonShowcasedLabels());
-            for (size_t i = 0; i < dlg.GetShowcaseStreams().size(); ++i)
-                {
-                plot->SetPropertyTemplate(L"showcase-streams[" + std::to_wstring(i) + L"]",
-                                          dlg.GetShowcaseStreams()[i]);
-                }
-            }
-
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.from", dlg.GetFromVariable());
-        plot->SetPropertyTemplate(L"variables.to", dlg.GetToVariable());
-        if (!dlg.GetFromWeightVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.from-weight", dlg.GetFromWeightVariable());
-            }
-        if (!dlg.GetToWeightVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.to-weight", dlg.GetToWeightVariable());
-            }
-        if (!dlg.GetFromGroupVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.from-group", dlg.GetFromGroupVariable());
-            }
-
-        const auto colHeaders = dlg.GetColumnHeaders();
-        if (dlg.GetFromColumnLabelRaw() != colHeaders[0])
-            {
-            plot->SetPropertyTemplate(L"column-headers[0]", dlg.GetFromColumnLabelRaw());
-            }
-        if (dlg.GetToColumnLabelRaw() != colHeaders[1])
-            {
-            plot->SetPropertyTemplate(L"column-headers[1]", dlg.GetToColumnLabelRaw());
-            }
+        auto plot = dlg.BuildSankeyDiagram();
 
         canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
 
@@ -4626,66 +3337,7 @@ void WisteriaView::EditSankeyDiagram(const Wisteria::Graphs::Graph2D& graph,
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::SankeyDiagram>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->SetFlowShape(dlg.GetFlowShape());
-        plot->SetGroupLabelDisplay(dlg.GetGroupLabelDisplay());
-        plot->SetColumnHeaderDisplay(dlg.GetColumnHeaderDisplay());
-
-        const std::optional<wxString> fromWeightCol =
-            dlg.GetFromWeightVariable().empty() ?
-                std::nullopt :
-                std::optional<wxString>(dlg.GetFromWeightVariable());
-        const std::optional<wxString> toWeightCol =
-            dlg.GetToWeightVariable().empty() ? std::nullopt :
-                                                std::optional<wxString>(dlg.GetToWeightVariable());
-        const std::optional<wxString> fromGroupCol =
-            dlg.GetFromGroupVariable().empty() ?
-                std::nullopt :
-                std::optional<wxString>(dlg.GetFromGroupVariable());
-
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetFromVariable(), dlg.GetToVariable(),
-                      fromWeightCol, toWeightCol, fromGroupCol);
-        plot->SetColumnHeaders(dlg.GetColumnHeaders());
-
-        plot->SetGhostOpacity(static_cast<uint8_t>(dlg.GetGhostOpacity()));
-        if (!dlg.GetShowcaseStreams().empty())
-            {
-            plot->ShowcaseStreams(dlg.GetShowcaseStreams(), dlg.IsGhostingNonShowcasedLabels());
-            for (size_t i = 0; i < dlg.GetShowcaseStreams().size(); ++i)
-                {
-                plot->SetPropertyTemplate(L"showcase-streams[" + std::to_wstring(i) + L"]",
-                                          dlg.GetShowcaseStreams()[i]);
-                }
-            }
-
-        dlg.ApplyAxisOverrides(*plot);
-
-        // the dialog's variable/dataset getters return expanded values, so the
-        // old value passed to CarryForwardProperty must also be expanded for
-        // the "did the user change this" comparison to be meaningful
-        const auto oldExpanded = [this, &graph](const wxString& prop)
-        { return m_reportBuilder.ExpandConstants(graph.GetPropertyTemplate(prop)); };
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             oldExpanded(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.from", dlg.GetFromVariable(),
-                             oldExpanded(L"variables.from"));
-        CarryForwardProperty(graph, *plot, L"variables.to", dlg.GetToVariable(),
-                             oldExpanded(L"variables.to"));
-        CarryForwardProperty(graph, *plot, L"variables.from-weight", dlg.GetFromWeightVariable(),
-                             oldExpanded(L"variables.from-weight"));
-        CarryForwardProperty(graph, *plot, L"variables.to-weight", dlg.GetToWeightVariable(),
-                             oldExpanded(L"variables.to-weight"));
-        CarryForwardProperty(graph, *plot, L"variables.from-group", dlg.GetFromGroupVariable(),
-                             oldExpanded(L"variables.from-group"));
-
-        CarryForwardProperty(graph, *plot, L"column-headers[0]", dlg.GetFromColumnLabelRaw(),
-                             oldExpanded(L"column-headers[0]"));
-        CarryForwardProperty(graph, *plot, L"column-headers[1]", dlg.GetToColumnLabelRaw(),
-                             oldExpanded(L"column-headers[1]"));
+        auto plot = dlg.BuildSankeyDiagram(&graph);
 
         canvas->SetFixedObject(graphRow, graphCol, plot);
 
@@ -4723,119 +3375,7 @@ void WisteriaView::OnInsertBoxPlot([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::BoxPlot>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetContinuousVariable(), groupCol);
-        dlg.ApplyAxisOverrides(*plot);
-
-        plot->SetBoxEffect(dlg.GetBoxEffect());
-        plot->ShowAllPoints(dlg.GetShowAllPoints());
-        plot->ShowLabels(dlg.GetShowLabels());
-        plot->ShowMidpointConnection(dlg.GetShowMidpointConnection());
-
-        // apply stipple shape or image settings based on the selected effect
-        const auto boxEffect = dlg.GetBoxEffect();
-        if (boxEffect == Wisteria::BoxEffect::StippleShape)
-            {
-            plot->SetStippleShape(dlg.GetStippleShape());
-            plot->SetStippleShapeColor(dlg.GetStippleShapeColor());
-            }
-        else if (boxEffect == Wisteria::BoxEffect::StippleImage && !dlg.GetImagePaths().empty())
-            {
-            wxImage img(doc->ResolveFilePath(dlg.GetImagePaths()[0]), wxBITMAP_TYPE_ANY);
-            if (img.IsOk() && dlg.GetImageEffect() != Wisteria::ImageEffect::NoEffect)
-                {
-                img = Wisteria::GraphItems::Image::ApplyEffect(dlg.GetImageEffect(), img);
-                }
-            if (img.IsOk())
-                {
-                plot->SetStippleBrush(wxBitmapBundle::FromBitmap(wxBitmap(img)));
-                }
-            }
-        else if ((boxEffect == Wisteria::BoxEffect::CommonImage ||
-                  boxEffect == Wisteria::BoxEffect::Image) &&
-                 !dlg.GetImagePaths().empty())
-            {
-            const auto imgEffect = dlg.GetImageEffect();
-            std::vector<wxBitmapBundle> images;
-            images.reserve(dlg.GetImagePaths().GetCount());
-            for (const auto& path : dlg.GetImagePaths())
-                {
-                wxImage img(doc->ResolveFilePath(path), wxBITMAP_TYPE_ANY);
-                if (img.IsOk() && imgEffect != Wisteria::ImageEffect::NoEffect)
-                    {
-                    img = Wisteria::GraphItems::Image::ApplyEffect(imgEffect, img);
-                    }
-                if (img.IsOk())
-                    {
-                    images.emplace_back(wxBitmapBundle::FromBitmap(wxBitmap(img)));
-                    }
-                }
-            plot->SetImageScheme(
-                std::make_shared<Wisteria::Images::Schemes::ImageScheme>(std::move(images)));
-            }
-
-        // cache dataset and variable names for round-tripping
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.aggregate", dlg.GetContinuousVariable());
-        if (!dlg.GetGroupVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.group-1", dlg.GetGroupVariable());
-            }
-
-        // cache stipple shape and image settings for round-tripping
-        const auto shapeStr =
-            Wisteria::ReportEnumConvert::ConvertIconToString(dlg.GetStippleShape());
-        if (shapeStr)
-            {
-            plot->SetPropertyTemplate(L"stipple-shape", shapeStr.value());
-            }
-        plot->SetPropertyTemplate(L"stipple-shape-color",
-                                  dlg.GetStippleShapeColor().GetAsString(wxC2S_HTML_SYNTAX));
-        if (!dlg.GetImagePaths().empty())
-            {
-            wxString paths;
-            for (size_t idx = 0; idx < dlg.GetImagePaths().GetCount(); ++idx)
-                {
-                if (!paths.empty())
-                    {
-                    paths += L"\t";
-                    }
-                paths += dlg.GetImagePaths()[idx];
-                }
-            plot->SetPropertyTemplate(L"image-paths", paths);
-            }
-        if (dlg.IsImageCustomSizeEnabled())
-            {
-            plot->SetPropertyTemplate(L"image-width", std::to_wstring(dlg.GetImageWidth()));
-            plot->SetPropertyTemplate(L"image-height", std::to_wstring(dlg.GetImageHeight()));
-            }
-            {
-            const auto resizeStr = Wisteria::ReportEnumConvert::ConvertResizeMethodToString(
-                dlg.GetImageResizeMethod());
-            if (resizeStr.has_value())
-                {
-                plot->SetPropertyTemplate(L"image-resize-method", resizeStr.value());
-                }
-            }
-            {
-            const auto effectStr =
-                Wisteria::ReportEnumConvert::ConvertImageEffectToString(dlg.GetImageEffect());
-            if (effectStr.has_value())
-                {
-                plot->SetPropertyTemplate(L"image-effect", effectStr.value());
-                }
-            }
-        plot->SetPropertyTemplate(
-            L"image-stitch", (dlg.GetImageStitchDirection() == Wisteria::Orientation::Vertical) ?
-                                 L"vertical" :
-                                 L"horizontal");
-
+        auto plot = dlg.BuildBoxPlot(doc);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -4873,126 +3413,7 @@ void WisteriaView::EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::BoxPlot>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetContinuousVariable(), groupCol);
-        dlg.ApplyAxisOverrides(*plot);
-
-        plot->SetBoxEffect(dlg.GetBoxEffect());
-        plot->ShowAllPoints(dlg.GetShowAllPoints());
-        plot->ShowLabels(dlg.GetShowLabels());
-        plot->ShowMidpointConnection(dlg.GetShowMidpointConnection());
-
-        // apply stipple shape or image settings based on the selected effect
-        const auto boxEffect = dlg.GetBoxEffect();
-        if (boxEffect == Wisteria::BoxEffect::StippleShape)
-            {
-            plot->SetStippleShape(dlg.GetStippleShape());
-            plot->SetStippleShapeColor(dlg.GetStippleShapeColor());
-            }
-        else if (boxEffect == Wisteria::BoxEffect::StippleImage && !dlg.GetImagePaths().empty())
-            {
-            wxImage img(doc->ResolveFilePath(dlg.GetImagePaths()[0]), wxBITMAP_TYPE_ANY);
-            if (img.IsOk() && dlg.GetImageEffect() != Wisteria::ImageEffect::NoEffect)
-                {
-                img = Wisteria::GraphItems::Image::ApplyEffect(dlg.GetImageEffect(), img);
-                }
-            if (img.IsOk())
-                {
-                plot->SetStippleBrush(wxBitmapBundle::FromBitmap(wxBitmap(img)));
-                }
-            }
-        else if ((boxEffect == Wisteria::BoxEffect::CommonImage ||
-                  boxEffect == Wisteria::BoxEffect::Image) &&
-                 !dlg.GetImagePaths().empty())
-            {
-            const auto imgEffect = dlg.GetImageEffect();
-            std::vector<wxBitmapBundle> images;
-            images.reserve(dlg.GetImagePaths().GetCount());
-            for (const auto& path : dlg.GetImagePaths())
-                {
-                wxImage img(doc->ResolveFilePath(path), wxBITMAP_TYPE_ANY);
-                if (img.IsOk() && imgEffect != Wisteria::ImageEffect::NoEffect)
-                    {
-                    img = Wisteria::GraphItems::Image::ApplyEffect(imgEffect, img);
-                    }
-                if (img.IsOk())
-                    {
-                    images.emplace_back(wxBitmapBundle::FromBitmap(wxBitmap(img)));
-                    }
-                }
-            plot->SetImageScheme(
-                std::make_shared<Wisteria::Images::Schemes::ImageScheme>(std::move(images)));
-            }
-
-        // carry forward property templates, preserving {{placeholders}}
-        const auto* oldBoxPlot = dynamic_cast<const Wisteria::Graphs::BoxPlot*>(&graph);
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.aggregate", dlg.GetContinuousVariable(),
-                             oldBoxPlot != nullptr ? oldBoxPlot->GetContinuousColumnName() :
-                                                     wxString{});
-        const auto oldGroupName = (oldBoxPlot != nullptr) ?
-                                      oldBoxPlot->GetGroupColumnName().value_or(wxString{}) :
-                                      wxString{};
-        CarryForwardProperty(graph, *plot, L"variables.group-1", dlg.GetGroupVariable(),
-                             oldGroupName);
-
-        // cache stipple shape and image settings for round-tripping
-        const auto shapeStr =
-            Wisteria::ReportEnumConvert::ConvertIconToString(dlg.GetStippleShape());
-        if (shapeStr)
-            {
-            plot->SetPropertyTemplate(L"stipple-shape", shapeStr.value());
-            }
-        plot->SetPropertyTemplate(L"stipple-shape-color",
-                                  dlg.GetStippleShapeColor().GetAsString(wxC2S_HTML_SYNTAX));
-        if (!dlg.GetImagePaths().empty())
-            {
-            wxString paths;
-            for (size_t idx = 0; idx < dlg.GetImagePaths().GetCount(); ++idx)
-                {
-                if (!paths.empty())
-                    {
-                    paths += L"\t";
-                    }
-                paths += dlg.GetImagePaths()[idx];
-                }
-            plot->SetPropertyTemplate(L"image-paths", paths);
-            }
-        if (dlg.IsImageCustomSizeEnabled())
-            {
-            plot->SetPropertyTemplate(L"image-width", std::to_wstring(dlg.GetImageWidth()));
-            plot->SetPropertyTemplate(L"image-height", std::to_wstring(dlg.GetImageHeight()));
-            }
-            {
-            const auto resizeStr = Wisteria::ReportEnumConvert::ConvertResizeMethodToString(
-                dlg.GetImageResizeMethod());
-            if (resizeStr.has_value())
-                {
-                plot->SetPropertyTemplate(L"image-resize-method", resizeStr.value());
-                }
-            }
-            {
-            const auto effectStr =
-                Wisteria::ReportEnumConvert::ConvertImageEffectToString(dlg.GetImageEffect());
-            if (effectStr.has_value())
-                {
-                plot->SetPropertyTemplate(L"image-effect", effectStr.value());
-                }
-            }
-        plot->SetPropertyTemplate(
-            L"image-stitch", (dlg.GetImageStitchDirection() == Wisteria::Orientation::Vertical) ?
-                                 L"vertical" :
-                                 L"horizontal");
-
+        auto plot = dlg.BuildBoxPlot(doc, &graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -5030,196 +3451,7 @@ void WisteriaView::OnInsertCatBarChart([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::CategoricalBarChart>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        plot->SetBarOrientation(dlg.GetBarOrientation());
-
-        const std::optional<wxString> weightCol =
-            dlg.GetWeightVariable().empty() ? std::nullopt :
-                                              std::optional<wxString>(dlg.GetWeightVariable());
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetCategoricalVariable(), weightCol, groupCol,
-                      dlg.GetBarLabelDisplay());
-
-        if (dlg.IsApplyingBrushesToUngroupedBars())
-            {
-            plot->SetApplyBrushesToUngroupedBars(true);
-            }
-        if (dlg.IsConstrainingScalingAxisToBars())
-            {
-            plot->ConstrainScalingAxisToBars();
-            }
-        if (dlg.GetSerpentineMode() != Wisteria::Graphs::BarChart::SerpentineMode::None)
-            {
-            plot->SetSerpentineMode(dlg.GetSerpentineMode());
-            plot->SetSerpentineThreshold(dlg.GetSerpentineThreshold());
-            plot->ShowSerpentineFoldArrows(dlg.IsShowingSerpentineFoldArrows());
-            }
-        if (dlg.IsIncludingSpacesBetweenBars())
-            {
-            plot->IncludeSpacesBetweenBars();
-            }
-        if (!dlg.GetBarLabelSuffix().empty())
-            {
-            plot->SetBinLabelSuffix(dlg.GetBarLabelSuffix());
-            }
-
-        // apply custom bar sort
-        if (dlg.HasCustomBarSort())
-            {
-            plot->SetPropertyTemplate(L"bar-sort", L"true");
-            if (dlg.GetBarSortComparison().has_value())
-                {
-                plot->SortBars(dlg.GetBarSortComparison().value(), dlg.GetBarSortDirection());
-                }
-            else if (!dlg.GetBarSortLabels().empty())
-                {
-                plot->SortBars(dlg.GetBarSortLabels(), dlg.GetBarSortDirection());
-                }
-            }
-
-        // apply per-bar shapes (bars not listed stay at the default Rectangle)
-        for (const auto& [label, shape] : dlg.GetBarShapes())
-            {
-            const auto barPos = plot->FindBar(label);
-            if (barPos.has_value())
-                {
-                plot->GetBars().at(barPos.value()).SetShape(shape);
-                }
-            }
-
-        // apply bar groups
-        for (const auto& group : dlg.GetBarGroups())
-            {
-            plot->AddBarGroup(
-                group.m_startLabel, group.m_endLabel,
-                group.m_decal.empty() ? std::nullopt : std::optional<wxString>(group.m_decal),
-                group.m_color.IsOk() ? std::optional<wxColour>(group.m_color) : std::nullopt,
-                group.m_color.IsOk() ? std::optional<wxBrush>(wxBrush(group.m_color)) :
-                                       std::nullopt);
-            }
-
-        plot->SetBarEffect(dlg.GetBoxEffect());
-
-        // apply stipple shape or image settings based on the selected effect
-        const auto boxEffect = dlg.GetBoxEffect();
-        if (boxEffect == Wisteria::BoxEffect::StippleShape)
-            {
-            plot->SetStippleShape(dlg.GetStippleShape());
-            plot->SetStippleShapeColor(dlg.GetStippleShapeColor());
-            }
-        else if (boxEffect == Wisteria::BoxEffect::StippleImage && !dlg.GetImagePaths().empty())
-            {
-            wxImage img(doc->ResolveFilePath(dlg.GetImagePaths()[0]), wxBITMAP_TYPE_ANY);
-            if (img.IsOk() && dlg.GetImageEffect() != Wisteria::ImageEffect::NoEffect)
-                {
-                img = Wisteria::GraphItems::Image::ApplyEffect(dlg.GetImageEffect(), img);
-                }
-            if (img.IsOk())
-                {
-                plot->SetStippleBrush(wxBitmapBundle::FromBitmap(wxBitmap(img)));
-                }
-            }
-        else if ((boxEffect == Wisteria::BoxEffect::CommonImage ||
-                  boxEffect == Wisteria::BoxEffect::Image) &&
-                 !dlg.GetImagePaths().empty())
-            {
-            const auto imgEffect = dlg.GetImageEffect();
-            std::vector<wxBitmapBundle> images;
-            images.reserve(dlg.GetImagePaths().GetCount());
-            for (const auto& path : dlg.GetImagePaths())
-                {
-                wxImage img(doc->ResolveFilePath(path), wxBITMAP_TYPE_ANY);
-                if (img.IsOk() && imgEffect != Wisteria::ImageEffect::NoEffect)
-                    {
-                    img = Wisteria::GraphItems::Image::ApplyEffect(imgEffect, img);
-                    }
-                if (img.IsOk())
-                    {
-                    images.emplace_back(wxBitmapBundle::FromBitmap(wxBitmap(img)));
-                    }
-                }
-            plot->SetImageScheme(
-                std::make_shared<Wisteria::Images::Schemes::ImageScheme>(std::move(images)));
-            }
-
-        plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        if (!dlg.GetShowcaseBars().empty())
-            {
-            plot->ShowcaseBars(dlg.GetShowcaseBars(), dlg.HideLabelsOnGhostedBars());
-            }
-
-        // cache dataset and variable names for round-tripping
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.category", dlg.GetCategoricalVariable());
-        if (!dlg.GetWeightVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.aggregate", dlg.GetWeightVariable());
-            }
-        if (!dlg.GetGroupVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.group", dlg.GetGroupVariable());
-            }
-
-        // showcase bars/lines/bins
-        for (size_t i = 0; i < dlg.GetShowcaseBars().size(); ++i)
-            {
-            plot->SetPropertyTemplate(wxString::Format(_DT(L"showcase-bars[%zu]"), i),
-                                      dlg.GetShowcaseBars()[i]);
-            }
-
-        // cache stipple shape and image settings for round-tripping
-        const auto shapeStr =
-            Wisteria::ReportEnumConvert::ConvertIconToString(dlg.GetStippleShape());
-        if (shapeStr)
-            {
-            plot->SetPropertyTemplate(L"stipple-shape", shapeStr.value());
-            }
-        plot->SetPropertyTemplate(L"stipple-shape-color",
-                                  dlg.GetStippleShapeColor().GetAsString(wxC2S_HTML_SYNTAX));
-        if (!dlg.GetImagePaths().empty())
-            {
-            wxString paths;
-            for (size_t idx = 0; idx < dlg.GetImagePaths().GetCount(); ++idx)
-                {
-                if (!paths.empty())
-                    {
-                    paths += L"\t";
-                    }
-                paths += dlg.GetImagePaths()[idx];
-                }
-            plot->SetPropertyTemplate(L"image-paths", paths);
-            }
-        if (dlg.IsImageCustomSizeEnabled())
-            {
-            plot->SetPropertyTemplate(L"image-width", std::to_wstring(dlg.GetImageWidth()));
-            plot->SetPropertyTemplate(L"image-height", std::to_wstring(dlg.GetImageHeight()));
-            }
-            {
-            const auto resizeStr = Wisteria::ReportEnumConvert::ConvertResizeMethodToString(
-                dlg.GetImageResizeMethod());
-            if (resizeStr.has_value())
-                {
-                plot->SetPropertyTemplate(L"image-resize-method", resizeStr.value());
-                }
-            }
-            {
-            const auto effectStr =
-                Wisteria::ReportEnumConvert::ConvertImageEffectToString(dlg.GetImageEffect());
-            if (effectStr.has_value())
-                {
-                plot->SetPropertyTemplate(L"image-effect", effectStr.value());
-                }
-            }
-        plot->SetPropertyTemplate(
-            L"image-stitch", (dlg.GetImageStitchDirection() == Wisteria::Orientation::Vertical) ?
-                                 L"vertical" :
-                                 L"horizontal");
-
+        auto plot = dlg.BuildCatBarChart(doc);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -5257,292 +3489,7 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::CategoricalBarChart>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        plot->SetBarOrientation(dlg.GetBarOrientation());
-
-        const std::optional<wxString> weightCol =
-            dlg.GetWeightVariable().empty() ? std::nullopt :
-                                              std::optional<wxString>(dlg.GetWeightVariable());
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetCategoricalVariable(), weightCol, groupCol,
-                      dlg.GetBarLabelDisplay());
-
-        if (dlg.IsApplyingBrushesToUngroupedBars())
-            {
-            plot->SetApplyBrushesToUngroupedBars(true);
-            }
-        if (dlg.IsConstrainingScalingAxisToBars())
-            {
-            plot->ConstrainScalingAxisToBars();
-            }
-        if (dlg.GetSerpentineMode() != Wisteria::Graphs::BarChart::SerpentineMode::None)
-            {
-            plot->SetSerpentineMode(dlg.GetSerpentineMode());
-            plot->SetSerpentineThreshold(dlg.GetSerpentineThreshold());
-            plot->ShowSerpentineFoldArrows(dlg.IsShowingSerpentineFoldArrows());
-            }
-        if (dlg.IsIncludingSpacesBetweenBars())
-            {
-            plot->IncludeSpacesBetweenBars();
-            }
-        if (!dlg.GetBarLabelSuffix().empty())
-            {
-            plot->SetBinLabelSuffix(dlg.GetBarLabelSuffix());
-            }
-
-        // restore bar-block decals
-        for (const auto& decalInfo : dlg.GetBarBlockDecals())
-            {
-            const auto barPos = plot->FindBar(decalInfo.m_barLabel);
-            if (barPos.has_value() &&
-                decalInfo.m_blockIndex < plot->GetBars().at(barPos.value()).GetBlocks().size())
-                {
-                plot->GetBars()
-                    .at(barPos.value())
-                    .GetBlocks()
-                    .at(decalInfo.m_blockIndex)
-                    .SetDecal(decalInfo.m_decal);
-                }
-            }
-
-        // restore per-bar shapes (bars not listed stay at the default Rectangle)
-        for (const auto& [label, shape] : dlg.GetBarShapes())
-            {
-            const auto barPos = plot->FindBar(label);
-            if (barPos.has_value())
-                {
-                plot->GetBars().at(barPos.value()).SetShape(shape);
-                }
-            }
-
-        // ApplyAxisOverrides must come before any SortBars call so that the sort's
-        // custom axis labels are not overwritten by the stale labels saved from the
-        // original chart.
-        dlg.ApplyAxisOverrides(*plot);
-
-        // Pair raw bar labels with their formatted custom axis labels using the
-        // chart being edited, whose bars and axis labels share the same (sorted)
-        // positions. The new chart's bars are still at their categorical-code
-        // positions here, which do not match the sorted positions of the labels
-        // that ApplyAxisOverrides restored, so the pairing cannot be made
-        // through the new chart's own axis.
-        using FormattedLabel =
-            std::remove_cvref_t<decltype(plot->GetBarAxis().GetCustomLabels())>::mapped_type;
-        std::map<wxString, FormattedLabel> rawToFormatted;
-        if (const auto* origChart = dynamic_cast<const Wisteria::Graphs::BarChart*>(&graph))
-            {
-            const auto& origCustomLabels = origChart->GetBarAxis().GetCustomLabels();
-            for (const auto& bar : origChart->GetBars())
-                {
-                const auto labelIt = origCustomLabels.find(bar.GetAxisPosition());
-                if (labelIt != origCustomLabels.cend())
-                    {
-                    rawToFormatted.emplace(bar.GetAxisLabel().GetText(), labelIt->second);
-                    }
-                }
-            }
-
-        // restore custom bar sort from the previous chart
-        if (dlg.HasCustomBarSort())
-            {
-            plot->SetPropertyTemplate(L"bar-sort", L"true");
-            // SortBars() always clears brackets and resets custom labels to raw
-            // data strings; both are restored after the call below.
-            // Brackets: snapshot now, discard if sort changed (positions will differ).
-            auto savedBrackets = plot->GetBarAxis().GetBrackets();
-            if (dlg.HasBarSortChanged())
-                {
-                savedBrackets.clear();
-                }
-            if (dlg.GetBarSortComparison().has_value())
-                {
-                plot->SortBars(dlg.GetBarSortComparison().value(), dlg.GetBarSortDirection());
-                }
-            else if (!dlg.GetBarSortLabels().empty())
-                {
-                plot->SortBars(dlg.GetBarSortLabels(), dlg.GetBarSortDirection());
-                }
-            // Re-apply formatted labels at their new positions by matching bars
-            // on raw text (e.g., restores embedded newlines SortBars stripped).
-            for (const auto& bar : plot->GetBars())
-                {
-                const auto it = rawToFormatted.find(bar.GetAxisLabel().GetText());
-                if (it != rawToFormatted.cend())
-                    {
-                    plot->GetBarAxis().SetCustomLabel(bar.GetAxisPosition(), it->second);
-                    }
-                }
-            for (const auto& bracket : savedBrackets)
-                {
-                plot->GetBarAxis().AddBracket(bracket);
-                }
-            }
-        else
-            {
-            // ApplyAxisOverrides() restored the saved bar axis which may carry stale
-            // custom labels from a previous sort. Re-sync from current bar positions
-            // using text-based matching so that formatted labels (e.g., with embedded
-            // newlines) survive even when bar positions differ from a previous sort.
-            auto& barAxis = plot->GetBarAxis();
-            barAxis.ClearCustomLabels();
-            for (const auto& bar : plot->GetBars())
-                {
-                const auto it = rawToFormatted.find(bar.GetAxisLabel().GetText());
-                barAxis.SetCustomLabel(bar.GetAxisPosition(), it != rawToFormatted.cend() ?
-                                                                  it->second :
-                                                                  bar.GetAxisLabel());
-                }
-            }
-
-        // brackets are tied to bar positions; clear stale ones if the sort changed
-        if (dlg.HasBarSortChanged())
-            {
-            plot->GetBarAxis().ClearBrackets();
-            }
-
-        // restore bar groups and placement
-        plot->SetBarGroupPlacement(dlg.GetBarGroupPlacement());
-        for (const auto& group : dlg.GetBarGroups())
-            {
-            plot->AddBarGroup(
-                group.m_startLabel, group.m_endLabel,
-                group.m_decal.empty() ? std::nullopt : std::optional<wxString>(group.m_decal),
-                group.m_color.IsOk() ? std::optional<wxColour>(group.m_color) : std::nullopt,
-                group.m_color.IsOk() ? std::optional<wxBrush>(wxBrush(group.m_color)) :
-                                       std::nullopt);
-            }
-
-        plot->SetBarEffect(dlg.GetBoxEffect());
-
-        // apply stipple shape or image settings based on the selected effect
-        const auto boxEffect = dlg.GetBoxEffect();
-        if (boxEffect == Wisteria::BoxEffect::StippleShape)
-            {
-            plot->SetStippleShape(dlg.GetStippleShape());
-            plot->SetStippleShapeColor(dlg.GetStippleShapeColor());
-            }
-        else if (boxEffect == Wisteria::BoxEffect::StippleImage && !dlg.GetImagePaths().empty())
-            {
-            wxImage img(doc->ResolveFilePath(dlg.GetImagePaths()[0]), wxBITMAP_TYPE_ANY);
-            if (img.IsOk() && dlg.GetImageEffect() != Wisteria::ImageEffect::NoEffect)
-                {
-                img = Wisteria::GraphItems::Image::ApplyEffect(dlg.GetImageEffect(), img);
-                }
-            if (img.IsOk())
-                {
-                plot->SetStippleBrush(wxBitmapBundle::FromBitmap(wxBitmap(img)));
-                }
-            }
-        else if ((boxEffect == Wisteria::BoxEffect::CommonImage ||
-                  boxEffect == Wisteria::BoxEffect::Image) &&
-                 !dlg.GetImagePaths().empty())
-            {
-            const auto imgEffect = dlg.GetImageEffect();
-            std::vector<wxBitmapBundle> images;
-            images.reserve(dlg.GetImagePaths().GetCount());
-            for (const auto& path : dlg.GetImagePaths())
-                {
-                wxImage img(doc->ResolveFilePath(path), wxBITMAP_TYPE_ANY);
-                if (img.IsOk() && imgEffect != Wisteria::ImageEffect::NoEffect)
-                    {
-                    img = Wisteria::GraphItems::Image::ApplyEffect(imgEffect, img);
-                    }
-                if (img.IsOk())
-                    {
-                    images.emplace_back(wxBitmapBundle::FromBitmap(wxBitmap(img)));
-                    }
-                }
-            plot->SetImageScheme(
-                std::make_shared<Wisteria::Images::Schemes::ImageScheme>(std::move(images)));
-            }
-
-        plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        if (!dlg.GetShowcaseBars().empty())
-            {
-            plot->ShowcaseBars(dlg.GetShowcaseBars(), dlg.HideLabelsOnGhostedBars());
-            }
-
-        // carry forward property templates, preserving {{placeholders}}
-        const auto* oldBarChart =
-            dynamic_cast<const Wisteria::Graphs::CategoricalBarChart*>(&graph);
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.category", dlg.GetCategoricalVariable(),
-                             oldBarChart != nullptr ? oldBarChart->GetCategoricalColumnName() :
-                                                      wxString{});
-        const auto oldWeightName = (oldBarChart != nullptr) ?
-                                       oldBarChart->GetWeightColumnName().value_or(wxString{}) :
-                                       wxString{};
-        CarryForwardProperty(graph, *plot, L"variables.aggregate", dlg.GetWeightVariable(),
-                             oldWeightName);
-        const auto oldGroupName = (oldBarChart != nullptr) ?
-                                      oldBarChart->GetGroupColumnName().value_or(wxString{}) :
-                                      wxString{};
-        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
-                             oldGroupName);
-
-        // showcase bars/lines/bins
-        for (size_t i = 0; i < dlg.GetShowcaseBars().size(); ++i)
-            {
-            plot->SetPropertyTemplate(wxString::Format(_DT(L"showcase-bars[%zu]"), i),
-                                      dlg.GetShowcaseBars()[i]);
-            }
-
-        // cache stipple shape and image settings for round-tripping
-        const auto shapeStr =
-            Wisteria::ReportEnumConvert::ConvertIconToString(dlg.GetStippleShape());
-        if (shapeStr)
-            {
-            plot->SetPropertyTemplate(L"stipple-shape", shapeStr.value());
-            }
-        plot->SetPropertyTemplate(L"stipple-shape-color",
-                                  dlg.GetStippleShapeColor().GetAsString(wxC2S_HTML_SYNTAX));
-        if (!dlg.GetImagePaths().empty())
-            {
-            wxString paths;
-            for (size_t idx = 0; idx < dlg.GetImagePaths().GetCount(); ++idx)
-                {
-                if (!paths.empty())
-                    {
-                    paths += L"\t";
-                    }
-                paths += dlg.GetImagePaths()[idx];
-                }
-            plot->SetPropertyTemplate(L"image-paths", paths);
-            }
-        if (dlg.IsImageCustomSizeEnabled())
-            {
-            plot->SetPropertyTemplate(L"image-width", std::to_wstring(dlg.GetImageWidth()));
-            plot->SetPropertyTemplate(L"image-height", std::to_wstring(dlg.GetImageHeight()));
-            }
-            {
-            const auto resizeStr = Wisteria::ReportEnumConvert::ConvertResizeMethodToString(
-                dlg.GetImageResizeMethod());
-            if (resizeStr.has_value())
-                {
-                plot->SetPropertyTemplate(L"image-resize-method", resizeStr.value());
-                }
-            }
-            {
-            const auto effectStr =
-                Wisteria::ReportEnumConvert::ConvertImageEffectToString(dlg.GetImageEffect());
-            if (effectStr.has_value())
-                {
-                plot->SetPropertyTemplate(L"image-effect", effectStr.value());
-                }
-            }
-        plot->SetPropertyTemplate(
-            L"image-stitch", (dlg.GetImageStitchDirection() == Wisteria::Orientation::Vertical) ?
-                                 L"vertical" :
-                                 L"horizontal");
-
+        auto plot = dlg.BuildCatBarChart(doc, &graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -5574,77 +3521,7 @@ void WisteriaView::OnInsertLikertChart([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        const auto& questions = dlg.GetQuestionVariables();
-        const auto dataset = dlg.GetSelectedDataset();
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-
-        auto surveyFormat =
-            Wisteria::Graphs::LikertChart::DeduceScale(dataset, questions, groupCol);
-
-        // if a group variable is selected, upgrade to categorized variant
-        if (groupCol.has_value())
-            {
-            using LF = Wisteria::Graphs::LikertChart::LikertSurveyQuestionFormat;
-            switch (surveyFormat)
-                {
-            case LF::TwoPoint:
-                surveyFormat = LF::TwoPointCategorized;
-                break;
-            case LF::ThreePoint:
-                surveyFormat = LF::ThreePointCategorized;
-                break;
-            case LF::FourPoint:
-                surveyFormat = LF::FourPointCategorized;
-                break;
-            case LF::FivePoint:
-                surveyFormat = LF::FivePointCategorized;
-                break;
-            case LF::SixPoint:
-                surveyFormat = LF::SixPointCategorized;
-                break;
-            case LF::SevenPoint:
-                surveyFormat = LF::SevenPointCategorized;
-                break;
-            default:
-                break;
-                }
-            }
-
-        auto plot = std::make_shared<Wisteria::Graphs::LikertChart>(
-            canvas, surveyFormat, dlg.GetNegativeColor(), dlg.GetPositiveColor(),
-            dlg.GetNeutralColor(), dlg.GetNoResponseColor());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        plot->SetData(dataset, questions, groupCol);
-        dlg.ApplyAxisOverrides(*plot);
-
-        plot->ShowResponseCounts(dlg.GetShowResponseCounts());
-        plot->ShowPercentages(dlg.GetShowPercentages());
-        plot->ShowSectionHeaders(dlg.GetShowSectionHeaders());
-        plot->SetBarSizesToRespondentSize(dlg.GetAdjustBarWidths());
-        plot->SetPositiveHeader(dlg.GetPositiveLabel());
-        plot->SetNegativeHeader(dlg.GetNegativeLabel());
-        plot->SetNoResponseHeader(dlg.GetNoResponseLabel());
-        for (const auto& bracket : dlg.GetQuestionsBrackets())
-            {
-            plot->AddQuestionsBracket(bracket);
-            }
-
-        // cache dataset and variable names for round-tripping
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        for (size_t i = 0; i < questions.size(); ++i)
-            {
-            plot->SetPropertyTemplate(L"variables.questions[" + std::to_wstring(i) + L"]",
-                                      questions[i]);
-            }
-        if (!dlg.GetGroupVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.group", dlg.GetGroupVariable());
-            }
-
+        auto plot = dlg.BuildLikertChart();
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -5675,80 +3552,7 @@ void WisteriaView::EditLikertChart(const Wisteria::Graphs::Graph2D& graph, Wiste
 
     try
         {
-        const auto& questions = dlg.GetQuestionVariables();
-        const auto dataset = dlg.GetSelectedDataset();
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-
-        auto surveyFormat =
-            Wisteria::Graphs::LikertChart::DeduceScale(dataset, questions, groupCol);
-
-        // if a group variable is selected, upgrade to categorized variant
-        if (groupCol.has_value())
-            {
-            using LF = Wisteria::Graphs::LikertChart::LikertSurveyQuestionFormat;
-            switch (surveyFormat)
-                {
-            case LF::TwoPoint:
-                surveyFormat = LF::TwoPointCategorized;
-                break;
-            case LF::ThreePoint:
-                surveyFormat = LF::ThreePointCategorized;
-                break;
-            case LF::FourPoint:
-                surveyFormat = LF::FourPointCategorized;
-                break;
-            case LF::FivePoint:
-                surveyFormat = LF::FivePointCategorized;
-                break;
-            case LF::SixPoint:
-                surveyFormat = LF::SixPointCategorized;
-                break;
-            case LF::SevenPoint:
-                surveyFormat = LF::SevenPointCategorized;
-                break;
-            default:
-                break;
-                }
-            }
-
-        auto plot = std::make_shared<Wisteria::Graphs::LikertChart>(
-            canvas, surveyFormat, dlg.GetNegativeColor(), dlg.GetPositiveColor(),
-            dlg.GetNeutralColor(), dlg.GetNoResponseColor());
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        plot->SetData(dataset, questions, groupCol);
-        dlg.ApplyAxisOverrides(*plot);
-
-        plot->ShowResponseCounts(dlg.GetShowResponseCounts());
-        plot->ShowPercentages(dlg.GetShowPercentages());
-        plot->ShowSectionHeaders(dlg.GetShowSectionHeaders());
-        plot->SetBarSizesToRespondentSize(dlg.GetAdjustBarWidths());
-        plot->SetPositiveHeader(dlg.GetPositiveLabel());
-        plot->SetNegativeHeader(dlg.GetNegativeLabel());
-        plot->SetNoResponseHeader(dlg.GetNoResponseLabel());
-        for (const auto& bracket : dlg.GetQuestionsBrackets())
-            {
-            plot->AddQuestionsBracket(bracket);
-            }
-
-        // carry forward property templates, preserving {{placeholders}}
-        const auto oldExpanded = [this, &graph](const wxString& prop)
-        { return m_reportBuilder.ExpandConstants(graph.GetPropertyTemplate(prop)); };
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             oldExpanded(L"dataset"));
-        for (size_t i = 0; i < questions.size(); ++i)
-            {
-            const auto key = wxString::Format(L"variables.questions[%zu]", i);
-            CarryForwardProperty(graph, *plot, key, questions[i], oldExpanded(key));
-            }
-        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
-                             oldExpanded(L"variables.group"));
-
+        auto plot = dlg.BuildLikertChart(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -5780,28 +3584,7 @@ void WisteriaView::OnInsertHeatMap([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::HeatMap>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetContinuousVariable(), groupCol,
-                      static_cast<size_t>(dlg.GetGroupColumnCount()));
-        dlg.ApplyAxisOverrides(*plot);
-
-        plot->ShowGroupHeaders(dlg.GetShowGroupHeaders());
-        plot->SetGroupHeaderPrefix(dlg.GetGroupHeaderPrefix());
-
-        // cache dataset and variable names for round-tripping
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.continuous", dlg.GetContinuousVariable());
-        if (!dlg.GetGroupVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.group", dlg.GetGroupVariable());
-            }
-
+        auto plot = dlg.BuildHeatMap();
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -5832,35 +3615,7 @@ void WisteriaView::EditHeatMap(const Wisteria::Graphs::Graph2D& graph, Wisteria:
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::HeatMap>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetContinuousVariable(), groupCol,
-                      static_cast<size_t>(dlg.GetGroupColumnCount()));
-        dlg.ApplyAxisOverrides(*plot);
-
-        plot->ShowGroupHeaders(dlg.GetShowGroupHeaders());
-        plot->SetGroupHeaderPrefix(dlg.GetGroupHeaderPrefix());
-
-        // carry forward property templates, preserving {{placeholders}}
-        const auto* oldHeatMap = dynamic_cast<const Wisteria::Graphs::HeatMap*>(&graph);
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.continuous", dlg.GetContinuousVariable(),
-                             oldHeatMap != nullptr ? oldHeatMap->GetContinuousColumnName() :
-                                                     wxString{});
-        const auto oldGroupName = (oldHeatMap != nullptr) ?
-                                      oldHeatMap->GetGroupColumnName().value_or(wxString{}) :
-                                      wxString{};
-        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
-                             oldGroupName);
-
+        auto plot = dlg.BuildHeatMap(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -5892,43 +3647,7 @@ void WisteriaView::OnInsertHistogram([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::Histogram>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(
-            dlg.GetSelectedDataset(), dlg.GetContinuousVariable(), groupCol,
-            static_cast<Wisteria::Graphs::Histogram::BinningMethod>(dlg.GetBinningMethod()),
-            static_cast<Wisteria::RoundingMethod>(dlg.GetRoundingMethod()),
-            static_cast<Wisteria::Graphs::Histogram::IntervalDisplay>(dlg.GetIntervalDisplay()),
-            static_cast<Wisteria::BinLabelDisplay>(dlg.GetBinLabelDisplay()),
-            dlg.GetShowFullRange(), dlg.GetBinsStart(),
-            std::make_pair(dlg.GetSuggestedBinCount(), dlg.GetMaxBinCount()),
-            dlg.GetNeatIntervals());
-        plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        if (!dlg.GetShowcasedBars().empty())
-            {
-            plot->ShowcaseBars(dlg.GetShowcasedBars(), dlg.HideLabelsOnGhostedBars());
-            }
-
-        // cache dataset and variable names for round-tripping
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.continuous", dlg.GetContinuousVariable());
-        if (!dlg.GetGroupVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.group", dlg.GetGroupVariable());
-            }
-
-        // showcase bars/lines/bins
-        for (size_t i = 0; i < dlg.GetShowcasedBars().size(); ++i)
-            {
-            plot->SetPropertyTemplate(wxString::Format(_DT(L"showcase-bars[%zu]"), i),
-                                      dlg.GetShowcasedBars()[i]);
-            }
-
+        auto plot = dlg.BuildHistogram();
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -5959,51 +3678,7 @@ void WisteriaView::EditHistogram(const Wisteria::Graphs::Graph2D& graph, Wisteri
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::Histogram>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(
-            dlg.GetSelectedDataset(), dlg.GetContinuousVariable(), groupCol,
-            static_cast<Wisteria::Graphs::Histogram::BinningMethod>(dlg.GetBinningMethod()),
-            static_cast<Wisteria::RoundingMethod>(dlg.GetRoundingMethod()),
-            static_cast<Wisteria::Graphs::Histogram::IntervalDisplay>(dlg.GetIntervalDisplay()),
-            static_cast<Wisteria::BinLabelDisplay>(dlg.GetBinLabelDisplay()),
-            dlg.GetShowFullRange(), dlg.GetBinsStart(),
-            std::make_pair(dlg.GetSuggestedBinCount(), dlg.GetMaxBinCount()),
-            dlg.GetNeatIntervals());
-        plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        if (!dlg.GetShowcasedBars().empty())
-            {
-            plot->ShowcaseBars(dlg.GetShowcasedBars(), dlg.HideLabelsOnGhostedBars());
-            }
-        dlg.ApplyAxisOverrides(*plot);
-
-        // carry forward property templates, preserving {{placeholders}}
-        const auto* oldHistogram = dynamic_cast<const Wisteria::Graphs::Histogram*>(&graph);
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.continuous", dlg.GetContinuousVariable(),
-                             oldHistogram != nullptr ? oldHistogram->GetContinuousColumnName() :
-                                                       wxString{});
-        const auto oldGroupName = (oldHistogram != nullptr) ?
-                                      oldHistogram->GetGroupColumnName().value_or(wxString{}) :
-                                      wxString{};
-        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
-                             oldGroupName);
-
-        // showcase bars/lines/bins
-        for (size_t i = 0; i < dlg.GetShowcasedBars().size(); ++i)
-            {
-            plot->SetPropertyTemplate(wxString::Format(_DT(L"showcase-bars[%zu]"), i),
-                                      dlg.GetShowcasedBars()[i]);
-            }
-
+        auto plot = dlg.BuildHistogram(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -6035,52 +3710,7 @@ void WisteriaView::OnInsertScaleChart([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::ScaleChart>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        plot->ShowcaseScore(dlg.GetShowcaseScore());
-
-        // add user-defined scales
-        for (const auto& scale : dlg.GetScales())
-            {
-            std::vector<Wisteria::Graphs::BarChart::BarBlock> blocks;
-            blocks.reserve(scale.m_blocks.size());
-            for (const auto& blk : scale.m_blocks)
-                {
-                blocks.emplace_back(
-                    Wisteria::Graphs::BarChart::BarBlockInfo(blk.m_length)
-                        .Brush(blk.m_color)
-                        .Decal(Wisteria::GraphItems::Label(
-                            Wisteria::GraphItems::GraphItemInfo{ blk.m_label }.LabelFitting(
-                                Wisteria::LabelFit::ScaleFontToFit))));
-                }
-            plot->AddScale(blocks, scale.m_startPosition, scale.m_header);
-            }
-
-        // main scale values, precision, and column headers
-        const auto mainScaleValues = dlg.GetMainScaleValues();
-        if (!mainScaleValues.empty())
-            {
-            plot->SetMainScaleValues(mainScaleValues,
-                                     static_cast<uint8_t>(dlg.GetMainScalePrecision()));
-            }
-        plot->SetMainScaleColumnHeader(dlg.GetMainScaleHeader());
-        plot->SetDataColumnHeader(dlg.GetDataColumnHeader());
-
-        // cache dataset and variable names for round-tripping
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.score", dlg.GetScoreVariable());
-        if (!dlg.GetGroupVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.group", dlg.GetGroupVariable());
-            }
-
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetScoreVariable(), groupCol);
-
+        auto plot = dlg.BuildScaleChart();
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -6111,59 +3741,7 @@ void WisteriaView::EditScaleChart(const Wisteria::Graphs::Graph2D& graph, Wister
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::ScaleChart>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        plot->ShowcaseScore(dlg.GetShowcaseScore());
-
-        // add user-defined scales
-        for (const auto& scale : dlg.GetScales())
-            {
-            std::vector<Wisteria::Graphs::BarChart::BarBlock> blocks;
-            blocks.reserve(scale.m_blocks.size());
-            for (const auto& blk : scale.m_blocks)
-                {
-                blocks.emplace_back(
-                    Wisteria::Graphs::BarChart::BarBlockInfo(blk.m_length)
-                        .Brush(blk.m_color)
-                        .Decal(Wisteria::GraphItems::Label(
-                            Wisteria::GraphItems::GraphItemInfo{ blk.m_label }.LabelFitting(
-                                Wisteria::LabelFit::ScaleFontToFit))));
-                }
-            plot->AddScale(blocks, scale.m_startPosition, scale.m_header);
-            }
-
-        // main scale values, precision, and column headers
-        const auto mainScaleValues = dlg.GetMainScaleValues();
-        if (!mainScaleValues.empty())
-            {
-            plot->SetMainScaleValues(mainScaleValues,
-                                     static_cast<uint8_t>(dlg.GetMainScalePrecision()));
-            }
-        plot->SetMainScaleColumnHeader(dlg.GetMainScaleHeader());
-        plot->SetDataColumnHeader(dlg.GetDataColumnHeader());
-
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetScoreVariable(), groupCol);
-
-        // carry forward property templates, preserving {{placeholders}}
-        const auto* oldScaleChart = dynamic_cast<const Wisteria::Graphs::ScaleChart*>(&graph);
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.score", dlg.GetScoreVariable(),
-                             oldScaleChart != nullptr ? oldScaleChart->GetScoresColumnName() :
-                                                        wxString{});
-        const auto oldGroupName = (oldScaleChart != nullptr) ?
-                                      oldScaleChart->GetGroupColumnName().value_or(wxString{}) :
-                                      wxString{};
-        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
-                             oldGroupName);
-
+        auto plot = dlg.BuildScaleChart(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -6195,23 +3773,7 @@ void WisteriaView::OnInsertWordCloud([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::WordCloud>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> weightCol =
-            dlg.GetWeightVariable().empty() ? std::nullopt :
-                                              std::optional<wxString>(dlg.GetWeightVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetWordVariable(), weightCol,
-                      dlg.GetMinFrequency(), dlg.GetMaxFrequency(), dlg.GetMaxWords());
-
-        // cache dataset and variable names for round-tripping
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.word", dlg.GetWordVariable());
-        if (!dlg.GetWeightVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.weight", dlg.GetWeightVariable());
-            }
+        auto plot = dlg.BuildWordCloud();
 
         // word clouds do not support legends
         PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
@@ -6242,83 +3804,7 @@ void WisteriaView::OnInsertChoroplethMap([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto geoData = std::make_shared<Wisteria::Data::GeoDataset>();
-        if (!geoData->ImportRegionFile(
-                dlg.GetKMLPath(), Wisteria::Data::GeoImportInfo().IdField(dlg.GetKMLIdField())))
-            {
-            throw std::runtime_error(geoData->GetLastError().ToUTF8().data());
-            }
-
-        const wxString shadingColumn =
-            !dlg.GetCategoryColumn().empty() ? dlg.GetCategoryColumn() : dlg.GetValueColumn();
-        const bool hasSourceColumns = dlg.IsMappingData() || dlg.IsUsingProportionalSymbols();
-        const auto dataAggregation =
-            static_cast<Wisteria::Data::GeoColumnAggregation>(dlg.GetDataAggregation());
-        if (hasSourceColumns)
-            {
-            if (!dlg.GetCategoryColumn().empty())
-                {
-                geoData->CopyCategoricalColumnFrom(*dlg.GetSelectedDataset(), dlg.GetKeyColumn(),
-                                                   dlg.GetCategoryColumn(),
-                                                   dlg.GetCategoryColumn());
-                }
-            else if (!dlg.GetValueColumn().empty())
-                {
-                geoData->CopyContinuousColumnFrom(*dlg.GetSelectedDataset(), dlg.GetKeyColumn(),
-                                                  dlg.GetValueColumn(), dlg.GetValueColumn(),
-                                                  dataAggregation);
-                }
-            if (!dlg.GetSymbolColumn().empty() && dlg.GetSymbolColumn() != dlg.GetValueColumn() &&
-                dlg.GetSymbolColumn() != dlg.GetCategoryColumn())
-                {
-                geoData->CopyContinuousColumnFrom(*dlg.GetSelectedDataset(), dlg.GetKeyColumn(),
-                                                  dlg.GetSymbolColumn(), dlg.GetSymbolColumn(),
-                                                  dataAggregation);
-                }
-            }
-
-        auto plot = std::make_shared<Wisteria::Graphs::ChoroplethMap>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> valueCol =
-            shadingColumn.empty() ? std::nullopt : std::optional<wxString>(shadingColumn);
-        // classification must be set before SetData(), which computes the class colors
-        plot->SetClassificationMethod(
-            static_cast<Wisteria::Graphs::ChoroplethMap::ClassificationMethod>(
-                dlg.GetClassificationMethod()));
-        plot->SetClassCount(static_cast<size_t>(dlg.GetClassCount()));
-        plot->SetData(geoData, valueCol);
-        plot->ShowRegionLabels(dlg.IsShowingRegionLabels());
-        plot->ShowGraticule(dlg.IsShowingGraticule());
-        plot->ShowOnlyRegionsWithValues(dlg.IsShowingOnlyRegionsWithValues());
-        plot->SetDataAggregation(dataAggregation);
-        plot->SetLabelDisplay(static_cast<Wisteria::BinLabelDisplay>(dlg.GetRegionLabelDisplay()));
-        plot->SetNoDataFillStyle(dlg.GetNoDataFillStyle());
-        plot->SetProportionalSymbolColumn(dlg.GetSymbolColumn().empty() ?
-                                              std::nullopt :
-                                              std::optional<wxString>(dlg.GetSymbolColumn()));
-        plot->SetProportionalSymbolColor(dlg.GetProportionalSymbolColor());
-        plot->SetSourceInfo(dlg.GetKMLPath(), dlg.GetKMLIdField(),
-                            hasSourceColumns ? dlg.GetSelectedDatasetName() : wxString{},
-                            hasSourceColumns ? dlg.GetKeyColumn() : wxString{});
-
-        const wxString backgroundPath = dlg.GetBackgroundPath();
-        if (!backgroundPath.empty())
-            {
-            auto backgroundData = std::make_shared<Wisteria::Data::GeoDataset>();
-            if (backgroundData->ImportRegionFile(backgroundPath))
-                {
-                plot->SetBackgroundLayer(backgroundData);
-                }
-            else
-                {
-                wxMessageBox(backgroundData->GetLastError(), _(L"Background Layer"),
-                             wxOK | wxICON_WARNING, m_frame);
-                }
-            }
-        plot->SetBackgroundFilePath(backgroundPath);
-        dlg.ApplyAxisOverrides(*plot);
+        auto plot = dlg.BuildChoroplethMap();
 
         // uses a specialized legend
         const bool wantsLegend = dlg.IsMappingData() || dlg.IsUsingProportionalSymbols();
@@ -6366,112 +3852,12 @@ void WisteriaView::EditChoroplethMap(const Wisteria::Graphs::Graph2D& graph,
 
     try
         {
-        const auto* oldMap = dynamic_cast<const Wisteria::Graphs::ChoroplethMap*>(&graph);
-        const wxString newSymbolColumn = dlg.GetSymbolColumn();
-        const bool hasSourceColumns = dlg.IsMappingData() || dlg.IsUsingProportionalSymbols();
-        const wxString newDataSource = hasSourceColumns ? dlg.GetSelectedDatasetName() : wxString{};
-        const wxString newKeyColumn = hasSourceColumns ? dlg.GetKeyColumn() : wxString{};
-        const bool newShadingIsCategorical = !dlg.GetCategoryColumn().empty();
-        const wxString newShadingColumn =
-            newShadingIsCategorical ? dlg.GetCategoryColumn() : dlg.GetValueColumn();
-        const auto newDataAggregation =
-            static_cast<Wisteria::Data::GeoColumnAggregation>(dlg.GetDataAggregation());
-
-        // Reuse the existing GeoDataset when the KML file and shading data are
-        // unchanged. Rebuilding re-runs the merge, which can shift the color range and
-        // rescale the whole map. The key column is left out of the check because a
-        // matching dataset and value column mean the merged result already stands.
-        const bool sourceUnchanged =
-            (oldMap != nullptr && oldMap->GetGeoDataset() != nullptr &&
-             oldMap->GetRegionFilePath() == dlg.GetKMLPath() &&
-             oldMap->GetRegionIdField() == dlg.GetKMLIdField() &&
-             oldMap->GetDataSourceName() == newDataSource &&
-             oldMap->GetDataAggregation() == newDataAggregation &&
-             oldMap->GetValueColumnName() == newShadingColumn &&
-             oldMap->GetProportionalSymbolColumnName() == newSymbolColumn &&
-             oldMap->IsCategoricalShading() == newShadingIsCategorical);
-
-        std::shared_ptr<const Wisteria::Data::GeoDataset> geoData;
-        if (sourceUnchanged)
-            {
-            geoData = oldMap->GetGeoDataset();
-            }
-        else
-            {
-            auto builtGeoData = std::make_shared<Wisteria::Data::GeoDataset>();
-            if (!builtGeoData->ImportRegionFile(
-                    dlg.GetKMLPath(), Wisteria::Data::GeoImportInfo().IdField(dlg.GetKMLIdField())))
-                {
-                throw std::runtime_error(builtGeoData->GetLastError().ToUTF8().data());
-                }
-            if (hasSourceColumns)
-                {
-                if (newShadingIsCategorical)
-                    {
-                    builtGeoData->CopyCategoricalColumnFrom(*dlg.GetSelectedDataset(), newKeyColumn,
-                                                            newShadingColumn, newShadingColumn);
-                    }
-                else if (!newShadingColumn.empty())
-                    {
-                    builtGeoData->CopyContinuousColumnFrom(*dlg.GetSelectedDataset(), newKeyColumn,
-                                                           newShadingColumn, newShadingColumn,
-                                                           newDataAggregation);
-                    }
-                if (!newSymbolColumn.empty() && newSymbolColumn != dlg.GetValueColumn() &&
-                    newSymbolColumn != dlg.GetCategoryColumn())
-                    {
-                    builtGeoData->CopyContinuousColumnFrom(*dlg.GetSelectedDataset(), newKeyColumn,
-                                                           newSymbolColumn, newSymbolColumn,
-                                                           newDataAggregation);
-                    }
-                }
-            geoData = builtGeoData;
-            }
-
-        auto plot = std::make_shared<Wisteria::Graphs::ChoroplethMap>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> valueCol =
-            newShadingColumn.empty() ? std::nullopt : std::optional<wxString>(newShadingColumn);
-        // classification must be set before SetData(), which computes the class colors
-        plot->SetClassificationMethod(
-            static_cast<Wisteria::Graphs::ChoroplethMap::ClassificationMethod>(
-                dlg.GetClassificationMethod()));
-        plot->SetClassCount(static_cast<size_t>(dlg.GetClassCount()));
-        plot->SetData(geoData, valueCol);
-        plot->ShowRegionLabels(dlg.IsShowingRegionLabels());
-        plot->ShowGraticule(dlg.IsShowingGraticule());
-        plot->ShowOnlyRegionsWithValues(dlg.IsShowingOnlyRegionsWithValues());
-        plot->SetDataAggregation(newDataAggregation);
-        plot->SetLabelDisplay(static_cast<Wisteria::BinLabelDisplay>(dlg.GetRegionLabelDisplay()));
-        plot->SetNoDataFillStyle(dlg.GetNoDataFillStyle());
-        plot->SetProportionalSymbolColumn(
-            newSymbolColumn.empty() ? std::nullopt : std::optional<wxString>(newSymbolColumn));
-        plot->SetProportionalSymbolColor(dlg.GetProportionalSymbolColor());
-        plot->SetSourceInfo(dlg.GetKMLPath(), dlg.GetKMLIdField(), newDataSource, newKeyColumn);
-
-        const wxString backgroundPath = dlg.GetBackgroundPath();
-        if (!backgroundPath.empty())
-            {
-            auto backgroundData = std::make_shared<Wisteria::Data::GeoDataset>();
-            if (backgroundData->ImportRegionFile(backgroundPath))
-                {
-                plot->SetBackgroundLayer(backgroundData);
-                }
-            else
-                {
-                wxMessageBox(backgroundData->GetLastError(), _(L"Background Layer"),
-                             wxOK | wxICON_WARNING, m_frame);
-                }
-            }
-        plot->SetBackgroundFilePath(backgroundPath);
-        dlg.ApplyAxisOverrides(*plot);
+        auto plot = dlg.BuildChoroplethMap(&graph);
 
         const bool wantsLegend = dlg.IsMappingData() || dlg.IsUsingProportionalSymbols();
         const auto legendPlacement =
             wantsLegend ? dlg.GetLegendPlacement() : Wisteria::UI::LegendPlacement::None;
+        const wxString newSymbolColumn = dlg.GetSymbolColumn();
 
         auto legendObject =
             BuildLegend(dlg, legendPlacement,
@@ -6514,27 +3900,7 @@ void WisteriaView::EditWordCloud(const Wisteria::Graphs::Graph2D& graph, Wisteri
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::WordCloud>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> weightCol =
-            dlg.GetWeightVariable().empty() ? std::nullopt :
-                                              std::optional<wxString>(dlg.GetWeightVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetWordVariable(), weightCol,
-                      dlg.GetMinFrequency(), dlg.GetMaxFrequency(), dlg.GetMaxWords());
-        dlg.ApplyAxisOverrides(*plot);
-
-        // carry forward property templates, preserving {{placeholders}}
-        const auto* oldWC = dynamic_cast<const Wisteria::Graphs::WordCloud*>(&graph);
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.word", dlg.GetWordVariable(),
-                             oldWC != nullptr ? oldWC->GetWordColumnName() : wxString{});
-        CarryForwardProperty(graph, *plot, L"variables.weight", dlg.GetWeightVariable(),
-                             oldWC != nullptr ? oldWC->GetWeightColumnName() : wxString{});
+        auto plot = dlg.BuildWordCloud(&graph);
 
         // word clouds do not support legends; clear old graph directly
         canvas->SetFixedObject(graphRow, graphCol, nullptr);
@@ -6566,29 +3932,7 @@ void WisteriaView::OnInsertWLSparkline([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::WinLossSparkline>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->HighlightBestRecords(dlg.GetHighlightBestRecords());
-
-        const std::optional<wxString> postseasonCol =
-            dlg.GetPostseasonVariable().empty() ?
-                std::nullopt :
-                std::optional<wxString>(dlg.GetPostseasonVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetSeasonVariable(), dlg.GetWonVariable(),
-                      dlg.GetShutoutVariable(), dlg.GetHomeGameVariable(), postseasonCol);
-
-        // cache dataset and variable names for round-tripping
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.season", dlg.GetSeasonVariable());
-        plot->SetPropertyTemplate(L"variables.won", dlg.GetWonVariable());
-        plot->SetPropertyTemplate(L"variables.shutout", dlg.GetShutoutVariable());
-        plot->SetPropertyTemplate(L"variables.home-game", dlg.GetHomeGameVariable());
-        if (!dlg.GetPostseasonVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.postseason", dlg.GetPostseasonVariable());
-            }
-
+        auto plot = dlg.BuildWinLossSparkline();
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -6620,36 +3964,7 @@ void WisteriaView::EditWLSparkline(const Wisteria::Graphs::Graph2D& graph, Wiste
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::WinLossSparkline>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        plot->HighlightBestRecords(dlg.GetHighlightBestRecords());
-
-        const std::optional<wxString> postseasonCol =
-            dlg.GetPostseasonVariable().empty() ?
-                std::nullopt :
-                std::optional<wxString>(dlg.GetPostseasonVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetSeasonVariable(), dlg.GetWonVariable(),
-                      dlg.GetShutoutVariable(), dlg.GetHomeGameVariable(), postseasonCol);
-        dlg.ApplyAxisOverrides(*plot);
-
-        // carry forward property templates, preserving {{placeholders}}
-        const auto* oldWL = dynamic_cast<const Wisteria::Graphs::WinLossSparkline*>(&graph);
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.season", dlg.GetSeasonVariable(),
-                             oldWL != nullptr ? oldWL->GetSeasonColumnName() : wxString{});
-        CarryForwardProperty(graph, *plot, L"variables.won", dlg.GetWonVariable(),
-                             oldWL != nullptr ? oldWL->GetWonColumnName() : wxString{});
-        CarryForwardProperty(graph, *plot, L"variables.shutout", dlg.GetShutoutVariable(),
-                             oldWL != nullptr ? oldWL->GetShutoutColumnName() : wxString{});
-        CarryForwardProperty(graph, *plot, L"variables.home-game", dlg.GetHomeGameVariable(),
-                             oldWL != nullptr ? oldWL->GetHomeGameColumnName() : wxString{});
-        CarryForwardProperty(graph, *plot, L"variables.postseason", dlg.GetPostseasonVariable(),
-                             oldWL != nullptr ? oldWL->GetPostseasonColumnName() : wxString{});
-
+        auto plot = dlg.BuildWinLossSparkline(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -6681,23 +3996,7 @@ void WisteriaView::OnInsertStemAndLeaf([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::StemAndLeafPlot>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetContinuousVariable(), groupCol);
-
-        // cache dataset and variable names for round-tripping
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.continuous", dlg.GetContinuousVariable());
-        if (!dlg.GetGroupVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.group", dlg.GetGroupVariable());
-            }
-
+        auto plot = dlg.BuildStemAndLeafPlot();
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -6729,29 +4028,7 @@ void WisteriaView::EditStemAndLeaf(const Wisteria::Graphs::Graph2D& graph, Wiste
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::StemAndLeafPlot>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetContinuousVariable(), groupCol);
-        dlg.ApplyAxisOverrides(*plot);
-
-        // carry forward property templates, preserving {{placeholders}}
-        const auto* oldSL = dynamic_cast<const Wisteria::Graphs::StemAndLeafPlot*>(&graph);
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.continuous", dlg.GetContinuousVariable(),
-                             oldSL != nullptr ? oldSL->GetContinuousColumnName() : wxString{});
-        const auto oldGroupName =
-            (oldSL != nullptr) ? oldSL->GetGroupColumnName().value_or(wxString{}) : wxString{};
-        CarryForwardProperty(graph, *plot, L"variables.group", dlg.GetGroupVariable(),
-                             oldGroupName);
-
+        auto plot = dlg.BuildStemAndLeafPlot(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -6789,123 +4066,7 @@ void WisteriaView::OnInsertPieChart([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::PieChart>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> weightCol =
-            dlg.GetWeightVariable().empty() ? std::nullopt :
-                                              std::optional<wxString>(dlg.GetWeightVariable());
-        const std::optional<wxString> group2Col =
-            dlg.GetGroup2Variable().empty() ? std::nullopt :
-                                              std::optional<wxString>(dlg.GetGroup2Variable());
-        plot->SetData(dlg.GetSelectedDataset(), weightCol, dlg.GetGroupVariable(), group2Col);
-        dlg.ApplyAxisOverrides(*plot);
-
-        // apply styling options
-        plot->IncludeDonutHole(dlg.GetIncludeDonutHole());
-        plot->GetDonutHoleLabel() = dlg.GetDonutHoleLabel();
-        plot->SetDonutHoleColor(dlg.GetDonutHoleColor());
-        plot->SetDonutHoleProportion(dlg.GetDonutHoleProportion());
-        plot->UseColorLabels(dlg.GetUseColorLabels());
-        plot->SetOuterPieMidPointLabelDisplay(
-            static_cast<Wisteria::BinLabelDisplay>(dlg.GetOuterMidPointLabelDisplay()));
-        plot->SetOuterLabelDisplay(
-            static_cast<Wisteria::BinLabelDisplay>(dlg.GetOuterLabelDisplay()));
-        plot->SetInnerPieMidPointLabelDisplay(
-            static_cast<Wisteria::BinLabelDisplay>(dlg.GetInnerMidPointLabelDisplay()));
-        plot->SetLabelPlacement(static_cast<Wisteria::LabelPlacement>(dlg.GetLabelPlacement()));
-        plot->SetPieStyle(static_cast<Wisteria::PieStyle>(dlg.GetPieStyle()));
-        plot->ShowOuterPieLabels(dlg.GetShowOuterPieLabels());
-        plot->ShowInnerPieLabels(dlg.GetShowInnerPieLabels());
-        plot->SetGhostOpacity(static_cast<uint8_t>(dlg.GetGhostOpacity()));
-
-        // pie slice effect and image scheme
-        plot->SetPieSliceEffect((dlg.GetPieSliceEffect() == 1) ? Wisteria::PieSliceEffect::Image :
-                                                                 Wisteria::PieSliceEffect::Solid);
-        if (dlg.GetPieSliceEffect() == 1 && !dlg.GetImagePaths().empty())
-            {
-            std::vector<wxBitmapBundle> images;
-            images.reserve(dlg.GetImagePaths().GetCount());
-            for (const auto& path : dlg.GetImagePaths())
-                {
-                if (path.empty())
-                    {
-                    // blank entry — null image, slice falls back to its brush
-                    images.emplace_back();
-                    continue;
-                    }
-                wxImage img(doc->ResolveFilePath(path), wxBITMAP_TYPE_ANY);
-                if (img.IsOk())
-                    {
-                    images.emplace_back(wxBitmapBundle::FromBitmap(wxBitmap(img)));
-                    }
-                else
-                    {
-                    images.emplace_back();
-                    }
-                }
-            plot->SetImageScheme(
-                std::make_shared<Wisteria::Images::Schemes::ImageScheme>(std::move(images)));
-
-            // cache the paths (tab-separated) for round-tripping; preserve blanks
-            wxString paths;
-            for (size_t idx = 0; idx < dlg.GetImagePaths().GetCount(); ++idx)
-                {
-                if (idx > 0)
-                    {
-                    paths += L"\t";
-                    }
-                paths += dlg.GetImagePaths()[idx];
-                }
-            plot->SetPropertyTemplate(L"image-paths", paths);
-            }
-
-            // showcase slices
-            {
-            using SM = Wisteria::Graphs::PieChart::ShowcaseMode;
-            const auto peri = static_cast<Wisteria::Perimeter>(dlg.GetShowcasedRingLabels());
-            switch (static_cast<SM>(dlg.GetShowcaseMode()))
-                {
-            case SM::ExplicitList:
-                plot->ShowcaseOuterPieSlices(dlg.GetShowcaseSlices(), peri);
-                for (size_t i = 0; i < dlg.GetShowcaseSlices().size(); ++i)
-                    {
-                    plot->SetPropertyTemplate(L"showcase-slices[" + std::to_wstring(i) + L"]",
-                                              dlg.GetShowcaseSlices()[i]);
-                    }
-                break;
-            case SM::LargestOuter:
-                plot->ShowcaseLargestOuterPieSlices(peri);
-                break;
-            case SM::SmallestOuter:
-                plot->ShowcaseSmallestOuterPieSlices(peri);
-                break;
-            case SM::LargestInner:
-                plot->ShowcaseLargestInnerPieSlices(dlg.IsShowcaseByGroup(),
-                                                    dlg.IsShowcaseShowingOuterPieMidPointLabels());
-                break;
-            case SM::SmallestInner:
-                plot->ShowcaseSmallestInnerPieSlices(dlg.IsShowcaseByGroup(),
-                                                     dlg.IsShowcaseShowingOuterPieMidPointLabels());
-                break;
-            case SM::None:
-                break;
-                }
-            }
-
-        // cache dataset and variable names for round-tripping
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.group-1", dlg.GetGroupVariable());
-        if (!dlg.GetWeightVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.aggregate", dlg.GetWeightVariable());
-            }
-        if (!dlg.GetGroup2Variable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.group-2", dlg.GetGroup2Variable());
-            }
-
+        auto plot = dlg.BuildPieChart(doc);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -6943,123 +4104,7 @@ void WisteriaView::EditPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::PieChart>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> weightCol =
-            dlg.GetWeightVariable().empty() ? std::nullopt :
-                                              std::optional<wxString>(dlg.GetWeightVariable());
-        const std::optional<wxString> group2Col =
-            dlg.GetGroup2Variable().empty() ? std::nullopt :
-                                              std::optional<wxString>(dlg.GetGroup2Variable());
-        plot->SetData(dlg.GetSelectedDataset(), weightCol, dlg.GetGroupVariable(), group2Col);
-        dlg.ApplyAxisOverrides(*plot);
-
-        // apply styling options
-        plot->IncludeDonutHole(dlg.GetIncludeDonutHole());
-        plot->GetDonutHoleLabel() = dlg.GetDonutHoleLabel();
-        plot->SetDonutHoleColor(dlg.GetDonutHoleColor());
-        plot->SetDonutHoleProportion(dlg.GetDonutHoleProportion());
-        plot->UseColorLabels(dlg.GetUseColorLabels());
-        plot->SetOuterPieMidPointLabelDisplay(
-            static_cast<Wisteria::BinLabelDisplay>(dlg.GetOuterMidPointLabelDisplay()));
-        plot->SetOuterLabelDisplay(
-            static_cast<Wisteria::BinLabelDisplay>(dlg.GetOuterLabelDisplay()));
-        plot->SetInnerPieMidPointLabelDisplay(
-            static_cast<Wisteria::BinLabelDisplay>(dlg.GetInnerMidPointLabelDisplay()));
-        plot->SetLabelPlacement(static_cast<Wisteria::LabelPlacement>(dlg.GetLabelPlacement()));
-        plot->SetPieStyle(static_cast<Wisteria::PieStyle>(dlg.GetPieStyle()));
-        plot->ShowOuterPieLabels(dlg.GetShowOuterPieLabels());
-        plot->ShowInnerPieLabels(dlg.GetShowInnerPieLabels());
-        plot->SetGhostOpacity(static_cast<uint8_t>(dlg.GetGhostOpacity()));
-
-        // pie slice effect and image scheme
-        plot->SetPieSliceEffect((dlg.GetPieSliceEffect() == 1) ? Wisteria::PieSliceEffect::Image :
-                                                                 Wisteria::PieSliceEffect::Solid);
-        if (dlg.GetPieSliceEffect() == 1 && !dlg.GetImagePaths().empty())
-            {
-            std::vector<wxBitmapBundle> images;
-            images.reserve(dlg.GetImagePaths().GetCount());
-            for (const auto& path : dlg.GetImagePaths())
-                {
-                if (path.empty())
-                    {
-                    images.emplace_back();
-                    continue;
-                    }
-                wxImage img(doc->ResolveFilePath(path), wxBITMAP_TYPE_ANY);
-                if (img.IsOk())
-                    {
-                    images.emplace_back(wxBitmapBundle::FromBitmap(wxBitmap(img)));
-                    }
-                else
-                    {
-                    images.emplace_back();
-                    }
-                }
-            plot->SetImageScheme(
-                std::make_shared<Wisteria::Images::Schemes::ImageScheme>(std::move(images)));
-
-            wxString paths;
-            for (size_t idx = 0; idx < dlg.GetImagePaths().GetCount(); ++idx)
-                {
-                if (idx > 0)
-                    {
-                    paths += L"\t";
-                    }
-                paths += dlg.GetImagePaths()[idx];
-                }
-            plot->SetPropertyTemplate(L"image-paths", paths);
-            }
-
-            // showcase slices
-            {
-            using SM = Wisteria::Graphs::PieChart::ShowcaseMode;
-            const auto peri = static_cast<Wisteria::Perimeter>(dlg.GetShowcasedRingLabels());
-            const auto& newSlices = dlg.GetShowcaseSlices();
-            switch (static_cast<SM>(dlg.GetShowcaseMode()))
-                {
-            case SM::ExplicitList:
-                plot->ShowcaseOuterPieSlices(newSlices, peri);
-                for (size_t i = 0; i < newSlices.size(); ++i)
-                    {
-                    const auto prop = L"showcase-slices[" + std::to_wstring(i) + L"]";
-                    CarryForwardProperty(graph, *plot, prop, newSlices[i], newSlices[i]);
-                    }
-                break;
-            case SM::LargestOuter:
-                plot->ShowcaseLargestOuterPieSlices(peri);
-                break;
-            case SM::SmallestOuter:
-                plot->ShowcaseSmallestOuterPieSlices(peri);
-                break;
-            case SM::LargestInner:
-                plot->ShowcaseLargestInnerPieSlices(dlg.IsShowcaseByGroup(),
-                                                    dlg.IsShowcaseShowingOuterPieMidPointLabels());
-                break;
-            case SM::SmallestInner:
-                plot->ShowcaseSmallestInnerPieSlices(dlg.IsShowcaseByGroup(),
-                                                     dlg.IsShowcaseShowingOuterPieMidPointLabels());
-                break;
-            case SM::None:
-                break;
-                }
-            }
-
-        // carry forward property templates, preserving {{placeholders}}
-        const auto* oldPie = dynamic_cast<const Wisteria::Graphs::PieChart*>(&graph);
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.group-1", dlg.GetGroupVariable(),
-                             oldPie != nullptr ? oldPie->GetGroupColumn1Name() : wxString{});
-        CarryForwardProperty(graph, *plot, L"variables.aggregate", dlg.GetWeightVariable(),
-                             oldPie != nullptr ? oldPie->GetWeightColumnName() : wxString{});
-        CarryForwardProperty(graph, *plot, L"variables.group-2", dlg.GetGroup2Variable(),
-                             oldPie != nullptr ? oldPie->GetGroupColumn2Name() : wxString{});
-
+        auto plot = dlg.BuildPieChart(doc, &graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -7091,11 +4136,7 @@ void WisteriaView::OnInsertWaffleChart([[maybe_unused]] wxCommandEvent& event)
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::WaffleChart>(
-            canvas, dlg.GetShapes(), dlg.GetGridRounding(), dlg.GetRowCount());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
+        auto plot = dlg.BuildWaffleChart();
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -7126,12 +4167,7 @@ void WisteriaView::EditWaffleChart(const Wisteria::Graphs::Graph2D& graph, Wiste
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::WaffleChart>(
-            canvas, dlg.GetShapes(), dlg.GetGridRounding(), dlg.GetRowCount());
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-        dlg.ApplyAxisOverrides(*plot);
+        auto plot = dlg.BuildWaffleChart(&graph);
 
         // clear old legend if present
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -7165,23 +4201,7 @@ void WisteriaView::OnInsertRaceTrackChart([[maybe_unused]] wxCommandEvent& event
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::RaceTrackChart>(canvas);
-        // the track lanes take their colors when the data is set, so the schemes
-        // from the dialog have to be in place before then
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetValueVariable(), dlg.GetLabelVariable());
-
-        plot->SetTrackCount(dlg.GetTrackCount());
-        plot->SetStartAngle(dlg.GetStartAngle());
-        plot->SetTrackProportion(dlg.GetTrackProportion());
-        plot->ShowLabels(dlg.IsShowingLabels());
-
-        // cache dataset and variable names for round-tripping
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.value", dlg.GetValueVariable());
-        plot->SetPropertyTemplate(L"variables.label", dlg.GetLabelVariable());
+        auto plot = dlg.BuildRaceTrackChart();
 
         PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
@@ -7213,28 +4233,7 @@ void WisteriaView::EditRaceTrackChart(const Wisteria::Graphs::Graph2D& graph,
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::RaceTrackChart>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        plot->SetData(dlg.GetSelectedDataset(), dlg.GetValueVariable(), dlg.GetLabelVariable());
-        dlg.ApplyAxisOverrides(*plot);
-
-        plot->SetTrackCount(dlg.GetTrackCount());
-        plot->SetStartAngle(dlg.GetStartAngle());
-        plot->SetTrackProportion(dlg.GetTrackProportion());
-        plot->ShowLabels(dlg.IsShowingLabels());
-
-        // carry forward property templates, preserving {{placeholders}}
-        const auto* oldChart = dynamic_cast<const Wisteria::Graphs::RaceTrackChart*>(&graph);
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.value", dlg.GetValueVariable(),
-                             oldChart != nullptr ? oldChart->GetValueColumnName() : wxString{});
-        CarryForwardProperty(graph, *plot, L"variables.label", dlg.GetLabelVariable(),
-                             oldChart != nullptr ? oldChart->GetLabelColumnName() : wxString{});
+        auto plot = dlg.BuildRaceTrackChart(&graph);
 
         // clear old legend if present
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -7267,41 +4266,7 @@ void WisteriaView::OnInsertNightingaleRoseChart([[maybe_unused]] wxCommandEvent&
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::NightingaleRoseChart>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> aggregateCol =
-            dlg.GetAggregateVariable().empty() ?
-                std::nullopt :
-                std::optional<wxString>(dlg.GetAggregateVariable());
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), aggregateCol, dlg.GetCategoryVariable(), groupCol);
-
-        plot->SetRadialScaling(dlg.GetRadialScaling());
-        plot->SetSeriesDisplay(dlg.GetSeriesDisplay());
-        plot->SetStartAngle(dlg.GetStartAngle());
-        plot->ShowLabels(dlg.IsShowingLabels());
-        plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        for (const auto& [ghostGroupLabel, ghostCategoryLabel] : dlg.GetGhostedWedges())
-            {
-            plot->GhostWedge(ghostGroupLabel, ghostCategoryLabel);
-            }
-
-        // cache dataset and variable names for round-tripping
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.category", dlg.GetCategoryVariable());
-        if (!dlg.GetAggregateVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.aggregate", dlg.GetAggregateVariable());
-            }
-        if (!dlg.GetGroupVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.group", dlg.GetGroupVariable());
-            }
-
+        auto plot = dlg.BuildNightingaleRoseChart();
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -7334,43 +4299,7 @@ void WisteriaView::EditNightingaleRoseChart(const Wisteria::Graphs::Graph2D& gra
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::NightingaleRoseChart>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        const std::optional<wxString> aggregateCol =
-            dlg.GetAggregateVariable().empty() ?
-                std::nullopt :
-                std::optional<wxString>(dlg.GetAggregateVariable());
-        const std::optional<wxString> groupCol =
-            dlg.GetGroupVariable().empty() ? std::nullopt :
-                                             std::optional<wxString>(dlg.GetGroupVariable());
-        plot->SetData(dlg.GetSelectedDataset(), aggregateCol, dlg.GetCategoryVariable(), groupCol);
-        dlg.ApplyAxisOverrides(*plot);
-
-        plot->SetRadialScaling(dlg.GetRadialScaling());
-        plot->SetSeriesDisplay(dlg.GetSeriesDisplay());
-        plot->SetStartAngle(dlg.GetStartAngle());
-        plot->ShowLabels(dlg.IsShowingLabels());
-        plot->SetGhostOpacity(dlg.GetGhostOpacity());
-        for (const auto& [ghostGroupLabel, ghostCategoryLabel] : dlg.GetGhostedWedges())
-            {
-            plot->GhostWedge(ghostGroupLabel, ghostCategoryLabel);
-            }
-
-        // carry forward property templates, preserving {{placeholders}}
-        const auto* oldChart = dynamic_cast<const Wisteria::Graphs::NightingaleRoseChart*>(&graph);
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.category", dlg.GetCategoryVariable(),
-                             oldChart != nullptr ? oldChart->GetCategoryColumnName() : wxString{});
-        CarryForwardProperty(graph, *plot, L"variables.aggregate", dlg.GetAggregateVariable(),
-                             oldChart != nullptr ? oldChart->GetAggregateColumnName() : wxString{});
-        CarryForwardProperty(
-            graph, *plot, L"variables.group", dlg.GetGroupVariable(),
-            oldChart != nullptr ? oldChart->GetGroupColumnName().value_or(wxString{}) : wxString{});
+        auto plot = dlg.BuildNightingaleRoseChart(&graph);
 
         // clear old legend if present
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
@@ -7404,48 +4333,7 @@ void WisteriaView::OnInsertWilmarthBridgePlot([[maybe_unused]] wxCommandEvent& e
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::WilmarthBridgePlot>(canvas);
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        plot->SetData(
-            dlg.GetSelectedDataset(), dlg.GetLabelVariable(), dlg.GetExitVariable(),
-            (dlg.GetEntryVariable().empty() ? std::nullopt :
-                                              std::optional<wxString>(dlg.GetEntryVariable())),
-            (dlg.GetStatusVariable().empty() ? std::nullopt :
-                                               std::optional<wxString>(dlg.GetStatusVariable())),
-            (dlg.GetIntermediateEventVariable().empty() ?
-                 std::nullopt :
-                 std::optional<wxString>(dlg.GetIntermediateEventVariable())));
-
-        plot->SetFadeEffect(dlg.GetFadeEffect());
-        plot->SetSurvivalDisplay(dlg.GetSurvivalDisplay());
-        plot->ShowCensoredMarkers(dlg.IsShowingCensoredMarkers());
-        plot->ShowTerminalRow(dlg.GetTerminalRowLabel());
-        plot->SetIntermediateEventColor(dlg.GetIntermediateEventColor());
-
-        // cache dataset and variable names for round-tripping
-        plot->SetPropertyTemplate(L"dataset", dlg.GetSelectedDatasetName());
-        plot->SetPropertyTemplate(L"variables.label", dlg.GetLabelVariable());
-        plot->SetPropertyTemplate(L"variables.exit", dlg.GetExitVariable());
-        if (!dlg.GetEntryVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.entered", dlg.GetEntryVariable());
-            }
-        if (!dlg.GetStatusVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.status", dlg.GetStatusVariable());
-            }
-        if (!dlg.GetIntermediateEventVariable().empty())
-            {
-            plot->SetPropertyTemplate(L"variables.intermediate-event",
-                                      dlg.GetIntermediateEventVariable());
-            }
-        if (!dlg.GetTerminalRowLabel().empty())
-            {
-            plot->SetPropertyTemplate(L"terminal-row-label", dlg.GetTerminalRowLabel());
-            }
-
+        auto plot = dlg.BuildWilmarthBridgePlot();
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
@@ -7478,63 +4366,11 @@ void WisteriaView::EditWilmarthBridgePlot(const Wisteria::Graphs::Graph2D& graph
 
     try
         {
-        auto plot = std::make_shared<Wisteria::Graphs::WilmarthBridgePlot>(canvas);
-        plot->SetId(graph.GetId());
-        dlg.ApplyGraphOptions(*plot);
-        dlg.ApplyPageOptions(*plot);
-
-        plot->SetData(
-            dlg.GetSelectedDataset(), dlg.GetLabelVariable(), dlg.GetExitVariable(),
-            (dlg.GetEntryVariable().empty() ? std::nullopt :
-                                              std::optional<wxString>(dlg.GetEntryVariable())),
-            (dlg.GetStatusVariable().empty() ? std::nullopt :
-                                               std::optional<wxString>(dlg.GetStatusVariable())),
-            (dlg.GetIntermediateEventVariable().empty() ?
-                 std::nullopt :
-                 std::optional<wxString>(dlg.GetIntermediateEventVariable())));
-        dlg.ApplyAxisOverrides(*plot);
-
-        plot->SetFadeEffect(dlg.GetFadeEffect());
-        plot->SetSurvivalDisplay(dlg.GetSurvivalDisplay());
-        plot->ShowCensoredMarkers(dlg.IsShowingCensoredMarkers());
-        plot->ShowTerminalRow(dlg.GetTerminalRowLabel());
-        plot->SetIntermediateEventColor(dlg.GetIntermediateEventColor());
-
-        // carry forward property templates, preserving {{placeholders}}
-        const auto* oldPlot = dynamic_cast<const Wisteria::Graphs::WilmarthBridgePlot*>(&graph);
-
-        CarryForwardProperty(graph, *plot, L"dataset", dlg.GetSelectedDatasetName(),
-                             graph.GetPropertyTemplate(L"dataset"));
-        CarryForwardProperty(graph, *plot, L"variables.label", dlg.GetLabelVariable(),
-                             oldPlot != nullptr ? oldPlot->GetLabelColumnName() : wxString{});
-        CarryForwardProperty(graph, *plot, L"variables.exit", dlg.GetExitVariable(),
-                             oldPlot != nullptr ? oldPlot->GetExitColumnName() : wxString{});
-        if (!dlg.GetEntryVariable().empty())
-            {
-            CarryForwardProperty(graph, *plot, L"variables.entered", dlg.GetEntryVariable(),
-                                 oldPlot != nullptr ? oldPlot->GetEntryColumnName() : wxString{});
-            }
-        if (!dlg.GetStatusVariable().empty())
-            {
-            CarryForwardProperty(graph, *plot, L"variables.status", dlg.GetStatusVariable(),
-                                 oldPlot != nullptr ? oldPlot->GetStatusColumnName() : wxString{});
-            }
-        if (!dlg.GetIntermediateEventVariable().empty())
-            {
-            CarryForwardProperty(
-                graph, *plot, L"variables.intermediate-event", dlg.GetIntermediateEventVariable(),
-                oldPlot != nullptr ? oldPlot->GetIntermediateEventColumnName() : wxString{});
-            }
-        if (!dlg.GetTerminalRowLabel().empty())
-            {
-            CarryForwardProperty(graph, *plot, L"terminal-row-label", dlg.GetTerminalRowLabel(),
-                                 oldPlot != nullptr ? oldPlot->GetTerminalRowLabel() : wxString{});
-            }
+        auto plot = dlg.BuildWilmarthBridgePlot(&graph);
+        const auto legendPlacement = dlg.GetLegendPlacement();
 
         // clear old legend if present
         ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
-
-        const auto legendPlacement = dlg.GetLegendPlacement();
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);

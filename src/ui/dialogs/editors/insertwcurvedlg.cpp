@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertwcurvedlg.h"
+#include "../../app/wisteriaview.h"
 #include "../../graphs/wcurveplot.h"
 #include "../variableselectdlg.h"
 #include <wx/valgen.h>
@@ -489,5 +490,66 @@ namespace Wisteria::UI
             }
 
         TransferDataToWindow();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::WCurvePlot>
+    InsertWCurveDlg::BuildWCurvePlot(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::WCurvePlot>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+        plot->SetShapeScheme(GetShapeScheme());
+
+        const std::optional<wxString> groupCol =
+            GetGroupVariable().empty() ? std::nullopt : std::optional<wxString>(GetGroupVariable());
+        plot->SetData(GetSelectedDataset(), GetYVariable(), GetXVariable(), groupCol);
+        if (oldGraph != nullptr)
+            {
+            ApplyAxisOverrides(*plot);
+            }
+
+        plot->SetTimeIntervalLabel(GetTimeIntervalLabel());
+        plot->SetGhostOpacity(GetGhostOpacity());
+        if (!GetShowcasedLines().empty())
+            {
+            plot->ShowcaseLines(GetShowcasedLines());
+            }
+
+        if (oldGraph != nullptr)
+            {
+            const auto* oldWCurve = dynamic_cast<const Graphs::WCurvePlot*>(oldGraph);
+
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(),
+                                               oldGraph->GetPropertyTemplate(L"dataset"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.x", GetXVariable(),
+                                               oldWCurve != nullptr ? oldWCurve->GetXColumnName() :
+                                                                      wxString{});
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.y", GetYVariable(),
+                                               oldWCurve != nullptr ? oldWCurve->GetYColumnName() :
+                                                                      wxString{});
+            const auto oldGroupName = (oldWCurve != nullptr) ?
+                                          oldWCurve->GetGroupColumnName().value_or(wxString{}) :
+                                          wxString{};
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.group",
+                                               GetGroupVariable(), oldGroupName);
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.y", GetYVariable());
+            plot->SetPropertyTemplate(L"variables.x", GetXVariable());
+            if (!GetGroupVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.group", GetGroupVariable());
+                }
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

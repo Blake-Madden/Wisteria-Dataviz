@@ -131,6 +131,13 @@ namespace Wisteria::UI
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
 
+        /** @brief Constructs a Nightingale rose chart from the dialog's current settings.
+            @param oldGraph The previous graph being edited, or @c nullptr if inserting new.
+            @returns The newly constructed Nightingale rose chart.*/
+        [[nodiscard]]
+        std::shared_ptr<Graphs::NightingaleRoseChart>
+        BuildNightingaleRoseChart(const Graphs::Graph2D* oldGraph = nullptr);
+
       protected:
         void CreateControls() override;
 

@@ -8,6 +8,7 @@
 
 #include "appsettings.h"
 #include <wx/log.h>
+#include <wx/tokenzr.h>
 #include <wx/xml/xml.h>
 
 //-------------------------------------------
@@ -221,6 +222,19 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
             m_powerPointExportOptions.m_publisher =
                 child->GetAttribute(L"publisher", m_powerPointExportOptions.m_publisher);
             }
+        else if (child->GetName() == L"object-gallery")
+            {
+            m_collapsedGalleryGroups.clear();
+            wxStringTokenizer tokenizer(child->GetAttribute(L"collapsed-groups"), L",");
+            while (tokenizer.HasMoreTokens())
+                {
+                long groupId{ 0 };
+                if (tokenizer.GetNextToken().ToLong(&groupId))
+                    {
+                    m_collapsedGalleryGroups.insert(static_cast<Wisteria::GalleryGroup>(groupId));
+                    }
+                }
+            }
         }
 
     wxLogVerbose(L"Settings loaded from: %s", filePath);
@@ -313,6 +327,19 @@ bool AppSettings::SaveSettingsFile(const wxString& filePath)
     pptxNode->AddAttribute(L"author", m_powerPointExportOptions.m_author);
     pptxNode->AddAttribute(L"publisher", m_powerPointExportOptions.m_publisher);
     root->AddChild(pptxNode);
+
+    auto* galleryNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"object-gallery");
+    wxString collapsedGroupsCsv;
+    for (const auto& group : m_collapsedGalleryGroups)
+        {
+        if (!collapsedGroupsCsv.empty())
+            {
+            collapsedGroupsCsv += L",";
+            }
+        collapsedGroupsCsv += std::to_wstring(static_cast<int>(group));
+        }
+    galleryNode->AddAttribute(L"collapsed-groups", collapsedGroupsCsv);
+    root->AddChild(galleryNode);
 
     if (!doc.Save(filePath))
         {

@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertbubbleplotdlg.h"
+#include "../../app/wisteriaview.h"
 #include "../../graphs/bubbleplot.h"
 #include "../variableselectdlg.h"
 #include <wx/valgen.h>
@@ -396,5 +397,67 @@ namespace Wisteria::UI
         m_maxBubbleRadius = static_cast<int>(bubble->GetMaxBubbleRadius());
 
         TransferDataToWindow();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::BubblePlot>
+    InsertBubblePlotDlg::BuildBubblePlot(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::BubblePlot>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+        plot->ShowRegressionLines(GetShowRegressionLines());
+        plot->ShowConfidenceBands(GetShowConfidenceBands());
+        plot->SetConfidenceLevel(GetConfidenceLevel());
+        plot->SetShapeScheme(GetShapeScheme());
+        plot->SetMinBubbleRadius(GetMinBubbleRadius());
+        plot->SetMaxBubbleRadius(GetMaxBubbleRadius());
+
+        const std::optional<wxString> groupCol =
+            GetGroupVariable().empty() ? std::nullopt : std::optional<wxString>(GetGroupVariable());
+        plot->SetData(GetSelectedDataset(), GetYVariable(), GetXVariable(), GetSizeVariable(),
+                      groupCol);
+
+        if (oldGraph != nullptr)
+            {
+            ApplyAxisOverrides(*plot);
+
+            const auto* oldBubble = dynamic_cast<const Graphs::BubblePlot*>(oldGraph);
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(),
+                                               oldGraph->GetPropertyTemplate(L"dataset"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.x", GetXVariable(),
+                                               oldBubble != nullptr ? oldBubble->GetXColumnName() :
+                                                                      wxString{});
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.y", GetYVariable(),
+                                               oldBubble != nullptr ? oldBubble->GetYColumnName() :
+                                                                      wxString{});
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.size", GetSizeVariable(),
+                oldBubble != nullptr ? oldBubble->GetSizeColumnName() : wxString{});
+            const auto oldGroupName =
+                (oldBubble != nullptr && !oldBubble->GetSeriesList().empty()) ?
+                    oldBubble->GetSeriesList().front().GetGroupColumnName().value_or(wxString{}) :
+                    wxString{};
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.group",
+                                               GetGroupVariable(), oldGroupName);
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.y", GetYVariable());
+            plot->SetPropertyTemplate(L"variables.x", GetXVariable());
+            plot->SetPropertyTemplate(L"variables.size", GetSizeVariable());
+            if (!GetGroupVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.group", GetGroupVariable());
+                }
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

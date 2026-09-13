@@ -18,6 +18,11 @@
 #include <wx/editlbox.h>
 #include <wx/wx.h>
 
+namespace Wisteria::Graphs
+    {
+    class GanttChart;
+    } // namespace Wisteria::Graphs
+
 namespace Wisteria::UI
     {
     /** @brief Dialog for inserting a Gantt chart into a canvas cell.
@@ -175,6 +180,15 @@ namespace Wisteria::UI
         /// @brief Populates all dialog controls from an existing Gantt chart.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
+
+        /// @returns A new Gantt chart built from the dialog's current settings.
+        /// @param oldGraph When editing, the graph being replaced (so its ID,
+        ///     bar-block decals, and any unchanged property templates are carried
+        ///     forward); @c nullptr when inserting a new chart.
+        /// @note Call after @c ShowModal() returns @c wxID_OK.
+        [[nodiscard]]
+        std::shared_ptr<Graphs::GanttChart>
+        BuildGanttChart(const Graphs::Graph2D* oldGraph = nullptr);
 
       protected:
         void CreateControls() override;

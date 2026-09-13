@@ -7,7 +7,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertlineplotdlg.h"
+#include "../../app/wisteriaview.h"
 #include "../../graphs/lineplot.h"
+#include "../../util/donttranslate.h"
 #include "../variableselectdlg.h"
 #include <wx/valgen.h>
 
@@ -483,5 +485,70 @@ namespace Wisteria::UI
             }
 
         TransferDataToWindow();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::LinePlot>
+    InsertLinePlotDlg::BuildLinePlot(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::LinePlot>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+        plot->AutoSpline(GetAutoSpline());
+        plot->SetShapeScheme(GetShapeScheme());
+
+        const std::optional<wxString> groupCol =
+            GetGroupVariable().empty() ? std::nullopt : std::optional<wxString>(GetGroupVariable());
+        plot->SetData(GetSelectedDataset(), GetYVariable(), GetXVariable(), groupCol);
+        plot->SetGhostOpacity(GetGhostOpacity());
+        if (!GetShowcaseLines().empty())
+            {
+            plot->ShowcaseLines(GetShowcaseLines());
+            }
+
+        if (oldGraph != nullptr)
+            {
+            ApplyAxisOverrides(*plot);
+
+            const auto* oldLine = dynamic_cast<const Graphs::LinePlot*>(oldGraph);
+
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(),
+                                               oldGraph->GetPropertyTemplate(L"dataset"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.x", GetXVariable(),
+                                               oldLine != nullptr ? oldLine->GetXColumnName() :
+                                                                    wxString{});
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.y", GetYVariable(),
+                                               oldLine != nullptr ? oldLine->GetYColumnName() :
+                                                                    wxString{});
+            const auto oldGroupName = (oldLine != nullptr) ?
+                                          oldLine->GetGroupColumnName().value_or(wxString{}) :
+                                          wxString{};
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.group",
+                                               GetGroupVariable(), oldGroupName);
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.y", GetYVariable());
+            plot->SetPropertyTemplate(L"variables.x", GetXVariable());
+            if (!GetGroupVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.group", GetGroupVariable());
+                }
+            }
+
+        // showcase bars/lines/bins
+        for (size_t i = 0; i < GetShowcaseLines().size(); ++i)
+            {
+            plot->SetPropertyTemplate(wxString::Format(_DT(L"showcase-lines[%zu]"), i),
+                                      GetShowcaseLines()[i]);
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

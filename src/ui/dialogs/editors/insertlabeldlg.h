@@ -233,7 +233,7 @@ namespace Wisteria::UI
         ///     (text, font, alignment, header, page options, etc.), with any
         ///     `{{constant}}` references in the text expanded via the attached
         ///     report builder (if any).
-        /// @note Call after ShowModal() returns wxID_OK.
+        /// @note Call after @c ShowModal() returns @c wxID_OK.
         [[nodiscard]]
         std::shared_ptr<Wisteria::GraphItems::Label> BuildLabel();
 

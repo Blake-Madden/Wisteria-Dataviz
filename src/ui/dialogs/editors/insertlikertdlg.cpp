@@ -8,6 +8,7 @@
 
 #include "insertlikertdlg.h"
 #include "../../app/wisteriaapp.h"
+#include "../../app/wisteriaview.h"
 #include "../variableselectdlg.h"
 #include <wx/valgen.h>
 
@@ -706,5 +707,107 @@ namespace Wisteria::UI
         SyncBracketsToList();
 
         TransferDataToWindow();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::LikertChart>
+    InsertLikertDlg::BuildLikertChart(const Graphs::Graph2D* oldGraph)
+        {
+        const auto& questions = GetQuestionVariables();
+        const auto dataset = GetSelectedDataset();
+        const std::optional<wxString> groupCol =
+            GetGroupVariable().empty() ? std::nullopt : std::optional<wxString>(GetGroupVariable());
+
+        auto surveyFormat = Graphs::LikertChart::DeduceScale(dataset, questions, groupCol);
+
+        // if a group variable is selected, upgrade to categorized variant
+        if (groupCol.has_value())
+            {
+            using LF = Graphs::LikertChart::LikertSurveyQuestionFormat;
+            switch (surveyFormat)
+                {
+            case LF::TwoPoint:
+                surveyFormat = LF::TwoPointCategorized;
+                break;
+            case LF::ThreePoint:
+                surveyFormat = LF::ThreePointCategorized;
+                break;
+            case LF::FourPoint:
+                surveyFormat = LF::FourPointCategorized;
+                break;
+            case LF::FivePoint:
+                surveyFormat = LF::FivePointCategorized;
+                break;
+            case LF::SixPoint:
+                surveyFormat = LF::SixPointCategorized;
+                break;
+            case LF::SevenPoint:
+                surveyFormat = LF::SevenPointCategorized;
+                break;
+            default:
+                break;
+                }
+            }
+
+        auto plot = std::make_shared<Graphs::LikertChart>(GetCanvas(), surveyFormat,
+                                                          GetNegativeColor(), GetPositiveColor(),
+                                                          GetNeutralColor(), GetNoResponseColor());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+
+        plot->SetData(dataset, questions, groupCol);
+        ApplyAxisOverrides(*plot);
+
+        plot->ShowResponseCounts(GetShowResponseCounts());
+        plot->ShowPercentages(GetShowPercentages());
+        plot->ShowSectionHeaders(GetShowSectionHeaders());
+        plot->SetBarSizesToRespondentSize(GetAdjustBarWidths());
+        plot->SetPositiveHeader(GetPositiveLabel());
+        plot->SetNegativeHeader(GetNegativeLabel());
+        plot->SetNoResponseHeader(GetNoResponseLabel());
+        for (const auto& bracket : GetQuestionsBrackets())
+            {
+            plot->AddQuestionsBracket(bracket);
+            }
+
+        if (oldGraph != nullptr)
+            {
+            const auto oldExpanded = [this, oldGraph](const wxString& prop)
+            {
+                return (GetReportBuilder() != nullptr) ? GetReportBuilder()->ExpandConstants(
+                                                             oldGraph->GetPropertyTemplate(prop)) :
+                                                         wxString{};
+            };
+
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(), oldExpanded(L"dataset"));
+            for (size_t i = 0; i < questions.size(); ++i)
+                {
+                const auto key = wxString::Format(L"variables.questions[%zu]", i);
+                WisteriaView::CarryForwardProperty(*oldGraph, *plot, key, questions[i],
+                                                   oldExpanded(key));
+                }
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.group",
+                                               GetGroupVariable(), oldExpanded(L"variables.group"));
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            for (size_t i = 0; i < questions.size(); ++i)
+                {
+                plot->SetPropertyTemplate(L"variables.questions[" + std::to_wstring(i) + L"]",
+                                          questions[i]);
+                }
+            if (!GetGroupVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.group", GetGroupVariable());
+                }
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

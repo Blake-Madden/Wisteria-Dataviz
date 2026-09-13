@@ -15,6 +15,7 @@
 #include "../../base/enums.h"
 #include <map>
 #include <optional>
+#include <set>
 #include <string_view>
 #include <wx/timer.h>
 #include <wx/webview.h>
@@ -128,6 +129,7 @@ namespace Wisteria::UI
         void OnDragTimer(wxTimerEvent& event);
         void StartDrag(GalleryItemType itemType);
         void EndDrag(bool viaMessage);
+        void PersistCollapsedGroups() const;
 
         constexpr static std::wstring_view ScriptMessageHandlerName{ L"wisteriaGallery" };
 
@@ -139,6 +141,9 @@ namespace Wisteria::UI
         bool m_isDragging{ false };
         GalleryItemType m_draggedItemType{ GalleryItemType::Label };
         std::map<GalleryItemType, wxString> m_disabledItemTooltips;
+        // groups the user has collapsed, remembered here so a rebuild of the
+        // page (e.g., on a theme change) keeps them collapsed
+        std::set<GalleryGroup> m_collapsedGroups;
         };
     } // namespace Wisteria::UI
 

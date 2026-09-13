@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertchernoffdlg.h"
+#include "../../app/wisteriaview.h"
 #include "../variableselectdlg.h"
 #include <wx/valgen.h>
 
@@ -613,5 +614,83 @@ namespace Wisteria::UI
             (chernoff->GetLastLegendType() == Graphs::ChernoffFacesPlot::LegendType::Enhanced);
 
         TransferDataToWindow();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::ChernoffFacesPlot>
+    InsertChernoffDlg::BuildChernoffFacesPlot(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::ChernoffFacesPlot>(GetCanvas(), GetSkinColorDarker());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+        plot->SetSkinColorRange(GetSkinColorLighter(), GetSkinColorDarker());
+        plot->SetGender(GetGender());
+        plot->SetHairStyle(GetHairStyleFemale());
+        plot->SetHairStyle(GetHairStyleMale());
+        plot->SetEyeColor(GetEyeColor());
+        plot->SetHairColor(GetHairColor());
+        plot->SetLipstickColor(GetLipstickColor());
+        plot->ShowLabels(GetShowLabels());
+
+        plot->SetPropertyTemplate(L"enhanced-legend", GetUseEnhancedLegend() ? L"true" : L"false");
+
+        using FID = Graphs::ChernoffFacesPlot::FeatureId;
+        const auto optVar = [this](FID id) -> std::optional<wxString>
+        {
+            const auto var = GetFeatureVariable(id);
+            return var.empty() ? std::nullopt : std::optional<wxString>(var);
+        };
+
+        plot->SetData(GetSelectedDataset(), GetFeatureVariable(FID::FaceWidth),
+                      optVar(FID::FaceHeight), optVar(FID::EyeSize), optVar(FID::EyePosition),
+                      optVar(FID::EyebrowSlant), optVar(FID::PupilDirection), optVar(FID::NoseSize),
+                      optVar(FID::MouthWidth), optVar(FID::SmileFrown), optVar(FID::FaceColor),
+                      optVar(FID::EarSize), optVar(FID::HairStyle), optVar(FID::HairAddition));
+
+        const std::pair<FID, wxString> featureProps[] = {
+            { FID::FaceWidth, L"face-width" },       { FID::FaceHeight, L"face-height" },
+            { FID::EyeSize, L"eye-size" },           { FID::EyePosition, L"eye-position" },
+            { FID::EyebrowSlant, L"eyebrow-slant" }, { FID::PupilDirection, L"pupil-position" },
+            { FID::NoseSize, L"nose-size" },         { FID::MouthWidth, L"mouth-width" },
+            { FID::SmileFrown, L"mouth-curvature" }, { FID::FaceColor, L"face-saturation" },
+            { FID::EarSize, L"ear-size" },           { FID::HairStyle, L"hair-style" },
+            { FID::HairAddition, L"hair-addition" }
+        };
+
+        if (oldGraph != nullptr)
+            {
+            ApplyAxisOverrides(*plot);
+
+            const auto* oldChernoff = dynamic_cast<const Graphs::ChernoffFacesPlot*>(oldGraph);
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(),
+                                               oldGraph->GetPropertyTemplate(L"dataset"));
+            for (const auto& [fid, propName] : featureProps)
+                {
+                const auto var = GetFeatureVariable(fid);
+                const auto oldExpanded =
+                    (oldChernoff != nullptr) ? oldChernoff->GetFeatureColumnName(fid) : wxString{};
+                WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables." + propName, var,
+                                                   oldExpanded);
+                }
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            for (const auto& [fid, propName] : featureProps)
+                {
+                const auto var = GetFeatureVariable(fid);
+                if (!var.empty())
+                    {
+                    plot->SetPropertyTemplate(L"variables." + propName, var);
+                    }
+                }
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

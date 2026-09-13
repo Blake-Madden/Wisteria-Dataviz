@@ -169,6 +169,14 @@ namespace Wisteria::UI
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
 
+        /** @brief Constructs a Likert chart from the dialog's current settings.
+            @param oldGraph The previous graph being replaced (if editing), used to
+                carry forward property templates; @c nullptr if inserting a new chart.
+            @returns The newly constructed chart.*/
+        [[nodiscard]]
+        std::shared_ptr<Graphs::LikertChart>
+        BuildLikertChart(const Graphs::Graph2D* oldGraph = nullptr);
+
       protected:
         void CreateControls() override;
 

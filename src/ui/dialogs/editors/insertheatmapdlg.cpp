@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertheatmapdlg.h"
+#include "../../app/wisteriaview.h"
 #include "../variableselectdlg.h"
 #include <wx/valgen.h>
 
@@ -351,5 +352,53 @@ namespace Wisteria::UI
         TransferDataToWindow();
 
         UpdateGroupControlStates();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::HeatMap> InsertHeatMapDlg::BuildHeatMap(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::HeatMap>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+
+        const std::optional<wxString> groupCol =
+            GetGroupVariable().empty() ? std::nullopt : std::optional<wxString>(GetGroupVariable());
+        plot->SetData(GetSelectedDataset(), GetContinuousVariable(), groupCol,
+                      static_cast<size_t>(GetGroupColumnCount()));
+        ApplyAxisOverrides(*plot);
+
+        plot->ShowGroupHeaders(GetShowGroupHeaders());
+        plot->SetGroupHeaderPrefix(GetGroupHeaderPrefix());
+
+        if (oldGraph != nullptr)
+            {
+            const auto* oldHeatMap = dynamic_cast<const Graphs::HeatMap*>(oldGraph);
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(),
+                                               oldGraph->GetPropertyTemplate(L"dataset"));
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.continuous", GetContinuousVariable(),
+                oldHeatMap != nullptr ? oldHeatMap->GetContinuousColumnName() : wxString{});
+            const auto oldGroupName = (oldHeatMap != nullptr) ?
+                                          oldHeatMap->GetGroupColumnName().value_or(wxString{}) :
+                                          wxString{};
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.group",
+                                               GetGroupVariable(), oldGroupName);
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.continuous", GetContinuousVariable());
+            if (!GetGroupVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.group", GetGroupVariable());
+                }
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

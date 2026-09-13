@@ -708,4 +708,119 @@ namespace Wisteria::UI
         TransferDataToWindow();
         UpdateClassificationControls();
         }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::ChoroplethMap>
+    InsertChoroplethMapDlg::BuildChoroplethMap(const Graphs::Graph2D* oldGraph)
+        {
+        const auto* oldMap =
+            (oldGraph != nullptr) ? dynamic_cast<const Graphs::ChoroplethMap*>(oldGraph) : nullptr;
+
+        const wxString newSymbolColumn = GetSymbolColumn();
+        const bool hasSourceColumns = IsMappingData() || IsUsingProportionalSymbols();
+        const wxString newDataSource = hasSourceColumns ? GetSelectedDatasetName() : wxString{};
+        const wxString newKeyColumn = hasSourceColumns ? GetKeyColumn() : wxString{};
+        const bool newShadingIsCategorical = !GetCategoryColumn().empty();
+        const wxString newShadingColumn =
+            newShadingIsCategorical ? GetCategoryColumn() : GetValueColumn();
+        const auto newDataAggregation =
+            static_cast<Data::GeoColumnAggregation>(GetDataAggregation());
+
+        // imports the KML/GeoJSON region file and copies over any mapped
+        // dataset columns from scratch
+        const auto buildGeoData = [this, hasSourceColumns, &newKeyColumn, &newShadingColumn,
+                                   newShadingIsCategorical, &newSymbolColumn, newDataAggregation]()
+        {
+            auto builtGeoData = std::make_shared<Data::GeoDataset>();
+            if (!builtGeoData->ImportRegionFile(GetKMLPath(),
+                                                Data::GeoImportInfo().IdField(GetKMLIdField())))
+                {
+                throw std::runtime_error(builtGeoData->GetLastError().ToUTF8().data());
+                }
+            if (hasSourceColumns)
+                {
+                if (newShadingIsCategorical)
+                    {
+                    builtGeoData->CopyCategoricalColumnFrom(*GetSelectedDataset(), newKeyColumn,
+                                                            newShadingColumn, newShadingColumn);
+                    }
+                else if (!newShadingColumn.empty())
+                    {
+                    builtGeoData->CopyContinuousColumnFrom(*GetSelectedDataset(), newKeyColumn,
+                                                           newShadingColumn, newShadingColumn,
+                                                           newDataAggregation);
+                    }
+                if (!newSymbolColumn.empty() && newSymbolColumn != GetValueColumn() &&
+                    newSymbolColumn != GetCategoryColumn())
+                    {
+                    builtGeoData->CopyContinuousColumnFrom(*GetSelectedDataset(), newKeyColumn,
+                                                           newSymbolColumn, newSymbolColumn,
+                                                           newDataAggregation);
+                    }
+                }
+            return builtGeoData;
+        };
+
+        // Reuse the existing GeoDataset when the KML file and shading data are
+        // unchanged. Rebuilding re-runs the merge, which can shift the color range and
+        // rescale the whole map. The key column is left out of the check because a
+        // matching dataset and value column mean the merged result already stands.
+        const bool sourceUnchanged =
+            (oldMap != nullptr && oldMap->GetGeoDataset() != nullptr &&
+             oldMap->GetRegionFilePath() == GetKMLPath() &&
+             oldMap->GetRegionIdField() == GetKMLIdField() &&
+             oldMap->GetDataSourceName() == newDataSource &&
+             oldMap->GetDataAggregation() == newDataAggregation &&
+             oldMap->GetValueColumnName() == newShadingColumn &&
+             oldMap->GetProportionalSymbolColumnName() == newSymbolColumn &&
+             oldMap->IsCategoricalShading() == newShadingIsCategorical);
+
+        std::shared_ptr<const Data::GeoDataset> geoData =
+            sourceUnchanged ? oldMap->GetGeoDataset() : buildGeoData();
+
+        auto plot = std::make_shared<Graphs::ChoroplethMap>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+
+        const std::optional<wxString> valueCol =
+            newShadingColumn.empty() ? std::nullopt : std::optional<wxString>(newShadingColumn);
+        // classification must be set before SetData(), which computes the class colors
+        plot->SetClassificationMethod(
+            static_cast<Graphs::ChoroplethMap::ClassificationMethod>(GetClassificationMethod()));
+        plot->SetClassCount(static_cast<size_t>(GetClassCount()));
+        plot->SetData(geoData, valueCol);
+        plot->ShowRegionLabels(IsShowingRegionLabels());
+        plot->ShowGraticule(IsShowingGraticule());
+        plot->ShowOnlyRegionsWithValues(IsShowingOnlyRegionsWithValues());
+        plot->SetDataAggregation(newDataAggregation);
+        plot->SetLabelDisplay(static_cast<BinLabelDisplay>(GetRegionLabelDisplay()));
+        plot->SetNoDataFillStyle(GetNoDataFillStyle());
+        plot->SetProportionalSymbolColumn(
+            newSymbolColumn.empty() ? std::nullopt : std::optional<wxString>(newSymbolColumn));
+        plot->SetProportionalSymbolColor(GetProportionalSymbolColor());
+        plot->SetSourceInfo(GetKMLPath(), GetKMLIdField(), newDataSource, newKeyColumn);
+
+        const wxString backgroundPath = GetBackgroundPath();
+        if (!backgroundPath.empty())
+            {
+            auto backgroundData = std::make_shared<Data::GeoDataset>();
+            if (backgroundData->ImportRegionFile(backgroundPath))
+                {
+                plot->SetBackgroundLayer(backgroundData);
+                }
+            else
+                {
+                wxMessageBox(backgroundData->GetLastError(), _(L"Background Layer"),
+                             wxOK | wxICON_WARNING, this);
+                }
+            }
+        plot->SetBackgroundFilePath(backgroundPath);
+        ApplyAxisOverrides(*plot);
+
+        return plot;
+        }
     } // namespace Wisteria::UI

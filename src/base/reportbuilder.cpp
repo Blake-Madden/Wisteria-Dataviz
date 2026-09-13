@@ -3317,7 +3317,7 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    void ReportBuilder::ApplyTableFeatures(std::shared_ptr<Graphs::Table>& table)
+    void ReportBuilder::ApplyTableFeatures(std::shared_ptr<Graphs::Table>& table) const
         {
         const ReportTableLoader loader(*this);
         loader.ApplyTableFeatures(table);

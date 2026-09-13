@@ -16,6 +16,11 @@
 #include <vector>
 #include <wx/wx.h>
 
+namespace Wisteria::Graphs
+    {
+    class BubblePlot;
+    } // namespace Wisteria::Graphs
+
 namespace Wisteria::UI
     {
     /** @brief Dialog for inserting a bubble plot into a canvas cell.
@@ -132,6 +137,15 @@ namespace Wisteria::UI
         /// @brief Populates all dialog controls from an existing bubble plot.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
+
+        /// @returns A new bubble plot built from the dialog's current settings.
+        /// @param oldGraph When editing, the graph being replaced (so its ID and
+        ///     any unchanged property templates are carried forward); @c nullptr
+        ///     when inserting a new bubble plot.
+        /// @note Call after @c ShowModal() returns @c wxID_OK.
+        [[nodiscard]]
+        std::shared_ptr<Graphs::BubblePlot>
+        BuildBubblePlot(const Graphs::Graph2D* oldGraph = nullptr);
 
       protected:
         void CreateControls() override;

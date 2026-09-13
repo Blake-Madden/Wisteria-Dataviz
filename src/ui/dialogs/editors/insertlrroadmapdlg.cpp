@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertlrroadmapdlg.h"
+#include "../../app/wisteriaview.h"
 #include "../../graphs/lrroadmap.h"
 #include "../variableselectdlg.h"
 #include <wx/spinctrl.h>
@@ -459,5 +460,62 @@ namespace Wisteria::UI
         m_markerLabelDisplay = static_cast<int>(roadmap->GetMarkerLabelDisplay());
 
         TransferDataToWindow();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::LRRoadmap>
+    InsertLRRoadmapDlg::BuildLRRoadmap(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::LRRoadmap>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+
+        const std::optional<wxString> pValueCol = GetPValueVariable().empty() ?
+                                                      std::nullopt :
+                                                      std::optional<wxString>(GetPValueVariable());
+        const std::optional<wxString> dvName =
+            GetDVName().empty() ? std::nullopt : std::optional<wxString>(GetDVName());
+        plot->SetData(GetSelectedDataset(), GetPredictorVariable(), GetCoefficientVariable(),
+                      pValueCol, GetPLevel(), GetPredictorsToInclude(), dvName);
+        ApplyAxisOverrides(*plot);
+
+        if (GetAddDefaultCaption())
+            {
+            plot->AddDefaultCaption();
+            }
+
+        if (oldGraph != nullptr)
+            {
+            const auto* oldRoadmap = dynamic_cast<const Graphs::LRRoadmap*>(oldGraph);
+
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(),
+                                               oldGraph->GetPropertyTemplate(L"dataset"));
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.predictor", GetPredictorVariable(),
+                oldRoadmap != nullptr ? oldRoadmap->GetPredictorColumnName() : wxString{});
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.coefficient", GetCoefficientVariable(),
+                oldRoadmap != nullptr ? oldRoadmap->GetCoefficientColumnName() : wxString{});
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.pvalue", GetPValueVariable(),
+                oldRoadmap != nullptr ? oldRoadmap->GetPValueColumnName() : wxString{});
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.predictor", GetPredictorVariable());
+            plot->SetPropertyTemplate(L"variables.coefficient", GetCoefficientVariable());
+            if (!GetPValueVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.pvalue", GetPValueVariable());
+                }
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

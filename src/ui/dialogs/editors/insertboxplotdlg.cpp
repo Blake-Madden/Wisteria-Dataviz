@@ -7,6 +7,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertboxplotdlg.h"
+#include "../../app/wisteriadoc.h"
+#include "../../app/wisteriaview.h"
 #include "../variableselectdlg.h"
 #include "insertimgdlg.h"
 #include "insertshapedlg.h"
@@ -630,5 +632,140 @@ namespace Wisteria::UI
 
         // update button enabled states after DDX transfers the box effect index
         OnBoxEffectChanged();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::BoxPlot> InsertBoxPlotDlg::BuildBoxPlot(WisteriaDoc* doc,
+                                                                    const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::BoxPlot>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+
+        const std::optional<wxString> groupCol =
+            GetGroupVariable().empty() ? std::nullopt : std::optional<wxString>(GetGroupVariable());
+        plot->SetData(GetSelectedDataset(), GetContinuousVariable(), groupCol);
+        ApplyAxisOverrides(*plot);
+
+        plot->SetBoxEffect(GetBoxEffect());
+        plot->ShowAllPoints(GetShowAllPoints());
+        plot->ShowLabels(GetShowLabels());
+        plot->ShowMidpointConnection(GetShowMidpointConnection());
+
+        // apply stipple shape or image settings based on the selected effect
+        const auto boxEffect = GetBoxEffect();
+        if (boxEffect == BoxEffect::StippleShape)
+            {
+            plot->SetStippleShape(GetStippleShape());
+            plot->SetStippleShapeColor(GetStippleShapeColor());
+            }
+        else if (boxEffect == BoxEffect::StippleImage && !GetImagePaths().empty() && doc != nullptr)
+            {
+            wxImage img(doc->ResolveFilePath(GetImagePaths()[0]), wxBITMAP_TYPE_ANY);
+            if (img.IsOk() && GetImageEffect() != ImageEffect::NoEffect)
+                {
+                img = GraphItems::Image::ApplyEffect(GetImageEffect(), img);
+                }
+            if (img.IsOk())
+                {
+                plot->SetStippleBrush(wxBitmapBundle::FromBitmap(wxBitmap(img)));
+                }
+            }
+        else if ((boxEffect == BoxEffect::CommonImage || boxEffect == BoxEffect::Image) &&
+                 !GetImagePaths().empty() && doc != nullptr)
+            {
+            const auto imgEffect = GetImageEffect();
+            std::vector<wxBitmapBundle> images;
+            images.reserve(GetImagePaths().GetCount());
+            for (const auto& path : GetImagePaths())
+                {
+                wxImage img(doc->ResolveFilePath(path), wxBITMAP_TYPE_ANY);
+                if (img.IsOk() && imgEffect != ImageEffect::NoEffect)
+                    {
+                    img = GraphItems::Image::ApplyEffect(imgEffect, img);
+                    }
+                if (img.IsOk())
+                    {
+                    images.emplace_back(wxBitmapBundle::FromBitmap(wxBitmap(img)));
+                    }
+                }
+            plot->SetImageScheme(std::make_shared<Images::Schemes::ImageScheme>(std::move(images)));
+            }
+
+        if (oldGraph != nullptr)
+            {
+            const auto* oldBoxPlot = dynamic_cast<const Graphs::BoxPlot*>(oldGraph);
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(),
+                                               oldGraph->GetPropertyTemplate(L"dataset"));
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.aggregate", GetContinuousVariable(),
+                oldBoxPlot != nullptr ? oldBoxPlot->GetContinuousColumnName() : wxString{});
+            const auto oldGroupName = (oldBoxPlot != nullptr) ?
+                                          oldBoxPlot->GetGroupColumnName().value_or(wxString{}) :
+                                          wxString{};
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.group-1",
+                                               GetGroupVariable(), oldGroupName);
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.aggregate", GetContinuousVariable());
+            if (!GetGroupVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.group-1", GetGroupVariable());
+                }
+            }
+
+        // cache stipple shape and image settings for round-tripping
+        const auto shapeStr = ReportEnumConvert::ConvertIconToString(GetStippleShape());
+        if (shapeStr)
+            {
+            plot->SetPropertyTemplate(L"stipple-shape", shapeStr.value());
+            }
+        plot->SetPropertyTemplate(L"stipple-shape-color",
+                                  GetStippleShapeColor().GetAsString(wxC2S_HTML_SYNTAX));
+        if (!GetImagePaths().empty())
+            {
+            wxString paths;
+            for (size_t idx = 0; idx < GetImagePaths().GetCount(); ++idx)
+                {
+                if (!paths.empty())
+                    {
+                    paths += L"\t";
+                    }
+                paths += GetImagePaths()[idx];
+                }
+            plot->SetPropertyTemplate(L"image-paths", paths);
+            }
+        if (IsImageCustomSizeEnabled())
+            {
+            plot->SetPropertyTemplate(L"image-width", std::to_wstring(GetImageWidth()));
+            plot->SetPropertyTemplate(L"image-height", std::to_wstring(GetImageHeight()));
+            }
+            {
+            const auto resizeStr =
+                ReportEnumConvert::ConvertResizeMethodToString(GetImageResizeMethod());
+            if (resizeStr.has_value())
+                {
+                plot->SetPropertyTemplate(L"image-resize-method", resizeStr.value());
+                }
+            }
+            {
+            const auto effectStr = ReportEnumConvert::ConvertImageEffectToString(GetImageEffect());
+            if (effectStr.has_value())
+                {
+                plot->SetPropertyTemplate(L"image-effect", effectStr.value());
+                }
+            }
+        plot->SetPropertyTemplate(
+            L"image-stitch",
+            (GetImageStitchDirection() == Orientation::Vertical) ? L"vertical" : L"horizontal");
+
+        return plot;
         }
     } // namespace Wisteria::UI

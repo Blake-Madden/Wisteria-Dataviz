@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertwordclouddlg.h"
+#include "../../app/wisteriaview.h"
 #include "../../graphs/wordcloud.h"
 #include "../variableselectdlg.h"
 #include <wx/valgen.h>
@@ -335,5 +336,54 @@ namespace Wisteria::UI
         m_maxWordsSpin->SetValue(maxWords.has_value() ? static_cast<int>(maxWords.value()) : 0);
 
         TransferDataToWindow();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::WordCloud>
+    InsertWordCloudDlg::BuildWordCloud(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::WordCloud>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+
+        const std::optional<wxString> weightCol = GetWeightVariable().empty() ?
+                                                      std::nullopt :
+                                                      std::optional<wxString>(GetWeightVariable());
+        plot->SetData(GetSelectedDataset(), GetWordVariable(), weightCol, GetMinFrequency(),
+                      GetMaxFrequency(), GetMaxWords());
+        if (oldGraph != nullptr)
+            {
+            ApplyAxisOverrides(*plot);
+            }
+
+        if (oldGraph != nullptr)
+            {
+            const auto* oldWC = dynamic_cast<const Graphs::WordCloud*>(oldGraph);
+
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(),
+                                               oldGraph->GetPropertyTemplate(L"dataset"));
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.word", GetWordVariable(),
+                oldWC != nullptr ? oldWC->GetWordColumnName() : wxString{});
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.weight", GetWeightVariable(),
+                oldWC != nullptr ? oldWC->GetWeightColumnName() : wxString{});
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.word", GetWordVariable());
+            if (!GetWeightVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.weight", GetWeightVariable());
+                }
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

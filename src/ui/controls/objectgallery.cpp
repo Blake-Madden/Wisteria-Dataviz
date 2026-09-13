@@ -52,7 +52,8 @@ namespace Wisteria::UI
     ObjectGalleryCtrl::ObjectGalleryCtrl(wxWindow* parent, wxWindow* dropTarget,
                                          const wxWindowID id, const wxPoint& pos,
                                          const wxSize& size)
-        : wxPanel(parent, id, pos, size), m_dropTarget(dropTarget)
+        : wxPanel(parent, id, pos, size), m_dropTarget(dropTarget),
+          m_collapsedGroups(wxGetApp().GetAppSettings()->GetCollapsedGalleryGroups())
         {
         auto* sizer = new wxBoxSizer(wxVERTICAL);
 
@@ -265,8 +266,13 @@ html, body { margin: 0; padding: 0; background: var(--bg); color: var(--fg);
 .gallery { padding: 12px; }
 section.group { margin-bottom: 16px; }
 section.group header { display: flex; align-items: center; gap: 6px;
-    margin-bottom: 8px; font-weight: 600; opacity: 0.85; }
+    margin-bottom: 8px; font-weight: 600; opacity: 0.85; cursor: pointer; }
 section.group header img { width: 16px; height: 16px; }
+section.group header .chevron { margin-left: auto; opacity: 0.6; font-size: 10px;
+    transition: transform 0.15s ease; }
+section.group.collapsed header { margin-bottom: 0; }
+section.group.collapsed header .chevron { transform: rotate(-90deg); }
+section.group.collapsed .tiles { display: none; }
 .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px; }
 .tile { display: flex; flex-direction: column; align-items: center; gap: 4px;
     padding: 8px 4px; border-radius: 8px; background: var(--tile-bg);
@@ -279,6 +285,7 @@ section.group header img { width: 16px; height: 16px; }
     justify-content: center; }
 .tile .tile-icon img { width: 32px; height: 32px; }
 .tile .tile-label { font-size: 11px; line-height: 1.2; }
+img { -webkit-user-drag: none; user-drag: none; }
 )raw");
         html += L"</style></head><body><div class='gallery'>";
 
@@ -294,7 +301,10 @@ section.group header img { width: 16px; height: 16px; }
                     }
                 currentGroup = item.m_group;
                 inSection = true;
-                html += L"<section class='group'><header>";
+                html +=
+                    wxString::Format(L"<section class='group%s' data-group='%d'><header>",
+                                     m_collapsedGroups.contains(currentGroup) ? L" collapsed" : L"",
+                                     static_cast<int>(currentGroup));
                 const auto groupIconName = GetGroupIconName(currentGroup);
                 if (!groupIconName.empty())
                     {
@@ -302,11 +312,12 @@ section.group header img { width: 16px; height: 16px; }
                         wxGetApp().GetResourceManager().GetSVG(groupIconName), wxSize{ 32, 32 });
                     if (!dataUri.empty())
                         {
-                        html += wxString::Format(L"<img src='%s' alt=''>", dataUri);
+                        html +=
+                            wxString::Format(L"<img src='%s' alt='' draggable='false'>", dataUri);
                         }
                     }
                 html += L"<span>" + EscapeForHtml(GetGroupDisplayName(currentGroup)) +
-                        L"</span></header>";
+                        L"</span><span class='chevron'>&#9660;</span></header>";
                 html += L"<div class='tiles'>";
                 }
 
@@ -317,7 +328,8 @@ section.group header img { width: 16px; height: 16px; }
                 wxGetApp().GetResourceManager().GetSVG(item.m_svgName), wxSize{ 64, 64 });
 
             html += wxString::Format(L"<div class='tile%s' data-type='%s' title='%s' tabindex='0'>"
-                                     L"<div class='tile-icon'><img src='%s' alt=''></div>"
+                                     L"<div class='tile-icon'><img src='%s' alt='' "
+                                     L"draggable='false'></div>"
                                      L"<div class='tile-label'>%s</div></div>",
                                      isDisabled ? L" disabled" : L"",
                                      GalleryItemTypeToId(item.m_id), EscapeForHtml(tooltipText),
@@ -336,8 +348,10 @@ section.group header img { width: 16px; height: 16px; }
         try { window.%s.postMessage(msg); } catch(err) { /* backend without messaging */ }
     }
     document.querySelectorAll('.tile').forEach(function(tile){
+        tile.addEventListener('dragstart', function(e){ e.preventDefault(); });
         tile.addEventListener('pointerdown', function(e){
             if (tile.classList.contains('disabled')) { return; }
+            e.preventDefault();
             try { tile.setPointerCapture(e.pointerId); } catch(err) {}
             tile.classList.add('picked-up');
             active = tile;
@@ -354,6 +368,13 @@ section.group header img { width: 16px; height: 16px; }
         tile.addEventListener('pointercancel', endDrag);
         tile.addEventListener('lostpointercapture', endDrag);
     });
+    document.querySelectorAll('section.group > header').forEach(function(header){
+        header.addEventListener('click', function(){
+            var section = header.parentElement;
+            var collapsed = section.classList.toggle('collapsed');
+            post((collapsed ? 'collapse|' : 'expand|') + section.getAttribute('data-group'));
+        });
+    });
 })();
 </script>)raw"),
                                  wxString{ ScriptMessageHandlerName });
@@ -367,6 +388,8 @@ section.group header img { width: 16px; height: 16px; }
         {
         const wxString msg = event.GetString();
         static const wxString dragStartPrefix{ L"dragstart|" };
+        static const wxString collapsePrefix{ L"collapse|" };
+        static const wxString expandPrefix{ L"expand|" };
         if (msg.StartsWith(dragStartPrefix))
             {
             if (const auto itemType = IdToGalleryItemType(msg.substr(dragStartPrefix.length()));
@@ -379,6 +402,32 @@ section.group header img { width: 16px; height: 16px; }
             {
             EndDrag(true);
             }
+        else if (msg.StartsWith(collapsePrefix))
+            {
+            long groupId{ 0 };
+            if (msg.substr(collapsePrefix.length()).ToLong(&groupId))
+                {
+                m_collapsedGroups.insert(static_cast<GalleryGroup>(groupId));
+                PersistCollapsedGroups();
+                }
+            }
+        else if (msg.StartsWith(expandPrefix))
+            {
+            long groupId{ 0 };
+            if (msg.substr(expandPrefix.length()).ToLong(&groupId))
+                {
+                m_collapsedGroups.erase(static_cast<GalleryGroup>(groupId));
+                PersistCollapsedGroups();
+                }
+            }
+        }
+
+    //-------------------------------------------
+    void ObjectGalleryCtrl::PersistCollapsedGroups() const
+        {
+        auto& settings = wxGetApp().GetAppSettings();
+        settings->SetCollapsedGalleryGroups(m_collapsedGroups);
+        settings->SaveSettingsFile();
         }
 
     //-------------------------------------------

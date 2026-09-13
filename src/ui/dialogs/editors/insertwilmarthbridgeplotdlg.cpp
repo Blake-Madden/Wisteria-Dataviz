@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertwilmarthbridgeplotdlg.h"
+#include "../../app/wisteriaview.h"
 #include "../variableselectdlg.h"
 #include <wx/valgen.h>
 
@@ -462,5 +463,99 @@ namespace Wisteria::UI
             terminalRowTmpl.empty() ? bridgePlot->GetTerminalRowLabel() : terminalRowTmpl;
 
         TransferDataToWindow();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::WilmarthBridgePlot>
+    InsertWilmarthBridgePlotDlg::BuildWilmarthBridgePlot(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::WilmarthBridgePlot>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+
+        plot->SetData(GetSelectedDataset(), GetLabelVariable(), GetExitVariable(),
+                      (GetEntryVariable().empty() ? std::nullopt :
+                                                    std::optional<wxString>(GetEntryVariable())),
+                      (GetStatusVariable().empty() ? std::nullopt :
+                                                     std::optional<wxString>(GetStatusVariable())),
+                      (GetIntermediateEventVariable().empty() ?
+                           std::nullopt :
+                           std::optional<wxString>(GetIntermediateEventVariable())));
+
+        plot->SetFadeEffect(GetFadeEffect());
+        plot->SetSurvivalDisplay(GetSurvivalDisplay());
+        plot->ShowCensoredMarkers(IsShowingCensoredMarkers());
+        plot->ShowTerminalRow(GetTerminalRowLabel());
+        plot->SetIntermediateEventColor(GetIntermediateEventColor());
+
+        if (oldGraph != nullptr)
+            {
+            ApplyAxisOverrides(*plot);
+
+            const auto* oldPlot = dynamic_cast<const Graphs::WilmarthBridgePlot*>(oldGraph);
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(),
+                                               oldGraph->GetPropertyTemplate(L"dataset"));
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.label", GetLabelVariable(),
+                oldPlot != nullptr ? oldPlot->GetLabelColumnName() : wxString{});
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.exit", GetExitVariable(),
+                oldPlot != nullptr ? oldPlot->GetExitColumnName() : wxString{});
+            if (!GetEntryVariable().empty())
+                {
+                WisteriaView::CarryForwardProperty(
+                    *oldGraph, *plot, L"variables.entered", GetEntryVariable(),
+                    oldPlot != nullptr ? oldPlot->GetEntryColumnName() : wxString{});
+                }
+            if (!GetStatusVariable().empty())
+                {
+                WisteriaView::CarryForwardProperty(
+                    *oldGraph, *plot, L"variables.status", GetStatusVariable(),
+                    oldPlot != nullptr ? oldPlot->GetStatusColumnName() : wxString{});
+                }
+            if (!GetIntermediateEventVariable().empty())
+                {
+                WisteriaView::CarryForwardProperty(
+                    *oldGraph, *plot, L"variables.intermediate-event",
+                    GetIntermediateEventVariable(),
+                    oldPlot != nullptr ? oldPlot->GetIntermediateEventColumnName() : wxString{});
+                }
+            if (!GetTerminalRowLabel().empty())
+                {
+                WisteriaView::CarryForwardProperty(
+                    *oldGraph, *plot, L"terminal-row-label", GetTerminalRowLabel(),
+                    oldPlot != nullptr ? oldPlot->GetTerminalRowLabel() : wxString{});
+                }
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.label", GetLabelVariable());
+            plot->SetPropertyTemplate(L"variables.exit", GetExitVariable());
+            if (!GetEntryVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.entered", GetEntryVariable());
+                }
+            if (!GetStatusVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.status", GetStatusVariable());
+                }
+            if (!GetIntermediateEventVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.intermediate-event",
+                                          GetIntermediateEventVariable());
+                }
+            if (!GetTerminalRowLabel().empty())
+                {
+                plot->SetPropertyTemplate(L"terminal-row-label", GetTerminalRowLabel());
+                }
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

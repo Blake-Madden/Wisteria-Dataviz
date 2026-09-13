@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertwlsparklinedlg.h"
+#include "../../app/wisteriaview.h"
 #include "../../graphs/win_loss_sparkline.h"
 #include "../variableselectdlg.h"
 #include <wx/valgen.h>
@@ -366,5 +367,64 @@ namespace Wisteria::UI
         m_highlightBestRecords = sparkline->IsHighlightingBestRecords();
 
         TransferDataToWindow();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::WinLossSparkline>
+    InsertWLSparklineDlg::BuildWinLossSparkline(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::WinLossSparkline>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+        plot->HighlightBestRecords(GetHighlightBestRecords());
+
+        const std::optional<wxString> postseasonCol =
+            GetPostseasonVariable().empty() ? std::nullopt :
+                                              std::optional<wxString>(GetPostseasonVariable());
+        plot->SetData(GetSelectedDataset(), GetSeasonVariable(), GetWonVariable(),
+                      GetShutoutVariable(), GetHomeGameVariable(), postseasonCol);
+
+        if (oldGraph != nullptr)
+            {
+            ApplyAxisOverrides(*plot);
+
+            const auto* oldWL = dynamic_cast<const Graphs::WinLossSparkline*>(oldGraph);
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(),
+                                               oldGraph->GetPropertyTemplate(L"dataset"));
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.season", GetSeasonVariable(),
+                oldWL != nullptr ? oldWL->GetSeasonColumnName() : wxString{});
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.won", GetWonVariable(),
+                                               oldWL != nullptr ? oldWL->GetWonColumnName() :
+                                                                  wxString{});
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.shutout", GetShutoutVariable(),
+                oldWL != nullptr ? oldWL->GetShutoutColumnName() : wxString{});
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.home-game", GetHomeGameVariable(),
+                oldWL != nullptr ? oldWL->GetHomeGameColumnName() : wxString{});
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.postseason", GetPostseasonVariable(),
+                oldWL != nullptr ? oldWL->GetPostseasonColumnName() : wxString{});
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.season", GetSeasonVariable());
+            plot->SetPropertyTemplate(L"variables.won", GetWonVariable());
+            plot->SetPropertyTemplate(L"variables.shutout", GetShutoutVariable());
+            plot->SetPropertyTemplate(L"variables.home-game", GetHomeGameVariable());
+            if (!GetPostseasonVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.postseason", GetPostseasonVariable());
+                }
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

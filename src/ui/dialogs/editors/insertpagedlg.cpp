@@ -11,10 +11,37 @@
 #include "../../app/wisteriadoc.h"
 #include "../../app/wisteriaview.h"
 #include "../../graphs/graph2d.h"
+#include "insert_nightingale_rose_chart_dlg.h"
+#include "insertboxplotdlg.h"
+#include "insertbubbleplotdlg.h"
+#include "insertcandlestickplotdlg.h"
+#include "insertcatbarchartdlg.h"
+#include "insertchernoffdlg.h"
+#include "insertchoroplethmapdlg.h"
 #include "insertcommonaxisdlg.h"
+#include "insertganttchartdlg.h"
+#include "insertheatmapdlg.h"
+#include "inserthistogramdlg.h"
 #include "insertimgdlg.h"
 #include "insertlabeldlg.h"
+#include "insertlikertdlg.h"
+#include "insertlineplotdlg.h"
+#include "insertlrroadmapdlg.h"
+#include "insertmultiserieslineplotdlg.h"
+#include "insertpiechartdlg.h"
+#include "insertproconroadmapdlg.h"
+#include "insertracetrackchartdlg.h"
+#include "insertsankeydiagramdlg.h"
+#include "insertscalechartdlg.h"
+#include "insertscatterplotdlg.h"
 #include "insertshapedlg.h"
+#include "insertstemandleafdlg.h"
+#include "inserttabledlg.h"
+#include "insertwafflechartdlg.h"
+#include "insertwcurvedlg.h"
+#include "insertwilmarthbridgeplotdlg.h"
+#include "insertwlsparklinedlg.h"
+#include "insertwordclouddlg.h"
 #include <wx/dcbuffer.h>
 #include <wx/graphics.h>
 #include <wx/valgen.h>
@@ -758,6 +785,8 @@ namespace Wisteria::UI
             m_rowCount = std::max(m_rowCount, static_cast<int>(rows));
             m_columnCount = std::max(m_columnCount, static_cast<int>(cols));
             ResizeFixedObjectsGrid();
+            // update row/column spin controls if new legends needed to add those to the canvas
+            TransferDataToWindow();
             }
 
         for (size_t row = 0; row < rows; ++row)
@@ -836,8 +865,89 @@ namespace Wisteria::UI
         case Wisteria::GalleryItemType::Axis:
             placed = DropAxis(stagingCanvas, row, col);
             break;
+        case Wisteria::GalleryItemType::Histogram:
+            placed = DropHistogram(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::BoxPlot:
+            placed = DropBoxPlot(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::StemAndLeafPlot:
+            placed = DropStemAndLeaf(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::HeatMap:
+            placed = DropHeatMap(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::ScatterPlot:
+            placed = DropScatterPlot(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::BubblePlot:
+            placed = DropBubblePlot(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::ChernoffFacesPlot:
+            placed = DropChernoffFacesPlot(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::WilmarthBridgePlot:
+            placed = DropWilmarthBridgePlot(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::WinLossSparkline:
+            placed = DropWinLossSparkline(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::GanttChart:
+            placed = DropGanttChart(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::CandlestickPlot:
+            placed = DropCandlestickPlot(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::ScaleChart:
+            placed = DropScaleChart(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::WCurvePlot:
+            placed = DropWCurvePlot(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::LRRoadmap:
+            placed = DropLRRoadmap(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::LikertChart:
+            placed = DropLikertChart(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::WordCloud:
+            placed = DropWordCloud(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::ProConRoadmap:
+            placed = DropProConRoadmap(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::BarChart:
+            placed = DropBarChart(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::PieChart:
+            placed = DropPieChart(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::LinePlot:
+            placed = DropLinePlot(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::MultiSeriesLinePlot:
+            placed = DropMultiSeriesLinePlot(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::Table:
+            placed = DropTable(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::ChoroplethMap:
+            placed = DropChoroplethMap(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::SankeyDiagram:
+            placed = DropSankeyDiagram(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::WaffleChart:
+            placed = DropWaffleChart(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::RaceTrackChart:
+            placed = DropRaceTrackChart(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::NightingaleRoseChart:
+            placed = DropNightingaleRoseChart(stagingCanvas, row, col);
+            break;
         default:
-            // graph types are not wired up yet
+            // remaining graph types are not wired up yet
             break;
             }
 
@@ -988,5 +1098,736 @@ namespace Wisteria::UI
         stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
                                       std::move(commonAxis));
         return true;
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropHistogram(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertHistogramDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"histogram.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildHistogram();
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropBoxPlot(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertBoxPlotDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"boxplot.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildBoxPlot(m_doc);
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropStemAndLeaf(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertStemAndLeafDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"stem-leaf.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildStemAndLeafPlot();
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropHeatMap(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertHeatMapDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"heatmap.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildHeatMap();
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropScatterPlot(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertScatterPlotDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"scatterplot.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildScatterPlot();
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropBubblePlot(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertBubblePlotDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"bubbleplot.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildBubblePlot();
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropChernoffFacesPlot(Canvas* stagingCanvas, const size_t row,
+                                              const size_t col)
+        {
+        Wisteria::UI::InsertChernoffDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"chernoffplot.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildChernoffFacesPlot();
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            auto legend = WisteriaView::BuildLegend(
+                dlg, legendPlacement,
+                [&plot, &dlg](const Wisteria::Graphs::LegendOptions& options)
+                    -> std::unique_ptr<Wisteria::GraphItems::GraphItemBase>
+                {
+                    return dlg.GetUseEnhancedLegend() ?
+                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                   plot->CreateEnhancedLegend(options)) :
+                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                   plot->CreateLegend(options));
+                });
+            WisteriaView::PlaceGraphAndLegendInGrid(stagingCanvas, plot, std::move(legend),
+                                                    dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                                                    legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropWilmarthBridgePlot(Canvas* stagingCanvas, const size_t row,
+                                               const size_t col)
+        {
+        Wisteria::UI::InsertWilmarthBridgePlotDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"wilmarth-bridge.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildWilmarthBridgePlot();
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropWinLossSparkline(Canvas* stagingCanvas, const size_t row,
+                                             const size_t col)
+        {
+        Wisteria::UI::InsertWLSparklineDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"sparkline.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildWinLossSparkline();
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropGanttChart(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertGanttChartDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"gantt.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildGanttChart();
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropCandlestickPlot(Canvas* stagingCanvas, const size_t row,
+                                            const size_t col)
+        {
+        Wisteria::UI::InsertCandlestickPlotDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"candlestick.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildCandlestickPlot();
+            stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropScaleChart(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertScaleChartDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"scale.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildScaleChart();
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropWCurvePlot(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertWCurveDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"wcurve.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildWCurvePlot();
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropLRRoadmap(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertLRRoadmapDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"roadmap.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildLRRoadmap();
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropLikertChart(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertLikertDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"likert7.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildLikertChart();
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropWordCloud(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertWordCloudDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"wordcloud.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildWordCloud();
+            // word clouds do not support legends
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropProConRoadmap(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertProConRoadmapDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"roadmap.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildProConRoadmap();
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropBarChart(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertCatBarChartDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"barchart.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildCatBarChart(m_doc);
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropPieChart(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertPieChartDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"piechart.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildPieChart(m_doc);
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropLinePlot(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertLinePlotDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"lineplot.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildLinePlot();
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropMultiSeriesLinePlot(Canvas* stagingCanvas, const size_t row,
+                                                const size_t col)
+        {
+        Wisteria::UI::InsertMultiSeriesLinePlotDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"lineplot.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildMultiSeriesLinePlot();
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropTable(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertTableDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"table.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto table = dlg.BuildTable();
+            // tables do not support legends
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, table, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropChoroplethMap(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertChoroplethMapDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"choropleth.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildChoroplethMap();
+
+            // uses a specialized legend
+            const bool wantsLegend = dlg.IsMappingData() || dlg.IsUsingProportionalSymbols();
+            const auto legendPlacement =
+                wantsLegend ? dlg.GetLegendPlacement() : Wisteria::UI::LegendPlacement::None;
+
+            auto legend = WisteriaView::BuildLegend(
+                dlg, legendPlacement,
+                [&plot, &dlg](const Wisteria::Graphs::LegendOptions& options)
+                    -> std::unique_ptr<Wisteria::GraphItems::GraphItemBase>
+                {
+                    return dlg.GetSymbolColumn().empty() ?
+                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                   plot->CreateLegend(options)) :
+                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
+                                   plot->CreateChoroplethLegend(options));
+                });
+            WisteriaView::PlaceGraphAndLegendInGrid(stagingCanvas, plot, std::move(legend),
+                                                    dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                                                    legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropSankeyDiagram(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertSankeyDiagramDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"sankey.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildSankeyDiagram();
+            // Sankey diagrams do not support legends
+            stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropWaffleChart(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertWaffleChartDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"waffle.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildWaffleChart();
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropRaceTrackChart(Canvas* stagingCanvas, const size_t row,
+                                           const size_t col)
+        {
+        Wisteria::UI::InsertRaceTrackChartDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"racetrack.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildRaceTrackChart();
+            // race track charts do not support legends
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropNightingaleRoseChart(Canvas* stagingCanvas, const size_t row,
+                                                 const size_t col)
+        {
+        Wisteria::UI::InsertNightingaleRoseChartDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"rose.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildNightingaleRoseChart();
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            WisteriaView::PlaceGraphAndLegendInGrid(
+                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
         }
     } // namespace Wisteria::UI

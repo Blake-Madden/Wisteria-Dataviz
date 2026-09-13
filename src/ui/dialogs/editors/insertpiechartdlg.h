@@ -18,6 +18,8 @@
 #include <wx/editlbox.h>
 #include <wx/wx.h>
 
+class WisteriaDoc;
+
 namespace Wisteria::UI
     {
     /** @brief Dialog for inserting a pie chart into a canvas cell.
@@ -234,6 +236,16 @@ namespace Wisteria::UI
         /// @brief Populates all dialog controls from an existing pie chart.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
+
+        /// @returns A new pie chart built from the dialog's current settings.
+        /// @param doc The project document, used to resolve pie-slice image paths.
+        /// @param oldGraph When editing, the graph being replaced (so its ID and
+        ///     any unchanged property templates are carried forward); @c nullptr
+        ///     when inserting a new pie chart.
+        /// @note Call after @c ShowModal() returns @c wxID_OK.
+        [[nodiscard]]
+        std::shared_ptr<Graphs::PieChart> BuildPieChart(WisteriaDoc* doc,
+                                                        const Graphs::Graph2D* oldGraph = nullptr);
 
       private:
         void CreateControls() final;

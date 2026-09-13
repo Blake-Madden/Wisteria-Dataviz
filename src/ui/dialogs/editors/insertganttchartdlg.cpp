@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertganttchartdlg.h"
+#include "../../app/wisteriaview.h"
 #include "../../graphs/ganttchart.h"
 #include "../variableselectdlg.h"
 #include <algorithm>
@@ -1278,5 +1279,127 @@ namespace Wisteria::UI
                                          m_shapePerBarRadio->GetValue());
             }
         SyncBarShapesToList();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::GanttChart>
+    InsertGanttChartDlg::BuildGanttChart(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::GanttChart>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+        plot->SetLabelDisplay(GetTaskLabelDisplay());
+        const std::optional<wxString> resourceCol =
+            GetResourceVariable().empty() ? std::nullopt :
+                                            std::optional<wxString>(GetResourceVariable());
+        const std::optional<wxString> descCol =
+            GetDescriptionVariable().empty() ? std::nullopt :
+                                               std::optional<wxString>(GetDescriptionVariable());
+        const std::optional<wxString> compCol =
+            GetCompletionVariable().empty() ? std::nullopt :
+                                              std::optional<wxString>(GetCompletionVariable());
+        const std::optional<wxString> groupCol =
+            GetGroupVariable().empty() ? std::nullopt : std::optional<wxString>(GetGroupVariable());
+
+        plot->SetData(GetSelectedDataset(), GetDateInterval(), GetFiscalYearType(),
+                      GetTaskVariable(), GetStartDateVariable(), GetEndDateVariable(), resourceCol,
+                      descCol, compCol, groupCol);
+
+        plot->SetGhostOpacity(GetGhostOpacity());
+        if (!GetShowcasedLabels().empty())
+            {
+            plot->ShowcaseBars(GetShowcasedLabels(), HideLabelsOnGhostedBars());
+            }
+
+        if (oldGraph != nullptr)
+            {
+            ApplyAxisOverrides(*plot);
+
+            // the dialog's variable/dataset getters return expanded values, so the
+            // old value passed to CarryForwardProperty must also be expanded for
+            // the "did the user change this" comparison to be meaningful
+            const auto oldExpanded = [this, oldGraph](const wxString& prop)
+            {
+                return (GetReportBuilder() != nullptr) ? GetReportBuilder()->ExpandConstants(
+                                                             oldGraph->GetPropertyTemplate(prop)) :
+                                                         wxString{};
+            };
+
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(), oldExpanded(L"dataset"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.task",
+                                               GetTaskVariable(), oldExpanded(L"variables.task"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.start-date",
+                                               GetStartDateVariable(),
+                                               oldExpanded(L"variables.start-date"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.end-date",
+                                               GetEndDateVariable(),
+                                               oldExpanded(L"variables.end-date"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.resource",
+                                               GetResourceVariable(),
+                                               oldExpanded(L"variables.resource"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.description",
+                                               GetDescriptionVariable(),
+                                               oldExpanded(L"variables.description"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.completion",
+                                               GetCompletionVariable(),
+                                               oldExpanded(L"variables.completion"));
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"variables.group",
+                                               GetGroupVariable(), oldExpanded(L"variables.group"));
+
+            // restore bar-block decals
+            for (const auto& decalInfo : GetBarBlockDecals())
+                {
+                const auto barPos = plot->FindBar(decalInfo.m_barLabel);
+                if (barPos.has_value() &&
+                    decalInfo.m_blockIndex < plot->GetBars().at(barPos.value()).GetBlocks().size())
+                    {
+                    plot->GetBars()
+                        .at(barPos.value())
+                        .GetBlocks()
+                        .at(decalInfo.m_blockIndex)
+                        .SetDecal(decalInfo.m_decal);
+                    }
+                }
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.task", GetTaskVariable());
+            plot->SetPropertyTemplate(L"variables.start-date", GetStartDateVariable());
+            plot->SetPropertyTemplate(L"variables.end-date", GetEndDateVariable());
+            if (!GetResourceVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.resource", GetResourceVariable());
+                }
+            if (!GetDescriptionVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.description", GetDescriptionVariable());
+                }
+            if (!GetCompletionVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.completion", GetCompletionVariable());
+                }
+            if (!GetGroupVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.group", GetGroupVariable());
+                }
+            }
+
+        // restore per-bar shapes (bars not listed stay at the default shape)
+        for (const auto& [label, shape] : GetBarShapes())
+            {
+            const auto barPos = plot->FindBar(label);
+            if (barPos.has_value())
+                {
+                plot->GetBars().at(barPos.value()).SetShape(shape);
+                }
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

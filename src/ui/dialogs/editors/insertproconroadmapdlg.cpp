@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertproconroadmapdlg.h"
+#include "../../app/wisteriaview.h"
 #include "../../graphs/proconroadmap.h"
 #include "../variableselectdlg.h"
 #include <wx/valgen.h>
@@ -449,5 +450,75 @@ namespace Wisteria::UI
         m_markerLabelDisplay = static_cast<int>(roadmap->GetMarkerLabelDisplay());
 
         TransferDataToWindow();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::ProConRoadmap>
+    InsertProConRoadmapDlg::BuildProConRoadmap(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::ProConRoadmap>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+
+        const std::optional<wxString> posValueCol =
+            GetPositiveValueVariable().empty() ?
+                std::nullopt :
+                std::optional<wxString>(GetPositiveValueVariable());
+        const std::optional<wxString> negValueCol =
+            GetNegativeValueVariable().empty() ?
+                std::nullopt :
+                std::optional<wxString>(GetNegativeValueVariable());
+        plot->SetData(GetSelectedDataset(), GetPositiveVariable(), posValueCol,
+                      GetNegativeVariable(), negValueCol, GetMinimumCount());
+        ApplyAxisOverrides(*plot);
+
+        plot->SetPositiveLegendLabel(GetPositiveLabel());
+        plot->SetNegativeLegendLabel(GetNegativeLabel());
+
+        if (GetAddDefaultCaption())
+            {
+            plot->AddDefaultCaption();
+            }
+
+        if (oldGraph != nullptr)
+            {
+            const auto* oldRoadmap = dynamic_cast<const Graphs::ProConRoadmap*>(oldGraph);
+
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(),
+                                               oldGraph->GetPropertyTemplate(L"dataset"));
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.positive", GetPositiveVariable(),
+                oldRoadmap != nullptr ? oldRoadmap->GetPositiveColumnName() : wxString{});
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.positive-value", GetPositiveValueVariable(),
+                oldRoadmap != nullptr ? oldRoadmap->GetPositiveValueColumnName() : wxString{});
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.negative", GetNegativeVariable(),
+                oldRoadmap != nullptr ? oldRoadmap->GetNegativeColumnName() : wxString{});
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.negative-value", GetNegativeValueVariable(),
+                oldRoadmap != nullptr ? oldRoadmap->GetNegativeValueColumnName() : wxString{});
+            }
+        else
+            {
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.positive", GetPositiveVariable());
+            if (!GetPositiveValueVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.positive-value", GetPositiveValueVariable());
+                }
+            plot->SetPropertyTemplate(L"variables.negative", GetNegativeVariable());
+            if (!GetNegativeValueVariable().empty())
+                {
+                plot->SetPropertyTemplate(L"variables.negative-value", GetNegativeValueVariable());
+                }
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "insertracetrackchartdlg.h"
+#include "../../app/wisteriaview.h"
 #include "../variableselectdlg.h"
 #include <wx/valgen.h>
 
@@ -371,5 +372,57 @@ namespace Wisteria::UI
         m_trackProportionSpin->SetValue(raceTrack->GetTrackProportion());
 
         TransferDataToWindow();
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Graphs::RaceTrackChart>
+    InsertRaceTrackChartDlg::BuildRaceTrackChart(const Graphs::Graph2D* oldGraph)
+        {
+        auto plot = std::make_shared<Graphs::RaceTrackChart>(GetCanvas());
+        if (oldGraph != nullptr)
+            {
+            plot->SetId(oldGraph->GetId());
+            }
+        // the track lanes take their colors when the data is set, so the schemes
+        // from the dialog have to be in place before then
+        ApplyGraphOptions(*plot);
+        ApplyPageOptions(*plot);
+
+        plot->SetData(GetSelectedDataset(), GetValueVariable(), GetLabelVariable());
+
+        if (oldGraph != nullptr)
+            {
+            ApplyAxisOverrides(*plot);
+            }
+
+        plot->SetTrackCount(GetTrackCount());
+        plot->SetStartAngle(GetStartAngle());
+        plot->SetTrackProportion(GetTrackProportion());
+        plot->ShowLabels(IsShowingLabels());
+
+        if (oldGraph != nullptr)
+            {
+            // carry forward property templates, preserving {{placeholders}}
+            const auto* oldChart = dynamic_cast<const Graphs::RaceTrackChart*>(oldGraph);
+
+            WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
+                                               GetSelectedDatasetName(),
+                                               oldGraph->GetPropertyTemplate(L"dataset"));
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.value", GetValueVariable(),
+                oldChart != nullptr ? oldChart->GetValueColumnName() : wxString{});
+            WisteriaView::CarryForwardProperty(
+                *oldGraph, *plot, L"variables.label", GetLabelVariable(),
+                oldChart != nullptr ? oldChart->GetLabelColumnName() : wxString{});
+            }
+        else
+            {
+            // cache dataset and variable names for round-tripping
+            plot->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
+            plot->SetPropertyTemplate(L"variables.value", GetValueVariable());
+            plot->SetPropertyTemplate(L"variables.label", GetLabelVariable());
+            }
+
+        return plot;
         }
     } // namespace Wisteria::UI

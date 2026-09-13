@@ -19,6 +19,11 @@
 #include <wx/spinctrl.h>
 #include <wx/wx.h>
 
+namespace Wisteria::Graphs
+    {
+    class Table;
+    } // namespace Wisteria::Graphs
+
 namespace Wisteria::UI
     {
     /** @brief Dialog for inserting a table into a canvas cell.
@@ -251,6 +256,13 @@ namespace Wisteria::UI
         /// @brief Populates all dialog controls from an existing table.
         /// @param graph The table graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
+
+        /// @brief Constructs a table from the dialog's current settings.
+        /// @param oldGraph The previous graph being replaced (if editing), used to
+        ///     carry forward property templates; @c nullptr if inserting a new table.
+        /// @returns The newly constructed table.
+        [[nodiscard]]
+        std::shared_ptr<Graphs::Table> BuildTable(const Graphs::Graph2D* oldGraph = nullptr);
 
       protected:
         void CreateControls() override;
