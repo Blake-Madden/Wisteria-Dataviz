@@ -244,6 +244,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
     void Table::SetData(const std::shared_ptr<const Data::Dataset>& data,
                         const std::vector<wxString>& columns, const bool transpose /*= false*/)
         {
+        SetDataset(data);
         ClearTable();
 
         m_dataSize = std::make_pair(data->GetRowCount() + 1, // include the column name
