@@ -40,9 +40,13 @@
 
 /// @cond DOXYGEN_IGNORE
 wxDECLARE_EVENT(wxEVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
+wxDECLARE_EVENT(wxEVT_WISTERIA_CANVAS_SELECTION_CHANGED, wxCommandEvent);
 
 #define EVT_WISTERIA_CANVAS_DCLICK(winId, fn)                                                      \
     wx__DECLARE_EVT1(wxEVT_WISTERIA_CANVAS_DCLICK, winId, wxCommandEventHandler(fn))
+
+#define EVT_WISTERIA_CANVAS_SELECTION_CHANGED(winId, fn)                                           \
+    wx__DECLARE_EVT1(wxEVT_WISTERIA_CANVAS_SELECTION_CHANGED, winId, wxCommandEventHandler(fn))
 
 /// @endcond
 

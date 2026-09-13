@@ -19,6 +19,7 @@
 #include <wx/xrc/xmlres.h>
 
 wxDEFINE_EVENT(wxEVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
+wxDEFINE_EVENT(wxEVT_WISTERIA_CANVAS_SELECTION_CHANGED, wxCommandEvent);
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
@@ -2164,6 +2165,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                                                             wxCursor(wxCURSOR_HAND));
                 hitObject->SetInDragState(true);
                 m_currentlyDraggedShape = (*movableObjectsPos);
+
+                wxCommandEvent selEvent(wxEVT_WISTERIA_CANVAS_SELECTION_CHANGED, GetId());
+                selEvent.SetEventObject(this);
+                GetEventHandler()->ProcessEvent(selEvent);
+
                 event.Skip();
                 return; // we have our selection, so bail before hit testing everything else
                 }
@@ -2233,6 +2239,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
             Refresh(true);
             Update();
+
+            wxCommandEvent selEvent(wxEVT_WISTERIA_CANVAS_SELECTION_CHANGED, GetId());
+            selEvent.SetEventObject(this);
+            GetEventHandler()->ProcessEvent(selEvent);
+
             event.Skip();
             }
         else if (event.LeftUp() && m_dragMode != DragMode::DraggingNone)
