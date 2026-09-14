@@ -13,8 +13,16 @@
 #ifndef WISTERIA_GRAPHIMAGE_H
 #define WISTERIA_GRAPHIMAGE_H
 
+#include "../easyexif/exif.h"
+#include "../math/mathematics.h"
+#include "../util/memorymappedfile.h"
+#include "../util/parallel.h"
+#include "colorbrewer.h"
+#include "graphitems.h"
+#include <algorithm>
 #include <cstring>
 #include <random>
+#include <vector>
 #include <wx/bmpbndl.h>
 #include <wx/filename.h>
 #include <wx/image.h>
@@ -22,14 +30,6 @@
 #include <wx/regex.h>
 #include <wx/wx.h>
 #include <wx/xml/xml.h>
-#if __has_include(<omp.h>)
-    #include <omp.h>
-#endif
-#include "../easyexif/exif.h"
-#include "../math/mathematics.h"
-#include "../util/memorymappedfile.h"
-#include "colorbrewer.h"
-#include "graphitems.h"
 
 // forward declares
 namespace Wisteria
@@ -693,30 +693,29 @@ namespace Wisteria::GraphItems
             const int width{ img.GetWidth() };
             const int height{ img.GetHeight() };
 
-// NOLINTBEGIN(openmp-use-default-none)
-#pragma omp parallel for
-            for (int y = 0; y < height; ++y)
+            parallel::for_each_index_parallel(
+                0, height,
+                [imgInData, imgOutData, width, &getPixelCoefficients](const int y)
                 {
-                for (int x = 0; x < width; ++x)
-                    {
-                    const auto [scale, offset]{ getPixelCoefficients(x, y) };
-                    // no-op for this pixel; leave it as-is (already copied from the source)
-                    if (scale == 1.0 && offset == 0.0)
+                    for (int x = 0; x < width; ++x)
                         {
-                        continue;
-                        }
+                        const auto [scale, offset]{ getPixelCoefficients(x, y) };
+                        // no-op for this pixel; leave it as-is (already copied from the source)
+                        if (scale == 1.0 && offset == 0.0)
+                            {
+                            continue;
+                            }
 
-                    const size_t pixelIndex{ (static_cast<size_t>(y) * width) + x };
-                    for (size_t channel = 0; channel < 3; ++channel)
-                        {
-                        const unsigned char original{ imgInData[(pixelIndex * 3) + channel] };
-                        const double transformed{ (scale * original) + offset };
-                        imgOutData[(pixelIndex * 3) + channel] =
-                            static_cast<unsigned char>(std::clamp(transformed, 0.0, 255.0));
+                        const size_t pixelIndex{ (static_cast<size_t>(y) * width) + x };
+                        for (size_t channel = 0; channel < 3; ++channel)
+                            {
+                            const unsigned char original{ imgInData[(pixelIndex * 3) + channel] };
+                            const double transformed{ (scale * original) + offset };
+                            imgOutData[(pixelIndex * 3) + channel] =
+                                static_cast<unsigned char>(std::clamp(transformed, 0.0, 255.0));
+                            }
                         }
-                    }
-                }
-            // NOLINTEND(openmp-use-default-none)
+                });
 
             return outImg;
             }

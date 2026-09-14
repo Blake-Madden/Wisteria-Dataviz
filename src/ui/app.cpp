@@ -137,9 +137,6 @@ namespace Wisteria::UI
 #endif
         wxLogMessage(L"CPU Architecture: %s", wxGetCpuArchitectureName());
         wxLogMessage(L"CPU Count: %d", wxThread::GetCPUCount());
-#ifdef _OPENMP
-        wxLogMessage(L"OpenMP Version: %s", std::to_wstring(_OPENMP));
-#endif
         if (const auto physicalMemory = wxSystemHardwareInfo::GetMemory(); physicalMemory != -1)
             {
             wxLogMessage(L"Physical Memory: %s",

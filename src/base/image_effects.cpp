@@ -7,6 +7,7 @@
 // SPDX-License-Identifier: BSD-3-Clause, CPOL-1.02
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "../util/parallel.h"
 #include "image.h"
 #include <algorithm>
 #include <array>
@@ -278,22 +279,21 @@ namespace Wisteria::GraphItems
         const int adjustedThreshold{ std::clamp(static_cast<int>(threshold) + thresholdAdjustment,
                                                 0, 255) };
 
-// NOLINTBEGIN(openmp-use-default-none)
-#pragma omp parallel for
-        for (int y = 0; y < height; ++y)
+        parallel::for_each_index_parallel(
+            0, height,
+            [&luminance, imgOutData, width, adjustedThreshold](const int y)
             {
-            for (int x = 0; x < width; ++x)
-                {
-                const size_t pixelIndex{ (static_cast<size_t>(y) * width) + x };
-                const unsigned char binarized{ static_cast<unsigned char>(
-                    (luminance[pixelIndex] > adjustedThreshold) ? 255 : 0) };
-                for (size_t channel = 0; channel < 3; ++channel)
+                for (int x = 0; x < width; ++x)
                     {
-                    imgOutData[(pixelIndex * 3) + channel] = binarized;
+                    const size_t pixelIndex{ (static_cast<size_t>(y) * width) + x };
+                    const unsigned char binarized{ static_cast<unsigned char>(
+                        (luminance[pixelIndex] > adjustedThreshold) ? 255 : 0) };
+                    for (size_t channel = 0; channel < 3; ++channel)
+                        {
+                        imgOutData[(pixelIndex * 3) + channel] = binarized;
+                        }
                     }
-                }
-            }
-        // NOLINTEND(openmp-use-default-none)
+            });
 
         return outImg;
         }
@@ -323,70 +323,71 @@ namespace Wisteria::GraphItems
         // If width is 9, then actual bytes in a row will be 28, and not 27.
         const int nBytesInARow = std::ceil(image.GetWidth() * 3 / 4.0) * 4.0;
 
-// Note that radius pixels are avoided from left, right, top, and bottom edges.
-// Go to the next row of pixels...
-// NOLINTBEGIN(openmp-use-default-none)
-#pragma omp parallel for
-        for (int nY = radius; nY < image.GetHeight() - radius; ++nY)
+        // Note that radius pixels are avoided from left, right, top, and bottom edges.
+        // Go to the next row of pixels...
+        parallel::for_each_index_parallel(
+            radius, image.GetHeight() - radius,
+            [imgInData, imgOutData, &image, nBytesInARow, radius, intensity](const int nY)
             {
-            // ...and go across, pixel-by-pixel
-            for (int nX = radius; nX < image.GetWidth() - radius; ++nX)
-                {
-                constexpr auto RGB_BUFFER_SIZE{ 256 };
-                // Reset calculations of last pixel.
-                std::array<int, RGB_BUFFER_SIZE> nIntensityCount{ 0 };
-                std::array<int, RGB_BUFFER_SIZE> nSumR{ 0 };
-                std::array<int, RGB_BUFFER_SIZE> nSumG{ 0 };
-                std::array<int, RGB_BUFFER_SIZE> nSumB{ 0 };
-
-                // Find intensities of nearest radius pixels in four direction.
-                for (int nYO = -radius; nYO <= radius; ++nYO)
+                // ...and go across, pixel-by-pixel
+                for (int nX = radius; nX < image.GetWidth() - radius; ++nX)
                     {
-                    for (int nXO = -radius; nXO <= radius; ++nXO)
+                    constexpr auto RGB_BUFFER_SIZE{ 256 };
+                    // Reset calculations of last pixel.
+                    std::array<int, RGB_BUFFER_SIZE> nIntensityCount{ 0 };
+                    std::array<int, RGB_BUFFER_SIZE> nSumR{ 0 };
+                    std::array<int, RGB_BUFFER_SIZE> nSumG{ 0 };
+                    std::array<int, RGB_BUFFER_SIZE> nSumB{ 0 };
+
+                    // Find intensities of nearest radius pixels in four direction.
+                    for (int nYO = -radius; nYO <= radius; ++nYO)
                         {
-                        const int nR = imgInData[((nX + nXO) * 3) + ((nY + nYO) * nBytesInARow)];
-                        const int nG =
-                            imgInData[((nX + nXO) * 3) + ((nY + nYO) * nBytesInARow) + 1];
-                        const int nB =
-                            imgInData[((nX + nXO) * 3) + ((nY + nYO) * nBytesInARow) + 2];
+                        for (int nXO = -radius; nXO <= radius; ++nXO)
+                            {
+                            const int nR =
+                                imgInData[((nX + nXO) * 3) + ((nY + nYO) * nBytesInARow)];
+                            const int nG =
+                                imgInData[((nX + nXO) * 3) + ((nY + nYO) * nBytesInARow) + 1];
+                            const int nB =
+                                imgInData[((nX + nXO) * 3) + ((nY + nYO) * nBytesInARow) + 2];
 
-                        // Find intensity of RGB value and apply intensity level.
-                        const int nCurIntensity = std::clamp<int>(
-                            (((nR + nG + nB) / 3.0) * intensity) / 255, 0, (RGB_BUFFER_SIZE - 1));
-                        ++nIntensityCount[nCurIntensity];
+                            // Find intensity of RGB value and apply intensity level.
+                            const int nCurIntensity =
+                                std::clamp<int>((((nR + nG + nB) / 3.0) * intensity) / 255, 0,
+                                                (RGB_BUFFER_SIZE - 1));
+                            ++nIntensityCount[nCurIntensity];
 
-                        nSumR[nCurIntensity] += nR;
-                        nSumG[nCurIntensity] += nG;
-                        nSumB[nCurIntensity] += nB;
+                            nSumR[nCurIntensity] += nR;
+                            nSumG[nCurIntensity] += nG;
+                            nSumB[nCurIntensity] += nB;
+                            }
                         }
-                    }
 
-                int nCurMax{ 0 };
-                int nMaxIndex{ 0 };
-                for (int nI = 0; nI < RGB_BUFFER_SIZE; ++nI)
-                    {
-                    if (nIntensityCount[nI] > nCurMax)
+                    int nCurMax{ 0 };
+                    int nMaxIndex{ 0 };
+                    for (int nI = 0; nI < RGB_BUFFER_SIZE; ++nI)
                         {
-                        nCurMax = nIntensityCount[nI];
-                        nMaxIndex = nI;
+                        if (nIntensityCount[nI] > nCurMax)
+                            {
+                            nCurMax = nIntensityCount[nI];
+                            nMaxIndex = nI;
+                            }
                         }
+
+                    wxASSERT_MSG(nMaxIndex >= 0 && nMaxIndex < RGB_BUFFER_SIZE,
+                                 L"Invalid buffer index in oil painting effect!");
+                    wxASSERT_MSG(((nX) * 3 + (nY)*nBytesInARow + 2) <
+                                     (image.GetWidth() * image.GetHeight() * 3),
+                                 L"Invalid image data index in oil painting effect!");
+
+                    imgOutData[(nX * 3) + (nY * nBytesInARow)] =
+                        safe_divide<int>(nSumR[nMaxIndex], nCurMax);
+                    imgOutData[(nX * 3) + (nY * nBytesInARow) + 1] =
+                        safe_divide<int>(nSumG[nMaxIndex], nCurMax);
+                    imgOutData[(nX * 3) + (nY * nBytesInARow) + 2] =
+                        safe_divide<int>(nSumB[nMaxIndex], nCurMax);
                     }
-
-                wxASSERT_MSG(nMaxIndex >= 0 && nMaxIndex < RGB_BUFFER_SIZE,
-                             L"Invalid buffer index in oil painting effect!");
-                wxASSERT_MSG(((nX) * 3 + (nY)*nBytesInARow + 2) <
-                                 (image.GetWidth() * image.GetHeight() * 3),
-                             L"Invalid image data index in oil painting effect!");
-
-                imgOutData[(nX * 3) + (nY * nBytesInARow)] =
-                    safe_divide<int>(nSumR[nMaxIndex], nCurMax);
-                imgOutData[(nX * 3) + (nY * nBytesInARow) + 1] =
-                    safe_divide<int>(nSumG[nMaxIndex], nCurMax);
-                imgOutData[(nX * 3) + (nY * nBytesInARow) + 2] =
-                    safe_divide<int>(nSumB[nMaxIndex], nCurMax);
-                }
-            }
-        // NOLINTEND(openmp-use-default-none)
+            });
 
         return outImg;
         }
@@ -414,46 +415,45 @@ namespace Wisteria::GraphItems
         const int windowSize{ (2 * clampedRadius) + 1 };
         const size_t neighborhoodCount{ static_cast<size_t>(windowSize) * windowSize };
 
-// Border pixels (within radius) are left untouched.
-// NOLINTBEGIN(openmp-use-default-none)
-#pragma omp parallel for
-        for (int y = clampedRadius; y < height - clampedRadius; ++y)
+        // Border pixels (within radius) are left untouched.
+        parallel::for_each_index_parallel(
+            clampedRadius, height - clampedRadius,
+            [imgInData, imgOutData, width, clampedRadius, neighborhoodCount](const int y)
             {
-            std::array<unsigned char, MAX_WINDOW_SIZE> redValues{ 0 };
-            std::array<unsigned char, MAX_WINDOW_SIZE> greenValues{ 0 };
-            std::array<unsigned char, MAX_WINDOW_SIZE> blueValues{ 0 };
+                std::array<unsigned char, MAX_WINDOW_SIZE> redValues{ 0 };
+                std::array<unsigned char, MAX_WINDOW_SIZE> greenValues{ 0 };
+                std::array<unsigned char, MAX_WINDOW_SIZE> blueValues{ 0 };
 
-            for (int x = clampedRadius; x < width - clampedRadius; ++x)
-                {
-                size_t index{ 0 };
-                for (int yOffset = -clampedRadius; yOffset <= clampedRadius; ++yOffset)
+                for (int x = clampedRadius; x < width - clampedRadius; ++x)
                     {
-                    for (int xOffset = -clampedRadius; xOffset <= clampedRadius; ++xOffset)
+                    size_t index{ 0 };
+                    for (int yOffset = -clampedRadius; yOffset <= clampedRadius; ++yOffset)
                         {
-                        const size_t pixelIndex{ (static_cast<size_t>(y + yOffset) * width) +
-                                                 (x + xOffset) };
-                        redValues[index] = imgInData[pixelIndex * 3];
-                        greenValues[index] = imgInData[(pixelIndex * 3) + 1];
-                        blueValues[index] = imgInData[(pixelIndex * 3) + 2];
-                        ++index;
+                        for (int xOffset = -clampedRadius; xOffset <= clampedRadius; ++xOffset)
+                            {
+                            const size_t pixelIndex{ (static_cast<size_t>(y + yOffset) * width) +
+                                                     (x + xOffset) };
+                            redValues[index] = imgInData[pixelIndex * 3];
+                            greenValues[index] = imgInData[(pixelIndex * 3) + 1];
+                            blueValues[index] = imgInData[(pixelIndex * 3) + 2];
+                            ++index;
+                            }
                         }
+
+                    const auto medianPos{ neighborhoodCount / 2 };
+                    std::nth_element(redValues.begin(), redValues.begin() + medianPos,
+                                     redValues.begin() + neighborhoodCount);
+                    std::nth_element(greenValues.begin(), greenValues.begin() + medianPos,
+                                     greenValues.begin() + neighborhoodCount);
+                    std::nth_element(blueValues.begin(), blueValues.begin() + medianPos,
+                                     blueValues.begin() + neighborhoodCount);
+
+                    const size_t outIndex{ (static_cast<size_t>(y) * width) + x };
+                    imgOutData[outIndex * 3] = redValues[medianPos];
+                    imgOutData[(outIndex * 3) + 1] = greenValues[medianPos];
+                    imgOutData[(outIndex * 3) + 2] = blueValues[medianPos];
                     }
-
-                const auto medianPos{ neighborhoodCount / 2 };
-                std::nth_element(redValues.begin(), redValues.begin() + medianPos,
-                                 redValues.begin() + neighborhoodCount);
-                std::nth_element(greenValues.begin(), greenValues.begin() + medianPos,
-                                 greenValues.begin() + neighborhoodCount);
-                std::nth_element(blueValues.begin(), blueValues.begin() + medianPos,
-                                 blueValues.begin() + neighborhoodCount);
-
-                const size_t outIndex{ (static_cast<size_t>(y) * width) + x };
-                imgOutData[outIndex * 3] = redValues[medianPos];
-                imgOutData[(outIndex * 3) + 1] = greenValues[medianPos];
-                imgOutData[(outIndex * 3) + 2] = blueValues[medianPos];
-                }
-            }
-        // NOLINTEND(openmp-use-default-none)
+            });
 
         return outImg;
         }

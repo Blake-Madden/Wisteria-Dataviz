@@ -212,10 +212,8 @@ if(WIN32 OR APPLE)
         target_link_libraries(${WISTERIA_LIB} PUBLIC dxgi)
     endif()
 elseif(UNIX)
-    # Add OpenMP for multithreading
-    find_package(OpenMP)
     find_library(TBB_LIB tbb)
-    target_link_libraries(${WISTERIA_LIB} PUBLIC OpenMP::OpenMP_CXX ${TBB_LIB} ${wxWidgets_LIBRARIES}
+    target_link_libraries(${WISTERIA_LIB} PUBLIC ${TBB_LIB} ${wxWidgets_LIBRARIES}
                                                  ${FONTCONFIG_LIBRARIES})
 endif()
 
@@ -241,7 +239,7 @@ if(MSVC)
     # /wd6211 turns off C6211 warning: leaking memory due to an exception.
     # wxWidgets uses heap-based objects for most everything, and MVSC complains
     # about not wrapping all of this logic in try blocks.
-    target_compile_options(${WISTERIA_LIB} PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211 /openmp /permissive- /sdl
+    target_compile_options(${WISTERIA_LIB} PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211 /permissive- /sdl
                            $<$<CONFIG:Debug>:/Od> $<$<CONFIG:Release>:/O2>)
 elseif(MINGW OR MSYS)
     target_compile_definitions(${WISTERIA_LIB} PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS _UNICODE
