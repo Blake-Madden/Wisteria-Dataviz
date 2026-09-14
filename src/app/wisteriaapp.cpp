@@ -474,8 +474,7 @@ void WisteriaApp::OnOpenDropdown(wxCommandEvent& event)
             auto* item = mruMenu.Append(wxID_ANY, wxFileName{ filePath }.GetFullName());
             mruMenu.Bind(
                 wxEVT_MENU,
-                [this, filePath]([[maybe_unused]]
-                                 wxCommandEvent& event)
+                [this, filePath]([[maybe_unused]] wxCommandEvent&)
                 {
                     if (GetDocManager()->CreateDocument(filePath, wxDOC_SILENT) == nullptr)
                         {
