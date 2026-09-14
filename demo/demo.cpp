@@ -199,6 +199,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_RACETRACK);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_WILMARTH_BRIDGE);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_NIGHTINGALE_ROSE);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_BULLET_CHART);
 
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, wxID_NEW);
@@ -267,6 +268,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_RACETRACK, _(L"Race Track Chart"));
     fileMenu->Append(MyApp::ID_NEW_WILMARTH_BRIDGE, _(L"Wilmarth Bridge Plot"));
     fileMenu->Append(MyApp::ID_NEW_NIGHTINGALE_ROSE, _(L"Nightingale Rose Chart"));
+    fileMenu->Append(MyApp::ID_NEW_BULLET_CHART, _(L"Bullet Chart"));
     fileMenu->AppendSeparator();
 
     fileMenu->Append(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"));
@@ -3139,6 +3141,66 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         }
+    // Bullet Chart
+    else if (event.GetId() == MyApp::ControlIDs::ID_NEW_BULLET_CHART)
+        {
+        subframe->SetTitle(_(L"Bullet Chart"));
+        subframe->m_canvas->SetFixedObjectsGridSize(2, 1);
+
+        // satisfaction percentages: three KPIs sharing a 0-100% scale
+        auto satisfactionData = std::make_shared<Wisteria::Data::Dataset>();
+        satisfactionData->AddContinuousColumn(L"Actual");
+        satisfactionData->AddContinuousColumn(L"Target");
+        satisfactionData->AddRow(
+            Wisteria::Data::RowInfo().Id(_(L"Employee Satisfaction")).Continuous({ 82, 85 }));
+        satisfactionData->AddRow(
+            Wisteria::Data::RowInfo().Id(_(L"Community Satisfaction")).Continuous({ 74, 80 }));
+        satisfactionData->AddRow(
+            Wisteria::Data::RowInfo().Id(_(L"Customer Satisfaction")).Continuous({ 91, 90 }));
+        satisfactionData->GetIdColumn().SetName(L"Label");
+
+        auto satisfactionChart =
+            std::make_shared<Wisteria::Graphs::BulletChart>(subframe->m_canvas);
+        satisfactionChart->SetData(satisfactionData, L"Label", L"Actual", L"Target");
+        satisfactionChart->SetRanges(
+            { { 50, _(L"Poor") }, { 80, _(L"Satisfactory") }, { 100, _(L"Good") } });
+        satisfactionChart->SetValueDisplayFormat(
+            Wisteria::Graphs::BulletChartValueFormat::Percentage);
+        satisfactionChart->SetActualBarColor(
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::OceanBoatBlue));
+        satisfactionChart->SetTargetTickColor(
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Tangerine));
+        satisfactionChart->SetActualCalloutLabelColor(
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::OceanBoatBlue));
+        satisfactionChart->SetTargetCalloutLabelColor(
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Tangerine));
+
+        subframe->m_canvas->SetFixedObject(0, 0, satisfactionChart);
+
+        // new customers: a single KPI on its own 0-300 raw-count scale
+        auto newCustomersData = std::make_shared<Wisteria::Data::Dataset>();
+        newCustomersData->AddContinuousColumn(L"Actual");
+        newCustomersData->AddContinuousColumn(L"Target");
+        newCustomersData->AddRow(
+            Wisteria::Data::RowInfo().Id(_(L"New Customers")).Continuous({ 219, 275 }));
+        newCustomersData->GetIdColumn().SetName(L"Label");
+
+        auto newCustomersChart =
+            std::make_shared<Wisteria::Graphs::BulletChart>(subframe->m_canvas);
+        newCustomersChart->SetData(newCustomersData, L"Label", L"Actual", L"Target");
+        newCustomersChart->SetRanges(
+            { { 150, _(L"Poor") }, { 225, _(L"Satisfactory") }, { 300, _(L"Good") } });
+        newCustomersChart->SetActualBarColor(
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::OceanBoatBlue));
+        newCustomersChart->SetTargetTickColor(
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Tangerine));
+        newCustomersChart->SetActualCalloutLabelColor(
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::OceanBoatBlue));
+        newCustomersChart->SetTargetCalloutLabelColor(
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Tangerine));
+
+        subframe->m_canvas->SetFixedObject(1, 0, newCustomersChart);
+        }
 
     subframe->Maximize(true);
     subframe->Show(true);
@@ -3379,6 +3441,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_NIGHTINGALE_ROSE, _(L"Nightingale Rose Chart"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/rose.svg", iconSize),
                      _(L"Nightingale Rose Chart"));
+    toolBar->AddTool(MyApp::ID_NEW_BULLET_CHART, _(L"Bullet Chart"),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/bulletchart.svg", iconSize),
+                     _(L"Bullet Chart"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"),

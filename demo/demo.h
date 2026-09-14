@@ -23,6 +23,7 @@
 #include "../src/graphs/barchart.h"
 #include "../src/graphs/boxplot.h"
 #include "../src/graphs/bubbleplot.h"
+#include "../src/graphs/bulletchart.h"
 #include "../src/graphs/candlestickplot.h"
 #include "../src/graphs/categoricalbarchart.h"
 #include "../src/graphs/chernoffplot.h"
@@ -127,7 +128,8 @@ class MyApp final : public wxApp
         ID_NEW_WILMARTH_BRIDGE,
         ID_NEW_BARCHART_SERPENTINE,
         ID_NEW_BARCHART_SERPENTINE_AGGRESSIVE,
-        ID_NEW_NIGHTINGALE_ROSE
+        ID_NEW_NIGHTINGALE_ROSE,
+        ID_NEW_BULLET_CHART
         };
 
   private:

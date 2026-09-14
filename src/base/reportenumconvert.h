@@ -16,6 +16,7 @@
 #include "../base/icons.h"
 #include "../base/shapes.h"
 #include "../graphs/boxplot.h"
+#include "../graphs/bulletchart.h"
 #include "../graphs/candlestickplot.h"
 #include "../graphs/choroplethmap.h"
 #include "../graphs/ganttchart.h"
@@ -555,6 +556,38 @@ namespace Wisteria
             const auto foundValue = candleTypes.find(value.Lower().ToStdWstring());
             return ((foundValue != candleTypes.cend()) ?
                         std::optional<Graphs::CandlestickPlot::PlotType>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<Graphs::BulletChartValueFormat>
+        ConvertBulletChartValueFormat(const wxString& value)
+            {
+            static const std::map<std::wstring, Graphs::BulletChartValueFormat> valueFormats = {
+                { L"value", Graphs::BulletChartValueFormat::Value },
+                { L"percentage", Graphs::BulletChartValueFormat::Percentage }
+            };
+
+            const auto foundValue = valueFormats.find(value.Lower().ToStdWstring());
+            return ((foundValue != valueFormats.cend()) ?
+                        std::optional<Graphs::BulletChartValueFormat>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<Graphs::BulletChartRangeColorScheme>
+        ConvertBulletChartRangeColorScheme(const wxString& value)
+            {
+            static const std::map<std::wstring, Graphs::BulletChartRangeColorScheme>
+                colorSchemes = { { L"two-tone", Graphs::BulletChartRangeColorScheme::TwoTone },
+                                 { L"goal-status",
+                                   Graphs::BulletChartRangeColorScheme::GoalStatus } };
+
+            const auto foundValue = colorSchemes.find(value.Lower().ToStdWstring());
+            return ((foundValue != colorSchemes.cend()) ?
+                        std::optional<Graphs::BulletChartRangeColorScheme>(foundValue->second) :
                         std::nullopt);
             }
 
@@ -2062,6 +2095,40 @@ namespace Wisteria
             static const std::map<Graphs::CandlestickPlot::PlotType, wxString> values = {
                 { Graphs::CandlestickPlot::PlotType::Candlestick, L"candlestick" },
                 { Graphs::CandlestickPlot::PlotType::Ohlc, L"ohlc" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a BulletChartValueFormat enum to its JSON string.
+        /// @param value The value-format enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertBulletChartValueFormatToString(Graphs::BulletChartValueFormat value)
+            {
+            static const std::map<Graphs::BulletChartValueFormat, wxString> values = {
+                { Graphs::BulletChartValueFormat::Value, L"value" },
+                { Graphs::BulletChartValueFormat::Percentage, L"percentage" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a BulletChartRangeColorScheme enum to its JSON string.
+        /// @param value The range color scheme enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertBulletChartRangeColorSchemeToString(Graphs::BulletChartRangeColorScheme value)
+            {
+            static const std::map<Graphs::BulletChartRangeColorScheme, wxString> values = {
+                { Graphs::BulletChartRangeColorScheme::TwoTone, L"two-tone" },
+                { Graphs::BulletChartRangeColorScheme::GoalStatus, L"goal-status" }
             };
 
             const auto foundValue = values.find(value);

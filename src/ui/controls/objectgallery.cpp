@@ -188,6 +188,8 @@ namespace Wisteria::UI
             return L"racetrack";
         case GalleryItemType::NightingaleRoseChart:
             return L"nightingale-rose";
+        case GalleryItemType::BulletChart:
+            return L"bullet-chart";
         case GalleryItemType::ChoroplethMap:
             return L"choropleth";
         case GalleryItemType::GanttChart:

@@ -172,6 +172,10 @@ Business
 | :-------------------------------- |
 | ![](docs/images/CandlestickPlot.svg) |
 
+| Bullet Chart (Wisteria::Graphs::BulletChart) |
+| :-------------------------------- |
+| ![](docs/images/bullet_chart.svg) |
+
 Statistical
 -----------------------------
 

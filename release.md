@@ -2,6 +2,7 @@
 
 ## 1.2.2
 
+- Added Bullet Chart.
 - Added Nightingale Rose Chart.
 - Added Choropleth.
 - Added Race Track Chart.

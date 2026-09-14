@@ -46,6 +46,8 @@ namespace Wisteria::UI
         /** @brief Constructor.
             @param canvas The canvas whose grid layout is displayed.
             @param pageNames The names of the pages currently in the project.
+            @param reportBuilder The report builder used to construct the page's items.
+            @param doc The document that the page is being inserted into or edited within.
             @param parent The parent window.
             @param id The window ID.
             @param caption The dialog caption.
@@ -250,6 +252,7 @@ namespace Wisteria::UI
         bool DropWaffleChart(Canvas* stagingCanvas, size_t row, size_t col);
         bool DropRaceTrackChart(Canvas* stagingCanvas, size_t row, size_t col);
         bool DropNightingaleRoseChart(Canvas* stagingCanvas, size_t row, size_t col);
+        bool DropBulletChart(Canvas* stagingCanvas, size_t row, size_t col);
 
         Canvas* m_canvas{ nullptr };
         const Wisteria::ReportBuilder* m_reportBuilder{ nullptr };

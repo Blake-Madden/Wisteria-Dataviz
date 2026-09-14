@@ -872,7 +872,8 @@ namespace Wisteria
         ScaleChart,
         WCurvePlot,
         LRRoadmap,
-        WinLossSparkline
+        WinLossSparkline,
+        BulletChart
         };
     } // namespace Wisteria
 

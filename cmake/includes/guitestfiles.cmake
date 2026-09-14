@@ -7,6 +7,7 @@ SET(TEST_SRC_FILES
     basetests.cpp
     boxplotrendertests.cpp
     bubbleplotrendertests.cpp
+    bulletchartrendertests.cpp
     candlestickplotrendertests.cpp
     categoricalbarchartrendertests.cpp
     chernoffplotrendertests.cpp

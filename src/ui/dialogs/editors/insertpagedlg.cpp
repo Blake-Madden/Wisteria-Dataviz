@@ -11,6 +11,7 @@
 #include "../../app/wisteriadoc.h"
 #include "../../app/wisteriaview.h"
 #include "../../graphs/graph2d.h"
+#include "insert_bullet_chart_dlg.h"
 #include "insert_nightingale_rose_chart_dlg.h"
 #include "insertboxplotdlg.h"
 #include "insertbubbleplotdlg.h"
@@ -946,6 +947,9 @@ namespace Wisteria::UI
         case Wisteria::GalleryItemType::NightingaleRoseChart:
             placed = DropNightingaleRoseChart(stagingCanvas, row, col);
             break;
+        case Wisteria::GalleryItemType::BulletChart:
+            placed = DropBulletChart(stagingCanvas, row, col);
+            break;
         default:
             // remaining graph types are not wired up yet
             break;
@@ -1823,6 +1827,29 @@ namespace Wisteria::UI
             WisteriaView::PlaceGraphAndLegendInGrid(
                 stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
                 dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropBulletChart(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertBulletChartDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"bulletchart.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildBulletChart();
+            stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
             return true;
             }
         catch (const std::exception&)

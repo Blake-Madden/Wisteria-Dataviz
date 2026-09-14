@@ -67,6 +67,7 @@ SET(APP_WISTERIA_SRC
     src/graphs/barchart_serpentine.cpp
     src/graphs/boxplot.cpp
     src/graphs/bubbleplot.cpp
+    src/graphs/bulletchart.cpp
     src/graphs/candlestickplot.cpp
     src/graphs/categoricalbarchart.cpp
     src/graphs/chernoffplot.cpp
@@ -115,6 +116,7 @@ SET(APP_WISTERIA_SRC
     src/ui/dialogs/datasetimportdlg.cpp
     src/ui/dialogs/editors/accessibilityoptionspanel.cpp
     src/ui/dialogs/editors/axisoptionspanel.cpp
+    src/ui/dialogs/editors/insert_bullet_chart_dlg.cpp
     src/ui/dialogs/editors/insert_nightingale_rose_chart_dlg.cpp
     src/ui/dialogs/editors/insertboxplotdlg.cpp
     src/ui/dialogs/editors/insertbubbleplotdlg.cpp

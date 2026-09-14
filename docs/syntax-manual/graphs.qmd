@@ -36,6 +36,56 @@ Properties for `"box-plot"` nodes:
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}
+## Bullet Chart {#bullet-chart-properties .unnumbered}
+
+Properties for `"bullet-chart"` nodes:
+
+- `"variables"`: An item containing the following properties:
+  - `"label"`: The categorical (or ID) column containing the label for each KPI row.
+  - `"actual"`: The continuous column containing each row's actual value.
+  - `"target"`: The continuous column containing each row's target value.
+- `"ranges"`: An array of range objects defining the qualitative performance bands drawn behind each row (e.g., poor/satisfactory/good). \
+  Each range runs from the previous range's end (or the scaling axis start) up to its own end.
+  Each range contains:
+  - `"end"`: The cumulative upper bound of the range.
+  - `"label"`: The text displayed for the range on the scaling axis.
+- `"range-color-scheme"`: A string specifying how the range bands are colored. \
+  Available options are:
+  - `"goal-status"`: Each row's actual-value bar is colored using `"goal-success-color"` or `"goal-failure-color"`, depending on whether it reaches its target (the default).
+  - `"two-tone"`: Range bands are shaded as a gradient between `"range-start-color"` and `"range-end-color"`.
+- `"range-start-color"`: The color (a named color or hex value) for the first range band, when `"range-color-scheme"` is `"two-tone"`.
+- `"range-end-color"`: The color (a named color or hex value) for the last range band, when `"range-color-scheme"` is `"two-tone"`.
+- `"goal-success-color"`: The color (a named color or hex value) for actual-value bars that reach their target, when `"range-color-scheme"` is `"goal-status"`.
+- `"goal-failure-color"`: The color (a named color or hex value) for actual-value bars that fall short of their target, when `"range-color-scheme"` is `"goal-status"`.
+- `"value-display-format"`: A string specifying how actual/target values are displayed in callouts. \
+  Available options are:
+  - `"value"`: Display the raw value (the default).
+  - `"percentage"`: Append a `%` suffix to the value.
+- `"show-value-callouts"`: `false` to hide the "Actual"/"Target" callout pair drawn above the topmost row.
+  Default is `true`.
+- `"show-range-labels"`: `false` to hide the range labels along the scaling axis.
+  Default is `true`.
+
+```json
+{
+  "type": "bullet-chart",
+  "dataset": "KPIs",
+  "variables": {
+    "label": "Metric",
+    "actual": "Actual",
+    "target": "Target"
+  },
+  "ranges": [
+    { "end": 50, "label": "Poor" },
+    { "end": 80, "label": "Satisfactory" },
+    { "end": 100, "label": "Good" }
+  ],
+  "value-display-format": "percentage"
+}
+```
+:::
+
+::: {.minipage data-latex="{\textwidth}"}
 ## Candlestick/OHLC Plot {#candlestick-plot-properties .unnumbered}
 
 Properties for `"candlestick-plot"` nodes:

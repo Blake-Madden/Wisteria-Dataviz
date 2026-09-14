@@ -1927,4 +1927,111 @@ namespace Wisteria
         LoadGraph(graphNode, canvas, currentRow, currentColumn, roseChart);
         return roseChart;
         }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D>
+    ReportBuilder::LoadBulletChart(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                                   size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->AsString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for bullet chart."), dsName).ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (!variablesNode->IsOk())
+            {
+            throw std::runtime_error(_(L"Variables not defined for bullet chart.").ToUTF8());
+            }
+
+        const auto labelVarNameRaw = variablesNode->GetProperty(L"label")->AsString();
+        const auto labelVarName = ExpandConstants(labelVarNameRaw);
+        const auto actualVarNameRaw = variablesNode->GetProperty(L"actual")->AsString();
+        const auto actualVarName = ExpandConstants(actualVarNameRaw);
+        const auto targetVarNameRaw = variablesNode->GetProperty(L"target")->AsString();
+        const auto targetVarName = ExpandConstants(targetVarNameRaw);
+
+        if (labelVarName.empty() || actualVarName.empty() || targetVarName.empty())
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: label, actual, and target variables must be specified for "
+                                   "bullet chart."),
+                                 dsName)
+                    .ToUTF8());
+            }
+
+        auto bulletChart = std::make_shared<Graphs::BulletChart>(canvas);
+        bulletChart->SetPropertyTemplate(L"dataset", dsName);
+        bulletChart->SetPropertyTemplate(L"variables.label", labelVarNameRaw);
+        bulletChart->SetPropertyTemplate(L"variables.actual", actualVarNameRaw);
+        bulletChart->SetPropertyTemplate(L"variables.target", targetVarNameRaw);
+
+        if (const auto colorScheme = ReportEnumConvert::ConvertBulletChartRangeColorScheme(
+                graphNode->GetProperty(L"range-color-scheme")->AsString());
+            colorScheme.has_value())
+            {
+            bulletChart->SetRangeColorScheme(colorScheme.value());
+            }
+
+        if (const auto color = ConvertColor(graphNode->GetProperty(L"range-start-color"));
+            color.IsOk())
+            {
+            bulletChart->SetRangeStartColor(color);
+            }
+        if (const auto color = ConvertColor(graphNode->GetProperty(L"range-end-color"));
+            color.IsOk())
+            {
+            bulletChart->SetRangeEndColor(color);
+            }
+        if (const auto color = ConvertColor(graphNode->GetProperty(L"goal-success-color"));
+            color.IsOk())
+            {
+            bulletChart->SetGoalSuccessColor(color);
+            }
+        if (const auto color = ConvertColor(graphNode->GetProperty(L"goal-failure-color"));
+            color.IsOk())
+            {
+            bulletChart->SetGoalFailureColor(color);
+            }
+
+        if (const auto valueFormat = ReportEnumConvert::ConvertBulletChartValueFormat(
+                graphNode->GetProperty(L"value-display-format")->AsString());
+            valueFormat.has_value())
+            {
+            bulletChart->SetValueDisplayFormat(valueFormat.value());
+            }
+
+        if (graphNode->HasProperty(L"show-value-callouts"))
+            {
+            bulletChart->ShowValueCallouts(
+                graphNode->GetProperty(L"show-value-callouts")->AsBool());
+            }
+        if (graphNode->HasProperty(L"show-range-labels"))
+            {
+            bulletChart->ShowRangeLabels(graphNode->GetProperty(L"show-range-labels")->AsBool());
+            }
+
+        // ranges
+        if (const auto rangesNode = graphNode->GetProperty(L"ranges"); rangesNode->IsOk())
+            {
+            std::vector<Graphs::BulletChart::Range> ranges;
+            const auto rangeNodes = rangesNode->AsNodes();
+            ranges.reserve(rangeNodes.size());
+            for (const auto& rangeNode : rangeNodes)
+                {
+                ranges.emplace_back(Graphs::BulletChart::Range{
+                    rangeNode->GetProperty(L"end")->AsDouble(0),
+                    ExpandConstants(rangeNode->GetProperty(L"label")->AsString()) });
+                }
+            bulletChart->SetRanges(std::move(ranges));
+            }
+
+        bulletChart->SetData(foundPos->second, labelVarName, actualVarName, targetVarName);
+
+        LoadGraph(graphNode, canvas, currentRow, currentColumn, bulletChart);
+        return bulletChart;
+        }
     } // namespace Wisteria

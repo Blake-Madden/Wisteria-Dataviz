@@ -952,6 +952,10 @@ wxString WisteriaApp::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph)
         {
         return _DT(L"scale-chart");
         }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BulletChart)))
+        {
+        return _DT(L"bullet-chart");
+        }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BarChart)))
         {
         return _DT(L"bar-chart");
@@ -1086,6 +1090,10 @@ wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase*
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScaleChart)))
         {
         return L"scale.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BulletChart)))
+        {
+        return L"bulletchart.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BarChart)))
         {
@@ -1248,6 +1256,8 @@ const std::vector<Wisteria::GalleryItemInfo>& WisteriaApp::GetGalleryItemCatalog
         // Business
         { GalleryItemType::GanttChart, _(L"Gantt Chart"), L"gantt.svg", GalleryGroup::Business },
         { GalleryItemType::CandlestickPlot, _(L"Candlestick Plot"), L"candlestick.svg",
+          GalleryGroup::Business },
+        { GalleryItemType::BulletChart, _(L"Bullet Chart"), L"bulletchart.svg",
           GalleryGroup::Business },
         // Statistical
         { GalleryItemType::Histogram, _(L"Histogram"), L"histogram.svg",

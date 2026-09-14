@@ -6,7 +6,7 @@ set(WISTERIA_LIB_EXCLUDE_FILTER "(testmainc|xml_format|rtf_extract|pdf_|postscri
 odt_odp_extract|doc_extract|docx_extract|ui/app[.]cpp|codeeditor[.]cpp|htmltablewin[.]cpp|\
 pdfreader[.]cpp|benchmark[.]cpp|\
 listctrlex[.]cpp|listctrlexdataprovider[.]cpp|searchpanel[.]cpp|warningmanager[.]cpp|\
-screenshot[.]cpp|idhelpers[.]cpp|mainframe[.]cpp|insertpagedlg[.]cpp|warningmessagesdlg[.]cpp|startpage[.]cpp|\
+screenshot[.]cpp|idhelpers[.]cpp|mainframe[.]cpp|insertpagedlg[.]cpp|objectgallery[.]cpp|warningmessagesdlg[.]cpp|startpage[.]cpp|\
 htmltablepanel[.]cpp|htmltablewinprintout[.]cpp|listctrlitemviewdlg[.]cpp|listdlg[.]cpp|\
 listctrlsortdlg[.]cpp|filelistdlg[.]cpp|functionbrowserdlg[.]cpp|getdirdlg[.]cpp|projectsettingsdlg[.]cpp|\
 gridexportdlg[.]cpp|datasetimportdlg[.]cpp|archivedlg[.]cpp|edittextdlg[.]cpp|excelpreviewdlg[.]cpp|sidebar[.]cpp|\
@@ -15,7 +15,7 @@ demo[.]cpp|main[.]cpp|src/app/|utfcpp/tests/|utfcpp/samples/|utfcpp/extern|wxpdf
 
 # Exclusion filter for GUI testing library (less restrictive, includes more UI components)
 set(WISTERIA_GUI_LIB_EXCLUDE_FILTER "(testmainc|formattedtextctrl[.]cpp|gtktextview-helper[.]cpp|\
-codeeditor[.]cpp|functionbrowserdlg[.]cpp|dialogs/editors/insert[^/]*[.]cpp|\
+codeeditor[.]cpp|functionbrowserdlg[.]cpp|dialogs/editors/insert[^/]*[.]cpp|objectgallery[.]cpp|\
 axisoptionspanel[.]cpp|accessibilityoptionspanel[.]cpp|benchmark[.]cpp|\
 dialogs/insert[^/]*[.]cpp|demo[.]cpp|main[.]cpp|src/app/|\
 utfcpp/tests/|utfcpp/samples/|utfcpp/extern|pdfreportprintout[.]cpp|projectsettingsdlg[.]cpp|wxpdfdoc/)")

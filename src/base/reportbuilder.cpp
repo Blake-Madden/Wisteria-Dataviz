@@ -462,6 +462,12 @@ namespace Wisteria
                                                     item, canvas, currentRow, currentColumn));
                                                 }
                                             else if (typeProperty->AsString().CmpNoCase(
+                                                         L"bullet-chart") == 0)
+                                                {
+                                                embeddedGraphs.push_back(LoadBulletChart(
+                                                    item, canvas, currentRow, currentColumn));
+                                                }
+                                            else if (typeProperty->AsString().CmpNoCase(
                                                          L"wilmarth-bridge-plot") == 0)
                                                 {
                                                 embeddedGraphs.push_back(LoadWilmarthBridgePlot(

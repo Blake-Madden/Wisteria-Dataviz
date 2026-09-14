@@ -6,6 +6,7 @@ barchart-stylized.svg
 barchart.svg
 boxplot.svg
 bubbleplot.svg
+bulletchart.svg
 candlestick.svg
 categorical.svg
 chart-basic.svg

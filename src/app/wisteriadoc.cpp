@@ -4445,6 +4445,67 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                 }
             }
         }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BulletChart)))
+        {
+        const auto* bulletChart = dynamic_cast<const Wisteria::Graphs::BulletChart*>(graph);
+        if (bulletChart->GetRangeColorScheme() !=
+            Wisteria::Graphs::BulletChartRangeColorScheme::GoalStatus)
+            {
+            const auto csStr =
+                Wisteria::ReportEnumConvert::ConvertBulletChartRangeColorSchemeToString(
+                    bulletChart->GetRangeColorScheme());
+            if (csStr.has_value())
+                {
+                node->Add(L"range-color-scheme", csStr.value());
+                }
+            }
+        if (bulletChart->GetRangeStartColor() != wxColour{ 217, 217, 217 })
+            {
+            node->Add(L"range-start-color", ColorToStr(bulletChart->GetRangeStartColor()));
+            }
+        if (bulletChart->GetRangeEndColor() != wxColour{ 89, 89, 89 })
+            {
+            node->Add(L"range-end-color", ColorToStr(bulletChart->GetRangeEndColor()));
+            }
+        if (bulletChart->GetGoalSuccessColor() !=
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::KellyGreen))
+            {
+            node->Add(L"goal-success-color", ColorToStr(bulletChart->GetGoalSuccessColor()));
+            }
+        if (bulletChart->GetGoalFailureColor() !=
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::FireEngineRed))
+            {
+            node->Add(L"goal-failure-color", ColorToStr(bulletChart->GetGoalFailureColor()));
+            }
+        if (bulletChart->GetValueDisplayFormat() != Wisteria::Graphs::BulletChartValueFormat::Value)
+            {
+            const auto vfStr = Wisteria::ReportEnumConvert::ConvertBulletChartValueFormatToString(
+                bulletChart->GetValueDisplayFormat());
+            if (vfStr.has_value())
+                {
+                node->Add(L"value-display-format", vfStr.value());
+                }
+            }
+        if (!bulletChart->IsShowingValueCallouts())
+            {
+            node->Add(L"show-value-callouts", false);
+            }
+        if (!bulletChart->IsShowingRangeLabels())
+            {
+            node->Add(L"show-range-labels", false);
+            }
+        if (!bulletChart->GetRanges().empty())
+            {
+            auto rangesArray = node->GetProperty(L"ranges");
+            for (const auto& range : bulletChart->GetRanges())
+                {
+                auto rangeObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+                rangeObj->Add(L"end", range.m_end);
+                rangeObj->Add(L"label", range.m_label);
+                rangesArray->ArrayAdd(rangeObj);
+                }
+            }
+        }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WilmarthBridgePlot)))
         {
         const auto* bridgePlot = dynamic_cast<const Wisteria::Graphs::WilmarthBridgePlot*>(graph);

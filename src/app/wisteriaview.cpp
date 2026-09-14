@@ -12,6 +12,7 @@
 #include "../base/svgreportprintout.h"
 #include "../ui/controls/datasetgridtable.h"
 #include "../ui/dialogs/datasetimportdlg.h"
+#include "../ui/dialogs/editors/insert_bullet_chart_dlg.h"
 #include "../ui/dialogs/editors/insert_nightingale_rose_chart_dlg.h"
 #include "../ui/dialogs/editors/insertboxplotdlg.h"
 #include "../ui/dialogs/editors/insertbubbleplotdlg.h"
@@ -314,6 +315,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertRaceTrackChart, this, ID_NEW_RACETRACK_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertNightingaleRoseChart, this,
                   ID_NEW_NIGHTINGALE_ROSE_CHART);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertBulletChart, this, ID_NEW_BULLET_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWilmarthBridgePlot, this,
                   ID_NEW_WILMARTH_BRIDGE_PLOT);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertCatBarChart, this, ID_NEW_BARCHART);
@@ -1969,6 +1971,7 @@ void WisteriaView::BuildGraphMenus()
     appendItem(m_businessGraphMenu, ID_NEW_GANTT, _(L"Gantt Chart..."), L"gantt.svg");
     appendItem(m_businessGraphMenu, ID_NEW_CANDLESTICK, _(L"Candlestick Plot..."),
                L"candlestick.svg");
+    appendItem(m_businessGraphMenu, ID_NEW_BULLET_CHART, _(L"Bullet Chart..."), L"bulletchart.svg");
 
     // Statistical graphs
     appendItem(m_statisticalGraphMenu, ID_NEW_HISTOGRAM, _(L"Histogram..."), L"histogram.svg");
@@ -2644,6 +2647,10 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::NightingaleRoseChart)))
         {
         EditNightingaleRoseChart(*graph, canvas, itemRow, itemCol);
+        }
+    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BulletChart)))
+        {
+        EditBulletChart(*graph, canvas, itemRow, itemCol);
         }
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WilmarthBridgePlot)))
         {
@@ -4449,6 +4456,69 @@ void WisteriaView::EditNightingaleRoseChart(const Wisteria::Graphs::Graph2D& gra
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertBulletChart([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = EnsureActivePage();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertBulletChartDlg dlg(canvas, &m_reportBuilder, m_frame);
+    SetDialogIcon(dlg, L"bulletchart.svg");
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = dlg.BuildBulletChart();
+        canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+
+        UpdateCanvas(canvas);
+
+        GetDocument()->Modify(true);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::EditBulletChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                   const size_t graphRow, const size_t graphCol) const
+    {
+    Wisteria::UI::InsertBulletChartDlg dlg(
+        canvas, &m_reportBuilder, m_frame, _(L"Edit Bullet Chart"), wxID_ANY, wxDefaultPosition,
+        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    SetDialogIcon(dlg, L"bulletchart.svg");
+    dlg.SetSelectedCell(graphRow, graphCol);
+    dlg.LoadFromGraph(graph);
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = dlg.BuildBulletChart(&graph);
+        canvas->SetFixedObject(graphRow, graphCol, plot);
+
+        UpdateCanvas(canvas);
+
+        GetDocument()->Modify(true);
         }
     catch (const std::exception& exc)
         {
