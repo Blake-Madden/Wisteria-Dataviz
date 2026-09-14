@@ -915,6 +915,7 @@ namespace Wisteria::Data
             }
 
         /// @brief Clears the missing data codes.
+        /// @returns A self reference.
         ImportInfo& ClearMDCodes() noexcept
             {
             m_mdCodes.clear();
@@ -1819,6 +1820,8 @@ namespace Wisteria::Data
                 Note that ImportInfoFromPreview() and ReadColumnInfo() can be used to
                 gather this information.
             @param delimiter The delimiter to parse the columns with.
+            @param rowPreviewCount If specified, only the first @p rowPreviewCount data
+                rows are imported (useful for previews).
             @throws std::runtime_error If the file can't be read or named columns aren't found,
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
@@ -1854,6 +1857,8 @@ namespace Wisteria::Data
                 Note that ImportInfoFromPreview() and ReadColumnInfo() can be used to
                 gather this information.
             @param delimiter The delimiter to parse the columns with.
+            @param rowPreviewCount If specified, only the first @p rowPreviewCount data
+                rows are imported (useful for previews).
             @throws std::runtime_error If any named columns aren't found,
                 throws an exception.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to

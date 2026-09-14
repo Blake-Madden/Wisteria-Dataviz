@@ -45,7 +45,8 @@ namespace Wisteria::GraphItems
             {
             if (GetLineStyle() == LineStyle::Arrows)
                 {
-                const int head = std::max<int>(ScaleToScreenAndCanvas(10), penW * 3);
+                const int head = static_cast<int>(
+                    std::max<int>(ScaleToScreenAndCanvas(10), penW * 3) * GetArrowheadScale());
                 Polygon::DrawArrow(dc, line.first, line.second, wxSize{ head, head });
                 }
             else if (GetLineStyle() == LineStyle::Pencil)

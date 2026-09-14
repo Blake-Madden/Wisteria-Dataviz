@@ -36,11 +36,13 @@ namespace Wisteria::Colors::Schemes
 
         /// @returns The named color scheme for @p key (case-insensitive), or @c nullptr
         ///     when @p key is empty or unrecognized.
+        /// @param key The scheme's lowercase key (e.g., @c "dusk").
         [[nodiscard]]
         static std::shared_ptr<ColorScheme> FromKey(const wxString& key);
 
         /// @returns The lowercase key for @p scheme, identified by its concrete type, or
         ///     an empty string when @p scheme is @c nullptr or unrecognized.
+        /// @param scheme The color scheme to look up the key for.
         [[nodiscard]]
         static wxString ToKey(const std::shared_ptr<ColorScheme>& scheme);
         };

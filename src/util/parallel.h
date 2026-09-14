@@ -70,4 +70,6 @@ namespace parallel
         }
     } // namespace parallel
 
+/** @}*/
+
 #endif // WISTERIA_PARALLEL_H

@@ -16,7 +16,10 @@
 
 namespace Wisteria::UI
     {
+    /// @cond DOXYGEN_IGNORE
     wxDEFINE_EVENT(wxEVT_OBJECTGALLERY_ITEM_DROPPED, ObjectGalleryItemDroppedEvent);
+
+    /// @endcond
 
     //-------------------------------------------
     static wxString EscapeForHtml(const wxString& text)

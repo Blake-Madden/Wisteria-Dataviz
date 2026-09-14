@@ -77,6 +77,18 @@ namespace Wisteria::GraphItems
         /// @param lineStyle The line style.
         void SetLineStyle(const LineStyle lineStyle) noexcept { m_lineStyle = lineStyle; }
 
+        /// @returns The scaling factor applied to the arrowhead size when
+        ///     @c LineStyle::Arrows is in use.
+        [[nodiscard]]
+        double GetArrowheadScale() const noexcept
+            {
+            return m_arrowheadScale;
+            }
+
+        /// @brief Scales the arrowhead size when @c LineStyle::Arrows is in use.
+        /// @param scale The scaling factor to apply to the default arrowhead size.
+        void SetArrowheadScale(const double scale) noexcept { m_arrowheadScale = scale; }
+
         /** @brief Moves the points by the specified x and y values.
             @param xToMove The amount to move horizontally.
             @param yToMove The amount to move vertically.*/
@@ -117,6 +129,7 @@ namespace Wisteria::GraphItems
 
         std::vector<std::pair<wxPoint, wxPoint>> m_lines;
         LineStyle m_lineStyle{ LineStyle::Lines };
+        double m_arrowheadScale{ 1.0 };
         };
     } // namespace Wisteria::GraphItems
 

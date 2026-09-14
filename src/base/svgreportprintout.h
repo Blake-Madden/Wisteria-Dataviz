@@ -86,6 +86,7 @@ namespace Wisteria
             }
 
         /// @returns @c true if layer controls should be shown (option enabled and layers exist).
+        /// @param layers The collection of layers to check for emptiness.
         template<typename Container>
         [[nodiscard]]
         bool HasLayerControls(const Container& layers) const noexcept

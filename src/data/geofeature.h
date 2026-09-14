@@ -203,9 +203,13 @@ namespace Wisteria::Data
             m_lastError.clear();
             }
 
+        /// @brief The regions read from the file.
         std::vector<GeoRegion> m_regions;
+        /// @brief The combined extent of every region that was read.
         GeoBoundingBox m_boundingBox;
+        /// @brief The name of the region collection.
         wxString m_name;
+        /// @brief A description of why the last import failed, or empty if it succeeded.
         wxString m_lastError;
         };
     } // namespace Wisteria::Data

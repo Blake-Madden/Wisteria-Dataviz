@@ -246,6 +246,7 @@ namespace Wisteria::Data
         static RegionKeyStats ReadRegionKeyStats(const wxString& filePath, const wxString& idField);
 
         /// @returns @c true if @p filePath has a @c .geojson or @c .json extension.
+        /// @param filePath The path to check the extension of.
         [[nodiscard]]
         static bool IsGeoJsonFile(const wxString& filePath);
 
