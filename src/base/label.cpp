@@ -281,26 +281,37 @@ namespace Wisteria::GraphItems
         CacheContentBoundingBox(rect.GetTopLeft(), wxSize(measuredWidth, measureHeight),
                                 fullBoxHeight);
 
+        const bool adjustingWidth = (GetBoundingBoxToContentAdjustment() &
+                                     LabelBoundingBoxContentAdjustment::ContentAdjustWidth) != 0;
+        const bool adjustingHeight = (GetBoundingBoxToContentAdjustment() &
+                                      LabelBoundingBoxContentAdjustment::ContentAdjustHeight) != 0;
+
         wxRect clippedRect{ rect };
-        if ((GetBoundingBoxToContentAdjustment() &
-             LabelBoundingBoxContentAdjustment::ContentAdjustWidth) != 0)
+        if (adjustingWidth)
             {
             clippedRect.SetWidth(measuredWidth);
             }
-        if ((GetBoundingBoxToContentAdjustment() &
-             LabelBoundingBoxContentAdjustment::ContentAdjustHeight) != 0)
+        if (adjustingHeight)
             {
             clippedRect.SetHeight(measureHeight);
             }
-        // if both width and height are being readjusted, then adjust the min size as well since
-        // page alignment is irrelevant now.
-        if ((GetBoundingBoxToContentAdjustment() &
-             LabelBoundingBoxContentAdjustment::ContentAdjustWidth) != 0 &&
-            (GetBoundingBoxToContentAdjustment() &
-             LabelBoundingBoxContentAdjustment::ContentAdjustHeight) != 0)
+        // Move a shrunk box to its aligned content. The min size then matches the box,
+        // so the text isn't offset again when drawn.
+        if (adjustingWidth || adjustingHeight)
             {
-            SetMinimumUserSizeDIPs(dc.ToDIP(clippedRect.GetWidth()),
-                                   dc.ToDIP(clippedRect.GetHeight()));
+            if (adjustingWidth && !adjustingHeight)
+                {
+                clippedRect.SetX(rect.GetX() + CalcPageHorizontalOffset());
+            }
+            else if (adjustingHeight && !adjustingWidth)
+                {
+                clippedRect.SetY(rect.GetY() + CalcPageVerticalOffset());
+                }
+            // this clears the cached content box, so recache it
+            SetMinimumUserSizeDIPs(DownscaleFromScreenAndCanvas(clippedRect.GetWidth()),
+                                   DownscaleFromScreenAndCanvas(clippedRect.GetHeight()));
+            CacheContentBoundingBox(clippedRect.GetTopLeft(), wxSize(measuredWidth, measureHeight),
+                                    fullBoxHeight);
             }
 
         SetCachedBoundingBox(clippedRect);
