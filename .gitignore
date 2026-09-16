@@ -19,8 +19,10 @@
 /tools/ColorCode.txt
 /tools/ColorReportMap.txt
 /wxWidgets_lib
+/tests/gui-tests/wxWidgets_lib
 /docs/syntax-manual/.gitignore
 /docs/syntax-manual/site_libs
+/src/app/sbom.h
 
 # Compiler helper files
 CMakeSettings.json
@@ -71,5 +73,4 @@ cpp.hint
 *.out
 *.app
 *.manifest
-/tests/gui-tests/wxWidgets_lib
 
