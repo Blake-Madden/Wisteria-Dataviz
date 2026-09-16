@@ -521,8 +521,10 @@ void WisteriaApp::LoadRibbonLogPage(wxRibbonBar* ribbon)
         wxDefaultPosition, wxDefaultSize, wxRIBBON_PANEL_NO_AUTO_MINIMISE));
     exportBar->AddButton(ID_LOG_TAB_SAVE, _(L"Save"), ReadSvgIcon(L"file-save.svg"),
                          _(L"Save the log report."));
+    exportBar->SetKeyTip(ID_LOG_TAB_SAVE, _DT(L"S"));
     exportBar->AddButton(ID_LOG_TAB_PRINT, _(L"Print"), ReadSvgIcon(L"print.svg"),
                          _(L"Print the log report."));
+    exportBar->SetKeyTip(ID_LOG_TAB_PRINT, _DT(L"R"));
 
     GetMainFrameEx()->m_logEditButtonBar = new wxRibbonButtonBar(
         new wxRibbonPanel(GetMainFrameEx()->GetLogRibbonPage(), wxID_ANY, _(L"Edit"), wxNullBitmap,
@@ -530,22 +532,29 @@ void WisteriaApp::LoadRibbonLogPage(wxRibbonBar* ribbon)
     GetMainFrameEx()->m_logEditButtonBar->AddButton(ID_LOG_TAB_COPY, _(L"Copy Selection"),
                                                     ReadSvgIcon(L"copy.svg"),
                                                     _(L"Copy the selected items."));
+    GetMainFrameEx()->m_logEditButtonBar->SetKeyTip(ID_LOG_TAB_COPY, _DT(L"C"));
     GetMainFrameEx()->m_logEditButtonBar->AddButton(ID_LOG_TAB_SELECT_ALL, _(L"Select All"),
                                                     ReadSvgIcon(L"select-all.svg"),
                                                     _(L"Select the entire list."));
+    GetMainFrameEx()->m_logEditButtonBar->SetKeyTip(ID_LOG_TAB_SELECT_ALL, _DT(L"T"));
     GetMainFrameEx()->m_logEditButtonBar->AddButton(ID_LOG_TAB_SORT, _(L"Sort"),
                                                     ReadSvgIcon(L"sort.svg"), _(L"Sort the list."));
+    GetMainFrameEx()->m_logEditButtonBar->SetKeyTip(ID_LOG_TAB_SORT, _DT(L"O"));
     GetMainFrameEx()->m_logEditButtonBar->AddButton(
         ID_LOG_TAB_CLEAR, _(L"Clear"), ReadSvgIcon(L"clear.svg"), _(L"Clear the log report."));
+    GetMainFrameEx()->m_logEditButtonBar->SetKeyTip(ID_LOG_TAB_CLEAR, _DT(L"B"));
     GetMainFrameEx()->m_logEditButtonBar->AddButton(ID_LOG_TAB_REFRESH, _(L"Refresh"),
                                                     ReadSvgIcon(L"reload.svg"),
                                                     _(L"Refresh the log report."));
+    GetMainFrameEx()->m_logEditButtonBar->SetKeyTip(ID_LOG_TAB_REFRESH, _DT(L"F"));
     GetMainFrameEx()->m_logEditButtonBar->AddToggleButton(
         ID_LOG_TAB_REALTIME_UPDATE, _(L"Auto Refresh"), ReadSvgIcon(L"realtime.svg"),
         _(L"Refresh the log report automatically."));
+    GetMainFrameEx()->m_logEditButtonBar->SetKeyTip(ID_LOG_TAB_REALTIME_UPDATE, _DT(L"U"));
     GetMainFrameEx()->m_logEditButtonBar->AddToggleButton(
         ID_LOG_TAB_VERBOSE, _(L"Verbose"), ReadSvgIcon(L"edit.svg"),
         _(L"Toggles whether the logging system includes more detailed information."));
+    GetMainFrameEx()->m_logEditButtonBar->SetKeyTip(ID_LOG_TAB_VERBOSE, _DT(L"V"));
     }
 
 //-------------------------------------------
@@ -699,195 +708,265 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         wxSystemSettings::GetAppearance().IsDark() ? L"home-dark-mode.svg" : L"home.svg",
         wxSize{ 16, 16 });
     auto* homePage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Home"), homeIcon);
+    ribbon->SetPageKeyTip(homePage, _DT(L"H"));
 
     // Project panel with New and Open buttons
     auto* projectPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Project"));
+    projectPanel->SetKeyTip(_DT(L"Q"));
     auto* projectButtonBar = new wxRibbonButtonBar(projectPanel, wxID_ANY);
 
     projectButtonBar->AddButton(wxID_NEW, _(L"New"), ReadSvgIcon(L"wisteria.svg"),
                                 _(L"Create a new project"));
+    projectButtonBar->SetKeyTip(wxID_NEW, _DT(L"N"));
 
     projectButtonBar->AddHybridButton(wxID_OPEN, _(L"Open"), ReadSvgIcon(L"file-open.svg"),
                                       _(L"Open a data file"));
+    projectButtonBar->SetKeyTip(wxID_OPEN, _DT(L"O"));
+    projectButtonBar->SetDropdownKeyTip(wxID_OPEN, _DT(L"U"));
 
     if (isProjectRibbon)
         {
         projectButtonBar->AddHybridButton(ID_SAVE_PROJECT, _(L"Save"),
                                           ReadSvgIcon(L"file-save.svg"), _(L"Save the project"));
+        projectButtonBar->SetKeyTip(ID_SAVE_PROJECT, _DT(L"S"));
+        projectButtonBar->SetDropdownKeyTip(ID_SAVE_PROJECT, _DT(L"X"));
         projectButtonBar->AddButton(ID_SVG_EXPORT, _(L"SVG Export"), ReadSvgIcon(L"report.svg"),
                                     _(L"Export all pages to SVG"));
+        projectButtonBar->SetKeyTip(ID_SVG_EXPORT, _DT(L"V"));
         projectButtonBar->AddButton(ID_PDF_EXPORT, _(L"PDF Export"), ReadSvgIcon(L"pdf.svg"),
                                     _(L"Export all pages to PDF"));
+        projectButtonBar->SetKeyTip(ID_PDF_EXPORT, _DT(L"F"));
         projectButtonBar->AddButton(ID_PPTX_EXPORT, _(L"PowerPoint Export"),
                                     ReadSvgIcon(L"powerpoint.svg"),
                                     _(L"Export all pages to PowerPoint"));
+        projectButtonBar->SetKeyTip(ID_PPTX_EXPORT, _DT(L"W"));
         projectButtonBar->AddButton(ID_REFRESH_ALL, _(L"Refresh All"), ReadSvgIcon(L"reload.svg"),
                                     _(L"Reload the project"));
+        projectButtonBar->SetKeyTip(ID_REFRESH_ALL, _DT(L"R"));
         projectButtonBar->AddButton(ID_PROJECT_SETTINGS, _(L"Project Settings"),
                                     ReadSvgIcon(L"project-settings.svg"),
                                     _(L"Edit the project settings"));
+        projectButtonBar->SetKeyTip(ID_PROJECT_SETTINGS, _DT(L"J"));
 
         // Print panel
         auto* printPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Print"));
+        printPanel->SetKeyTip(_DT(L"T"));
         auto* printButtonBar = new wxRibbonButtonBar(printPanel, wxID_ANY);
         printButtonBar->AddButton(wxID_PRINT, _(L"Print"), ReadSvgIcon(L"print.svg"),
                                   _(L"Print all pages"));
+        printButtonBar->SetKeyTip(wxID_PRINT, _DT(L"I"));
         printButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Setup"), ReadSvgIcon(L"print-setup.svg"),
                                   _(L"Configure print settings"));
+        printButtonBar->SetKeyTip(ID_PRINT_SETUP, _DT(L"G"));
 
         // Pages tab
         auto* pagesPage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Pages"));
+        ribbon->SetPageKeyTip(pagesPage, _DT(L"P"));
 
         // Pages panel
         auto* pagesPanel = new wxRibbonPanel(pagesPage, wxID_ANY, _(L"Pages"));
+        pagesPanel->SetKeyTip(_DT(L"S"));
         auto* pagesButtonBar = new wxRibbonButtonBar(pagesPanel, ID_PAGES_BUTTONBAR);
 
         pagesButtonBar->AddButton(ID_INSERT_PAGE, _(L"Add"), ReadSvgIcon(L"page-add.svg"),
                                   _(L"Add a new page to the project"));
+        pagesButtonBar->SetKeyTip(ID_INSERT_PAGE, _DT(L"N"));
         pagesButtonBar->AddButton(ID_EDIT_PAGE, _(L"Edit"), ReadSvgIcon(L"page-edit.svg"),
                                   _(L"Edit the current page"));
+        pagesButtonBar->SetKeyTip(ID_EDIT_PAGE, _DT(L"I"));
         pagesButtonBar->AddButton(ID_DELETE_PAGE, _(L"Delete"), ReadSvgIcon(L"page-delete.svg"),
                                   _(L"Delete the current page"));
+        pagesButtonBar->SetKeyTip(ID_DELETE_PAGE, _DT(L"T"));
         pagesButtonBar->AddButton(ID_REARRANGE_PAGES, _(L"Reorder"), ReadSvgIcon(L"sort.svg"),
                                   _(L"Reorder or remove the project's pages"));
+        pagesButtonBar->SetKeyTip(ID_REARRANGE_PAGES, _DT(L"R"));
         pagesButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Setup"), ReadSvgIcon(L"print-setup.svg"),
                                   _(L"Configure print settings"));
+        pagesButtonBar->SetKeyTip(ID_PRINT_SETUP, _DT(L"G"));
 
         // Objects panel (labels, images, shapes)
         auto* objectsPanel = new wxRibbonPanel(pagesPage, wxID_ANY, _(L"Objects"));
+        objectsPanel->SetKeyTip(_DT(L"OB"));
         auto* objectsButtonBar = new wxRibbonButtonBar(objectsPanel, ID_OBJECTS_BUTTONBAR);
 
         objectsButtonBar->AddButton(ID_NEW_LABEL, _(L"Label"), ReadSvgIcon(L"label.svg"),
                                     _(L"Insert a text label"));
+        objectsButtonBar->SetKeyTip(ID_NEW_LABEL, _DT(L"B"));
         objectsButtonBar->AddButton(ID_NEW_KPI_CARD, _(L"KPI Card"), ReadSvgIcon(L"kpi-card.svg"),
                                     _(L"Insert a KPI card (a big number with a caption)"));
+        objectsButtonBar->SetKeyTip(ID_NEW_KPI_CARD, _DT(L"C"));
         objectsButtonBar->AddButton(ID_NEW_IMAGE, _(L"Image"), ReadSvgIcon(L"image.svg"),
                                     _(L"Insert an image"));
+        objectsButtonBar->SetKeyTip(ID_NEW_IMAGE, _DT(L"F"));
         objectsButtonBar->AddButton(ID_NEW_SHAPE, _(L"Shape"), ReadSvgIcon(L"shape.svg"),
                                     _(L"Insert a shape"));
+        objectsButtonBar->SetKeyTip(ID_NEW_SHAPE, _DT(L"J"));
         objectsButtonBar->AddButton(ID_NEW_COMMON_AXIS, _(L"Axis"), ReadSvgIcon(L"axis.svg"),
                                     _(L"Insert an axis"));
+        objectsButtonBar->SetKeyTip(ID_NEW_COMMON_AXIS, _DT(L"X"));
         objectsButtonBar->AddButton(ID_NEW_SPACER, _(L"Spacer"), ReadSvgIcon(L"spacer.svg"),
                                     _(L"Insert a spacer"));
+        objectsButtonBar->SetKeyTip(ID_NEW_SPACER, _DT(L"V"));
         objectsButtonBar->AddDropdownButton(ID_NEW_DIVIDER, _(L"Divider"),
                                             ReadSvgIcon(L"divider-horizontal-double.svg"),
                                             _(L"Insert a divider line"));
+        objectsButtonBar->SetKeyTip(ID_NEW_DIVIDER, _DT(L"Q"));
         objectsButtonBar->AddButton(wxID_COPY, _(L"Copy"), ReadSvgIcon(L"copy.svg"),
                                     _(L"Copy the selected item"));
+        objectsButtonBar->SetKeyTip(wxID_COPY, _DT(L"Y"));
         objectsButtonBar->AddButton(wxID_PASTE, _(L"Paste"), ReadSvgIcon(L"paste.svg"),
                                     _(L"Paste the copied item"));
+        objectsButtonBar->SetKeyTip(wxID_PASTE, _DT(L"U"));
         objectsButtonBar->AddButton(ID_EDIT_ITEM, _(L"Edit"), ReadSvgIcon(L"edit.svg"),
                                     _(L"Edit the selected item"));
+        objectsButtonBar->SetKeyTip(ID_EDIT_ITEM, _DT(L"W"));
         objectsButtonBar->AddButton(ID_GOTO_DATASOURCE, _(L"Datasource"), ReadSvgIcon(L"data.svg"),
                                     _(L"Jump to this graph's dataset"));
+        objectsButtonBar->SetKeyTip(ID_GOTO_DATASOURCE, _DT(L"Z"));
         objectsButtonBar->AddButton(ID_DELETE_ITEM, _(L"Delete"), ReadSvgIcon(L"delete.svg"),
                                     _(L"Delete the selected item"));
+        objectsButtonBar->SetKeyTip(ID_DELETE_ITEM, _DT(L"OD"));
 
         // Data tab
         auto* dataPage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Data"));
+        ribbon->SetPageKeyTip(dataPage, _DT(L"D"));
 
         // Datasets panel
         auto* dataPanel = new wxRibbonPanel(dataPage, wxID_ANY, _(L"Datasets"));
+        dataPanel->SetKeyTip(_DT(L"S"));
         auto* dataButtonBar = new wxRibbonButtonBar(dataPanel, ID_DATASET_BUTTONBAR);
 
         dataButtonBar->AddButton(ID_INSERT_DATASET, _(L"Add"), ReadSvgIcon(L"data-add.svg"),
                                  _(L"Import a dataset into the project"));
+        dataButtonBar->SetKeyTip(ID_INSERT_DATASET, _DT(L"N"));
         dataButtonBar->AddButton(ID_EDIT_DATASET, _(L"Edit"), ReadSvgIcon(L"data-edit.svg"),
                                  _(L"Edit the selected dataset's import options"));
+        dataButtonBar->SetKeyTip(ID_EDIT_DATASET, _DT(L"I"));
         dataButtonBar->AddButton(ID_DELETE_DATASET, _(L"Delete"), ReadSvgIcon(L"data-delete.svg"),
                                  _(L"Delete the selected dataset from the project"));
+        dataButtonBar->SetKeyTip(ID_DELETE_DATASET, _DT(L"T"));
 
         // Transformations panel
         auto* transformPanel = new wxRibbonPanel(dataPage, wxID_ANY, _(L"Transformations"));
+        transformPanel->SetKeyTip(_DT(L"R"));
         auto* transformButtonBar = new wxRibbonButtonBar(transformPanel, wxID_ANY);
 
         transformButtonBar->AddButton(ID_SUBSET_DATASET, _(L"Subset"), ReadSvgIcon(L"subset.svg"),
                                       _(L"Create a subset of a dataset"));
+        transformButtonBar->SetKeyTip(ID_SUBSET_DATASET, _DT(L"U"));
         transformButtonBar->AddButton(ID_JOIN_DATASET, _(L"Join"), ReadSvgIcon(L"join.svg"),
                                       _(L"Join two datasets"));
+        transformButtonBar->SetKeyTip(ID_JOIN_DATASET, _DT(L"J"));
         transformButtonBar->AddButton(ID_PIVOT_WIDER, _(L"Pivot Wider"),
                                       ReadSvgIcon(L"pivot-wider.svg"),
                                       _(L"Pivot a dataset wider (unstack)"));
+        transformButtonBar->SetKeyTip(ID_PIVOT_WIDER, _DT(L"V"));
         transformButtonBar->AddButton(ID_PIVOT_LONGER, _(L"Pivot Longer"),
                                       ReadSvgIcon(L"pivot-longer.svg"),
                                       _(L"Pivot a dataset longer (stack)"));
+        transformButtonBar->SetKeyTip(ID_PIVOT_LONGER, _DT(L"O"));
 
         // Constants panel
         auto* constantsPanel = new wxRibbonPanel(dataPage, wxID_ANY, _(L"Constants"));
+        constantsPanel->SetKeyTip(_DT(L"F"));
         auto* constantsButtonBar = new wxRibbonButtonBar(constantsPanel, wxID_ANY);
 
         constantsButtonBar->AddButton(ID_ADD_CONSTANT, _(L"Add"), ReadSvgIcon(L"constants-add.svg"),
                                       _(L"Add a constant to the project"));
+        constantsButtonBar->SetKeyTip(ID_ADD_CONSTANT, _DT(L"B"));
         constantsButtonBar->AddButton(ID_DELETE_CONSTANT, _(L"Delete"),
                                       ReadSvgIcon(L"constants-delete.svg"),
                                       _(L"Delete the selected constant"));
+        constantsButtonBar->SetKeyTip(ID_DELETE_CONSTANT, _DT(L"C"));
 
         // Sources panel
         auto* sourcesPanel = new wxRibbonPanel(dataPage, wxID_ANY, _(L"Sources"));
+        sourcesPanel->SetKeyTip(_DT(L"Q"));
         auto* sourcesButtonBar = new wxRibbonButtonBar(sourcesPanel, ID_SOURCES_BUTTONBAR);
 
         sourcesButtonBar->AddButton(ID_GOTO_DATASOURCE, _(L"Datasource"), ReadSvgIcon(L"data.svg"),
                                     _(L"Jump to this graph's dataset"));
+        sourcesButtonBar->SetKeyTip(ID_GOTO_DATASOURCE, _DT(L"G"));
 
         // Analyses tab
         auto* analysesPage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Analyses"));
+        ribbon->SetPageKeyTip(analysesPage, _DT(L"A"));
 
         // Graph category panel
         auto* graphPanel = new wxRibbonPanel(analysesPage, wxID_ANY, _(L"Graphs"));
+        graphPanel->SetKeyTip(_DT(L"G"));
         auto* graphButtonBar = new wxRibbonButtonBar(graphPanel, ID_GRAPH_BUTTONBAR);
 
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_BASIC, _(L"Basic"),
                                           ReadSvgIcon(L"chart-basic.svg"), _(L"Basic graphs"));
+        graphButtonBar->SetKeyTip(ID_INSERT_GRAPH_BASIC, _DT(L"B"));
 
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_BUSINESS, _(L"Business"),
                                           ReadSvgIcon(L"chart-business.svg"),
                                           _(L"Business graphs"));
+        graphButtonBar->SetKeyTip(ID_INSERT_GRAPH_BUSINESS, _DT(L"U"));
 
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_STATISTICAL, _(L"Statistical"),
                                           ReadSvgIcon(L"chart-statistical.svg"),
                                           _(L"Statistical graphs"));
+        graphButtonBar->SetKeyTip(ID_INSERT_GRAPH_STATISTICAL, _DT(L"S"));
 
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_SURVEY, _(L"Survey"),
                                           ReadSvgIcon(L"chart-survey.svg"),
                                           _(L"Survey data graphs"));
+        graphButtonBar->SetKeyTip(ID_INSERT_GRAPH_SURVEY, _DT(L"R"));
 
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_EDUCATION, _(L"Education"),
                                           ReadSvgIcon(L"chart-education.svg"),
                                           _(L"Education graphs"));
+        graphButtonBar->SetKeyTip(ID_INSERT_GRAPH_EDUCATION, _DT(L"C"));
 
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_SOCIAL, _(L"Social Sciences"),
                                           ReadSvgIcon(L"chart-social.svg"),
                                           _(L"Social sciences graphs"));
+        graphButtonBar->SetKeyTip(ID_INSERT_GRAPH_SOCIAL, _DT(L"O"));
 
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_SPORTS, _(L"Sports"),
                                           ReadSvgIcon(L"chart-sports.svg"), _(L"Sports graphs"));
+        graphButtonBar->SetKeyTip(ID_INSERT_GRAPH_SPORTS, _DT(L"T"));
 
-        // Tools panel (project frames only — navigates to main frame log tab)
+        // Tools panel (project frames only, navigates to main frame log tab)
         auto* toolsPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Tools"));
+        toolsPanel->SetKeyTip(_DT(L"C"));
         auto* toolsButtonBar = new wxRibbonButtonBar(toolsPanel, wxID_ANY);
         toolsButtonBar->AddButton(ID_VIEW_LOG_REPORT, _(L"Log"), ReadSvgIcon(L"log-book.svg"),
                                   _(L"View the log report"));
+        toolsButtonBar->SetKeyTip(ID_VIEW_LOG_REPORT, _DT(L"B"));
         }
     else
         {
         // Print panel
         auto* printPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Print"));
+        printPanel->SetKeyTip(_DT(L"R"));
         auto* printButtonBar = new wxRibbonButtonBar(printPanel, wxID_ANY);
         printButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Setup"), ReadSvgIcon(L"print-setup.svg"),
                                   _(L"Configure print settings"));
+        printButtonBar->SetKeyTip(ID_PRINT_SETUP, _DT(L"G"));
 
         // Log tab (main frame only)
         LoadRibbonLogPage(ribbon);
+        ribbon->SetPageKeyTip(GetMainFrameEx()->GetLogRibbonPage(), _DT(L"L"));
         }
 
     // Help tab
     auto* helpPage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Help"));
+    ribbon->SetPageKeyTip(helpPage, _DT(L"E"));
+
+    ribbon->SetToggleButtonKeyTip(_DT(L"M"));
+    ribbon->SetHelpButtonKeyTip(_DT(L"K"));
 
     auto* aboutPanel = new wxRibbonPanel(helpPage, wxID_ANY, _(L"About"));
+    aboutPanel->SetKeyTip(_DT(L"O"));
     auto* aboutButtonBar = new wxRibbonButtonBar(aboutPanel, wxID_ANY);
 
     aboutButtonBar->AddButton(wxID_ABOUT, _(L"About"), ReadSvgIcon(L"wisteria.svg"),
                               _(L"About Wisteria Dataviz"));
+    aboutButtonBar->SetKeyTip(wxID_ABOUT, _DT(L"B"));
 
     ribbon->SetArtProvider(new wxRibbonMSWFlatArtProvider);
     ribbon->Realize();
