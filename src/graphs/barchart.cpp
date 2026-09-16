@@ -7,8 +7,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "barchart.h"
-#include "../base/currencyformat.h"
 #include <algorithm>
+#include <wx/numformatter.h>
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGraph2D)
 
@@ -56,7 +56,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                                 wxNumberFormatter::Style::Style_NoTrailingZeroes)) :
             (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
                 (GetNumberDisplay() == NumberDisplay::Currency ?
-                     ToCurrency(bar.GetLength(), true) :
+                     wxNumberFormatter::ToString(
+                         bar.GetLength(), 2,
+                         wxNumberFormatter::Style::Style_WithThousandsSep |
+                             wxNumberFormatter::Style::Style_Currency |
+                             wxNumberFormatter::Style::Style_CurrencySymbol |
+                             wxNumberFormatter::Style::Style_NoTrailingZeroes) :
                  GetNumberDisplay() == NumberDisplay::ValueSimple ?
                      wxNumberFormatter::ToString(bar.GetLength(), defaultPrecision,
                                                  wxNumberFormatter::Style::Style_None) :

@@ -667,24 +667,26 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BulletChart, Wisteria::Graphs::BarCh
             label += row.m_label;
             if (std::isfinite(row.m_actual))
                 {
-                label += wxString::Format(
+                label = wxString::Format(
                     /* TRANSLATORS: bullet chart accessibility: actual value for a KPI row.
-                       %s is the value. */
-                    _(L", actual %s"),
+                       %s are the label and the value. */
+                    _(L"%s, actual %s"), label,
                     wxNumberFormatter::ToString(row.m_actual, 0,
                                                 wxNumberFormatter::Style::Style_NoTrailingZeroes));
                 const wxString rangeLabel{ findRangeForValue(row.m_actual) };
                 if (!rangeLabel.empty())
                     {
-                    label += wxString::Format(_(L" (%s)"), rangeLabel);
+                    /* TRANSLATORS: bullet chart accessibility: actual value for a KPI row.
+                       %s are the label and the range name. */
+                    label = wxString::Format(_(L"%s (%s)"), label, rangeLabel);
                     }
                 }
             if (std::isfinite(row.m_target))
                 {
-                label += wxString::Format(
+                label = wxString::Format(
                     /* TRANSLATORS: bullet chart accessibility: target value for a KPI row.
-                       %s is the value. */
-                    _(L", target %s"),
+                       %s are the label and the value. */
+                    _(L"%s, target %s"), label,
                     wxNumberFormatter::ToString(row.m_target, 0,
                                                 wxNumberFormatter::Style::Style_NoTrailingZeroes));
                 }

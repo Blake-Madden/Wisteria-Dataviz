@@ -351,14 +351,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaterfallChart, Wisteria::Graphs::Ba
             label += row.m_label;
             if (row.m_isTotal)
                 {
-                label += _(L" (total)");
+                label = wxString::Format(_(L"%s (total)", label));
                 }
             else if (std::isfinite(row.m_value))
                 {
-                label += wxString::Format(
-                    /* TRANSLATORS: waterfall chart accessibility: change amount. %s is the value.
-                     */
-                    _(L", change %s"),
+                label = wxString::Format(
+                    /* TRANSLATORS: waterfall chart accessibility: change amount.
+                       %s are the label and value. */
+                    _(L"%s, change %s"), label,
                     wxNumberFormatter::ToString(row.m_value, 2,
                                                 wxNumberFormatter::Style::Style_NoTrailingZeroes));
                 }

@@ -7,10 +7,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "axis.h"
-#include "currencyformat.h"
 #include "lines.h"
 #include <algorithm>
 #include <random>
+#include <wx/numformatter.h>
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::GraphItems::Axis, Wisteria::GraphItems::GraphItemBase);
 
@@ -34,7 +34,12 @@ namespace Wisteria::GraphItems
             }
         if (GetNumberDisplay() == NumberDisplay::Currency)
             {
-            return ToCurrency(pos, true);
+            return wxNumberFormatter::ToString(
+                pos, 2,
+                wxNumberFormatter::Style::Style_WithThousandsSep |
+                    wxNumberFormatter::Style::Style_Currency |
+                    wxNumberFormatter::Style::Style_CurrencySymbol |
+                    wxNumberFormatter::Style::Style_NoTrailingZeroes);
             }
         else if (GetNumberDisplay() == NumberDisplay::Percentage)
             {
@@ -3576,7 +3581,12 @@ namespace Wisteria::GraphItems
                     }
                 else if (GetNumberDisplay() == NumberDisplay::Currency)
                     {
-                    axisPt.SetDisplayValue(ToCurrency(axisPt.GetValue(), true));
+                    axisPt.SetDisplayValue(wxNumberFormatter::ToString(
+                        axisPt.GetValue(), 2,
+                        wxNumberFormatter::Style::Style_WithThousandsSep |
+                            wxNumberFormatter::Style::Style_Currency |
+                            wxNumberFormatter::Style::Style_CurrencySymbol |
+                            wxNumberFormatter::Style::Style_NoTrailingZeroes));
                     }
                 else // Percent
                     {

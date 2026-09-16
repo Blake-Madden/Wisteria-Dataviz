@@ -7,8 +7,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "racetrackchart.h"
-#include "../base/currencyformat.h"
 #include "../math/safe_math.h"
+#include <wx/numformatter.h>
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::RaceTrackChart, Wisteria::Graphs::Graph2D)
 
@@ -229,7 +229,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::RaceTrackChart, Wisteria::Graphs::Gr
         {
         if (m_valueFormat == NumberDisplay::Currency)
             {
-            return ToCurrency(value, true);
+            return wxNumberFormatter::ToString(
+                value, 2,
+                wxNumberFormatter::Style::Style_WithThousandsSep |
+                    wxNumberFormatter::Style::Style_Currency |
+                    wxNumberFormatter::Style::Style_CurrencySymbol |
+                    wxNumberFormatter::Style::Style_NoTrailingZeroes);
             }
         if (m_valueFormat == NumberDisplay::Percentage)
             {
