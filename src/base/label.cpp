@@ -302,7 +302,7 @@ namespace Wisteria::GraphItems
             if (adjustingWidth && !adjustingHeight)
                 {
                 clippedRect.SetX(rect.GetX() + CalcPageHorizontalOffset());
-            }
+                }
             else if (adjustingHeight && !adjustingWidth)
                 {
                 clippedRect.SetY(rect.GetY() + CalcPageVerticalOffset());
@@ -744,34 +744,60 @@ namespace Wisteria::GraphItems
                                         wxPoint(ScaleToScreenAndCanvas(GetTopPadding()),
                                                 ScaleToScreenAndCanvas((GetRightPadding())) -
                                                     ScaleToScreenAndCanvas((GetLeftPadding()))));
+
+        // Where the rule under each line goes. A header line is taller, so measure each line.
+        std::vector<wxCoord> rulePositions;
+        if (GetLabelStyle() != LabelStyle::NoLabelStyle)
+            {
+            const auto lineSpacing =
+                static_cast<wxCoord>(std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
+            const wxCoord boxExtent = (GetTextOrientation() == Orientation::Horizontal) ?
+                                          boundingBox.GetHeight() :
+                                          boundingBox.GetWidth();
+            const bool hasHeaderLine{ GetHeaderInfo().IsEnabled() && GetLineCount() > 1 &&
+                                      GetHeaderInfo().GetFont().IsOk() };
+            wxCoord currentPosition{ 0 };
+            for (size_t lineIndex = 0;; ++lineIndex)
+                {
+                wxCoord lineHeight{ averageLineHeight };
+                if (lineIndex == 0 && hasHeaderLine)
+                    {
+                    const DCFontChangerIfDifferent fc{
+                        dc, GetHeaderInfo().GetFont().Scaled(GetScaling() *
+                                                             GetHeaderInfo().GetRelativeScaling())
+                    };
+                    lineHeight = dc.GetCharHeight();
+                    }
+                if (lineHeight + lineSpacing <= 0 ||
+                    currentPosition + lineHeight + lineSpacing > boxExtent)
+                    {
+                    break;
+                    }
+                rulePositions.push_back(currentPosition + lineHeight);
+                currentPosition += lineHeight + lineSpacing;
+                }
+            }
+
         if (GetTextOrientation() == Orientation::Horizontal)
             {
             // draw and style
-            const size_t linesToDrawCount = safe_divide<double>(
-                boundingBox.GetHeight(),
-                averageLineHeight + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
             if (GetLabelStyle() == LabelStyle::NoLabelStyle)
                 {
                 // NOOP, most likely branch
                 }
             else if (GetLabelStyle() == LabelStyle::IndexCard)
                 {
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
                     const DCPenChangerIfDifferent pc2(
-                        dc, wxPen((i == 1) ? wxColour(255, 0, 0, Settings::GetTranslucencyValue()) :
+                        dc, wxPen((i == 0) ? wxColour(255, 0, 0, Settings::GetTranslucencyValue()) :
                                              wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
                                   ScaleToScreenAndCanvas(1)));
-                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x,
-                                        boundingBox.GetLeftTop().y + (averageLineHeight * i) +
-                                            ((i - 1) *
-                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                            textOffset.y),
-                                wxPoint(boundingBox.GetRightTop().x,
-                                        boundingBox.GetLeftTop().y + (averageLineHeight * i) +
-                                            ((i - 1) *
-                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                            textOffset.y));
+                    dc.DrawLine(
+                        wxPoint(boundingBox.GetLeftTop().x,
+                                boundingBox.GetLeftTop().y + rulePositions[i] + textOffset.y),
+                        wxPoint(boundingBox.GetRightTop().x,
+                                boundingBox.GetLeftTop().y + rulePositions[i] + textOffset.y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::LinedPaper)
@@ -779,18 +805,13 @@ namespace Wisteria::GraphItems
                 const DCPenChangerIfDifferent pc2(
                     dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
                               ScaleToScreenAndCanvas(1)));
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
-                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x,
-                                        boundingBox.GetLeftTop().y + (averageLineHeight * i) +
-                                            ((i - 1) *
-                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                            textOffset.y),
-                                wxPoint(boundingBox.GetRightTop().x,
-                                        boundingBox.GetLeftTop().y + (averageLineHeight * i) +
-                                            ((i - 1) *
-                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                            textOffset.y));
+                    dc.DrawLine(
+                        wxPoint(boundingBox.GetLeftTop().x,
+                                boundingBox.GetLeftTop().y + rulePositions[i] + textOffset.y),
+                        wxPoint(boundingBox.GetRightTop().x,
+                                boundingBox.GetLeftTop().y + rulePositions[i] + textOffset.y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::DottedLinedPaper)
@@ -798,36 +819,25 @@ namespace Wisteria::GraphItems
                 const DCPenChangerIfDifferent pc2(
                     dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
                               ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
-                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x,
-                                        boundingBox.GetLeftTop().y + (averageLineHeight * i) +
-                                            ((i - 1) *
-                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                            textOffset.y),
-                                wxPoint(boundingBox.GetRightTop().x,
-                                        boundingBox.GetLeftTop().y + (averageLineHeight * i) +
-                                            ((i - 1) *
-                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                            textOffset.y));
+                    dc.DrawLine(
+                        wxPoint(boundingBox.GetLeftTop().x,
+                                boundingBox.GetLeftTop().y + rulePositions[i] + textOffset.y),
+                        wxPoint(boundingBox.GetRightTop().x,
+                                boundingBox.GetLeftTop().y + rulePositions[i] + textOffset.y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::RightArrowLinedPaper)
                 {
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
                     GraphItems::Polygon::DrawArrow(
                         dc,
-                        wxPoint(
-                            boundingBox.GetLeftTop().x,
-                            boundingBox.GetLeftTop().y + (averageLineHeight * i) +
-                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                textOffset.y),
-                        wxPoint(
-                            boundingBox.GetRightTop().x,
-                            boundingBox.GetLeftTop().y + (averageLineHeight * i) +
-                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                textOffset.y),
+                        wxPoint(boundingBox.GetLeftTop().x,
+                                boundingBox.GetLeftTop().y + rulePositions[i] + textOffset.y),
+                        wxPoint(boundingBox.GetRightTop().x,
+                                boundingBox.GetLeftTop().y + rulePositions[i] + textOffset.y),
                         wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
                     }
                 }
@@ -836,39 +846,32 @@ namespace Wisteria::GraphItems
                 const DCPenChangerIfDifferent pc2(
                     dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
                               ScaleToScreenAndCanvas(1)));
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
                     dc.DrawLine(
-                        wxPoint(
-                            boundingBox.GetLeftTop().x + ScaleToScreenAndCanvas(GetLeftPadding()),
-                            boundingBox.GetLeftTop().y + (averageLineHeight * i) +
-                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                textOffset.y),
-                        wxPoint(
-                            boundingBox.GetRightTop().x - ScaleToScreenAndCanvas(GetLeftPadding()),
-                            boundingBox.GetLeftTop().y + (averageLineHeight * i) +
-                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                textOffset.y));
+                        wxPoint(boundingBox.GetLeftTop().x +
+                                    ScaleToScreenAndCanvas(GetLeftPadding()),
+                                boundingBox.GetLeftTop().y + rulePositions[i] + textOffset.y),
+                        wxPoint(boundingBox.GetRightTop().x -
+                                    ScaleToScreenAndCanvas(GetLeftPadding()),
+                                boundingBox.GetLeftTop().y + rulePositions[i] + textOffset.y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::DottedLinedPaperWithMargins)
                 {
-                const DCPenChangerIfDifferent pc2(
+                const DCPenChangerIfDifferent pc2{
                     dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                              ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                              ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT)
+                };
+                for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
                     dc.DrawLine(
-                        wxPoint(
-                            boundingBox.GetLeftTop().x + ScaleToScreenAndCanvas(GetLeftPadding()),
-                            boundingBox.GetLeftTop().y + (averageLineHeight * i) +
-                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                textOffset.y),
-                        wxPoint(
-                            boundingBox.GetRightTop().x - ScaleToScreenAndCanvas(GetLeftPadding()),
-                            boundingBox.GetLeftTop().y + (averageLineHeight * i) +
-                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                textOffset.y));
+                        wxPoint(boundingBox.GetLeftTop().x +
+                                    ScaleToScreenAndCanvas(GetLeftPadding()),
+                                boundingBox.GetLeftTop().y + rulePositions[i] + textOffset.y),
+                        wxPoint(boundingBox.GetRightTop().x -
+                                    ScaleToScreenAndCanvas(GetLeftPadding()),
+                                boundingBox.GetLeftTop().y + rulePositions[i] + textOffset.y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::RightArrowLinedPaperWithMargins)
@@ -876,20 +879,16 @@ namespace Wisteria::GraphItems
                 const DCPenChangerIfDifferent pc2(
                     dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
                               ScaleToScreenAndCanvas(1)));
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
                     GraphItems::Polygon::DrawArrow(
                         dc,
-                        wxPoint(
-                            boundingBox.GetLeftTop().x + ScaleToScreenAndCanvas(GetLeftPadding()),
-                            boundingBox.GetLeftTop().y + (averageLineHeight * i) +
-                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                textOffset.y),
-                        wxPoint(
-                            boundingBox.GetRightTop().x - ScaleToScreenAndCanvas(GetRightPadding()),
-                            boundingBox.GetLeftTop().y + (averageLineHeight * i) +
-                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                textOffset.y),
+                        wxPoint(boundingBox.GetLeftTop().x +
+                                    ScaleToScreenAndCanvas(GetLeftPadding()),
+                                boundingBox.GetLeftTop().y + rulePositions[i] + textOffset.y),
+                        wxPoint(boundingBox.GetRightTop().x -
+                                    ScaleToScreenAndCanvas(GetRightPadding()),
+                                boundingBox.GetLeftTop().y + rulePositions[i] + textOffset.y),
                         wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
                     }
                 }
@@ -897,31 +896,23 @@ namespace Wisteria::GraphItems
         else
             {
             // draw and style
-            const size_t linesToDrawCount = safe_divide<double>(
-                boundingBox.GetWidth(),
-                averageLineHeight + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
             if (GetLabelStyle() == LabelStyle::NoLabelStyle)
                 {
                 // NOOP, most likely branch
                 }
             else if (GetLabelStyle() == LabelStyle::IndexCard)
                 {
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
                     const DCPenChangerIfDifferent pc2(
-                        dc, wxPen((i == 1) ? wxColour(255, 0, 0, Settings::GetTranslucencyValue()) :
+                        dc, wxPen((i == 0) ? wxColour(255, 0, 0, Settings::GetTranslucencyValue()) :
                                              wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
                                   ScaleToScreenAndCanvas(1)));
-                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
-                                            ((i - 1) *
-                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                            textOffset.x,
-                                        boundingBox.GetLeftTop().y),
-                                wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
-                                            ((i - 1) *
-                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                            textOffset.x,
-                                        boundingBox.GetLeftBottom().y));
+                    dc.DrawLine(
+                        wxPoint(boundingBox.GetLeftTop().x + rulePositions[i] + textOffset.x,
+                                boundingBox.GetLeftTop().y),
+                        wxPoint(boundingBox.GetLeftTop().x + rulePositions[i] + textOffset.x,
+                                boundingBox.GetLeftBottom().y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::LinedPaper)
@@ -929,18 +920,13 @@ namespace Wisteria::GraphItems
                 const DCPenChangerIfDifferent pc2(
                     dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
                               ScaleToScreenAndCanvas(1)));
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
-                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
-                                            ((i - 1) *
-                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                            textOffset.x,
-                                        boundingBox.GetLeftTop().y),
-                                wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
-                                            ((i - 1) *
-                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                            textOffset.x,
-                                        boundingBox.GetLeftBottom().y));
+                    dc.DrawLine(
+                        wxPoint(boundingBox.GetLeftTop().x + rulePositions[i] + textOffset.x,
+                                boundingBox.GetLeftTop().y),
+                        wxPoint(boundingBox.GetLeftTop().x + rulePositions[i] + textOffset.x,
+                                boundingBox.GetLeftBottom().y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::DottedLinedPaper)
@@ -948,36 +934,25 @@ namespace Wisteria::GraphItems
                 const DCPenChangerIfDifferent pc2(
                     dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
                               ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
-                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
-                                            ((i - 1) *
-                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                            textOffset.x,
-                                        boundingBox.GetLeftTop().y),
-                                wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
-                                            ((i - 1) *
-                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                            textOffset.x,
-                                        boundingBox.GetLeftBottom().y));
+                    dc.DrawLine(
+                        wxPoint(boundingBox.GetLeftTop().x + rulePositions[i] + textOffset.x,
+                                boundingBox.GetLeftTop().y),
+                        wxPoint(boundingBox.GetLeftTop().x + rulePositions[i] + textOffset.x,
+                                boundingBox.GetLeftBottom().y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::RightArrowLinedPaper)
                 {
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
                     GraphItems::Polygon::DrawArrow(
                         dc,
-                        wxPoint(
-                            boundingBox.GetLeftTop().x + (averageLineHeight * i) +
-                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                textOffset.x,
-                            boundingBox.GetLeftTop().y),
-                        wxPoint(
-                            boundingBox.GetLeftTop().x + (averageLineHeight * i) +
-                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                textOffset.x,
-                            boundingBox.GetLeftBottom().y),
+                        wxPoint(boundingBox.GetLeftTop().x + rulePositions[i] + textOffset.x,
+                                boundingBox.GetLeftTop().y),
+                        wxPoint(boundingBox.GetLeftTop().x + rulePositions[i] + textOffset.x,
+                                boundingBox.GetLeftBottom().y),
                         wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
                     }
                 }
@@ -986,18 +961,13 @@ namespace Wisteria::GraphItems
                 const DCPenChangerIfDifferent pc2(
                     dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
                               ScaleToScreenAndCanvas(1)));
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
-                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
-                                            ((i - 1) *
-                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                            textOffset.x,
-                                        boundingBox.GetLeftTop().y),
-                                wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
-                                            ((i - 1) *
-                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                            textOffset.x,
-                                        boundingBox.GetLeftBottom().y));
+                    dc.DrawLine(
+                        wxPoint(boundingBox.GetLeftTop().x + rulePositions[i] + textOffset.x,
+                                boundingBox.GetLeftTop().y),
+                        wxPoint(boundingBox.GetLeftTop().x + rulePositions[i] + textOffset.x,
+                                boundingBox.GetLeftBottom().y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::DottedLinedPaperWithMargins)
@@ -1005,18 +975,13 @@ namespace Wisteria::GraphItems
                 const DCPenChangerIfDifferent pc2(
                     dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
                               ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
-                    dc.DrawLine(wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
-                                            ((i - 1) *
-                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                            textOffset.x,
-                                        boundingBox.GetLeftTop().y),
-                                wxPoint(boundingBox.GetLeftTop().x + (averageLineHeight * i) +
-                                            ((i - 1) *
-                                             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                            textOffset.x,
-                                        boundingBox.GetLeftBottom().y));
+                    dc.DrawLine(
+                        wxPoint(boundingBox.GetLeftTop().x + rulePositions[i] + textOffset.x,
+                                boundingBox.GetLeftTop().y),
+                        wxPoint(boundingBox.GetLeftTop().x + rulePositions[i] + textOffset.x,
+                                boundingBox.GetLeftBottom().y));
                     }
                 }
             else if (GetLabelStyle() == LabelStyle::RightArrowLinedPaperWithMargins)
@@ -1024,20 +989,14 @@ namespace Wisteria::GraphItems
                 const DCPenChangerIfDifferent pc2(
                     dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
                               ScaleToScreenAndCanvas(1)));
-                for (size_t i = 1; i <= linesToDrawCount; ++i)
+                for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
                     GraphItems::Polygon::DrawArrow(
                         dc,
-                        wxPoint(
-                            boundingBox.GetLeftTop().x + (averageLineHeight * i) +
-                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                textOffset.x,
-                            boundingBox.GetLeftTop().y),
-                        wxPoint(
-                            boundingBox.GetLeftTop().x + (averageLineHeight * i) +
-                                ((i - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) +
-                                textOffset.x,
-                            boundingBox.GetLeftBottom().y),
+                        wxPoint(boundingBox.GetLeftTop().x + rulePositions[i] + textOffset.x,
+                                boundingBox.GetLeftTop().y),
+                        wxPoint(boundingBox.GetLeftTop().x + rulePositions[i] + textOffset.x,
+                                boundingBox.GetLeftBottom().y),
                         wxSize(ScaleToScreenAndCanvas(5), ScaleToScreenAndCanvas(5)));
                     }
                 }
