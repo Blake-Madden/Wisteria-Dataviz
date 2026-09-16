@@ -22,6 +22,10 @@
 cmake_minimum_required(VERSION 3.25)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(MIN_GCC_REQUIRED "12.2.1")
+set(MIN_APPLECLANG_REQUIRED "15.3")
+set(MIN_MSVC_TOOLSET_REQUIRED "19.30") # VS 2022 (1930 is the build number, which is what _MSC_VER will be set to)
+Set(MIN_WXWIDGETS_REQUIRED "3.3.4")
 
 if(NOT CMAKE_CONFIGURATION_TYPES)
     get_property(HAVE_MULTI_CONFIG_GENERATOR GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
@@ -30,6 +34,15 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
         set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
     endif()
 endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${MIN_GCC_REQUIRED})
+  message(FATAL_ERROR "Insufficient GCC version. ${MIN_GCC_REQUIRED} is required, but only ${CMAKE_CXX_COMPILER_VERSION} found.")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${MIN_MSVC_TOOLSET_REQUIRED})
+  message(FATAL_ERROR "Insufficient Visual Studio version. ${MIN_MSVC_TOOLSET_REQUIRED} toolset is required, but only ${CMAKE_CXX_COMPILER_VERSION} found.")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "APPLECLANG" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${MIN_APPLECLANG_REQUIRED})
+  message(FATAL_ERROR "Insufficient AppleClang version. ${MIN_APPLECLANG_REQUIRED} is required, but only ${CMAKE_CXX_COMPILER_VERSION} found.")
+endif()
+message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
 
 # https://blog.kitware.com/cmake-and-the-default-build-type/
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -156,6 +169,10 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU|AppleClang")
     endforeach()
 endif()
 message(STATUS "Adding wxWidgets libraries: ${wxWidgets_LIBRARIES}")
+
+if(wxVERSION VERSION_LESS ${MIN_WXWIDGETS_REQUIRED})
+  message(FATAL_ERROR "Insufficient wxWidgets version. ${MIN_WXWIDGETS_REQUIRED} is required, but only ${wxVERSION} found.")
+endif()
 
 if(UNIX AND NOT APPLE)
     # GTK 3 dependency
