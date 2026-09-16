@@ -216,7 +216,7 @@ namespace Wisteria::UI
         colorGrid->Add(m_rangeEndColorPicker);
 
         colorSchemeBox->Add(colorGrid, wxSizerFlags{}.Border());
-        optionsSizer->Add(colorSchemeBox, wxSizerFlags{}.Expand().Border());
+        optionsSizer->Add(colorSchemeBox, wxSizerFlags{}.Border());
 
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,

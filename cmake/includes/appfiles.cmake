@@ -98,6 +98,7 @@ SET(APP_WISTERIA_SRC
     src/graphs/stemandleafplot.cpp
     src/graphs/table.cpp
     src/graphs/waffle_chart.cpp
+    src/graphs/waterfallchart.cpp
     src/graphs/wcurveplot.cpp
     src/graphs/wilmarth_bridge_plot.cpp
     src/graphs/win_loss_sparkline.cpp
@@ -118,6 +119,7 @@ SET(APP_WISTERIA_SRC
     src/ui/dialogs/editors/axisoptionspanel.cpp
     src/ui/dialogs/editors/insert_bullet_chart_dlg.cpp
     src/ui/dialogs/editors/insert_nightingale_rose_chart_dlg.cpp
+    src/ui/dialogs/editors/insert_waterfallchart_dlg.cpp
     src/ui/dialogs/editors/insertboxplotdlg.cpp
     src/ui/dialogs/editors/insertbubbleplotdlg.cpp
     src/ui/dialogs/editors/insertcandlestickplotdlg.cpp

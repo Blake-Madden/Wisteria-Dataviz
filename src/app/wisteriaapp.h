@@ -281,6 +281,7 @@ constexpr wxWindowID ID_NEW_NIGHTINGALE_ROSE_CHART{ wxID_HIGHEST + 80 };
 constexpr wxWindowID ID_NEW_GANTT{ wxID_HIGHEST + 18 };
 constexpr wxWindowID ID_NEW_CANDLESTICK{ wxID_HIGHEST + 19 };
 constexpr wxWindowID ID_NEW_BULLET_CHART{ wxID_HIGHEST + 85 };
+constexpr wxWindowID ID_NEW_WATERFALL_CHART{ wxID_HIGHEST + 86 };
 
 // Statistical graphs
 constexpr wxWindowID ID_NEW_HISTOGRAM{ wxID_HIGHEST + 20 };

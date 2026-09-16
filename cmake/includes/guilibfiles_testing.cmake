@@ -93,6 +93,7 @@ SET(WISTERIA_SRC
     ../../src/graphs/stemandleafplot.cpp
     ../../src/graphs/table.cpp
     ../../src/graphs/waffle_chart.cpp
+    ../../src/graphs/waterfallchart.cpp
     ../../src/graphs/wcurveplot.cpp
     ../../src/graphs/wilmarth_bridge_plot.cpp
     ../../src/graphs/win_loss_sparkline.cpp

@@ -3580,6 +3580,49 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             node->Add(L"scales", wxSimpleJSON::Create(scalesArr));
             }
         }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WaterfallChart)))
+        {
+        const auto* waterfallChart = dynamic_cast<const Wisteria::Graphs::WaterfallChart*>(graph);
+        // vertical is the default, so only a horizontal orientation needs writing
+        if (waterfallChart->GetBarOrientation() == Wisteria::Orientation::Horizontal)
+            {
+            node->Add(L"bar-orientation", wxString{ _DT(L"horizontal") });
+            }
+        if (waterfallChart->GetIncreaseColor() !=
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Emerald))
+            {
+            node->Add(L"increase-color", ColorToStr(waterfallChart->GetIncreaseColor()));
+            }
+        if (waterfallChart->GetDecreaseColor() !=
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Tangerine))
+            {
+            node->Add(L"decrease-color", ColorToStr(waterfallChart->GetDecreaseColor()));
+            }
+        if (waterfallChart->GetTotalColor() !=
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::BabyBlue))
+            {
+            node->Add(L"total-color", ColorToStr(waterfallChart->GetTotalColor()));
+            }
+        if (waterfallChart->GetValueDisplay() != Wisteria::NumberDisplay::Value)
+            {
+            const auto vdStr = Wisteria::ReportEnumConvert::ConvertNumberDisplayToString(
+                waterfallChart->GetValueDisplay());
+            if (vdStr.has_value())
+                {
+                node->Add(L"value-display-format", vdStr.value());
+                }
+            }
+        if (!waterfallChart->IsShowingBarValues())
+            {
+            node->Add(L"show-bar-values", false);
+            }
+        if (waterfallChart->IsShowingBlockValues())
+            {
+            node->Add(L"show-block-values", true);
+            }
+        // the label, value, and total-flag variables round-trip through the
+        // generic "variables." property templates in SaveGraph()
+        }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BarChart)))
         {
         const auto* barChart = dynamic_cast<const Wisteria::Graphs::BarChart*>(graph);

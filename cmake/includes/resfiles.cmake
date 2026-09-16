@@ -94,6 +94,7 @@ stem-leaf.svg
 subset.svg
 table.svg
 waffle.svg
+waterfallchart.svg
 wcurve.svg
 wilmarth-bridge.svg
 wisteria.svg

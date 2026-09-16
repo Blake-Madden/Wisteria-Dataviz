@@ -2034,4 +2034,99 @@ namespace Wisteria
         LoadGraph(graphNode, canvas, currentRow, currentColumn, bulletChart);
         return bulletChart;
         }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D>
+    ReportBuilder::LoadWaterfallChart(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                                      size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->AsString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for waterfall chart."), dsName)
+                    .ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (!variablesNode->IsOk())
+            {
+            throw std::runtime_error(_(L"Variables not defined for waterfall chart.").ToUTF8());
+            }
+
+        const auto labelVarNameRaw = variablesNode->GetProperty(L"label")->AsString();
+        const auto valueVarNameRaw = variablesNode->GetProperty(L"value")->AsString();
+        const auto totalFlagVarNameRaw = variablesNode->GetProperty(L"total-flag")->AsString();
+
+        if (labelVarNameRaw.empty() || valueVarNameRaw.empty())
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: label and value variables must be specified for "
+                                   L"waterfall chart."),
+                                 dsName)
+                    .ToUTF8());
+            }
+
+        auto waterfallChart = std::make_shared<Graphs::WaterfallChart>(canvas);
+        waterfallChart->SetPropertyTemplate(L"dataset", dsName);
+        const auto labelVarName =
+            ExpandAndCache(waterfallChart.get(), L"variables.label", labelVarNameRaw);
+        const auto valueVarName =
+            ExpandAndCache(waterfallChart.get(), L"variables.value", valueVarNameRaw);
+        std::optional<wxString> totalFlagVarName{ std::nullopt };
+        if (!totalFlagVarNameRaw.empty())
+            {
+            totalFlagVarName =
+                ExpandAndCache(waterfallChart.get(), L"variables.total-flag", totalFlagVarNameRaw);
+            }
+
+        // orientation must be set before SetData(), as the bar-axis direction
+        // (and axis titles) are resolved when the bars are built
+        const auto bOrientation = graphNode->GetProperty(L"bar-orientation")->AsString();
+        if (bOrientation.CmpNoCase(L"horizontal") == 0)
+            {
+            waterfallChart->SetBarOrientation(Orientation::Horizontal);
+            }
+        else if (bOrientation.CmpNoCase(L"vertical") == 0)
+            {
+            waterfallChart->SetBarOrientation(Orientation::Vertical);
+            }
+
+        if (const auto color = ConvertColor(graphNode->GetProperty(L"increase-color"));
+            color.IsOk())
+            {
+            waterfallChart->SetIncreaseColor(color);
+            }
+        if (const auto color = ConvertColor(graphNode->GetProperty(L"decrease-color"));
+            color.IsOk())
+            {
+            waterfallChart->SetDecreaseColor(color);
+            }
+        if (const auto color = ConvertColor(graphNode->GetProperty(L"total-color")); color.IsOk())
+            {
+            waterfallChart->SetTotalColor(color);
+            }
+
+        if (const auto valueDisplay = ReportEnumConvert::ConvertNumberDisplay(
+                graphNode->GetProperty(L"value-display-format")->AsString());
+            valueDisplay.has_value())
+            {
+            waterfallChart->SetValueDisplay(valueDisplay.value());
+            }
+
+        if (graphNode->HasProperty(L"show-bar-values"))
+            {
+            waterfallChart->ShowBarValues(graphNode->GetProperty(L"show-bar-values")->AsBool());
+            }
+        if (graphNode->HasProperty(L"show-block-values"))
+            {
+            waterfallChart->ShowBlockValues(graphNode->GetProperty(L"show-block-values")->AsBool());
+            }
+
+        waterfallChart->SetData(foundPos->second, labelVarName, valueVarName, totalFlagVarName);
+
+        LoadGraph(graphNode, canvas, currentRow, currentColumn, waterfallChart);
+        return waterfallChart;
+        }
     } // namespace Wisteria

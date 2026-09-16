@@ -13,6 +13,7 @@
 #include "../../graphs/graph2d.h"
 #include "insert_bullet_chart_dlg.h"
 #include "insert_nightingale_rose_chart_dlg.h"
+#include "insert_waterfallchart_dlg.h"
 #include "insertboxplotdlg.h"
 #include "insertbubbleplotdlg.h"
 #include "insertcandlestickplotdlg.h"
@@ -950,6 +951,9 @@ namespace Wisteria::UI
         case Wisteria::GalleryItemType::BulletChart:
             placed = DropBulletChart(stagingCanvas, row, col);
             break;
+        case Wisteria::GalleryItemType::WaterfallChart:
+            placed = DropWaterfallChart(stagingCanvas, row, col);
+            break;
         default:
             // remaining graph types are not wired up yet
             break;
@@ -1849,6 +1853,30 @@ namespace Wisteria::UI
         try
             {
             auto plot = dlg.BuildBulletChart();
+            stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropWaterfallChart(Canvas* stagingCanvas, const size_t row,
+                                           const size_t col)
+        {
+        Wisteria::UI::InsertWaterfallChartDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"waterfallchart.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildWaterfallChart();
             stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
             return true;
             }

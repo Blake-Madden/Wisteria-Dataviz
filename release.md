@@ -2,6 +2,7 @@
 
 ## 1.2.2
 
+- Added Waterfall Chart.
 - Added Bullet Chart.
 - Added Nightingale Rose Chart.
 - Added Choropleth.

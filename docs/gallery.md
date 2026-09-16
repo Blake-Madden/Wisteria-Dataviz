@@ -89,6 +89,10 @@ Business
 | :-------------------------------- |
 | ![](docs/images/bullet_chart.svg) |
 
+| Waterfall Chart (Wisteria::Graphs::WaterfallChart) |
+| :-------------------------------- |
+| ![](docs/images/waterfall.svg) |
+
 Statistical
 -----------------------------
 

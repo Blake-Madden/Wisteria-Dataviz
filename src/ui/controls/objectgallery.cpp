@@ -226,6 +226,8 @@ namespace Wisteria::UI
             return L"lr-roadmap";
         case GalleryItemType::WinLossSparkline:
             return L"winloss-sparkline";
+        case GalleryItemType::WaterfallChart:
+            return L"waterfall-chart";
             }
         return {};
         }

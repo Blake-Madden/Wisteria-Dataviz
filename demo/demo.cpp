@@ -79,6 +79,7 @@ bool MyApp::OnInit()
         }
 
     wxUILocale::UseDefault();
+    m_locale.Init(wxLANGUAGE_DEFAULT, wxLOCALE_LOAD_DEFAULT);
 
     wxInitAllImageHandlers();
 
@@ -200,6 +201,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_WILMARTH_BRIDGE);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_NIGHTINGALE_ROSE);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_BULLET_CHART);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_WATERFALL_CHART);
 
     Bind(wxEVT_MENU, &MyFrame::OnAbout, this, wxID_ABOUT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, wxID_NEW);
@@ -269,6 +271,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_WILMARTH_BRIDGE, _(L"Wilmarth Bridge Plot"));
     fileMenu->Append(MyApp::ID_NEW_NIGHTINGALE_ROSE, _(L"Nightingale Rose Chart"));
     fileMenu->Append(MyApp::ID_NEW_BULLET_CHART, _(L"Bullet Chart"));
+    fileMenu->Append(MyApp::ID_NEW_WATERFALL_CHART, _(L"Waterfall Chart"));
     fileMenu->AppendSeparator();
 
     fileMenu->Append(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"));
@@ -3201,6 +3204,76 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(1, 0, newCustomersChart);
         }
+    // Waterfall Chart
+    else if (event.GetId() == MyApp::ControlIDs::ID_NEW_WATERFALL_CHART)
+        {
+        subframe->SetTitle(_(L"Waterfall Chart"));
+        subframe->m_canvas->SetFixedObjectsGridSize(2, 1);
+
+        // annual profit bridge: changes accumulate into subtotals and a final total.
+        // The flag column marks totals (1) vs. changes (0). totals ignore the
+        // amount column and show the running sum so far.
+        auto profitData = std::make_shared<Wisteria::Data::Dataset>();
+        profitData->AddContinuousColumn(L"Amount");
+        profitData->AddContinuousColumn(L"IsTotal");
+        profitData->AddRow(Wisteria::Data::RowInfo().Id(_(L"Revenue")).Continuous({ 1250000, 0 }));
+        profitData->AddRow(Wisteria::Data::RowInfo().Id(_(L"Services")).Continuous({ 380000, 0 }));
+        profitData->AddRow(Wisteria::Data::RowInfo().Id(_(L"Licensing")).Continuous({ 210000, 0 }));
+        profitData->AddRow(Wisteria::Data::RowInfo().Id(_(L"H1 Subtotal")).Continuous({ 0, 1 }));
+        profitData->AddRow(Wisteria::Data::RowInfo().Id(_(L"Salaries")).Continuous({ -620000, 0 }));
+        profitData->AddRow(
+            Wisteria::Data::RowInfo().Id(_(L"Facilities")).Continuous({ -180000, 0 }));
+        profitData->AddRow(
+            Wisteria::Data::RowInfo().Id(_(L"Marketing")).Continuous({ -140000, 0 }));
+        profitData->AddRow(Wisteria::Data::RowInfo().Id(_(L"Taxes")).Continuous({ -210000, 0 }));
+        profitData->AddRow(Wisteria::Data::RowInfo().Id(_(L"Net Income")).Continuous({ 0, 1 }));
+        profitData->GetIdColumn().SetName(L"Step");
+
+        auto profitChart = std::make_shared<Wisteria::Graphs::WaterfallChart>(subframe->m_canvas);
+        profitChart->GetTitle().SetText(_(L"Annual Profit"));
+
+        profitChart->SetValueDisplay(Wisteria::NumberDisplay::Currency);
+        profitChart->SetData(profitData, L"Step", L"Amount", L"IsTotal");
+        // step labels and values are self-explanatory, so skip the axis titles
+        profitChart->GetBarAxis().GetTitle().Show(false);
+        profitChart->GetScalingAxis().GetTitle().Show(false);
+
+        subframe->m_canvas->SetFixedObject(0, 0, profitChart);
+
+        // cash flow: horizontal bars with custom colors
+        auto cashData = std::make_shared<Wisteria::Data::Dataset>();
+        cashData->AddContinuousColumn(L"Amount");
+        cashData->AddContinuousColumn(L"IsTotal");
+        cashData->AddRow(Wisteria::Data::RowInfo().Id(_(L"Opening Cash")).Continuous({ 85000, 0 }));
+        cashData->AddRow(
+            Wisteria::Data::RowInfo().Id(_(L"Subscriptions")).Continuous({ 42000, 0 }));
+        cashData->AddRow(Wisteria::Data::RowInfo().Id(_(L"Refunds")).Continuous({ -8000, 0 }));
+        cashData->AddRow(Wisteria::Data::RowInfo().Id(_(L"Payroll")).Continuous({ -56000, 0 }));
+        cashData->AddRow(Wisteria::Data::RowInfo().Id(_(L"Q1 Close")).Continuous({ 0, 1 }));
+        cashData->AddRow(Wisteria::Data::RowInfo().Id(_(L"Fundraise")).Continuous({ 150000, 0 }));
+        cashData->AddRow(Wisteria::Data::RowInfo().Id(_(L"Equipment")).Continuous({ -67000, 0 }));
+        cashData->AddRow(Wisteria::Data::RowInfo().Id(_(L"Closing Cash")).Continuous({ 0, 1 }));
+        cashData->GetIdColumn().SetName(L"Step");
+
+        auto cashChart = std::make_shared<Wisteria::Graphs::WaterfallChart>(subframe->m_canvas);
+        cashChart->GetTitle().SetText(_(L"Cash Flow"));
+        cashChart->SetBarOrientation(Wisteria::Orientation::Horizontal);
+        cashChart->SetIncreaseColor(
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::CascadeGreen));
+        cashChart->SetDecreaseColor(
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::FireEngineRed));
+        cashChart->SetTotalColor(
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::AliceBlue));
+        // values across the bars themselves instead of labels at the bar ends
+        cashChart->ShowBarValues(false);
+        cashChart->ShowBlockValues(true);
+        cashChart->SetValueDisplay(Wisteria::NumberDisplay::Currency);
+        cashChart->SetData(cashData, L"Step", L"Amount", L"IsTotal");
+        cashChart->GetBarAxis().GetTitle().Show(false);
+        cashChart->GetScalingAxis().GetTitle().Show(false);
+
+        subframe->m_canvas->SetFixedObject(1, 0, cashChart);
+        }
 
     subframe->Maximize(true);
     subframe->Show(true);
@@ -3444,6 +3517,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_BULLET_CHART, _(L"Bullet Chart"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/bulletchart.svg", iconSize),
                      _(L"Bullet Chart"));
+    toolBar->AddTool(MyApp::ID_NEW_WATERFALL_CHART, _(L"Waterfall Chart"),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/waterfallchart.svg", iconSize),
+                     _(L"Waterfall Chart"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"),

@@ -86,6 +86,52 @@ Properties for `"bullet-chart"` nodes:
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}
+## Waterfall Chart {#waterfall-chart-properties .unnumbered}
+
+Properties for `"waterfall-chart"` nodes:
+
+- `"variables"`: An item containing the following properties:
+  - `"label"`: The categorical (or ID) column containing the step labels. \
+    Rows are plotted in dataset order.
+  - `"value"`: The continuous column containing the change amounts. \
+    Ignored for rows flagged as totals.
+  - `"total-flag"`: An (optional) categorical or continuous column flagging totals (`0` means a change, `1` means a total). \
+    Without it, every row is treated as a change. Totals show the running sum so far.
+- `"bar-orientation"`: A string specifying the orientation of the bars. \
+  Available options are:
+  - `"vertical"`: Bars are drawn vertically (i.e., top to bottom, the default).
+  - `"horizontal"`: Bars are drawn horizontally (i.e., left to right).
+- `"increase-color"`: The color (a named color or hex value) for positive change bars.
+- `"decrease-color"`: The color (a named color or hex value) for negative change bars.
+- `"total-color"`: The color (a named color or hex value) for total bars.
+- `"value-display-format"`: A string specifying how values on the bars and blocks are displayed. \
+  Available options are:
+  - `"value"`: Display the raw value (the default).
+  - `"currency"`: Display using the current locale's currency formatting.
+  - `"percentage"`: Append a `%` suffix to the value.
+  - `"value-simple"`: Display the raw value without thousands separators.
+- `"show-bar-values"`: `false` to hide the values at the ends of the bars.
+  Default is `true`.
+- `"show-block-values"`: `true` to draw the values across the bars themselves.
+  Default is `false`.
+
+```json
+{
+  "type": "waterfall-chart",
+  "dataset": "CashFlow",
+  "variables": {
+    "label": "Step",
+    "value": "Amount",
+    "total-flag": "IsTotal"
+  },
+  "bar-orientation": "vertical",
+  "value-display-format": "currency",
+  "show-block-values": true
+}
+```
+:::
+
+::: {.minipage data-latex="{\textwidth}"}
 ## Candlestick/OHLC Plot {#candlestick-plot-properties .unnumbered}
 
 Properties for `"candlestick-plot"` nodes:

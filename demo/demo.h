@@ -45,6 +45,7 @@
 #include "../src/graphs/stemandleafplot.h"
 #include "../src/graphs/table.h"
 #include "../src/graphs/waffle_chart.h"
+#include "../src/graphs/waterfallchart.h"
 #include "../src/graphs/wcurveplot.h"
 #include "../src/graphs/wilmarth_bridge_plot.h"
 #include "../src/graphs/win_loss_sparkline.h"
@@ -57,6 +58,7 @@
 #include <wx/artprov.h>
 #include <wx/choicdlg.h>
 #include <wx/filename.h>
+#include <wx/intl.h>
 #include <wx/mdi.h>
 #include <wx/stdpaths.h>
 #include <wx/sysopt.h>
@@ -129,11 +131,13 @@ class MyApp final : public wxApp
         ID_NEW_BARCHART_SERPENTINE,
         ID_NEW_BARCHART_SERPENTINE_AGGRESSIVE,
         ID_NEW_NIGHTINGALE_ROSE,
-        ID_NEW_BULLET_CHART
+        ID_NEW_BULLET_CHART,
+        ID_NEW_WATERFALL_CHART
         };
 
   private:
     ResourceManager m_resManager;
+    wxLocale m_locale;
     };
 
 // Define a new frame

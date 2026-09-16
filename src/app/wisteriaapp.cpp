@@ -956,6 +956,10 @@ wxString WisteriaApp::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph)
         {
         return _DT(L"bullet-chart");
         }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WaterfallChart)))
+        {
+        return _DT(L"waterfall-chart");
+        }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BarChart)))
         {
         return _DT(L"bar-chart");
@@ -1258,6 +1262,8 @@ const std::vector<Wisteria::GalleryItemInfo>& WisteriaApp::GetGalleryItemCatalog
         { GalleryItemType::CandlestickPlot, _(L"Candlestick Plot"), L"candlestick.svg",
           GalleryGroup::Business },
         { GalleryItemType::BulletChart, _(L"Bullet Chart"), L"bulletchart.svg",
+          GalleryGroup::Business },
+        { GalleryItemType::WaterfallChart, _(L"Waterfall Chart"), L"waterfallchart.svg",
           GalleryGroup::Business },
         // Statistical
         { GalleryItemType::Histogram, _(L"Histogram"), L"histogram.svg",
