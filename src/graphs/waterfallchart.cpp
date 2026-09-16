@@ -238,9 +238,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaterfallChart, Wisteria::Graphs::Ba
             case NumberDisplay::ValueSimple:
                 return wxNumberFormatter::ToString(value, 2, wxNumberFormatter::Style::Style_None);
             case NumberDisplay::Percentage:
-                return wxNumberFormatter::ToString(
-                           value, 2, wxNumberFormatter::Style::Style_NoTrailingZeroes) +
-                       L"%";
+                return wxString::Format(
+                    L"%s%%", wxNumberFormatter::ToString(
+                                 value, 2, wxNumberFormatter::Style::Style_NoTrailingZeroes));
             case NumberDisplay::Value:
                 [[fallthrough]];
             default:

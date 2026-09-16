@@ -96,7 +96,8 @@ Properties for `"waterfall-chart"` nodes:
   - `"value"`: The continuous column containing the change amounts. \
     Ignored for rows flagged as totals.
   - `"total-flag"`: An (optional) categorical or continuous column flagging totals (`0` means a change, `1` means a total). \
-    Without it, every row is treated as a change. Totals show the running sum so far.
+    Without it, every row is treated as a change.
+    Totals show the running sum so far.
 - `"bar-orientation"`: A string specifying the orientation of the bars. \
   Available options are:
   - `"vertical"`: Bars are drawn vertically (i.e., top to bottom, the default).

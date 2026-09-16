@@ -676,9 +676,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BulletChart, Wisteria::Graphs::BarCh
                 const wxString rangeLabel{ findRangeForValue(row.m_actual) };
                 if (!rangeLabel.empty())
                     {
-                    /* TRANSLATORS: bullet chart accessibility: actual value for a KPI row.
-                       %s are the label and the range name. */
-                    label = wxString::Format(_(L"%s (%s)"), label, rangeLabel);
+                    label = wxString::Format(L"%s (%s)", label, rangeLabel);
                     }
                 }
             if (std::isfinite(row.m_target))
