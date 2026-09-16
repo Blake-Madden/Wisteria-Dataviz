@@ -220,6 +220,7 @@ namespace Wisteria::UI
 
         void OnGalleryItemDropped(Wisteria::UI::ObjectGalleryItemDroppedEvent& event);
         bool DropLabel(Canvas* stagingCanvas, size_t row, size_t col);
+        bool DropKpiCard(Canvas* stagingCanvas, size_t row, size_t col);
         bool DropSpacer(Canvas* stagingCanvas, size_t row, size_t col);
         bool DropDivider(Canvas* stagingCanvas, size_t row, size_t col, Wisteria::DividerType type);
         bool DropShape(Canvas* stagingCanvas, size_t row, size_t col);

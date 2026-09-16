@@ -154,6 +154,8 @@ namespace Wisteria::UI
             {
         case GalleryItemType::Label:
             return L"label";
+        case GalleryItemType::KpiCard:
+            return L"kpi-card";
         case GalleryItemType::Image:
             return L"image";
         case GalleryItemType::Shape:

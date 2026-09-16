@@ -53,6 +53,7 @@ home-dark-mode.svg
 home.svg
 image.svg
 join.svg
+kpi-card.svg
 label.svg
 likert3.svg
 likert7.svg

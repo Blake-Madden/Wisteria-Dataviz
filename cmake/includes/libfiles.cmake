@@ -122,6 +122,7 @@ SET(WISTERIA_SRC
     src/ui/dialogs/editors/inserthistogramdlg.cpp
     src/ui/dialogs/editors/insertimgdlg.cpp
     src/ui/dialogs/editors/insertitemdlg.cpp
+    src/ui/dialogs/editors/insertkpicarddlg.cpp
     src/ui/dialogs/editors/insertlabeldlg.cpp
     src/ui/dialogs/editors/insertlikertdlg.cpp
     src/ui/dialogs/editors/insertlineplotdlg.cpp

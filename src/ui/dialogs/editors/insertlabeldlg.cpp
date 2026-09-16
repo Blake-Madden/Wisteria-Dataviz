@@ -39,6 +39,22 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    InsertLabelDlg::InsertLabelDlg(DeferredConstructionTag, Canvas* canvas,
+                                   const ReportBuilder* reportBuilder, wxWindow* parent,
+                                   const wxString& caption, const wxWindowID id, const wxPoint& pos,
+                                   const wxSize& size, const long style, EditMode editMode,
+                                   const LabelDlgOptions options)
+        : InsertItemDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode),
+          m_options(options)
+        {
+        SetFitRowToContent(true);
+        if (editMode == EditMode::Insert)
+            {
+            SetLockScaling(true);
+            }
+        }
+
+    //-------------------------------------------
     void InsertLabelDlg::CreateControls()
         {
         InsertItemDlg::CreateControls();
@@ -550,6 +566,12 @@ namespace Wisteria::UI
             headerInfo.RelativeScaling(GetHeaderScaling());
             }
 
+        ApplyShapeOptionsToLabel(label);
+        }
+
+    //-------------------------------------------
+    void InsertLabelDlg::ApplyShapeOptionsToLabel(Wisteria::GraphItems::Label& label)
+        {
         // left image
         const auto leftImgPath = GetLeftImagePath();
         if (!leftImgPath.empty())

@@ -759,6 +759,8 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
 
         objectsButtonBar->AddButton(ID_NEW_LABEL, _(L"Label"), ReadSvgIcon(L"label.svg"),
                                     _(L"Insert a text label"));
+        objectsButtonBar->AddButton(ID_NEW_KPI_CARD, _(L"KPI Card"), ReadSvgIcon(L"kpi-card.svg"),
+                                    _(L"Insert a KPI card (a big number with a caption)"));
         objectsButtonBar->AddButton(ID_NEW_IMAGE, _(L"Image"), ReadSvgIcon(L"image.svg"),
                                     _(L"Insert an image"));
         objectsButtonBar->AddButton(ID_NEW_SHAPE, _(L"Shape"), ReadSvgIcon(L"shape.svg"),
@@ -1228,6 +1230,7 @@ const std::vector<Wisteria::GalleryItemInfo>& WisteriaApp::GetGalleryItemCatalog
     static const std::vector<Wisteria::GalleryItemInfo> catalog = {
         // Objects
         { GalleryItemType::Label, _(L"Label"), L"label.svg", GalleryGroup::Objects },
+        { GalleryItemType::KpiCard, _(L"KPI Card"), L"kpi-card.svg", GalleryGroup::Objects },
         { GalleryItemType::Image, _(L"Image"), L"image.svg", GalleryGroup::Objects },
         { GalleryItemType::Shape, _(L"Shape"), L"shape.svg", GalleryGroup::Objects },
         { GalleryItemType::Axis, _(L"Axis"), L"axis.svg", GalleryGroup::Objects,

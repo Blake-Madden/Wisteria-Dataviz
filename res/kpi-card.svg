@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- Card outline -->
+  <rect x="28" y="28" width="200" height="200" rx="20" fill="none" stroke="#808080" stroke-width="10"/>
+  <!-- Up-trend arrow accent -->
+  <path d="M70,140 L110,100 L140,130 L186,84" fill="none" stroke="#70AD47" stroke-width="10"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M162,84 H186 V108" fill="none" stroke="#70AD47" stroke-width="10" stroke-linecap="round"
+        stroke-linejoin="round"/>
+  <!-- Caption line -->
+  <line x1="70" y1="176" x2="186" y2="176" stroke="#5B9BD5" stroke-width="10" stroke-linecap="round"/>
+</svg>

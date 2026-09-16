@@ -25,6 +25,7 @@
 #include "insertheatmapdlg.h"
 #include "inserthistogramdlg.h"
 #include "insertimgdlg.h"
+#include "insertkpicarddlg.h"
 #include "insertlabeldlg.h"
 #include "insertlikertdlg.h"
 #include "insertlineplotdlg.h"
@@ -839,6 +840,9 @@ namespace Wisteria::UI
         case Wisteria::GalleryItemType::Label:
             placed = DropLabel(stagingCanvas, row, col);
             break;
+        case Wisteria::GalleryItemType::KpiCard:
+            placed = DropKpiCard(stagingCanvas, row, col);
+            break;
         case Wisteria::GalleryItemType::Spacer:
             placed = DropSpacer(stagingCanvas, row, col);
             break;
@@ -984,6 +988,23 @@ namespace Wisteria::UI
         dlg.ApplyGridSize();
         stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
                                       dlg.BuildLabel());
+        return true;
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropKpiCard(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertKpiCardDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"kpi-card.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        dlg.ApplyGridSize();
+        stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                                      dlg.BuildKpiCard());
         return true;
         }
 

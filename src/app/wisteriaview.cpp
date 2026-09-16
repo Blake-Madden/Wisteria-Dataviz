@@ -27,6 +27,7 @@
 #include "../ui/dialogs/editors/inserthistogramdlg.h"
 #include "../ui/dialogs/editors/insertimgdlg.h"
 #include "../ui/dialogs/editors/insertitemdlg.h"
+#include "../ui/dialogs/editors/insertkpicarddlg.h"
 #include "../ui/dialogs/editors/insertlabeldlg.h"
 #include "../ui/dialogs/editors/insertlikertdlg.h"
 #include "../ui/dialogs/editors/insertlineplotdlg.h"
@@ -324,6 +325,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertScaleChart, this, ID_NEW_SCALE_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertTable, this, ID_NEW_TABLE);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertLabel, this, ID_NEW_LABEL);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertKpiCard, this,
+                  ID_NEW_KPI_CARD);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertImage, this, ID_NEW_IMAGE);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertShape, this, ID_NEW_SHAPE);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertCommonAxis, this,
@@ -1861,6 +1864,7 @@ void WisteriaView::UpdateGraphButtonStates() const
     if (m_objectsButtonBar != nullptr)
         {
         m_objectsButtonBar->EnableButton(ID_NEW_LABEL, true);
+        m_objectsButtonBar->EnableButton(ID_NEW_KPI_CARD, true);
         m_objectsButtonBar->EnableButton(ID_NEW_IMAGE, true);
         m_objectsButtonBar->EnableButton(ID_NEW_SHAPE, true);
         m_objectsButtonBar->EnableButton(ID_NEW_COMMON_AXIS, true);
@@ -4683,6 +4687,30 @@ void WisteriaView::OnInsertLabel([[maybe_unused]] wxCommandEvent& event)
     dlg.ApplyGridSize();
 
     canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), dlg.BuildLabel());
+    UpdateCanvas(canvas);
+
+    GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertKpiCard([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = EnsureActivePage();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertKpiCardDlg dlg(canvas, &m_reportBuilder, m_frame);
+    SetDialogIcon(dlg, L"kpi-card.svg");
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    dlg.ApplyGridSize();
+
+    canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), dlg.BuildKpiCard());
     UpdateCanvas(canvas);
 
     GetDocument()->Modify(true);

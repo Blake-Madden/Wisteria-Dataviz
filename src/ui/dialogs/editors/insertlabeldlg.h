@@ -53,7 +53,7 @@ namespace Wisteria::UI
         (e.g., the donut hole label in a pie chart) by calling
         LoadFromLabel() before showing the dialog and ApplyToLabel()
         after it returns @c wxID_OK.*/
-    class InsertLabelDlg final : public InsertItemDlg
+    class InsertLabelDlg : public InsertItemDlg
         {
       public:
         /** @brief Constructor.
@@ -251,10 +251,37 @@ namespace Wisteria::UI
         static std::shared_ptr<Wisteria::GraphItems::Label>
         BuildDividerLabel(Canvas* canvas, Wisteria::DividerType type);
 
-      private:
-        void CreateControls() final;
-        void CreateLabelPage();
+      protected:
+        /// @brief Tag selecting the deferred-construction constructor.
+        struct DeferredConstructionTag
+            {
+            };
+
+        /** @brief Constructor for derived dialogs that need to defer
+                CreateControls()/FinalizeControls()/TransferDataToWindow().
+            @param canvas The canvas whose grid layout is displayed.
+            @param reportBuilder The report builder (may be @c nullptr).
+            @param parent The parent window.
+            @param caption The dialog title.
+            @param id The window ID.
+            @param pos The screen position.
+            @param size The window size.
+            @param style The window style.
+            @param editMode Whether the item is being inserted or edited.
+            @param options Bitmask of LabelDlgOptions controlling which sections are shown.*/
+        InsertLabelDlg(DeferredConstructionTag, Canvas* canvas, const ReportBuilder* reportBuilder,
+                       wxWindow* parent, const wxString& caption, wxWindowID id, const wxPoint& pos,
+                       const wxSize& size, long style, EditMode editMode, LabelDlgOptions options);
+
         void CreateShapesPage();
+
+        /// @brief Applies the left image, top image, and top shapes to a label.
+        /// @param label The label to update.
+        void ApplyShapeOptionsToLabel(Wisteria::GraphItems::Label& label);
+
+      private:
+        void CreateControls() override;
+        void CreateLabelPage();
         void OnEnableHeader(bool enable);
 
         void OnAddTopShape();

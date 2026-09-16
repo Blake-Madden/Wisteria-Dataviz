@@ -351,7 +351,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaterfallChart, Wisteria::Graphs::Ba
             label += row.m_label;
             if (row.m_isTotal)
                 {
-                label = wxString::Format(_(L"%s (total)", label));
+                label = wxString::Format(_(L"%s (total)"), label);
                 }
             else if (std::isfinite(row.m_value))
                 {

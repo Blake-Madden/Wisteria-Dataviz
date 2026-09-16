@@ -838,6 +838,7 @@ namespace Wisteria
     enum class GalleryItemType
         {
         Label,
+        KpiCard,
         Image,
         Shape,
         Axis,
