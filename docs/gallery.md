@@ -93,6 +93,10 @@ Business
 | :-------------------------------- |
 | ![](docs/images/waterfall.svg) |
 
+| Funnel Chart (Wisteria::Graphs::FunnelChart) |
+| :-------------------------------- |
+| ![](docs/images/funnel-chart.svg) |
+
 Statistical
 -----------------------------
 

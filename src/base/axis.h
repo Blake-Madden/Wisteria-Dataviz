@@ -34,6 +34,7 @@ namespace Wisteria::Graphs
     class GanttChart;
     class Histogram;
     class BarChart;
+    class FunnelChart;
     } // namespace Wisteria::Graphs
 
 namespace Wisteria
@@ -231,6 +232,7 @@ namespace Wisteria::GraphItems
         friend class Wisteria::Graphs::GanttChart;
         friend class Wisteria::Graphs::Histogram;
         friend class Wisteria::Graphs::BarChart;
+        friend class Wisteria::Graphs::FunnelChart;
 
       public:
         /// @brief A tickmark on an axis.

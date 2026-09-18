@@ -35,6 +35,9 @@ namespace Wisteria::UI
         /// @brief The "Label" and "Shapes" pages (excludes "Placement").
         LabelDlgIncludeLabelAndShapeOptions =
         LabelDlgIncludeLabelOptions | LabelDlgIncludeShapeOptions,
+        /// @brief The "Shapes" and "Placement" pages (excludes "Label").
+        LabelDlgIncludeShapeAndPageOptions =
+        LabelDlgIncludeShapeOptions | LabelDlgIncludePageOptions,
         /// @brief All options enabled (the default).
         LabelDlgIncludeAll =
         LabelDlgIncludeLabelOptions | LabelDlgIncludeShapeOptions | LabelDlgIncludePageOptions
@@ -273,6 +276,8 @@ namespace Wisteria::UI
                        wxWindow* parent, const wxString& caption, wxWindowID id, const wxPoint& pos,
                        const wxSize& size, long style, EditMode editMode, LabelDlgOptions options);
 
+        /// @brief Creates the "Shapes" page, for setting a label's left image,
+        ///     top image, and top shapes.
         void CreateShapesPage();
 
         /// @brief Applies the left image, top image, and top shapes to a label.

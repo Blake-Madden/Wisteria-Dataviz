@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" version="1.1">
+  <!-- Funnel chart icon — transparent background, works on light & dark -->
+  <defs>
+    <linearGradient id="funnelGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4A90D9" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#2E6CB4" stop-opacity="1"/>
+    </linearGradient>
+    <linearGradient id="funnelGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5FA3E8" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#3B7EC6" stop-opacity="1"/>
+    </linearGradient>
+    <linearGradient id="funnelGrad3" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#7AB6EE" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#4A90D9" stop-opacity="1"/>
+    </linearGradient>
+    <linearGradient id="funnelGrad4" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#9AC8F5" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#5FA3E8" stop-opacity="1"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <!-- Stage 1: widest — Visits / Leads -->
+  <path d="M 6 10 L 58 10 L 50 22 L 14 22 Z"
+        fill="url(#funnelGrad1)" stroke="#1A2A3A" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"
+        filter="url(#shadow)" opacity="0.98"/>
+  <!-- Stage 2 -->
+  <path d="M 14 22 L 50 22 L 44 34 L 20 34 Z"
+        fill="url(#funnelGrad2)" stroke="#1A2A3A" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"
+        filter="url(#shadow)" opacity="0.98"/>
+  <!-- Stage 3 -->
+  <path d="M 20 34 L 44 34 L 39 44 L 25 44 Z"
+        fill="url(#funnelGrad3)" stroke="#1A2A3A" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"
+        filter="url(#shadow)" opacity="0.98"/>
+  <!-- Stage 4: narrowest — Closed -->
+  <path d="M 25 44 L 39 44 L 39 54 L 25 54 Z"
+        fill="url(#funnelGrad4)" stroke="#1A2A3A" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"
+        filter="url(#shadow)" opacity="0.98"/>
+  <!-- Ghost target overlay on bottom stage — dashed, translucent -->
+  <path d="M 23 44 L 41 44 L 41 54 L 23 54 Z"
+        fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round" stroke-opacity="0.9"
+        stroke-dasharray="3 2.5" opacity="0.95"/>
+  <path d="M 23 44 L 41 44 L 41 54 L 23 54 Z"
+        fill="#FFFFFF" fill-opacity="0.28" stroke="#5D6D7E" stroke-width="1.2" stroke-linejoin="round"
+        stroke-dasharray="3 2.5" opacity="0.85"/>
+  <!-- Subtle highlight edge for light/dark contrast -->
+  <path d="M 6 10 L 58 10 L 50 22 L 14 22 Z M 14 22 L 50 22 L 44 34 L 20 34 Z M 20 34 L 44 34 L 39 44 L 25 44 Z"
+        fill="none" stroke="white" stroke-width="0.7" stroke-linejoin="round" stroke-opacity="0.22"/>
+  <!-- Conversion arrows on right side -->
+  <g opacity="0.85" stroke="#1A2A3A" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 52 16 L 52 19" stroke-width="1.2"/>
+    <path d="M 50.2 17.8 L 52 20 L 53.8 17.8" fill="none" stroke-width="1.2"/>
+    <path d="M 46 28 L 46 31" stroke-width="1.2"/>
+    <path d="M 44.2 29.8 L 46 32 L 47.8 29.8" fill="none" stroke-width="1.2"/>
+    <path d="M 41 39 L 41 41.5" stroke-width="1.2"/>
+    <path d="M 39.5 40.2 L 41 42.5 L 42.5 40.2" fill="none" stroke-width="1.2"/>
+  </g>
+</svg>

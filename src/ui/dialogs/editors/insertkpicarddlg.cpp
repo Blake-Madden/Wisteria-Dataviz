@@ -60,9 +60,7 @@ namespace Wisteria::UI
                                        const wxWindowID id, const wxPoint& pos, const wxSize& size,
                                        const long style)
         : InsertLabelDlg(DeferredConstructionTag{}, canvas, reportBuilder, parent, caption, id, pos,
-                         size, style, EditMode::Insert,
-                         static_cast<LabelDlgOptions>(LabelDlgIncludeShapeOptions |
-                                                      LabelDlgIncludePageOptions))
+                         size, style, EditMode::Insert, LabelDlgIncludeShapeAndPageOptions)
         {
         CreateControls();
         FinalizeControls();

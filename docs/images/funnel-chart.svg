@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="41.95cm" height="28.57cm" viewBox="0 0 1189 810">
+<title>panel</title>
+<desc>Created with wxWidgets 3.3.4</desc>
+
+<g fill="black" stroke="black" stroke-width="1">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="0" y="0" width="1189" height="810" rx="0.00"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="0" y="0" width="1189" height="810" rx="0.00"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M192 9 L192 772"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="93.00" y="670.00" textLength="91" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.74pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 93.00 670.00)">Closed Won</text>
+  <text x="93.00" y="561.00" textLength="90" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.74pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 93.00 561.00)">Negotiation</text>
+  <text x="73.00" y="452.00" textLength="111" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.74pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 73.00 452.00)">Proposals Sent</text>
+  <text x="29.00" y="343.00" textLength="155" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.74pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 29.00 343.00)">Sales Qualified (SQL)</text>
+  <text x="9.00" y="234.00" textLength="175" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.74pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 9.00 234.00)">Marketing Leads (MQL)</text>
+  <text x="79.00" y="125.00" textLength="105" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.74pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 79.00 125.00)">Website Visits</text>
+  <text x="14.00" y="794.00" textLength="755" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="9.55pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 14.00 794.00)">Source: CRM export, week 52  •  Biggest leak: Website Visits → Marketing Leads (33.6% conv, −8,300) — tighten lead qualification here</text>
+</g>
+<defs>
+  <clipPath id="clip0">
+    <rect id="cliprect0" x="192" y="9" width="987" height="764" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip0)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#CDCDC0" fill-opacity="0.15" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="192 64 1178 64 849 172 520 172 " fill-rule="evenodd"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<defs>
+  <clipPath id="clip1">
+    <rect id="cliprect1" x="192" y="9" width="987" height="764" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip1)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#DEDED6" fill-opacity="1.00" stroke="#8F8F86" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="274 64 1095 64 823 172 546 172 " fill-rule="evenodd"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#8F8F86" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<defs>
+  <clipPath id="clip2">
+    <rect id="cliprect2" x="192" y="9" width="987" height="764" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip2)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="0.11" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="274 64 1095 64 999 102 369 102 " fill-rule="evenodd"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="659.00" y="125.00" textLength="50" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.74pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 659.00 125.00)">12,500</text>
+</g>
+<defs>
+  <clipPath id="clip3">
+    <rect id="cliprect3" x="192" y="9" width="987" height="764" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip3)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#6F4E37" fill-opacity="0.15" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="520 173 849 173 790 281 579 281 " fill-rule="evenodd"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<defs>
+  <clipPath id="clip4">
+    <rect id="cliprect4" x="192" y="9" width="987" height="764" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip4)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="#A18B7D" fill-opacity="1.00" stroke="#FF0000" stroke-opacity="0.55"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="546 173 823 173 778 281 591 281 " stroke-dasharray="2.000000,5.000000" fill-rule="evenodd"/>
+</g>
+</g>
+<g stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FF0000" stroke-opacity="0.55"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<defs>
+  <clipPath id="clip5">
+    <rect id="cliprect5" x="192" y="9" width="987" height="764" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip5)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="0.11" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="546 173 823 173 807 211 561 211 " fill-rule="evenodd"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="664.00" y="234.00" textLength="41" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.74pt" text-decoration=" none" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 664.00 234.00)">4,200</text>
+</g>
+<defs>
+  <clipPath id="clip6">
+    <rect id="cliprect6" x="192" y="9" width="987" height="764" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip6)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#BAA185" fill-opacity="0.15" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="579 282 790 282 734 390 635 390 " fill-rule="evenodd"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<defs>
+  <clipPath id="clip7">
+    <rect id="cliprect7" x="192" y="9" width="987" height="764" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip7)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#D2C1AF" fill-opacity="1.00" stroke="#82705D" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="591 282 778 282 725 390 644 390 " fill-rule="evenodd"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#82705D" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<defs>
+  <clipPath id="clip8">
+    <rect id="cliprect8" x="192" y="9" width="987" height="764" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip8)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="0.11" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="591 282 778 282 759 320 609 320 " fill-rule="evenodd"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="664.00" y="343.00" textLength="41" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.74pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 664.00 343.00)">2,850</text>
+</g>
+<defs>
+  <clipPath id="clip9">
+    <rect id="cliprect9" x="192" y="9" width="987" height="764" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip9)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#626D71" fill-opacity="0.15" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="635 391 734 391 714 499 655 499 " fill-rule="evenodd"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<defs>
+  <clipPath id="clip10">
+    <rect id="cliprect10" x="192" y="9" width="987" height="764" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip10)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#98A0A2" fill-opacity="1.00" stroke="#444C4F" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="644 391 725 391 710 499 659 499 " fill-rule="evenodd"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#444C4F" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<defs>
+  <clipPath id="clip11">
+    <rect id="cliprect11" x="192" y="9" width="987" height="764" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip11)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="0.11" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="644 391 725 391 719 429 649 429 " fill-rule="evenodd"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="664.00" y="452.00" textLength="41" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.74pt" text-decoration=" none" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 664.00 452.00)">1,240</text>
+</g>
+<defs>
+  <clipPath id="clip12">
+    <rect id="cliprect12" x="192" y="9" width="987" height="764" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip12)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#CDCDC0" fill-opacity="0.15" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="655 500 714 500 698 608 671 608 " fill-rule="evenodd"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<defs>
+  <clipPath id="clip13">
+    <rect id="cliprect13" x="192" y="9" width="987" height="764" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip13)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#DEDED6" fill-opacity="1.00" stroke="#8F8F86" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="659 500 710 500 696 608 673 608 " fill-rule="evenodd"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#8F8F86" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<defs>
+  <clipPath id="clip14">
+    <rect id="cliprect14" x="192" y="9" width="987" height="764" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip14)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="0.11" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="659 500 710 500 705 538 663 538 " fill-rule="evenodd"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="691" y="538" width="37" height="33" rx="0.00"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="696.00" y="561.00" textLength="28" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.74pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 696.00 561.00)">780</text>
+</g>
+<g stroke-width="1" stroke-linecap="butt" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M691 538 L727 538"/>
+  <path d="M691 570 L727 570"/>
+  <path d="M727 538 L727 570"/>
+  <path d="M691 538 L691 570"/>
+</g>
+<defs>
+  <clipPath id="clip15">
+    <rect id="cliprect15" x="192" y="9" width="987" height="764" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip15)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#6F4E37" fill-opacity="0.15" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="671 609 698 609 698 717 671 717 " fill-rule="evenodd"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<defs>
+  <clipPath id="clip16">
+    <rect id="cliprect16" x="192" y="9" width="987" height="764" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip16)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#A18B7D" fill-opacity="1.00" stroke="#4D3626" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="673 609 696 609 696 717 673 717 " fill-rule="evenodd"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#4D3626" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<defs>
+  <clipPath id="clip17">
+    <rect id="cliprect17" x="192" y="9" width="987" height="764" stroke="none" fill="none"/>
+  </clipPath>
+</defs>
+<g clip-path="url(#clip17)">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="0.11" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="673 609 696 609 696 647 673 647 " fill-rule="evenodd"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="684" y="647" width="37" height="33" rx="0.00"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="689.00" y="670.00" textLength="28" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.74pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 689.00 670.00)">340</text>
+</g>
+<g stroke-width="1" stroke-linecap="butt" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M684 647 L720 647"/>
+  <path d="M684 679 L720 679"/>
+  <path d="M720 647 L720 679"/>
+  <path d="M684 647 L684 679"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="865.00" y="177.00" textLength="69" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="10.62pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 865.00 177.00)">Converted </text>
+  <text x="934.00" y="177.00" textLength="29" font-family="Segoe UI" font-weight="700" font-style="normal" font-size="10.62pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 934.00 177.00)">34%</text>
+  <text x="963.00" y="177.00" textLength="80" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="10.62pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 963.00 177.00)"> (8,300 drop)</text>
+  <text x="804.00" y="286.00" textLength="69" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="10.62pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 804.00 286.00)">Converted </text>
+  <text x="873.00" y="286.00" textLength="29" font-family="Segoe UI" font-weight="700" font-style="normal" font-size="10.62pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 873.00 286.00)">68%</text>
+  <text x="902.00" y="286.00" textLength="80" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="10.62pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 902.00 286.00)"> (1,350 drop)</text>
+  <text x="744.00" y="395.00" textLength="69" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="10.62pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 744.00 395.00)">Converted </text>
+  <text x="813.00" y="395.00" textLength="29" font-family="Segoe UI" font-weight="700" font-style="normal" font-size="10.62pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 813.00 395.00)">44%</text>
+  <text x="842.00" y="395.00" textLength="80" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="10.62pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 842.00 395.00)"> (1,610 drop)</text>
+  <text x="724.00" y="504.00" textLength="69" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="10.62pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 724.00 504.00)">Converted </text>
+  <text x="793.00" y="504.00" textLength="29" font-family="Segoe UI" font-weight="700" font-style="normal" font-size="10.62pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 793.00 504.00)">63%</text>
+  <text x="822.00" y="504.00" textLength="70" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="10.62pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 822.00 504.00)"> (460 drop)</text>
+  <text x="708.00" y="613.00" textLength="69" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="10.62pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 708.00 613.00)">Converted </text>
+  <text x="777.00" y="613.00" textLength="29" font-family="Segoe UI" font-weight="700" font-style="normal" font-size="10.62pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 777.00 613.00)">44%</text>
+  <text x="806.00" y="613.00" textLength="70" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="10.62pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 806.00 613.00)"> (440 drop)</text>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="514" y="732" width="343" height="29" rx="0.00"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="520.00" y="753.00" textLength="188" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.74pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 520.00 753.00)">Overall Conversion Rate: </text>
+  <text x="708.00" y="753.00" textLength="39" font-family="Segoe UI" font-weight="700" font-style="normal" font-size="12.74pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 708.00 753.00)">2.7%</text>
+  <text x="747.00" y="753.00" textLength="105" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.74pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 747.00 753.00)"> (12,160 drop)</text>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M260 118 L403 118" stroke-dasharray="0.666667,1.666667"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="410 118 402 122 402 114 " fill-rule="evenodd"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="201" y="104" width="60" height="29" rx="0.00"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="207.00" y="125.00" textLength="47" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.74pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 207.00 125.00)">Actual</text>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M262 391 L607 336" stroke-dasharray="0.666667,1.666667"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="607 336 600 342 599 334 " fill-rule="evenodd"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="201" y="377" width="62" height="29" rx="0.00"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="207.00" y="398.00" textLength="49" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.74pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 207.00 398.00)">Target</text>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M468 227 L561 227" stroke-dasharray="0.666667,1.666667"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <polygon points="568 227 560 231 560 223 " fill-rule="evenodd"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="201" y="213" width="268" height="29" rx="0.00"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="207.00" y="234.00" textLength="255" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.74pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 207.00 234.00)">Bottleneck (worst conversion rate)</text>
+</g>
+</svg>

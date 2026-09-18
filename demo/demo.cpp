@@ -24,6 +24,16 @@ static Wisteria::Orientation PromptForBarOrientation(wxWindow* parent)
     return (selection == 1) ? Wisteria::Orientation::Horizontal : Wisteria::Orientation::Vertical;
     }
 
+// Asks which funnel layout to use so both variants can be checked from the demo.
+// Defaults to the ghost overlay if the prompt is dismissed.
+static bool PromptForFunnelGhostOverlay(wxWindow* parent)
+    {
+    const wxArrayString choices{ _(L"Single Indicator"), _(L"Actual vs Target") };
+    const int selection = wxGetSingleChoiceIndex(_(L"Which funnel do you want to see?"),
+                                                 _(L"Choose Funnel Type"), choices, parent);
+    return (selection != 0);
+    }
+
 /// @brief Extended icon provider, which is connected to application's
 ///     custom icons.
 class WisteriaArtProvider final : public wxArtProvider
@@ -198,6 +208,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_CHERNOFFPLOT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_STEMANDLEAF);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_RACETRACK);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_FUNNEL_CHART);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_WILMARTH_BRIDGE);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_NIGHTINGALE_ROSE);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_BULLET_CHART);
@@ -262,6 +273,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_LIKERT_3POINT, _(L"Likert Chart (3-Point Scale)"));
     fileMenu->Append(MyApp::ID_NEW_LIKERT_7POINT, _(L"Likert Chart (7-Point Scale)"));
     fileMenu->Append(MyApp::ID_NEW_WCURVE, _(L"W-Curve Plot"));
+    fileMenu->Append(MyApp::ID_NEW_FUNNEL_CHART, _(L"Funnel Chart (Sales Pipeline)"));
     fileMenu->Append(MyApp::ID_NEW_LR_ROADMAP_GRAPH, _(L"Linear Regression Roadmap"));
     fileMenu->Append(MyApp::ID_NEW_PROCON_ROADMAP_GRAPH, _(L"Pros & Cons Roadmap"));
     fileMenu->Append(MyApp::ID_NEW_SANKEY_DIAGRAM, _(L"Sankey Diagram"));
@@ -2473,6 +2485,108 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // also, fit it to the entire page when printing (preferably in portrait)
         subframe->m_canvas->FitToPageWhenPrinting(true);
         }
+    // Funnel Chart
+    else if (event.GetId() == MyApp::ID_NEW_FUNNEL_CHART)
+        {
+        const bool withGhost{ PromptForFunnelGhostOverlay(subframe) };
+
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
+
+        auto funnelData{ std::make_shared<Wisteria::Data::Dataset>() };
+        funnelData->AddCategoricalColumn(L"Stage");
+        funnelData->AddContinuousColumn(L"Actual");
+        if (withGhost)
+            {
+            funnelData->AddContinuousColumn(L"Target");
+            }
+
+        // row order is the funnel order
+        funnelData->GetCategoricalColumn(L"Stage")->GetStringTable() = {
+            { 0, L"Website Visits" },        { 1, L"Marketing Leads (MQL)" },
+            { 2, L"Sales Qualified (SQL)" }, { 3, L"Proposals Sent" },
+            { 4, L"Negotiation" },           { 5, L"Closed Won" }
+        };
+
+        // classic SaaS funnel — big drop between SQL -> Proposal is the bottleneck
+        if (withGhost)
+            {
+            // ghost Target makes the shortfall obvious at a glance
+            funnelData->AddRow(
+                Wisteria::Data::RowInfo{}.Categoricals({ 0 }).Continuous({ 12500, 15000 }));
+            funnelData->AddRow(
+                Wisteria::Data::RowInfo{}.Categoricals({ 1 }).Continuous({ 4200, 5000 }));
+            funnelData->AddRow(
+                Wisteria::Data::RowInfo{}.Categoricals({ 2 }).Continuous({ 2850, 3200 }));
+            funnelData->AddRow(
+                Wisteria::Data::RowInfo{}.Categoricals({ 3 }).Continuous({ 1240, 1500 }));
+            funnelData->AddRow(
+                Wisteria::Data::RowInfo{}.Categoricals({ 4 }).Continuous({ 780, 900 }));
+            funnelData->AddRow(
+                Wisteria::Data::RowInfo{}.Categoricals({ 5 }).Continuous({ 340, 400 }));
+            }
+        else
+            {
+            // single-indicator: one Size field, conversion rate in Label
+            funnelData->AddRow(Wisteria::Data::RowInfo{}.Categoricals({ 0 }).Continuous({ 12500 }));
+            funnelData->AddRow(Wisteria::Data::RowInfo{}.Categoricals({ 1 }).Continuous({ 4200 }));
+            funnelData->AddRow(Wisteria::Data::RowInfo{}.Categoricals({ 2 }).Continuous({ 2850 }));
+            funnelData->AddRow(Wisteria::Data::RowInfo{}.Categoricals({ 3 }).Continuous({ 1240 }));
+            funnelData->AddRow(Wisteria::Data::RowInfo{}.Categoricals({ 4 }).Continuous({ 780 }));
+            funnelData->AddRow(Wisteria::Data::RowInfo{}.Categoricals({ 5 }).Continuous({ 340 }));
+            }
+
+        auto funnel{ std::make_shared<Wisteria::Graphs::FunnelChart>(
+            subframe->m_canvas,
+            withGhost ? std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(
+                            Wisteria::Colors::Schemes::CoffeeShop{}) :
+                        std::make_shared<Wisteria::Brushes::Schemes::BrushScheme>(
+                            Wisteria::Colors::Schemes::TastyWaves{}),
+            nullptr) };
+        if (withGhost)
+            {
+            funnel->SetData(funnelData, L"Stage", L"Actual", L"Target");
+            funnel->SetTargetGhostOpacity(38);
+            funnel->ShowExplanations(true);
+            subframe->SetTitle(_(L"Q4 Sales Pipeline (Actual vs Target)"));
+            }
+        else
+            {
+            funnel->SetData(funnelData, L"Stage", L"Actual");
+            funnel->SetFunnelStyle(Wisteria::Graphs::FunnelChart::FunnelStyle::Standard);
+            subframe->SetTitle(_(L"Single Indicator"));
+            }
+
+        // hide the y-axis title
+        funnel->GetLeftYAxis().GetTitle().SetText(wxString{});
+
+        // titles that tell the story without needing a legend
+        if (withGhost)
+            {
+            funnel->GetTitle().SetText(wxString{});
+            funnel->GetSubtitle().SetText(wxString{});
+            funnel->GetCaption().SetText(_(L"Source: CRM export, week 52  •  Biggest leak: "
+                                           "Website Visits → Marketing Leads (33.6% conv, −8,300) "
+                                           "— tighten lead qualification here"));
+            }
+        else
+            {
+            funnel->GetTitle().SetText(wxString{});
+            funnel->GetSubtitle().SetText(wxString{});
+            funnel->GetCaption().SetText(_(L"Source: CRM export, week 52  •  Single size field, "
+                                           "with conversion rate shown on labels"));
+            }
+        funnel->GetTitle().GetHeaderInfo().Enable(false);
+        funnel->GetTitle().SetFontColor(*wxWHITE);
+        funnel->GetTitle().SetFontBackgroundColor(
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::NavyBlue));
+        funnel->GetTitle().SetPadding(5, 5, 5, 5);
+        funnel->GetSubtitle().GetFont().MakeSmaller();
+        funnel->GetCaption().GetFont().MakeSmaller();
+        funnel->GetCaption().SetPadding(4, 4, 0, 4);
+        funnel->SetCanvasMargins(5, 5, 5, 5);
+
+        subframe->m_canvas->SetFixedObject(0, 0, funnel);
+        }
     // W-Curve plot
     else if (event.GetId() == MyApp::ID_NEW_WCURVE)
         {
@@ -3490,6 +3604,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_WCURVE, _(L"W-Curve Plot"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/wcurve.svg", iconSize),
                      _(L"W-Curve Plot"));
+    toolBar->AddTool(MyApp::ID_NEW_FUNNEL_CHART, _(L"Funnel Chart (Sales Pipeline)"),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/funnel.svg", iconSize),
+                     _(L"Funnel Chart (Sales Pipeline)"));
     toolBar->AddTool(MyApp::ID_NEW_LR_ROADMAP_GRAPH, _(L"Linear Regression Roadmap"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/roadmap.svg", iconSize),
                      _(L"Linear Regression Roadmap"));

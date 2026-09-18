@@ -2,6 +2,7 @@
 
 ## 1.2.2
 
+- Added Funnel Chart.
 - Added Waterfall Chart.
 - Added Bullet Chart.
 - Added Nightingale Rose Chart.

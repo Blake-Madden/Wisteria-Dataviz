@@ -44,6 +44,7 @@ equals.svg
 file-open.svg
 file-save.svg
 find.svg
+funnel.svg
 gantt.svg
 group.svg
 heatmap-grouped.svg

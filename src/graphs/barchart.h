@@ -1631,6 +1631,10 @@ namespace Wisteria::Graphs
             @param bar The bar to review.*/
         void UpdateScalingAxisFromBar(const Bar& bar);
 
+        /// @brief Adjusts the scaling axis from the provided bar length.
+        /// @param barLength The length of bar (in terms of axis range).
+        void AdjustScalingAxisFromBarLength(double barLength);
+
         /** @brief Sets the DPI scaling.
             @param scaling The DPI scaling.*/
         void SetDPIScaleFactor(const double scaling) override
@@ -1908,7 +1912,6 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         wxRect GetDrawArea() const;
 
-        void AdjustScalingAxisFromBarLength(double barLength);
         void AdjustScalingAxisFromBarGroups();
         /// @brief Recalculates the scaling axis from the unfolded bars only.
         /// @details Skipping the folded bars holds the axis to one fold's width, which
