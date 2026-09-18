@@ -133,6 +133,42 @@ Properties for `"waterfall-chart"` nodes:
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}
+## Funnel Chart {#funnel-chart-properties .unnumbered}
+
+Properties for `"funnel-chart"` nodes:
+
+- `"variables"`: An item containing the following properties:
+  - `"stage"`: The categorical (or ID) column containing the stage labels. \
+    Rows are plotted top to bottom in dataset order.
+  - `"value"`: The continuous column containing each stage's actual value.
+  - `"target"`: An (optional) continuous column with each stage's target value. \
+    When present, a ghosted trapezoid is drawn behind the stage showing the gap between its actual and target values.
+- `"funnel-style"`: A string specifying the visual style of the funnel. \
+  Available options are:
+  - `"glassy"`: A 3D glassy sheen with a highlight (the default).
+  - `"standard"`: A flat, solid fill.
+- `"show-explanations"`: `true` to show "Actual" and "Target" explanations pointing
+  at the top funnel segment's edges. Default is `false`.
+- `"show-conversion-labels"`: `false` to hide the conversion-rate labels drawn
+  between stages. Default is `true`.
+- `"target-ghost-opacity"`: The opacity (`0`-`255`) of the target ghost overlay.
+
+```json
+{
+  "type": "funnel-chart",
+  "dataset": "Pipeline",
+  "variables": {
+    "stage": "Stage",
+    "value": "Actual",
+    "target": "Target"
+  },
+  "funnel-style": "glassy",
+  "show-explanations": true
+}
+```
+:::
+
+::: {.minipage data-latex="{\textwidth}"}
 ## Candlestick/OHLC Plot {#candlestick-plot-properties .unnumbered}
 
 Properties for `"candlestick-plot"` nodes:

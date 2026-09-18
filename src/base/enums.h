@@ -875,7 +875,8 @@ namespace Wisteria
         LRRoadmap,
         WinLossSparkline,
         BulletChart,
-        WaterfallChart
+        WaterfallChart,
+        FunnelChart
         };
     } // namespace Wisteria
 

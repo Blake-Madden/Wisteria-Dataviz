@@ -22,6 +22,7 @@ SET(WISTERIA_SRC
     ../../src/base/polygon.cpp
     ../../src/base/pptxreportprintout.cpp
     ../../src/base/report_builder_basic_graphs.cpp
+    ../../src/base/report_builder_business_graphs.cpp
     ../../src/base/report_builder_formulas.cpp
     ../../src/base/report_builder_stat_graphs.cpp
     ../../src/base/reportbuilder.cpp

@@ -3623,6 +3623,29 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
         // the label, value, and total-flag variables round-trip through the
         // generic "variables." property templates in SaveGraph()
         }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::FunnelChart)))
+        {
+        const auto* funnelChart = dynamic_cast<const Wisteria::Graphs::FunnelChart*>(graph);
+        if (funnelChart->GetFunnelStyle() != Wisteria::Graphs::FunnelChart::FunnelStyle::Glassy)
+            {
+            node->Add(L"funnel-style", wxString{ _DT(L"standard") });
+            }
+        if (funnelChart->AreExplanationsShown())
+            {
+            node->Add(L"show-explanations", true);
+            }
+        if (!funnelChart->AreConversionLabelsShown())
+            {
+            node->Add(L"show-conversion-labels", false);
+            }
+        if (funnelChart->GetTargetGhostOpacity() != Wisteria::Settings::GHOST_OPACITY)
+            {
+            node->Add(L"target-ghost-opacity",
+                      static_cast<double>(funnelChart->GetTargetGhostOpacity()));
+            }
+        // the stage, value, and target variables round-trip through the
+        // generic "variables." property templates in SaveGraph()
+        }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BarChart)))
         {
         const auto* barChart = dynamic_cast<const Wisteria::Graphs::BarChart*>(graph);

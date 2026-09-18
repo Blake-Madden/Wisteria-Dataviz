@@ -21,6 +21,7 @@
 #include "insertchernoffdlg.h"
 #include "insertchoroplethmapdlg.h"
 #include "insertcommonaxisdlg.h"
+#include "insertfunnelchartdlg.h"
 #include "insertganttchartdlg.h"
 #include "insertheatmapdlg.h"
 #include "inserthistogramdlg.h"
@@ -957,6 +958,9 @@ namespace Wisteria::UI
             break;
         case Wisteria::GalleryItemType::WaterfallChart:
             placed = DropWaterfallChart(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::FunnelChart:
+            placed = DropFunnelChart(stagingCanvas, row, col);
             break;
         default:
             // remaining graph types are not wired up yet
@@ -1898,6 +1902,29 @@ namespace Wisteria::UI
         try
             {
             auto plot = dlg.BuildWaterfallChart();
+            stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropFunnelChart(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertFunnelChartDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"funnel.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildFunnelChart();
             stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
             return true;
             }

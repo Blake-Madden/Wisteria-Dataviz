@@ -157,6 +157,9 @@ class WisteriaView final : public wxView
     void OnInsertWaterfallChart(wxCommandEvent& event);
     void EditWaterfallChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                             size_t graphRow, size_t graphCol) const;
+    void OnInsertFunnelChart(wxCommandEvent& event);
+    void EditFunnelChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                         size_t graphRow, size_t graphCol) const;
     void OnInsertWilmarthBridgePlot(wxCommandEvent& event);
     void EditWilmarthBridgePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                                 size_t graphRow, size_t graphCol) const;

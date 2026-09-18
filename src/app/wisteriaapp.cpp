@@ -1041,6 +1041,10 @@ wxString WisteriaApp::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph)
         {
         return _DT(L"waterfall-chart");
         }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::FunnelChart)))
+        {
+        return _DT(L"funnel-chart");
+        }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BarChart)))
         {
         return _DT(L"bar-chart");
@@ -1347,6 +1351,7 @@ const std::vector<Wisteria::GalleryItemInfo>& WisteriaApp::GetGalleryItemCatalog
           GalleryGroup::Business },
         { GalleryItemType::WaterfallChart, _(L"Waterfall Chart"), L"waterfallchart.svg",
           GalleryGroup::Business },
+        { GalleryItemType::FunnelChart, _(L"Funnel Chart"), L"funnel.svg", GalleryGroup::Business },
         // Statistical
         { GalleryItemType::Histogram, _(L"Histogram"), L"histogram.svg",
           GalleryGroup::Statistical },

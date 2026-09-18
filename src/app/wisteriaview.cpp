@@ -22,6 +22,7 @@
 #include "../ui/dialogs/editors/insertchernoffdlg.h"
 #include "../ui/dialogs/editors/insertchoroplethmapdlg.h"
 #include "../ui/dialogs/editors/insertcommonaxisdlg.h"
+#include "../ui/dialogs/editors/insertfunnelchartdlg.h"
 #include "../ui/dialogs/editors/insertganttchartdlg.h"
 #include "../ui/dialogs/editors/insertheatmapdlg.h"
 #include "../ui/dialogs/editors/inserthistogramdlg.h"
@@ -319,6 +320,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
                   ID_NEW_NIGHTINGALE_ROSE_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertBulletChart, this, ID_NEW_BULLET_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWaterfallChart, this, ID_NEW_WATERFALL_CHART);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertFunnelChart, this, ID_NEW_FUNNEL_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWilmarthBridgePlot, this,
                   ID_NEW_WILMARTH_BRIDGE_PLOT);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertCatBarChart, this, ID_NEW_BARCHART);
@@ -1980,6 +1982,7 @@ void WisteriaView::BuildGraphMenus()
     appendItem(m_businessGraphMenu, ID_NEW_BULLET_CHART, _(L"Bullet Chart..."), L"bulletchart.svg");
     appendItem(m_businessGraphMenu, ID_NEW_WATERFALL_CHART, _(L"Waterfall Chart..."),
                L"waterfallchart.svg");
+    appendItem(m_businessGraphMenu, ID_NEW_FUNNEL_CHART, _(L"Funnel Chart..."), L"funnel.svg");
 
     // Statistical graphs
     appendItem(m_statisticalGraphMenu, ID_NEW_HISTOGRAM, _(L"Histogram..."), L"histogram.svg");
@@ -2663,6 +2666,10 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WaterfallChart)))
         {
         EditWaterfallChart(*graph, canvas, itemRow, itemCol);
+        }
+    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::FunnelChart)))
+        {
+        EditFunnelChart(*graph, canvas, itemRow, itemCol);
         }
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WilmarthBridgePlot)))
         {
@@ -4590,6 +4597,69 @@ void WisteriaView::EditWaterfallChart(const Wisteria::Graphs::Graph2D& graph,
     try
         {
         auto plot = dlg.BuildWaterfallChart(&graph);
+        canvas->SetFixedObject(graphRow, graphCol, plot);
+
+        UpdateCanvas(canvas);
+
+        GetDocument()->Modify(true);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertFunnelChart([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = EnsureActivePage();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertFunnelChartDlg dlg(canvas, &m_reportBuilder, m_frame);
+    SetDialogIcon(dlg, L"funnel.svg");
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = dlg.BuildFunnelChart();
+        canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+
+        UpdateCanvas(canvas);
+
+        GetDocument()->Modify(true);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::EditFunnelChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                   const size_t graphRow, const size_t graphCol) const
+    {
+    Wisteria::UI::InsertFunnelChartDlg dlg(
+        canvas, &m_reportBuilder, m_frame, _(L"Edit Funnel Chart"), wxID_ANY, wxDefaultPosition,
+        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    SetDialogIcon(dlg, L"funnel.svg");
+    dlg.SetSelectedCell(graphRow, graphCol);
+    dlg.LoadFromGraph(graph);
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = dlg.BuildFunnelChart(&graph);
         canvas->SetFixedObject(graphRow, graphCol, plot);
 
         UpdateCanvas(canvas);

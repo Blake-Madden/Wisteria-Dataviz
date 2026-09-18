@@ -255,6 +255,7 @@ namespace Wisteria::UI
         bool DropNightingaleRoseChart(Canvas* stagingCanvas, size_t row, size_t col);
         bool DropBulletChart(Canvas* stagingCanvas, size_t row, size_t col);
         bool DropWaterfallChart(Canvas* stagingCanvas, size_t row, size_t col);
+        bool DropFunnelChart(Canvas* stagingCanvas, size_t row, size_t col);
 
         Canvas* m_canvas{ nullptr };
         const Wisteria::ReportBuilder* m_reportBuilder{ nullptr };

@@ -28,6 +28,7 @@ SET(APP_WISTERIA_SRC
     src/base/polygon.cpp
     src/base/pptxreportprintout.cpp
     src/base/report_builder_basic_graphs.cpp
+    src/base/report_builder_business_graphs.cpp
     src/base/report_builder_formulas.cpp
     src/base/report_builder_stat_graphs.cpp
     src/base/reportbuilder.cpp
@@ -128,6 +129,7 @@ SET(APP_WISTERIA_SRC
     src/ui/dialogs/editors/insertchernoffdlg.cpp
     src/ui/dialogs/editors/insertchoroplethmapdlg.cpp
     src/ui/dialogs/editors/insertcommonaxisdlg.cpp
+    src/ui/dialogs/editors/insertfunnelchartdlg.cpp
     src/ui/dialogs/editors/insertganttchartdlg.cpp
     src/ui/dialogs/editors/insertgraphdlg.cpp
     src/ui/dialogs/editors/insertheatmapdlg.cpp
