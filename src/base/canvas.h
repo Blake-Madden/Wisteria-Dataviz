@@ -624,6 +624,19 @@ namespace Wisteria
 
         /// @}
 
+        /** @name Selection Functions
+            @brief Functions related to the selection state of the items on the canvas.*/
+        /// @{
+
+        /** @brief Checks whether any item on the canvas is selected.
+            @details This includes the fixed objects (or any of their sub-items),
+                the free-floating objects, and the titles.
+            @returns @c true if at least one item is selected.*/
+        [[nodiscard]]
+        bool IsAnythingSelected() const;
+
+        /// @}
+
         /** @name Title Functions
             @brief Functions related to titles around the canvas.*/
         /// @{

@@ -2101,6 +2101,31 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         }
 
     //-------------------------------------------
+    bool Canvas::IsAnythingSelected() const
+        {
+        if (std::ranges::any_of(m_freeFloatingObjects, [](const auto& floatingObj)
+                                { return floatingObj != nullptr && floatingObj->IsSelected(); }))
+            {
+            return true;
+            }
+        for (const auto& fixedObjectsRow : GetFixedObjects())
+            {
+            if (std::ranges::any_of(fixedObjectsRow,
+                                    [](const auto& object)
+                                    {
+                                        return object != nullptr &&
+                                               (object->IsSelected() ||
+                                                !object->GetSelectedIds().empty());
+                                    }))
+                {
+                return true;
+                }
+            }
+        return std::ranges::any_of(GetTitles(), [](const auto& title)
+                                   { return title != nullptr && title->IsSelected(); });
+        }
+
+    //-------------------------------------------
     void Canvas::OnMouseEvents(wxMouseEvent & event)
         {
         wxPoint unscrolledPosition;
@@ -2337,6 +2362,25 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             }
         else if (event.LeftDClick())
             {
+            // the first click of a double click toggles the selection of the item under the
+            // pointer, so an item that was already selected is now unselected
+            if (!IsAnythingSelected())
+                {
+                for (const auto& fixedObjectsRow : GetFixedObjects())
+                    {
+                    for (const auto& object : fixedObjectsRow)
+                        {
+                        if (object != nullptr &&
+                            object->SelectObjectAtPoint(unscrolledPosition, gdc))
+                            {
+                            Refresh(true);
+                            Update();
+                            break;
+                            }
+                        }
+                    }
+                }
+
             wxCommandEvent dEvent(wxEVT_WISTERIA_CANVAS_DCLICK, GetId());
             dEvent.SetEventObject(this);
             GetEventHandler()->ProcessEvent(dEvent);
