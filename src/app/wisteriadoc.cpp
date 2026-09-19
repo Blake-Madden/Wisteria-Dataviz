@@ -52,7 +52,10 @@ bool WisteriaDoc::OnOpenDocument(const wxString& filename)
 
     SetFilename(filename, true);
     SetTitle(wxFileName{ filename }.GetName());
-    Modify(false);
+    // the view has already loaded the project by now, so any dataset paths that
+    // the user relocated need to be saved
+    const auto* view = dynamic_cast<WisteriaView*>(GetFirstView());
+    Modify(view != nullptr && view->GetReportBuilder().HasResolvedMissingDatasets());
     UpdateAllViews();
     return true;
     }

@@ -55,7 +55,9 @@
 #include "../wxSimpleJSON/src/wxSimpleJSON.h"
 #include "pptxreportprintout.h"
 #include "svgreportprintout.h"
+#include <functional>
 #include <map>
+#include <optional>
 #include <utility>
 #include <vector>
 #include <wx/numformatter.h>
@@ -103,6 +105,28 @@ namespace Wisteria
         std::vector<PendingErrorMessage> UnloadPendingErrorMessages()
             {
             return std::exchange(m_pendingErrorMessages, {});
+            }
+
+        /// @brief Callback used to locate a dataset file that could not be found.
+        /// @details The argument is the path that was not found.
+        ///     Returning a path means to use that file instead.
+        ///     Returning @c std::nullopt means to skip the dataset.
+        using MissingDatasetResolver = std::function<std::optional<wxString>(const wxString&)>;
+
+        /// @brief Sets the callback used when a dataset file cannot be found.
+        /// @details If no callback is set, a missing dataset file is a load error.
+        /// @param resolver The callback, or an empty function to clear it.
+        void SetMissingDatasetResolver(MissingDatasetResolver resolver)
+            {
+            m_missingDatasetResolver = std::move(resolver);
+            }
+
+        /// @returns @c true if the last call to @c LoadConfigurationFile() replaced
+        ///     a missing dataset's path with one from the resolver.
+        [[nodiscard]]
+        bool HasResolvedMissingDatasets() const noexcept
+            {
+            return m_resolvedMissingDatasets;
             }
 
         /// @brief Import options associated with a dataset.
@@ -1544,6 +1568,8 @@ namespace Wisteria
         std::vector<Wisteria::TableLink> m_tableLinks;
 
         std::vector<PendingErrorMessage> m_pendingErrorMessages;
+        MissingDatasetResolver m_missingDatasetResolver;
+        bool m_resolvedMissingDatasets{ false };
 
         wxString m_configFilePath;
         };

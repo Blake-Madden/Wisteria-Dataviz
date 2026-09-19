@@ -561,10 +561,36 @@ bool WisteriaView::LoadProject(const wxString& filename)
 
     if (!filename.empty())
         {
+        // offer to locate any datasets that are no longer where the project expects
+        m_reportBuilder.SetMissingDatasetResolver(
+            [this](const wxString& missingPath) -> std::optional<wxString>
             {
-            wxBusyInfo busy{ wxBusyInfoFlags{}.Text(_(L"Loading project...")) };
+                if (wxMessageBox(wxString::Format(_(L"Dataset not found.\n\n"
+                                                    "'%s' could not be found.\n\n"
+                                                    "Do you wish to look for it?"),
+                                                  missingPath),
+                                 _(L"Dataset Not Found"), wxYES_NO | wxICON_QUESTION | wxCENTRE,
+                                 m_workArea) != wxYES)
+                    {
+                    return std::nullopt;
+                    }
+                wxFileDialog fileDlg(m_workArea, _(L"Locate Dataset"),
+                                     wxFileName{ GetDocument()->GetFilename() }.GetPath(),
+                                     wxFileName{ missingPath }.GetFullName(),
+                                     Wisteria::Data::Dataset::GetDataFileFilter(),
+                                     wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
+                if (fileDlg.ShowModal() != wxID_OK)
+                    {
+                    return std::nullopt;
+                    }
+                return fileDlg.GetPath();
+            });
+
+            {
+            const wxBusyCursor busyCursor;
             // load the JSON configuration file
             m_pages = m_reportBuilder.LoadConfigurationFile(filename, m_workArea);
+            m_reportBuilder.SetMissingDatasetResolver({});
             for (auto* page : m_pages)
                 {
                 ApplyGlobalPrintSettings(page);
@@ -573,8 +599,7 @@ bool WisteriaView::LoadProject(const wxString& filename)
                 page->MaintainAspectRatio(true);
                 }
             }
-        // busy indicator is dismissed by now; safe to show any catastrophic
-        // load errors without them being hidden behind it
+
         const auto pendingErrors = m_reportBuilder.UnloadPendingErrorMessages();
         loadedClean = pendingErrors.empty();
         for (const auto& errMsg : pendingErrors)

@@ -28,6 +28,7 @@ namespace Wisteria
         m_svgExportOptionsLoaded = false;
         m_pdfExportOptionsLoaded = false;
         m_powerPointExportOptionsLoaded = false;
+        m_resolvedMissingDatasets = false;
         m_dpiScaleFactor = parent->GetDPIScaleFactor();
 
         m_configFilePath = filePath;
@@ -1969,6 +1970,7 @@ namespace Wisteria
         if (datasetsNode->IsOk())
             {
             auto datasets = datasetsNode->AsNodes();
+            bool anyPathResolved{ false };
             for (const auto& datasetNode : datasets)
                 {
                 if (datasetNode->IsOk())
@@ -1979,13 +1981,27 @@ namespace Wisteria
                         throw std::runtime_error(
                             wxString(_(L"Dataset must have a filepath.")).ToUTF8());
                         }
+                    bool pathResolved{ false };
                     if (!wxFileName::FileExists(path))
                         {
                         path = wxFileName{ m_configFilePath }.GetPathWithSep() + path;
                         if (!wxFileName::FileExists(path))
                             {
-                            throw std::runtime_error(
-                                wxString::Format(_(L"'%s': dataset not found."), path).ToUTF8());
+                            if (!m_missingDatasetResolver)
+                                {
+                                throw std::runtime_error(
+                                    wxString::Format(_(L"'%s': dataset not found."), path)
+                                        .ToUTF8());
+                                }
+                            const auto resolvedPath = m_missingDatasetResolver(path);
+                            if (!resolvedPath.has_value() ||
+                                !wxFileName::FileExists(resolvedPath.value()))
+                                {
+                                wxLogWarning(_(L"'%s': dataset not found and was skipped."), path);
+                                continue;
+                                }
+                            path = resolvedPath.value();
+                            pathResolved = true;
                             }
                         }
                     // store a clean absolute path rather than whatever mix of
@@ -2251,6 +2267,10 @@ namespace Wisteria
                     AddDataset(dsName, dataset,
                                DatasetImportOptions{ path, importer, worksheet, columnPreviewInfo,
                                                      importDefines });
+                    if (pathResolved)
+                        {
+                        anyPathResolved = true;
+                        }
                     // recode values, build subsets and pivots, etc.
                     LoadDatasetTransformations(datasetNode, dataset);
                     // update column preview info to reflect any renames
@@ -2275,6 +2295,8 @@ namespace Wisteria
                         }
                     }
                 }
+            // only committed if every dataset loaded without throwing
+            m_resolvedMissingDatasets = anyPathResolved;
             }
         }
 
