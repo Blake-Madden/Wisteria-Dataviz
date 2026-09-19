@@ -7,10 +7,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "pptxreportprintout.h"
-#include "../math/safe_math.h"
 #include "../base/colorschemenames.h"
-#include "reportprintout.h"
 #include "../base/settings.h"
+#include "../math/safe_math.h"
+#include "reportprintout.h"
 #include <algorithm>
 #include <cmath>
 #include <string>

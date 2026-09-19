@@ -222,7 +222,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FunnelChart, Wisteria::Graphs::BarCh
                     wxNumberFormatter::ToString(conv, 0,
                                                 wxNumberFormatter::Style::Style_NoTrailingZeroes));
                 selLabelText += wxString::Format(
-                    L" (%s conversion, %s drop)", convStr,
+                    // TRANSLATORS: %s are conversion rate and drop values in a funnel chart.
+                    _(L" (%s conversion, %s drop)"), convStr,
                     wxNumberFormatter::ToString(drop, 0, Settings::GetDefaultNumberFormat()));
                 }
             GraphItems::Label selLabel{ selLabelText };

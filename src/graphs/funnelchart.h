@@ -202,12 +202,16 @@ namespace Wisteria::Graphs
         /// @deprecated Funnel charts do not support sorting.
         /// @private
         [[deprecated("Row order defines the funnel")]]
-        void SortBars(BarSortComparison, SortDirection) final {}
+        void SortBars(BarSortComparison, SortDirection) final
+            {
+            }
 
         /// @deprecated Funnel charts do not support sorting.
         /// @private
         [[deprecated("Row order defines the funnel")]]
-        void SortBars(std::vector<wxString>, SortDirection) final {}
+        void SortBars(std::vector<wxString>, SortDirection) final
+            {
+            }
 
         /// @deprecated Funnel charts do not support legends.
         /// @private
