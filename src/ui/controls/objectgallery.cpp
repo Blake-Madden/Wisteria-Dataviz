@@ -230,6 +230,8 @@ namespace Wisteria::UI
             return L"winloss-sparkline";
         case GalleryItemType::WaterfallChart:
             return L"waterfall-chart";
+        case GalleryItemType::FunnelChart:
+            return L"funnel-chart";
             }
         return {};
         }
