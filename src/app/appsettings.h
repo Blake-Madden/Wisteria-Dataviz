@@ -10,8 +10,8 @@
 #define WISTERIA_APPSETTINGS_H
 
 #include "../base/enums.h"
-#include "../base/pptxreportprintout.h"
-#include "../base/svgreportprintout.h"
+#include "../reporting/pptxreportprintout.h"
+#include "../reporting/svgreportprintout.h"
 #include <set>
 #include <wx/filename.h>
 #include <wx/gdicmn.h>

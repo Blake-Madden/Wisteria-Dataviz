@@ -7,8 +7,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "colorlookup.h"
+#include "../reporting/reportbuilder.h"
 #include "colorbrewer.h"
-#include "reportbuilder.h"
 
 namespace Wisteria::Colors
     {

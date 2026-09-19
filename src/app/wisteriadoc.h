@@ -9,7 +9,7 @@
 #ifndef WISTERIA_DOC_H
 #define WISTERIA_DOC_H
 
-#include "../base/reportbuilder.h"
+#include "../reporting/reportbuilder.h"
 #include "../wxSimpleJSON/src/wxSimpleJSON.h"
 #include <wx/docview.h>
 #include <wx/filename.h>

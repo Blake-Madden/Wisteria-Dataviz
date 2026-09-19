@@ -12,7 +12,7 @@
 #ifndef WISTERIA_SVG_REPORT_PRINTOUT_H
 #define WISTERIA_SVG_REPORT_PRINTOUT_H
 
-#include "canvas.h"
+#include "../base/canvas.h"
 #include <utility>
 #include <vector>
 

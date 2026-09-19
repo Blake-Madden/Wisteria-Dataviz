@@ -13,6 +13,7 @@
 #define WISTERIA_ENUM_CONVERT_H
 
 #include "../base/colorschemenames.h"
+#include "../base/enums.h"
 #include "../base/icons.h"
 #include "../base/shapes.h"
 #include "../graphs/boxplot.h"
@@ -27,7 +28,6 @@
 #include "../graphs/proconroadmap.h"
 #include "../graphs/racetrackchart.h"
 #include "../graphs/wilmarth_bridge_plot.h"
-#include "enums.h"
 #include <wx/wx.h>
 
 namespace Wisteria

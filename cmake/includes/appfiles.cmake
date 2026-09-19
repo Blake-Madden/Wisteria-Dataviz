@@ -23,18 +23,8 @@ SET(APP_WISTERIA_SRC
     src/base/image_effects.cpp
     src/base/label.cpp
     src/base/lines.cpp
-    src/base/pdfreportprintout.cpp
     src/base/points.cpp
     src/base/polygon.cpp
-    src/base/pptxreportprintout.cpp
-    src/base/report_builder_basic_graphs.cpp
-    src/base/report_builder_business_graphs.cpp
-    src/base/report_builder_formulas.cpp
-    src/base/report_builder_stat_graphs.cpp
-    src/base/reportbuilder.cpp
-    src/base/reportbuildercolors.cpp
-    src/base/reportprintout.cpp
-    src/base/reporttableloader.cpp
     src/base/shapes.cpp
     src/base/shapes_art.cpp
     src/base/shapes_buildings.cpp
@@ -48,7 +38,6 @@ SET(APP_WISTERIA_SRC
     src/base/shapes_religion.cpp
     src/base/shapes_stats.cpp
     src/base/shapes_vehicles.cpp
-    src/base/svgreportprintout.cpp
     src/data/clone.cpp
     src/data/dataset.cpp
     src/data/excelreader.cpp
@@ -107,6 +96,17 @@ SET(APP_WISTERIA_SRC
     src/graphs/wordcloud.cpp
     src/import/spreadsheet_extract_text.cpp
     src/import/xlsx_extract_text.cpp
+    src/reporting/pdfreportprintout.cpp
+    src/reporting/pptxreportprintout.cpp
+    src/reporting/report_builder_basic_graphs.cpp
+    src/reporting/report_builder_business_graphs.cpp
+    src/reporting/report_builder_formulas.cpp
+    src/reporting/report_builder_stat_graphs.cpp
+    src/reporting/reportbuilder.cpp
+    src/reporting/reportbuildercolors.cpp
+    src/reporting/reportprintout.cpp
+    src/reporting/reporttableloader.cpp
+    src/reporting/svgreportprintout.cpp
     src/ui/app.cpp
     src/ui/controls/listctrlex.cpp
     src/ui/controls/listctrlexcelexporter.cpp

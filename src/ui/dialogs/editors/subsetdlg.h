@@ -12,10 +12,10 @@
 #ifndef SUBSET_DLG_H
 #define SUBSET_DLG_H
 
-#include "../../base/reportbuilder.h"
 #include "../../base/settings.h"
 #include "../../controls/datasetgridtable.h"
 #include "../../data/subset.h"
+#include "../../reporting/reportbuilder.h"
 #include <wx/dialog.h>
 #include <wx/grid.h>
 #include <wx/wx.h>

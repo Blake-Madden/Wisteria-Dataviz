@@ -12,7 +12,7 @@
 #ifndef WISTERIA_PDF_EXPORT_DLG_H
 #define WISTERIA_PDF_EXPORT_DLG_H
 
-#include "../../base/pdfreportprintout.h"
+#include "../../reporting/pdfreportprintout.h"
 #include "dialogwithhelp.h"
 #include <wx/printdlg.h>
 

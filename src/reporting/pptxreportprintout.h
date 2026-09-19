@@ -12,7 +12,7 @@
 #ifndef WISTERIA_REPORT_PPTX_EXPORT_H
 #define WISTERIA_REPORT_PPTX_EXPORT_H
 
-#include "canvas.h"
+#include "../base/canvas.h"
 #include <string_view>
 #include <tuple>
 #include <vector>

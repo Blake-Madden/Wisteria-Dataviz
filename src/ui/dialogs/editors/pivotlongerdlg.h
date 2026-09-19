@@ -12,10 +12,10 @@
 #ifndef PIVOT_LONGER_DLG_H
 #define PIVOT_LONGER_DLG_H
 
-#include "../../base/reportbuilder.h"
 #include "../../base/settings.h"
 #include "../../controls/datasetgridtable.h"
 #include "../../data/pivot.h"
+#include "../../reporting/reportbuilder.h"
 #include "../variableselectdlg.h"
 #include <wx/dialog.h>
 #include <wx/grid.h>

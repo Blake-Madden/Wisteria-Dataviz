@@ -8,10 +8,10 @@
 
 #include "canvas.h"
 #include "../graphs/graph2d.h"
+#include "../reporting/reportprintout.h"
 #include "../ui/dialogs/pdfexportdlg.h"
 #include "axis.h"
 #include "colorbrewer.h"
-#include "reportprintout.h"
 #include <memory>
 #include <utility>
 #include <wx/paper.h>

@@ -13,9 +13,9 @@
 #define INSERT_ITEM_DIALOG_H
 
 #include "../../base/canvas.h"
-#include "../../base/reportbuilder.h"
 #include "../../controls/sidebarbook.h"
 #include "../../math/mathematics.h"
+#include "../../reporting/reportbuilder.h"
 #include "../dialogwithhelp.h"
 #include <array>
 #include <bitset>

@@ -12,7 +12,7 @@
 #ifndef WISTERIA_REPORT_PRINTOUT_H
 #define WISTERIA_REPORT_PRINTOUT_H
 
-#include "canvas.h"
+#include "../base/canvas.h"
 #include <vector>
 
 namespace Wisteria

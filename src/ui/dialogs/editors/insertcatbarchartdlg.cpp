@@ -10,7 +10,7 @@
 #include "../../app/wisteriaapp.h"
 #include "../../app/wisteriadoc.h"
 #include "../../app/wisteriaview.h"
-#include "../../base/reportenumconvert.h"
+#include "../../reporting/reportenumconvert.h"
 #include "../../util/donttranslate.h"
 #include "../variableselectdlg.h"
 #include "insertimgdlg.h"

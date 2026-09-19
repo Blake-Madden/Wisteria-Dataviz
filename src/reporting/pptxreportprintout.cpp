@@ -8,9 +8,9 @@
 
 #include "pptxreportprintout.h"
 #include "../math/safe_math.h"
-#include "colorschemenames.h"
+#include "../base/colorschemenames.h"
 #include "reportprintout.h"
-#include "settings.h"
+#include "../base/settings.h"
 #include <algorithm>
 #include <cmath>
 #include <string>

@@ -12,8 +12,8 @@
 #ifndef SVG_EXPORT_DLG_H
 #define SVG_EXPORT_DLG_H
 
-#include "../../base/svgreportprintout.h"
 #include "../../math/mathematics.h"
+#include "../../reporting/svgreportprintout.h"
 #include "dialogwithhelp.h"
 #include <wx/panel.h>
 #include <wx/printdlg.h>

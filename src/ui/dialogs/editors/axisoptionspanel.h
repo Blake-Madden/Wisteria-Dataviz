@@ -11,7 +11,7 @@
 
 #include "../../base/axis.h"
 #include "../../base/canvas.h"
-#include "../../base/reportbuilder.h"
+#include "../../reporting/reportbuilder.h"
 #include <map>
 #include <wx/choice.h>
 #include <wx/clrpicker.h>

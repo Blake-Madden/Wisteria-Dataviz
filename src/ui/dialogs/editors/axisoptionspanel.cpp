@@ -8,7 +8,7 @@
 
 #include "axisoptionspanel.h"
 #include "../../app/wisteriaapp.h"
-#include "../../base/reportenumconvert.h"
+#include "../../reporting/reportenumconvert.h"
 #include "insertitemdlg.h"
 #include "insertlabeldlg.h"
 #include <wx/gbsizer.h>

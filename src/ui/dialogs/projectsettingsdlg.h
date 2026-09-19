@@ -12,7 +12,7 @@
 #ifndef PROJECT_SETTINGS_DIALOG_H
 #define PROJECT_SETTINGS_DIALOG_H
 
-#include "../../base/reportbuilder.h"
+#include "../../reporting/reportbuilder.h"
 #include "dialogwithhelp.h"
 #include <wx/clrpicker.h>
 #include <wx/wx.h>

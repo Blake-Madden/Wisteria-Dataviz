@@ -12,7 +12,7 @@
 #ifndef WISTERIA_PPTX_EXPORT_DLG_H
 #define WISTERIA_PPTX_EXPORT_DLG_H
 
-#include "../../base/pptxreportprintout.h"
+#include "../../reporting/pptxreportprintout.h"
 #include "dialogwithhelp.h"
 #include <wx/spinctrl.h>
 

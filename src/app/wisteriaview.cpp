@@ -7,9 +7,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "wisteriaview.h"
-#include "../base/pdfreportprintout.h"
-#include "../base/reportprintout.h"
-#include "../base/svgreportprintout.h"
+#include "../reporting/pdfreportprintout.h"
+#include "../reporting/reportprintout.h"
+#include "../reporting/svgreportprintout.h"
 #include "../ui/controls/datasetgridtable.h"
 #include "../ui/dialogs/datasetimportdlg.h"
 #include "../ui/dialogs/editors/insert_bullet_chart_dlg.h"

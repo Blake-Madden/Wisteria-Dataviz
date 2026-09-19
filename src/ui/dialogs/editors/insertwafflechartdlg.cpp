@@ -8,7 +8,7 @@
 
 #include "insertwafflechartdlg.h"
 #include "../../app/wisteriaapp.h"
-#include "../../base/reportenumconvert.h"
+#include "../../reporting/reportenumconvert.h"
 #include <wx/valgen.h>
 
 namespace Wisteria::UI

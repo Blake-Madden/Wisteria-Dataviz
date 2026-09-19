@@ -12,8 +12,10 @@
 #ifndef WISTERIA_REPORT_BUILDER_H
 #define WISTERIA_REPORT_BUILDER_H
 
-#include "../base/reportenumconvert.h"
-#include "../base/reporttableloader.h"
+#include "../base/canvas.h"
+#include "../base/colorbrewer.h"
+#include "../base/commonaxisbuilder.h"
+#include "../base/fillableshape.h"
 #include "../base/tablelink.h"
 #include "../data/join_inner.h"
 #include "../data/join_left.h"
@@ -48,11 +50,9 @@
 #include "../graphs/wilmarth_bridge_plot.h"
 #include "../graphs/win_loss_sparkline.h"
 #include "../graphs/wordcloud.h"
+#include "../reporting/reportenumconvert.h"
+#include "../reporting/reporttableloader.h"
 #include "../wxSimpleJSON/src/wxSimpleJSON.h"
-#include "canvas.h"
-#include "colorbrewer.h"
-#include "commonaxisbuilder.h"
-#include "fillableshape.h"
 #include "pptxreportprintout.h"
 #include "svgreportprintout.h"
 #include <map>

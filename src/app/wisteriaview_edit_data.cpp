@@ -6,9 +6,9 @@
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "../base/pdfreportprintout.h"
-#include "../base/reportprintout.h"
-#include "../base/svgreportprintout.h"
+#include "../reporting/pdfreportprintout.h"
+#include "../reporting/reportprintout.h"
+#include "../reporting/svgreportprintout.h"
 #include "../ui/controls/datasetgridtable.h"
 #include "../ui/dialogs/datasetimportdlg.h"
 #include "../ui/dialogs/editors/insertboxplotdlg.h"

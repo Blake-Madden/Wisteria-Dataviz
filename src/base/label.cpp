@@ -7,8 +7,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "label.h"
+#include "../reporting/reportbuilder.h"
 #include "polygon.h"
-#include "reportbuilder.h"
 #include <algorithm>
 #include <wx/fontenum.h>
 #include <wx/regex.h>

@@ -12,11 +12,11 @@
 #ifndef JOIN_DLG_H
 #define JOIN_DLG_H
 
-#include "../../base/reportbuilder.h"
 #include "../../base/settings.h"
 #include "../../controls/datasetgridtable.h"
 #include "../../data/join_inner.h"
 #include "../../data/join_left.h"
+#include "../../reporting/reportbuilder.h"
 #include <wx/dialog.h>
 #include <wx/grid.h>
 #include <wx/wx.h>

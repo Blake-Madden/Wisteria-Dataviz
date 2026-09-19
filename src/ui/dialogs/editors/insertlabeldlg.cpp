@@ -9,7 +9,7 @@
 #include "insertlabeldlg.h"
 #include "../../app/wisteriaapp.h"
 #include "../../base/label.h"
-#include "../../base/reportenumconvert.h"
+#include "../../reporting/reportenumconvert.h"
 #include "insertshapedlg.h"
 #include <utility>
 #include <wx/valgen.h>

@@ -9,7 +9,7 @@
 #ifndef WISTERIA_VIEW_H
 #define WISTERIA_VIEW_H
 
-#include "../base/reportbuilder.h"
+#include "../reporting/reportbuilder.h"
 #include "../ui/controls/sidebar.h"
 #include "../ui/dialogs/editors/insertgraphdlg.h"
 #include "../util/windowcontainer.h"

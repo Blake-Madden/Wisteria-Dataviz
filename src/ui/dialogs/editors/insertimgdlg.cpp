@@ -9,7 +9,7 @@
 #include "insertimgdlg.h"
 #include "../../app/wisteriaapp.h"
 #include "../../app/wisteriadoc.h"
-#include "../../base/reportenumconvert.h"
+#include "../../reporting/reportenumconvert.h"
 #include <wx/filename.h>
 #include <wx/tokenzr.h>
 #include <wx/valgen.h>

@@ -8,8 +8,8 @@
 
 #include "inserttabledlg.h"
 #include "../../app/wisteriaview.h"
-#include "../../base/reporttableloader.h"
 #include "../../graphs/table.h"
+#include "../../reporting/reporttableloader.h"
 #include "../../wxSimpleJSON/src/wxSimpleJSON.h"
 #include "../variableselectdlg.h"
 #include <wx/combobox.h>
