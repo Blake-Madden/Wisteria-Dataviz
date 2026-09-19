@@ -44,6 +44,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::StandardLineStyles,
                     .AnchorPoint(
                         itemBoundingBox.GetTopLeft() +
                         wxPoint(itemBoundingBox.GetWidth() / 2, itemBoundingBox.GetHeight() / 2)));
+            selectionLabel.EnableMarkup(true);
             selectionLabel.GetFont().MakeSmaller();
             const wxRect selectionLabelBox = selectionLabel.GetBoundingBox(dc);
             // if going out of the bottom of the bounding box then move it up to fit
