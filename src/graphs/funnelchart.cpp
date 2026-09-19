@@ -210,9 +210,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FunnelChart, Wisteria::Graphs::BarCh
 
             // per-stage color/brush in row order, wrapping scheme
             // selection label shows value and conversion from previous
-            wxString selLabelText = wxString::Format(
-                _DT(L"%s: %s"), row.m_label,
-                wxNumberFormatter::ToString(row.m_value, 0, Settings::GetDefaultNumberFormat()));
+            wxString selLabelText;
             if (i > 0 && rows[i - 1].m_value != 0)
                 {
                 const double conv = safe_divide<double>(row.m_value, rows[i - 1].m_value) * 100.0;
@@ -221,10 +219,22 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FunnelChart, Wisteria::Graphs::BarCh
                     _DT(L"<span style='font-weight:bold;'>%s%%</span>"),
                     wxNumberFormatter::ToString(conv, 0,
                                                 wxNumberFormatter::Style::Style_NoTrailingZeroes));
-                selLabelText += wxString::Format(
-                    // TRANSLATORS: %s are conversion rate and drop values in a funnel chart.
-                    _(L" (%s conversion, %s drop)"), convStr,
+                selLabelText = wxString::Format(
+                    // TRANSLATORS: %s are row label + raw value,
+                    // conversion rate and drop values in a funnel chart.
+                    _(L"%s (%s conversion, %s drop)"),
+                    wxString::Format(_DT(L"%s: %s"), row.m_label,
+                                     wxNumberFormatter::ToString(
+                                         row.m_value, 0, Settings::GetDefaultNumberFormat())),
+                    convStr,
                     wxNumberFormatter::ToString(drop, 0, Settings::GetDefaultNumberFormat()));
+                }
+            else
+                {
+                selLabelText =
+                    wxString::Format(_DT(L"%s: %s"), row.m_label,
+                                     wxNumberFormatter::ToString(
+                                         row.m_value, 0, Settings::GetDefaultNumberFormat()));
                 }
             GraphItems::Label selLabel{ selLabelText };
             selLabel.EnableMarkup(true);

@@ -147,10 +147,10 @@ Properties for `"funnel-chart"` nodes:
   Available options are:
   - `"glassy"`: A 3D glassy sheen with a highlight (the default).
   - `"standard"`: A flat, solid fill.
-- `"show-explanations"`: `true` to show "Actual" and "Target" explanations pointing
-  at the top funnel segment's edges. Default is `false`.
-- `"show-conversion-labels"`: `false` to hide the conversion-rate labels drawn
-  between stages. Default is `true`.
+- `"show-explanations"`: `true` to show "Actual" and "Target" explanations pointing at the top funnel segment's edges.
+  Default is `false`.
+- `"show-conversion-labels"`: `false` to hide the conversion-rate labels drawn between stages.
+  Default is `true`.
 - `"target-ghost-opacity"`: The opacity (`0`-`255`) of the target ghost overlay.
 
 ```json
