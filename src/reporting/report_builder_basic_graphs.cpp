@@ -1929,204 +1929,403 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
-    std::shared_ptr<Graphs::Graph2D>
-    ReportBuilder::LoadBulletChart(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
-                                   size_t& currentRow, size_t& currentColumn)
+    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadTable(const wxSimpleJSON::Ptr_t& tableNode,
+                                                              Canvas* canvas, size_t& currentRow,
+                                                              size_t& currentColumn)
         {
-        const wxString dsName = graphNode->GetProperty(L"dataset")->AsString();
+        const ReportTableLoader nodeLoader(*this);
+
+        const wxString dsName = tableNode->GetProperty(L"dataset")->AsString();
         const auto foundPos = m_datasets.find(dsName);
         if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
             {
             throw std::runtime_error(
-                wxString::Format(_(L"%s: dataset not found for bullet chart."), dsName).ToUTF8());
+                wxString::Format(_(L"%s: dataset not found for table."), dsName).ToUTF8());
             }
 
-        const auto variablesNode = graphNode->GetProperty(L"variables");
-        if (!variablesNode->IsOk())
+        std::vector<wxString> variables;
+        const auto variablesNode = tableNode->GetProperty(L"variables");
+        if (variablesNode->IsOk() && variablesNode->IsValueString())
             {
-            throw std::runtime_error(_(L"Variables not defined for bullet chart.").ToUTF8());
-            }
-
-        const auto labelVarNameRaw = variablesNode->GetProperty(L"label")->AsString();
-        const auto labelVarName = ExpandConstants(labelVarNameRaw);
-        const auto actualVarNameRaw = variablesNode->GetProperty(L"actual")->AsString();
-        const auto actualVarName = ExpandConstants(actualVarNameRaw);
-        const auto targetVarNameRaw = variablesNode->GetProperty(L"target")->AsString();
-        const auto targetVarName = ExpandConstants(targetVarNameRaw);
-
-        if (labelVarName.empty() || actualVarName.empty() || targetVarName.empty())
-            {
-            throw std::runtime_error(
-                wxString::Format(_(L"%s: label, actual, and target variables must be specified for "
-                                   "bullet chart."),
-                                 dsName)
-                    .ToUTF8());
-            }
-
-        auto bulletChart = std::make_shared<Graphs::BulletChart>(canvas);
-        bulletChart->SetPropertyTemplate(L"dataset", dsName);
-        bulletChart->SetPropertyTemplate(L"variables.label", labelVarNameRaw);
-        bulletChart->SetPropertyTemplate(L"variables.actual", actualVarNameRaw);
-        bulletChart->SetPropertyTemplate(L"variables.target", targetVarNameRaw);
-
-        if (const auto colorScheme = ReportEnumConvert::ConvertBulletChartRangeColorScheme(
-                graphNode->GetProperty(L"range-color-scheme")->AsString());
-            colorScheme.has_value())
-            {
-            bulletChart->SetRangeColorScheme(colorScheme.value());
-            }
-
-        if (const auto color = ConvertColor(graphNode->GetProperty(L"range-start-color"));
-            color.IsOk())
-            {
-            bulletChart->SetRangeStartColor(color);
-            }
-        if (const auto color = ConvertColor(graphNode->GetProperty(L"range-end-color"));
-            color.IsOk())
-            {
-            bulletChart->SetRangeEndColor(color);
-            }
-        if (const auto color = ConvertColor(graphNode->GetProperty(L"goal-success-color"));
-            color.IsOk())
-            {
-            bulletChart->SetGoalSuccessColor(color);
-            }
-        if (const auto color = ConvertColor(graphNode->GetProperty(L"goal-failure-color"));
-            color.IsOk())
-            {
-            bulletChart->SetGoalFailureColor(color);
-            }
-
-        if (const auto valueFormat = ReportEnumConvert::ConvertBulletChartValueFormat(
-                graphNode->GetProperty(L"value-display-format")->AsString());
-            valueFormat.has_value())
-            {
-            bulletChart->SetValueDisplayFormat(valueFormat.value());
-            }
-
-        if (graphNode->HasProperty(L"show-value-callouts"))
-            {
-            bulletChart->ShowValueCallouts(
-                graphNode->GetProperty(L"show-value-callouts")->AsBool());
-            }
-        if (graphNode->HasProperty(L"show-range-labels"))
-            {
-            bulletChart->ShowRangeLabels(graphNode->GetProperty(L"show-range-labels")->AsBool());
-            }
-
-        // ranges
-        if (const auto rangesNode = graphNode->GetProperty(L"ranges"); rangesNode->IsOk())
-            {
-            std::vector<Graphs::BulletChart::Range> ranges;
-            const auto rangeNodes = rangesNode->AsNodes();
-            ranges.reserve(rangeNodes.size());
-            for (const auto& rangeNode : rangeNodes)
+            auto convertedVars =
+                ExpandColumnSelections(variablesNode->AsString(), foundPos->second);
+            if (convertedVars)
                 {
-                ranges.emplace_back(Graphs::BulletChart::Range{
-                    rangeNode->GetProperty(L"end")->AsDouble(0),
-                    ExpandConstants(rangeNode->GetProperty(L"label")->AsString()) });
+                variables.insert(variables.cend(), convertedVars.value().cbegin(),
+                                 convertedVars.value().cend());
                 }
-            bulletChart->SetRanges(std::move(ranges));
+            else
+                {
+                throw std::runtime_error(
+                    wxString::Format(_(L"%s: unknown variable selection formula for table."),
+                                     variablesNode->AsString())
+                        .ToUTF8());
+                }
+            }
+        else if (variablesNode->IsOk() && variablesNode->IsValueArray())
+            {
+            const auto readVariables = variablesNode->AsStrings();
+            for (const auto& readVar : readVariables)
+                {
+                if (auto convertedVars = ExpandColumnSelections(readVar, foundPos->second))
+                    {
+                    variables.insert(variables.cend(), convertedVars.value().cbegin(),
+                                     convertedVars.value().cend());
+                    }
+                else
+                    {
+                    variables.push_back(readVar);
+                    }
+                }
             }
 
-        bulletChart->SetData(foundPos->second, labelVarName, actualVarName, targetVarName);
+        auto table = std::make_shared<Graphs::Table>(canvas);
 
-        LoadGraph(graphNode, canvas, currentRow, currentColumn, bulletChart);
-        return bulletChart;
+        // load table defaults
+        // change columns' borders
+        const auto borderDefaults = tableNode->GetProperty(L"default-borders")->AsBools();
+        table->SetDefaultBorders((!borderDefaults.empty() ? borderDefaults[0] : true),
+                                 (borderDefaults.size() > 1 ? borderDefaults[1] : true),
+                                 (borderDefaults.size() > 2 ? borderDefaults[2] : true),
+                                 (borderDefaults.size() > 3 ? borderDefaults[3] : true));
+
+        table->SetData(foundPos->second, variables, tableNode->GetProperty(L"transpose")->AsBool());
+
+        // cache raw JSON for round-trip serialization
+        if (variablesNode->IsOk())
+            {
+            table->SetPropertyTemplate(L"variables", variablesNode->Print(false));
+            }
+        if (tableNode->GetProperty(L"transpose")->AsBool())
+            {
+            table->SetPropertyTemplate(L"transpose", L"true");
+            }
+
+        // sorting
+        const auto sortNode = tableNode->GetProperty(L"row-sort");
+        if (sortNode->IsOk())
+            {
+            nodeLoader.ApplyTableSort(table, sortNode);
+            table->SetPropertyTemplate(L"row-sort", sortNode->Print(false));
+            }
+
+        if (tableNode->HasProperty(L"link-id"))
+            {
+            if (const auto linkId = ConvertNumber(tableNode->GetProperty(L"link-id")))
+                {
+                auto foundPosTLink = std::ranges::find_if(
+                    m_tableLinks, [&linkId](const auto& tLink)
+                    { return tLink.GetId() == static_cast<size_t>(linkId.value()); });
+                if (foundPosTLink != m_tableLinks.end())
+                    {
+                    foundPosTLink->AddTable(table);
+                    }
+                else
+                    {
+                    TableLink tLink{ static_cast<size_t>(linkId.value()) };
+                    tLink.AddTable(table);
+                    m_tableLinks.push_back(std::move(tLink));
+                    }
+                table->SetPropertyTemplate(L"link-id", std::to_wstring(linkId.value()));
+                }
+            }
+
+        table->ClearTrailingRowFormatting(
+            tableNode->GetProperty(L"clear-trailing-row-formatting")->AsBool());
+
+        const auto minWidthProp = tableNode->GetProperty(L"min-width-proportion");
+        if (minWidthProp->IsOk())
+            {
+            table->SetMinWidthProportion(minWidthProp->AsDouble());
+            }
+        const auto minHeightProp = tableNode->GetProperty(L"min-height-proportion");
+        if (minHeightProp->IsOk())
+            {
+            table->SetMinHeightProportion(minHeightProp->AsDouble());
+            }
+
+        LoadPen(tableNode->GetProperty(L"highlight-pen"), table->GetHighlightPen());
+
+        if (tableNode->HasProperty(L"insert-group-header"))
+            {
+            const auto groupHeaderNode = tableNode->GetProperty(L"insert-group-header");
+            nodeLoader.ApplyTableGroupHeader(table, groupHeaderNode);
+            table->SetPropertyTemplate(L"insert-group-header", groupHeaderNode->Print(false));
+            }
+
+        // group the rows
+        const auto rowGroupNode = tableNode->GetProperty(L"row-group");
+        if (rowGroupNode->IsOk() && !rowGroupNode->AsDoubles().empty())
+            {
+            nodeLoader.ApplyTableRowGrouping(table, rowGroupNode);
+            table->SetPropertyTemplate(L"row-group", rowGroupNode->Print(false));
+            }
+
+        // group the columns
+        const auto columnGroupNode = tableNode->GetProperty(L"column-group");
+        if (columnGroupNode->IsOk() && !columnGroupNode->AsDoubles().empty())
+            {
+            nodeLoader.ApplyTableColumnGrouping(table, columnGroupNode);
+            table->SetPropertyTemplate(L"column-group", columnGroupNode->Print(false));
+            }
+
+        // apply zebra stripes to loaded data before we start adding custom rows/columns,
+        // manually changing row/column colors, etc.
+        if (tableNode->HasProperty(L"alternate-row-color"))
+            {
+            const auto altRowColorNode = tableNode->GetProperty(L"alternate-row-color");
+            nodeLoader.ApplyTableAlternateRowColor(table, altRowColorNode);
+            table->SetPropertyTemplate(L"alternate-row-color", altRowColorNode->Print(false));
+            }
+
+        // add rows
+        const auto rowAddNode = tableNode->GetProperty(L"row-add");
+        if (!rowAddNode->AsNodes().empty())
+            {
+            nodeLoader.ApplyTableRowAdditions(table, rowAddNode);
+            table->SetPropertyTemplate(L"row-add", rowAddNode->Print(false));
+            }
+
+        // change the rows' suppression
+        const auto rowSuppressionNode = tableNode->GetProperty(L"row-suppression");
+        if (!rowSuppressionNode->AsNodes().empty())
+            {
+            nodeLoader.ApplyTableRowSuppression(table, rowSuppressionNode);
+            table->SetPropertyTemplate(L"row-suppression", rowSuppressionNode->Print(false));
+            }
+
+        nodeLoader.ApplyTableRowFormatting(table, tableNode->GetProperty(L"row-formatting"));
+        nodeLoader.ApplyTableRowColor(table, tableNode->GetProperty(L"row-color"));
+        nodeLoader.ApplyTableRowBold(table, tableNode->GetProperty(L"row-bold"));
+        nodeLoader.ApplyTableRowBorders(table, tableNode->GetProperty(L"row-borders"));
+        nodeLoader.ApplyTableRowContentAlignment(table,
+                                                 tableNode->GetProperty(L"row-content-align"));
+
+        // cache row formatting properties for round-trip serialization
+        for (const auto& prop :
+             { L"row-formatting", L"row-color", L"row-bold", L"row-borders", L"row-content-align" })
+            {
+            const auto node = tableNode->GetProperty(prop);
+            if (node->IsOk() && !node->AsNodes().empty())
+                {
+                table->SetPropertyTemplate(prop, node->Print(false));
+                }
+            }
+
+        // change the columns' suppression
+        const auto columnSuppressionNode = tableNode->GetProperty(L"column-suppression");
+        if (!columnSuppressionNode->AsNodes().empty())
+            {
+            nodeLoader.ApplyTableColumnSuppression(table, columnSuppressionNode);
+            table->SetPropertyTemplate(L"column-suppression", columnSuppressionNode->Print(false));
+            }
+
+        nodeLoader.ApplyTableColumnFormatting(table, tableNode->GetProperty(L"column-formatting"));
+        nodeLoader.ApplyTableColumnColor(table, tableNode->GetProperty(L"column-color"));
+        nodeLoader.ApplyTableColumnBold(table, tableNode->GetProperty(L"column-bold"));
+        nodeLoader.ApplyTableColumnBorders(table, tableNode->GetProperty(L"column-borders"));
+
+        // cache column formatting properties for round-trip serialization
+        for (const auto& prop :
+             { L"column-formatting", L"column-color", L"column-bold", L"column-borders" })
+            {
+            const auto node = tableNode->GetProperty(prop);
+            if (node->IsOk() && !node->AsNodes().empty())
+                {
+                table->SetPropertyTemplate(prop, node->Print(false));
+                }
+            }
+
+        // highlight cells down a column
+        const auto columnHighlightNode = tableNode->GetProperty(L"column-highlight");
+        if (!columnHighlightNode->AsNodes().empty())
+            {
+            nodeLoader.ApplyTableColumnHighlight(table, columnHighlightNode);
+            table->SetPropertyTemplate(L"column-highlight", columnHighlightNode->Print(false));
+            }
+
+        // column/row aggregates
+        const auto aggregatesNode = tableNode->GetProperty(L"aggregates");
+        if (!aggregatesNode->AsNodes().empty())
+            {
+            nodeLoader.ApplyTableAggregates(table, aggregatesNode);
+            table->SetPropertyTemplate(L"aggregates", aggregatesNode->Print(false));
+            }
+
+        // row totals
+        const auto rowTotalsNode = tableNode->GetProperty(L"row-totals");
+        if (rowTotalsNode->IsOk())
+            {
+            nodeLoader.ApplyTableRowTotals(table, rowTotalsNode);
+            table->SetPropertyTemplate(L"row-totals", rowTotalsNode->Print(false));
+            }
+
+        // cell updating
+        const auto cellUpdateNode = tableNode->GetProperty(L"cell-update");
+        if (!cellUpdateNode->AsNodes().empty())
+            {
+            nodeLoader.ApplyTableCellUpdates(table, cellUpdateNode);
+            table->SetPropertyTemplate(L"cell-update", cellUpdateNode->Print(false));
+            }
+
+        const auto cellAnnotationsNode = tableNode->GetProperty(L"cell-annotations");
+        if (!cellAnnotationsNode->AsNodes().empty())
+            {
+            nodeLoader.ApplyTableAnnotations(table, cellAnnotationsNode);
+            table->SetPropertyTemplate(L"cell-annotations", cellAnnotationsNode->Print(false));
+            }
+
+        // assign footnotes after all cells have been updated
+        const auto footnotesJsonNode = tableNode->GetProperty(L"footnotes");
+        if (!footnotesJsonNode->AsNodes().empty())
+            {
+            nodeLoader.ApplyTableFootnotes(table, footnotesJsonNode);
+            table->SetPropertyTemplate(L"footnotes", footnotesJsonNode->Print(false));
+            }
+
+        // UI-only formatting options (used by InsertTableDlg for round-tripping)
+        const auto boldHeaderNode = tableNode->GetProperty(L"ui.bold-header-row");
+        if (boldHeaderNode->IsOk())
+            {
+            const bool val = boldHeaderNode->AsBool();
+            table->SetPropertyTemplate(L"ui.bold-header-row", val ? L"true" : L"false");
+            if (val)
+                {
+                table->BoldRow(0);
+                }
+            }
+        const auto centerHeaderNode = tableNode->GetProperty(L"ui.center-header-row");
+        if (centerHeaderNode->IsOk())
+            {
+            const bool val = centerHeaderNode->AsBool();
+            table->SetPropertyTemplate(L"ui.center-header-row", val ? L"true" : L"false");
+            if (val)
+                {
+                table->SetRowHorizontalPageAlignment(0, PageHorizontalAlignment::Centered);
+                }
+            }
+        const auto boldFirstColNode = tableNode->GetProperty(L"ui.bold-first-column");
+        if (boldFirstColNode->IsOk())
+            {
+            const bool val = boldFirstColNode->AsBool();
+            table->SetPropertyTemplate(L"ui.bold-first-column", val ? L"true" : L"false");
+            if (val)
+                {
+                table->BoldColumn(0);
+                }
+            }
+
+        LoadGraph(tableNode, canvas, currentRow, currentColumn, table);
+        return table;
         }
 
     //---------------------------------------------------
     std::shared_ptr<Graphs::Graph2D>
-    ReportBuilder::LoadWaterfallChart(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
-                                      size_t& currentRow, size_t& currentColumn)
+    ReportBuilder::LoadSankeyDiagram(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                                     size_t& currentRow, size_t& currentColumn)
         {
         const wxString dsName = graphNode->GetProperty(L"dataset")->AsString();
         const auto foundPos = m_datasets.find(dsName);
         if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
             {
             throw std::runtime_error(
-                wxString::Format(_(L"%s: dataset not found for waterfall chart."), dsName)
-                    .ToUTF8());
+                wxString::Format(_(L"%s: dataset not found for Sankey diagram."), dsName).ToUTF8());
             }
 
         const auto variablesNode = graphNode->GetProperty(L"variables");
-        if (!variablesNode->IsOk())
+        if (variablesNode->IsOk())
             {
-            throw std::runtime_error(_(L"Variables not defined for waterfall chart.").ToUTF8());
-            }
+            const auto fromVarNameRaw = variablesNode->GetProperty(L"from")->AsString();
+            const auto fromVarName = ExpandConstants(fromVarNameRaw);
+            const auto toColNameRaw = variablesNode->GetProperty(L"to")->AsString();
+            const auto toColName = ExpandConstants(toColNameRaw);
 
-        const auto labelVarNameRaw = variablesNode->GetProperty(L"label")->AsString();
-        const auto valueVarNameRaw = variablesNode->GetProperty(L"value")->AsString();
-        const auto totalFlagVarNameRaw = variablesNode->GetProperty(L"total-flag")->AsString();
+            const auto fromWeightVarNameRaw =
+                variablesNode->GetProperty(L"from-weight")->AsString();
+            const auto fromWeightVarName = ExpandConstants(fromWeightVarNameRaw);
+            const auto toWeightColNameRaw = variablesNode->GetProperty(L"to-weight")->AsString();
+            const auto toWeightColName = ExpandConstants(toWeightColNameRaw);
 
-        if (labelVarNameRaw.empty() || valueVarNameRaw.empty())
-            {
-            throw std::runtime_error(
-                wxString::Format(_(L"%s: label and value variables must be specified for "
-                                   L"waterfall chart."),
-                                 dsName)
-                    .ToUTF8());
-            }
+            const auto fromGroupVarNameRaw = variablesNode->GetProperty(L"from-group")->AsString();
+            const auto fromGroupVarName = ExpandConstants(fromGroupVarNameRaw);
 
-        auto waterfallChart = std::make_shared<Graphs::WaterfallChart>(canvas);
-        waterfallChart->SetPropertyTemplate(L"dataset", dsName);
-        const auto labelVarName =
-            ExpandAndCache(waterfallChart.get(), L"variables.label", labelVarNameRaw);
-        const auto valueVarName =
-            ExpandAndCache(waterfallChart.get(), L"variables.value", valueVarNameRaw);
-        std::optional<wxString> totalFlagVarName{ std::nullopt };
-        if (!totalFlagVarNameRaw.empty())
-            {
-            totalFlagVarName =
-                ExpandAndCache(waterfallChart.get(), L"variables.total-flag", totalFlagVarNameRaw);
-            }
+            auto sankey = std::make_shared<Graphs::SankeyDiagram>(
+                canvas, LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")));
+            if (!fromVarNameRaw.empty())
+                {
+                sankey->SetPropertyTemplate(L"variables.from", fromVarNameRaw);
+                }
+            if (!toColNameRaw.empty())
+                {
+                sankey->SetPropertyTemplate(L"variables.to", toColNameRaw);
+                }
+            if (!fromWeightVarNameRaw.empty())
+                {
+                sankey->SetPropertyTemplate(L"variables.from-weight", fromWeightVarNameRaw);
+                }
+            if (!toWeightColNameRaw.empty())
+                {
+                sankey->SetPropertyTemplate(L"variables.to-weight", toWeightColNameRaw);
+                }
+            if (!fromGroupVarNameRaw.empty())
+                {
+                sankey->SetPropertyTemplate(L"variables.from-group", fromGroupVarNameRaw);
+                }
 
-        // orientation must be set before SetData(), as the bar-axis direction
-        // (and axis titles) are resolved when the bars are built
-        const auto bOrientation = graphNode->GetProperty(L"bar-orientation")->AsString();
-        if (bOrientation.CmpNoCase(L"horizontal") == 0)
-            {
-            waterfallChart->SetBarOrientation(Orientation::Horizontal);
-            }
-        else if (bOrientation.CmpNoCase(L"vertical") == 0)
-            {
-            waterfallChart->SetBarOrientation(Orientation::Vertical);
-            }
+            const auto groupLabelDisplay = ReportEnumConvert::ConvertBinLabelDisplay(
+                graphNode->GetProperty(L"group-label-display")->AsString());
+            if (groupLabelDisplay)
+                {
+                sankey->SetGroupLabelDisplay(groupLabelDisplay.value());
+                }
 
-        if (const auto color = ConvertColor(graphNode->GetProperty(L"increase-color"));
-            color.IsOk())
-            {
-            waterfallChart->SetIncreaseColor(color);
-            }
-        if (const auto color = ConvertColor(graphNode->GetProperty(L"decrease-color"));
-            color.IsOk())
-            {
-            waterfallChart->SetDecreaseColor(color);
-            }
-        if (const auto color = ConvertColor(graphNode->GetProperty(L"total-color")); color.IsOk())
-            {
-            waterfallChart->SetTotalColor(color);
-            }
+            const auto groupHeaderDisplay = ReportEnumConvert::ConvertGraphColumnHeader(
+                graphNode->GetProperty(L"group-header-display")->AsString());
+            if (groupHeaderDisplay)
+                {
+                sankey->SetColumnHeaderDisplay(groupHeaderDisplay.value());
+                }
 
-        if (const auto valueDisplay = ReportEnumConvert::ConvertNumberDisplay(
-                graphNode->GetProperty(L"value-display-format")->AsString());
-            valueDisplay.has_value())
-            {
-            waterfallChart->SetValueDisplay(valueDisplay.value());
-            }
+            if (graphNode->HasProperty(L"column-headers"))
+                {
+                const auto columnHeaderRaw = graphNode->GetProperty(L"column-headers")->AsStrings();
+                auto columnHeader =
+                    ExpandAndCache(sankey.get(), L"column-headers", columnHeaderRaw);
+                sankey->SetColumnHeaders(columnHeader);
+                }
 
-        if (graphNode->HasProperty(L"show-bar-values"))
-            {
-            waterfallChart->ShowBarValues(graphNode->GetProperty(L"show-bar-values")->AsBool());
-            }
-        if (graphNode->HasProperty(L"show-block-values"))
-            {
-            waterfallChart->ShowBlockValues(graphNode->GetProperty(L"show-block-values")->AsBool());
-            }
+            const auto flowShape = ReportEnumConvert::ConvertFlowShape(
+                graphNode->GetProperty(L"flow-shape")->AsString());
+            if (flowShape)
+                {
+                sankey->SetFlowShape(flowShape.value());
+                }
 
-        waterfallChart->SetData(foundPos->second, labelVarName, valueVarName, totalFlagVarName);
+            sankey->SetData(
+                foundPos->second, fromVarName, toColName,
+                !fromWeightVarName.empty() ? std::optional<wxString>(fromWeightVarName) :
+                                             std::nullopt,
+                !toWeightColName.empty() ? std::optional<wxString>(toWeightColName) : std::nullopt,
+                !fromGroupVarName.empty() ? std::optional<wxString>(fromGroupVarName) :
+                                            std::nullopt);
 
-        LoadGraph(graphNode, canvas, currentRow, currentColumn, waterfallChart);
-        return waterfallChart;
+            // showcasing
+            if (graphNode->HasProperty(L"ghost-opacity"))
+                {
+                sankey->SetGhostOpacity(
+                    graphNode->GetProperty(L"ghost-opacity")->AsDouble(Settings::GHOST_OPACITY));
+                }
+            if (const auto showcaseNode = graphNode->GetProperty(L"showcase-streams");
+                showcaseNode->IsOk() && showcaseNode->IsValueArray())
+                {
+                sankey->ShowcaseStreams(
+                    ExpandAndCache(sankey.get(), L"showcase-streams", showcaseNode->AsStrings()),
+                    graphNode->GetProperty(L"ghost-non-showcased-labels")->AsBool(false));
+                }
+
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, sankey);
+            return sankey;
+            }
+        throw std::runtime_error(_(L"Variables not defined for Sankey diagram.").ToUTF8());
         }
     } // namespace Wisteria

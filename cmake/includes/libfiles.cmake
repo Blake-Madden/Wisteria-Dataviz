@@ -97,7 +97,10 @@ SET(WISTERIA_SRC
     src/reporting/pptxreportprintout.cpp
     src/reporting/report_builder_basic_graphs.cpp
     src/reporting/report_builder_business_graphs.cpp
+    src/reporting/report_builder_education_graphs.cpp
     src/reporting/report_builder_formulas.cpp
+    src/reporting/report_builder_social_science_graphs.cpp
+    src/reporting/report_builder_sports_graphs.cpp
     src/reporting/report_builder_stat_graphs.cpp
     src/reporting/reportbuilder.cpp
     src/reporting/reportbuildercolors.cpp
