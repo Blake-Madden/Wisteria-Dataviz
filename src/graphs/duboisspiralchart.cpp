@@ -308,9 +308,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
 
         if (m_valueFormat == NumberDisplay::Currency)
             {
-            return wxNumberFormatter::ToString(value, 2,
-                                               numberStyle | wxNumberFormatter::Style_Currency |
-                                                   wxNumberFormatter::Style_CurrencySymbol);
+            // cents are shown (always as two digits) only if the value has any
+            return wxNumberFormatter::ToString(
+                value, has_fractional_part(value) ? 2 : 0,
+                (thousandsSeparator ? wxNumberFormatter::Style_WithThousandsSep :
+                                      wxNumberFormatter::Style_None) |
+                    wxNumberFormatter::Style_Currency | wxNumberFormatter::Style_CurrencySymbol);
             }
         if (m_valueFormat == NumberDisplay::Percentage)
             {
@@ -319,11 +322,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
                    '%%' can be changed and/or moved within string. */
                 _(L"%s%%"),
                 wxNumberFormatter::ToString(value * 100, decimalsFor(value * 100), numberStyle));
-            }
-        if (m_valueFormat == NumberDisplay::ValueSimple)
-            {
-            return wxNumberFormatter::ToString(value, decimalsFor(value),
-                                               wxNumberFormatter::Style_NoTrailingZeroes);
             }
         return wxNumberFormatter::ToString(value, decimalsFor(value), numberStyle);
         }

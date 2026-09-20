@@ -80,6 +80,7 @@ SET(APP_WISTERIA_SRC
     src/graphs/lrroadmap.cpp
     src/graphs/multi_series_lineplot.cpp
     src/graphs/nightingale_rose_chart.cpp
+    src/graphs/pictograph.cpp
     src/graphs/piechart.cpp
     src/graphs/proconroadmap.cpp
     src/graphs/racetrackchart.cpp
@@ -148,6 +149,7 @@ SET(APP_WISTERIA_SRC
     src/ui/dialogs/editors/insertlrroadmapdlg.cpp
     src/ui/dialogs/editors/insertmultiserieslineplotdlg.cpp
     src/ui/dialogs/editors/insertpagedlg.cpp
+    src/ui/dialogs/editors/insertpictographdlg.cpp
     src/ui/dialogs/editors/insertpiechartdlg.cpp
     src/ui/dialogs/editors/insertproconroadmapdlg.cpp
     src/ui/dialogs/editors/insertracetrackchartdlg.cpp

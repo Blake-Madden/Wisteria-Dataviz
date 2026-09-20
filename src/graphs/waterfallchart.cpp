@@ -230,11 +230,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaterfallChart, Wisteria::Graphs::Ba
                 {
             case NumberDisplay::Currency:
                 return wxNumberFormatter::ToString(
-                    value, 2,
+                    value, has_fractional_part(value) ? 2 : 0,
                     wxNumberFormatter::Style::Style_WithThousandsSep |
                         wxNumberFormatter::Style::Style_Currency |
-                        wxNumberFormatter::Style::Style_CurrencySymbol |
-                        wxNumberFormatter::Style::Style_NoTrailingZeroes);
+                        wxNumberFormatter::Style::Style_CurrencySymbol);
             case NumberDisplay::ValueSimple:
                 return wxNumberFormatter::ToString(value, 2, wxNumberFormatter::Style::Style_None);
             case NumberDisplay::Percentage:

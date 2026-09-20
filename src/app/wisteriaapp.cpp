@@ -1105,6 +1105,10 @@ wxString WisteriaApp::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph)
         {
         return _DT(L"dubois-spiral-chart");
         }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Pictograph)))
+        {
+        return _DT(L"pictograph");
+        }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::StemAndLeafPlot)))
         {
         return _DT(L"stem-and-leaf-plot");
@@ -1236,6 +1240,10 @@ wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase*
         {
         return L"dubois-spiral.svg";
         }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Pictograph)))
+        {
+        return L"pictograph.svg";
+        }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::StemAndLeafPlot)))
         {
         return L"stem-leaf.svg";
@@ -1351,6 +1359,7 @@ const std::vector<Wisteria::GalleryItemInfo>& WisteriaApp::GetGalleryItemCatalog
           GalleryGroup::Basic },
         { GalleryItemType::DuBoisSpiralChart, _(L"Du Bois Spiral Chart"), L"dubois-spiral.svg",
           GalleryGroup::Basic },
+        { GalleryItemType::Pictograph, _(L"Pictograph"), L"pictograph.svg", GalleryGroup::Basic },
         { GalleryItemType::ChoroplethMap, _(L"Choropleth Map"), L"choropleth.svg",
           GalleryGroup::Basic },
         // Business

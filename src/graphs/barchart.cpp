@@ -57,11 +57,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             (GetBinLabelDisplay() == BinLabelDisplay::BinValue) ?
                 (GetNumberDisplay() == NumberDisplay::Currency ?
                      wxNumberFormatter::ToString(
-                         bar.GetLength(), 2,
+                         bar.GetLength(), has_fractional_part(bar.GetLength()) ? 2 : 0,
                          wxNumberFormatter::Style::Style_WithThousandsSep |
                              wxNumberFormatter::Style::Style_Currency |
-                             wxNumberFormatter::Style::Style_CurrencySymbol |
-                             wxNumberFormatter::Style::Style_NoTrailingZeroes) :
+                             wxNumberFormatter::Style::Style_CurrencySymbol) :
                  GetNumberDisplay() == NumberDisplay::ValueSimple ?
                      wxNumberFormatter::ToString(bar.GetLength(), defaultPrecision,
                                                  wxNumberFormatter::Style::Style_None) :

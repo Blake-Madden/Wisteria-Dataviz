@@ -37,6 +37,7 @@
 #include "../graphs/lrroadmap.h"
 #include "../graphs/multi_series_lineplot.h"
 #include "../graphs/nightingale_rose_chart.h"
+#include "../graphs/pictograph.h"
 #include "../graphs/piechart.h"
 #include "../graphs/proconroadmap.h"
 #include "../graphs/racetrackchart.h"
@@ -1253,6 +1254,16 @@ namespace Wisteria
         std::shared_ptr<Graphs::Graph2D> LoadDuBoisSpiralChart(const wxSimpleJSON::Ptr_t& graphNode,
                                                                Canvas* canvas, size_t& currentRow,
                                                                size_t& currentColumn);
+        /// @brief Loads a pictograph node into the canvas.
+        /// @param graphNode The graph node to parse.
+        /// @param canvas The canvas to add the graph to.
+        /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
+        /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
+        /// @returns The graph that was added to the canvas, or null upon failure.
+        [[nodiscard]]
+        std::shared_ptr<Graphs::Graph2D> LoadPictograph(const wxSimpleJSON::Ptr_t& graphNode,
+                                                        Canvas* canvas, size_t& currentRow,
+                                                        size_t& currentColumn);
         /// @brief Loads a Wilmarth bridge plot node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.

@@ -234,6 +234,8 @@ namespace Wisteria::UI
             return L"funnel-chart";
         case GalleryItemType::DuBoisSpiralChart:
             return L"dubois-spiral";
+        case GalleryItemType::Pictograph:
+            return L"pictograph";
             }
         return {};
         }

@@ -1,24 +1,29 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Name:        insertduboisspiralchartdlg.cpp
+// Name:        insertpictographdlg.cpp
 // Author:      Blake Madden
 // Copyright:   (c) 2005-2026 Blake Madden
 // License:     3-Clause BSD license
 // SPDX-License-Identifier: BSD-3-Clause
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "insertduboisspiralchartdlg.h"
+#include "insertpictographdlg.h"
 #include "../../app/wisteriaview.h"
+#include "../../reporting/reportenumconvert.h"
 #include "../variableselectdlg.h"
+#include "insertshapedlg.h"
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
     {
     //-------------------------------------------
-    InsertDuBoisSpiralChartDlg::InsertDuBoisSpiralChartDlg(
-        Canvas* canvas, const ReportBuilder* reportBuilder, wxWindow* parent,
-        const wxString& caption, const wxWindowID id, const wxPoint& pos, const wxSize& size,
-        const long style, EditMode editMode)
-        : InsertGraphDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode)
+    InsertPictographDlg::InsertPictographDlg(Canvas* canvas, const ReportBuilder* reportBuilder,
+                                             wxWindow* parent, const wxString& caption,
+                                             const wxWindowID id, const wxPoint& pos,
+                                             const wxSize& size, const long style,
+                                             EditMode editMode)
+        : InsertGraphDlg(
+              canvas, reportBuilder, parent, caption, id, pos, size, style, editMode,
+              static_cast<GraphDlgOptions>(GraphDlgIncludeMost & ~GraphDlgIncludeColorScheme))
         {
         CreateControls();
         FinalizeControls();
@@ -29,15 +34,14 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertDuBoisSpiralChartDlg::CreateControls()
+    void InsertPictographDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
 
         auto* optionsPage = new wxPanel(GetSideBarBook());
         auto* optionsSizer = new wxBoxSizer(wxVERTICAL);
         optionsPage->SetSizer(optionsSizer);
-        GetSideBarBook()->AddPage(optionsPage, _(L"Du Bois Spiral Chart"), ID_OPTIONS_SECTION,
-                                  true);
+        GetSideBarBook()->AddPage(optionsPage, _(L"Pictograph"), ID_OPTIONS_SECTION, true);
 
         // dataset selector
         auto* datasetSizer = new wxFlexGridSizer(
@@ -90,9 +94,31 @@ namespace Wisteria::UI
         varsBox->Add(varGrid, wxSizerFlags{}.Border());
         optionsSizer->Add(varsBox, wxSizerFlags{}.Border());
 
+        // shape button
+        auto* shapeBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Icon Shape"));
+        auto* shapeButton =
+            new wxButton(shapeBox->GetStaticBox(), ID_SELECT_SHAPE_BUTTON, _(L"Select..."));
+        shapeBox->Add(shapeButton, wxSizerFlags{}.Border(wxLEFT));
+
+        m_shapeLabel = new wxStaticText(shapeBox->GetStaticBox(), wxID_ANY, wxString{});
+        m_shapeLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
+        shapeBox->Add(m_shapeLabel, wxSizerFlags{}.Border());
+        UpdateShapeLabel();
+
+        optionsSizer->Add(shapeBox, wxSizerFlags{}.Border());
+
         // layout and display options
         auto* layoutSizer = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+
+        layoutSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Orientation:")),
+                         wxSizerFlags{}.CenterVertical());
+        wxArrayString orientationChoices;
+        orientationChoices.Add(_(L"Vertical"));
+        orientationChoices.Add(_(L"Horizontal"));
+        layoutSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                      orientationChoices, 0,
+                                      wxGenericValidator{ &m_orientationIndex }));
 
         layoutSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Value display:")),
                          wxSizerFlags{}.CenterVertical());
@@ -104,45 +130,19 @@ namespace Wisteria::UI
                                       valueFormatChoices, 0,
                                       wxGenericValidator{ &m_valueFormatIndex }));
 
-        layoutSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Zigzag angle (degrees):")),
+        layoutSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Fill color:")),
                          wxSizerFlags{}.CenterVertical());
-            {
-            auto* angleSpin = new wxSpinCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
-                                             wxSize{ FromDIP(80), -1 });
-            angleSpin->SetRange(10, 80);
-            angleSpin->SetValue(m_zigZagAngle);
-            angleSpin->SetValidator(wxGenericValidator{ &m_zigZagAngle });
-            layoutSizer->Add(angleSpin);
-            }
+        m_fillColorPicker = new wxColourPickerCtrl(
+            optionsPage, wxID_ANY, Graphs::Pictograph::GetDefaultIconBrush().GetColour());
+        layoutSizer->Add(m_fillColorPicker);
 
-        layoutSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Spiral radius (%):")),
+        layoutSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Outline color:")),
                          wxSizerFlags{}.CenterVertical());
-        m_outerRadiusSpin = new wxSpinCtrlDouble(optionsPage, wxID_ANY, wxString{},
-                                                 wxDefaultPosition, wxSize{ FromDIP(80), -1 });
-        m_outerRadiusSpin->SetRange(15, 48);
-        m_outerRadiusSpin->SetDigits(0);
-        m_outerRadiusSpin->SetIncrement(1);
-        m_outerRadiusSpin->SetValue(Graphs::DuBoisSpiralChart::DEFAULT_OUTER_RADIUS_PROPORTION *
-                                    100);
-        layoutSizer->Add(m_outerRadiusSpin);
-
-        layoutSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Line thickness (%):")),
-                         wxSizerFlags{}.CenterVertical());
-        m_lineThicknessSpin = new wxSpinCtrlDouble(optionsPage, wxID_ANY, wxString{},
-                                                   wxDefaultPosition, wxSize{ FromDIP(80), -1 });
-        m_lineThicknessSpin->SetRange(0.5, 8);
-        m_lineThicknessSpin->SetDigits(1);
-        m_lineThicknessSpin->SetIncrement(0.5);
-        m_lineThicknessSpin->SetValue(Graphs::DuBoisSpiralChart::DEFAULT_LINE_THICKNESS_PROPORTION *
-                                      100);
-        layoutSizer->Add(m_lineThicknessSpin);
+        m_outlineColorPicker = new wxColourPickerCtrl(
+            optionsPage, wxID_ANY, Graphs::Pictograph::GetDefaultIconPen().GetColour());
+        layoutSizer->Add(m_outlineColorPicker);
 
         optionsSizer->Add(layoutSizer, wxSizerFlags{}.Border());
-
-        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show labels"),
-                                         wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator{ &m_showLabels }),
-                          wxSizerFlags{}.Border());
 
         // bind events
         m_datasetChoice->Bind(wxEVT_CHOICE,
@@ -151,12 +151,21 @@ namespace Wisteria::UI
         varButton->Bind(wxEVT_BUTTON,
                         [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
 
+        shapeButton->Bind(wxEVT_BUTTON,
+                          [this]([[maybe_unused]] wxCommandEvent&) { OnSelectShape(); });
+
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
         }
 
     //-------------------------------------------
-    NumberDisplay InsertDuBoisSpiralChartDlg::GetValueFormat() const noexcept
+    Orientation InsertPictographDlg::GetOrientation() const noexcept
+        {
+        return (m_orientationIndex == 1) ? Orientation::Horizontal : Orientation::Vertical;
+        }
+
+    //-------------------------------------------
+    NumberDisplay InsertPictographDlg::GetValueFormat() const noexcept
         {
         switch (m_valueFormatIndex)
             {
@@ -170,23 +179,23 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    double InsertDuBoisSpiralChartDlg::GetOuterRadiusProportion() const
+    wxColour InsertPictographDlg::GetFillColor() const
         {
-        return (m_outerRadiusSpin != nullptr) ?
-                   m_outerRadiusSpin->GetValue() / 100 :
-                   Graphs::DuBoisSpiralChart::DEFAULT_OUTER_RADIUS_PROPORTION;
+        return (m_fillColorPicker != nullptr) ?
+                   m_fillColorPicker->GetColour() :
+                   Graphs::Pictograph::GetDefaultIconBrush().GetColour();
         }
 
     //-------------------------------------------
-    double InsertDuBoisSpiralChartDlg::GetLineThicknessProportion() const
+    wxColour InsertPictographDlg::GetOutlineColor() const
         {
-        return (m_lineThicknessSpin != nullptr) ?
-                   m_lineThicknessSpin->GetValue() / 100 :
-                   Graphs::DuBoisSpiralChart::DEFAULT_LINE_THICKNESS_PROPORTION;
+        return (m_outlineColorPicker != nullptr) ?
+                   m_outlineColorPicker->GetColour() :
+                   Graphs::Pictograph::GetDefaultIconPen().GetColour();
         }
 
     //-------------------------------------------
-    void InsertDuBoisSpiralChartDlg::OnDatasetChanged()
+    void InsertPictographDlg::OnDatasetChanged()
         {
         m_labelVariable.clear();
         m_valueVariable.clear();
@@ -194,7 +203,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertDuBoisSpiralChartDlg::OnSelectVariables()
+    void InsertPictographDlg::OnSelectVariables()
         {
         const auto dataset = GetSelectedDataset();
         if (dataset == nullptr)
@@ -261,7 +270,27 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertDuBoisSpiralChartDlg::UpdateVariableLabels()
+    void InsertPictographDlg::OnSelectShape()
+        {
+        InsertShapeDlg dlg(GetCanvas(), GetReportBuilder(), this, _(L"Select Icon Shape"), wxID_ANY,
+                           wxDefaultPosition, wxDefaultSize,
+                           wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                           InsertItemDlg::EditMode::Edit, 0);
+
+        // pre-populate with the previously selected shape
+        dlg.SetIconShape(m_iconShape);
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        m_iconShape = dlg.GetIconShape();
+        UpdateShapeLabel();
+        }
+
+    //-------------------------------------------
+    void InsertPictographDlg::UpdateVariableLabels()
         {
         m_labelVarLabel->SetLabel(m_labelVariable);
         m_valueVarLabel->SetLabel(m_valueVariable);
@@ -270,8 +299,20 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    void InsertPictographDlg::UpdateShapeLabel()
+        {
+        const auto shapeStr = ReportEnumConvert::ConvertIconToString(m_iconShape);
+        m_shapeLabel->SetLabel(shapeStr.has_value() ? shapeStr.value() : wxString{});
+
+        if (GetSideBarBook()->GetCurrentPage() != nullptr)
+            {
+            GetSideBarBook()->GetCurrentPage()->Layout();
+            }
+        }
+
+    //-------------------------------------------
     Data::Dataset::ColumnPreviewInfo
-    InsertDuBoisSpiralChartDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset)
+    InsertPictographDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset)
         {
         Data::Dataset::ColumnPreviewInfo info;
 
@@ -292,7 +333,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    std::shared_ptr<Data::Dataset> InsertDuBoisSpiralChartDlg::GetSelectedDataset() const
+    std::shared_ptr<Data::Dataset> InsertPictographDlg::GetSelectedDataset() const
         {
         if (GetReportBuilder() == nullptr || m_datasetChoice == nullptr)
             {
@@ -311,7 +352,7 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    bool InsertDuBoisSpiralChartDlg::Validate()
+    bool InsertPictographDlg::Validate()
         {
         if (GetSelectedDataset() == nullptr)
             {
@@ -328,19 +369,14 @@ namespace Wisteria::UI
             return false;
             }
 
-        if (!ValidateColorScheme())
-            {
-            return false;
-            }
-
         return true;
         }
 
     //-------------------------------------------
-    void InsertDuBoisSpiralChartDlg::LoadFromGraph(const Graphs::Graph2D& graph)
+    void InsertPictographDlg::LoadFromGraph(const Graphs::Graph2D& graph)
         {
-        const auto* spiralChart = dynamic_cast<const Graphs::DuBoisSpiralChart*>(&graph);
-        if (spiralChart == nullptr)
+        const auto* pictograph = dynamic_cast<const Graphs::Pictograph*>(&graph);
+        if (pictograph == nullptr)
             {
             return;
             }
@@ -349,7 +385,7 @@ namespace Wisteria::UI
         LoadGraphOptions(graph);
 
         // select the dataset by name from the property template
-        const auto dsName = spiralChart->GetPropertyTemplate(L"dataset");
+        const auto dsName = pictograph->GetPropertyTemplate(L"dataset");
         if (!dsName.empty() && m_datasetChoice != nullptr)
             {
             for (size_t i = 0; i < m_datasetNames.size(); ++i)
@@ -363,12 +399,15 @@ namespace Wisteria::UI
             }
 
         // load column names from the graph
-        m_labelVariable = spiralChart->GetLabelColumnName();
-        m_valueVariable = spiralChart->GetValueColumnName();
+        m_labelVariable = pictograph->GetLabelColumnName();
+        m_valueVariable = pictograph->GetValueColumnName();
         UpdateVariableLabels();
 
-        // layout and display options
-        switch (spiralChart->GetValueFormat())
+        // icon options
+        m_iconShape = pictograph->GetShape();
+        UpdateShapeLabel();
+        m_orientationIndex = (pictograph->GetOrientation() == Orientation::Horizontal) ? 1 : 0;
+        switch (pictograph->GetValueFormat())
             {
         case NumberDisplay::Percentage:
             m_valueFormatIndex = 1;
@@ -380,40 +419,44 @@ namespace Wisteria::UI
             m_valueFormatIndex = 0;
             break;
             }
-        m_showLabels = spiralChart->IsShowingLabels();
-        m_zigZagAngle = static_cast<int>(std::lround(spiralChart->GetZigZagAngle()));
-        m_outerRadiusSpin->SetValue(spiralChart->GetOuterRadiusProportion() * 100);
-        m_lineThicknessSpin->SetValue(spiralChart->GetLineThicknessProportion() * 100);
+        m_fillColorPicker->SetColour(pictograph->GetIconBrush().GetColour());
+        m_outlineColorPicker->SetColour(pictograph->GetIconPen().GetColour());
 
         TransferDataToWindow();
         }
 
     //-------------------------------------------
-    std::shared_ptr<Graphs::DuBoisSpiralChart>
-    InsertDuBoisSpiralChartDlg::BuildDuBoisSpiralChart(const Graphs::Graph2D* oldGraph)
+    std::shared_ptr<Graphs::Pictograph>
+    InsertPictographDlg::BuildPictograph(const Graphs::Graph2D* oldGraph)
         {
-        auto plot = std::make_shared<Graphs::DuBoisSpiralChart>(GetCanvas());
+        auto plot =
+            std::make_shared<Graphs::Pictograph>(GetCanvas(), GetIconShape(), GetOrientation());
         if (oldGraph != nullptr)
             {
             plot->SetId(oldGraph->GetId());
             }
-        // sets the color scheme, which SetData() uses to color the segments
         ApplyGraphOptions(*plot);
         ApplyPageOptions(*plot);
 
         plot->SetValueFormat(GetValueFormat());
-        plot->ShowLabels(IsShowingLabels());
-        plot->SetZigZagAngle(GetZigZagAngle());
-        plot->SetOuterRadiusProportion(GetOuterRadiusProportion());
-        plot->SetLineThicknessProportion(GetLineThicknessProportion());
+
+        // when editing, only the colors are changed so that any brush style or pen
+        // width/style that was loaded from a project file are preserved
+        const auto* oldChart = dynamic_cast<const Graphs::Pictograph*>(oldGraph);
+        wxBrush iconBrush{ oldChart != nullptr ? oldChart->GetIconBrush() :
+                                                 Graphs::Pictograph::GetDefaultIconBrush() };
+        iconBrush.SetColour(GetFillColor());
+        plot->SetIconBrush(iconBrush);
+        wxPen iconPen{ oldChart != nullptr ? oldChart->GetIconPen() :
+                                             Graphs::Pictograph::GetDefaultIconPen() };
+        iconPen.SetColour(GetOutlineColor());
+        plot->SetIconPen(iconPen);
 
         plot->SetData(GetSelectedDataset(), GetValueVariable(), GetLabelVariable());
 
         if (oldGraph != nullptr)
             {
             // carry forward property templates, preserving {{placeholders}}
-            const auto* oldChart = dynamic_cast<const Graphs::DuBoisSpiralChart*>(oldGraph);
-
             WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
                                                GetSelectedDatasetName(),
                                                oldGraph->GetPropertyTemplate(L"dataset"));

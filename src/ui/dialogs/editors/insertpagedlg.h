@@ -257,6 +257,7 @@ namespace Wisteria::UI
         bool DropWaterfallChart(Canvas* stagingCanvas, size_t row, size_t col);
         bool DropFunnelChart(Canvas* stagingCanvas, size_t row, size_t col);
         bool DropDuBoisSpiralChart(Canvas* stagingCanvas, size_t row, size_t col);
+        bool DropPictograph(Canvas* stagingCanvas, size_t row, size_t col);
 
         Canvas* m_canvas{ nullptr };
         const Wisteria::ReportBuilder* m_reportBuilder{ nullptr };

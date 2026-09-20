@@ -33,6 +33,7 @@
 #include "insertlineplotdlg.h"
 #include "insertlrroadmapdlg.h"
 #include "insertmultiserieslineplotdlg.h"
+#include "insertpictographdlg.h"
 #include "insertpiechartdlg.h"
 #include "insertproconroadmapdlg.h"
 #include "insertracetrackchartdlg.h"
@@ -965,6 +966,9 @@ namespace Wisteria::UI
             break;
         case Wisteria::GalleryItemType::DuBoisSpiralChart:
             placed = DropDuBoisSpiralChart(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::Pictograph:
+            placed = DropPictograph(stagingCanvas, row, col);
             break;
         default:
             // remaining graph types are not wired up yet
@@ -1953,6 +1957,29 @@ namespace Wisteria::UI
         try
             {
             auto plot = dlg.BuildDuBoisSpiralChart();
+            stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropPictograph(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertPictographDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"pictograph.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildPictograph();
             stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
             return true;
             }

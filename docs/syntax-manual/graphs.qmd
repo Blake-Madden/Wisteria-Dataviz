@@ -841,7 +841,6 @@ Properties for `"dubois-spiral-chart"` nodes:
   - `"value"`: Display the raw value with thousands separators (the default).
   - `"currency"`: Display using the current locale's currency formatting.
   - `"percentage"`: Append a `%` suffix to the value.
-  - `"value-simple"`: Display the raw value without thousands separators.
 - `"show-labels"`: If `false`, will hide the labels drawn alongside the segments.
 - `"zigzag-angle"`: The angle (in degrees below horizontal, `10`--`80`) of the diagonal segments. \
   The default is `40`.
@@ -866,6 +865,63 @@ This suits data where the final value dwarfs the others.
   },
   "color-scheme": ["#2e6b4f", "#e0a82e", "#b03a2e", "#8b1a1a"],
   "title": "The World's Largest Landmasses"
+}
+```
+:::
+
+::: {.minipage data-latex="{\textwidth}"}
+## Pictograph {#pictograph-properties .unnumbered}
+
+Properties for `"pictograph"` nodes:
+
+- `"variables"`: An item containing the following properties:
+  - `"label"`: The categorical (or ID) column containing each icon's label.
+  - `"value"`: The continuous column containing each icon's value. \
+    Each icon's area is proportional to its value.
+    Rows with a missing, zero, or negative value are skipped.
+- `"shape"`: A string specifying the icon that is drawn for every observation. \
+  This can be any of the icons listed under `"icon-scheme"` in the [graph properties](#graph-properties).
+  (The default is `"square"`.)
+- `"orientation"`: A string specifying how the icons are laid out. \
+  Available options are:
+  - `"vertical"`: The icons are stacked from top to bottom, with their labels to the right (the default).
+  - `"horizontal"`: The icons are laid out from left to right, with their labels below.
+- `"value-display-format"`: A string specifying how values in the labels are displayed. \
+  Available options are:
+  - `"value"`: Display the raw value with thousands separators (the default).
+  - `"currency"`: Display using the current locale's currency formatting. \
+    Cents are shown only for values that have them.
+  - `"percentage"`: Append a `%` suffix to the value.
+- `"icon-brush"`: The [brush](#brush-properties) used to fill the icons. \
+  This can be a color string (e.g., `"#2E6B4F"`) to change only the color.
+  The default is a steel blue.
+- `"icon-pen"`: The [pen](#pen-properties) used to outline the icons. \
+  This can be a color string to change only the color.
+  The default is a black pen.
+  (Unlike other pens, `null` is ignored here.)
+- Some base properties available to [graphs](#graph-properties). \
+  Color schemes and brush schemes have no effect, as every icon is drawn with `"icon-brush"`.
+
+The smallest value is drawn with the smallest icon, and the other icons are scaled up so that the ratio of their areas matches the ratio of their values.
+No icon's side is drawn more than 100 times the smallest icon's side.
+Values beyond a 10,000:1 ratio to the smallest value are no longer proportional.
+
+A pictograph is limited to 10 observations.
+Any beyond that are dropped, and a note is added to the graph's caption (if it doesn't already have one).
+
+```json
+{
+  "type": "pictograph",
+  "dataset": "Deposits",
+  "variables": {
+    "label": "Year",
+    "value": "Amount"
+  },
+  "shape": "property-bag",
+  "orientation": "vertical",
+  "value-display-format": "currency",
+  "icon-brush": "#2e6b4f",
+  "title": "Deposits by Year"
 }
 ```
 :::

@@ -2006,6 +2006,84 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D>
+    ReportBuilder::LoadPictograph(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                                  size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->AsString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for pictograph."), dsName).ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (!variablesNode->IsOk())
+            {
+            throw std::runtime_error(_(L"Variables not defined for pictograph.").ToUTF8());
+            }
+
+        const auto labelVarNameRaw = variablesNode->GetProperty(L"label")->AsString();
+        const auto valueVarNameRaw = variablesNode->GetProperty(L"value")->AsString();
+
+        if (labelVarNameRaw.empty() || valueVarNameRaw.empty())
+            {
+            throw std::runtime_error(
+                wxString::Format(
+                    _(L"%s: label and value variables must be specified for pictograph."), dsName)
+                    .ToUTF8());
+            }
+
+        Icons::IconShape shape{ Icons::IconShape::Square };
+        const auto shapeStr = graphNode->GetProperty(L"shape")->AsString();
+        if (const auto foundShape = ReportEnumConvert::ConvertIcon(shapeStr);
+            foundShape.has_value())
+            {
+            shape = foundShape.value();
+            }
+        else if (!shapeStr.empty())
+            {
+            wxLogWarning(L"Unknown pictograph shape '%s'. Using default square.", shapeStr);
+            }
+
+        Orientation orientation{ Orientation::Vertical };
+        const auto orientationStr = graphNode->GetProperty(L"orientation")->AsString();
+        if (orientationStr.CmpNoCase(L"horizontal") == 0)
+            {
+            orientation = Orientation::Horizontal;
+            }
+
+        auto pictograph = std::make_shared<Graphs::Pictograph>(canvas, shape, orientation);
+        pictograph->SetPropertyTemplate(L"dataset", dsName);
+        const auto labelVarName =
+            ExpandAndCache(pictograph.get(), L"variables.label", labelVarNameRaw);
+        const auto valueVarName =
+            ExpandAndCache(pictograph.get(), L"variables.value", valueVarNameRaw);
+
+        if (const auto valueDisplay = ReportEnumConvert::ConvertNumberDisplay(
+                graphNode->GetProperty(L"value-display-format")->AsString());
+            valueDisplay.has_value())
+            {
+            pictograph->SetValueFormat(valueDisplay.value());
+            }
+
+        wxBrush iconBrush{ pictograph->GetIconBrush() };
+        LoadBrush(graphNode->GetProperty(L"icon-brush"), iconBrush, pictograph.get(),
+                  L"icon-brush");
+        pictograph->SetIconBrush(iconBrush);
+
+        wxPen iconPen{ pictograph->GetIconPen() };
+        LoadPen(graphNode->GetProperty(L"icon-pen"), iconPen, pictograph.get(), L"icon-pen");
+        pictograph->SetIconPen(iconPen);
+
+        pictograph->SetData(foundPos->second, valueVarName, labelVarName);
+
+        LoadGraph(graphNode, canvas, currentRow, currentColumn, pictograph);
+        return pictograph;
+        }
+
+    //---------------------------------------------------
     std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadTable(const wxSimpleJSON::Ptr_t& tableNode,
                                                               Canvas* canvas, size_t& currentRow,
                                                               size_t& currentColumn)

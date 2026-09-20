@@ -209,6 +209,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_STEMANDLEAF);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_RACETRACK);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_DUBOIS_SPIRAL);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_PICTOGRAPH);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_FUNNEL_CHART);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_WILMARTH_BRIDGE);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_NIGHTINGALE_ROSE);
@@ -284,6 +285,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_WILMARTH_BRIDGE, _(L"Wilmarth Bridge Plot"));
     fileMenu->Append(MyApp::ID_NEW_NIGHTINGALE_ROSE, _(L"Nightingale Rose Chart"));
     fileMenu->Append(MyApp::ID_NEW_DUBOIS_SPIRAL, _(L"Du Bois Spiral Chart"));
+    fileMenu->Append(MyApp::ID_NEW_PICTOGRAPH, _(L"Pictograph"));
     fileMenu->Append(MyApp::ID_NEW_BULLET_CHART, _(L"Bullet Chart"));
     fileMenu->Append(MyApp::ID_NEW_WATERFALL_CHART, _(L"Waterfall Chart"));
     fileMenu->AppendSeparator();
@@ -3133,6 +3135,55 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, spiralPlot);
         }
+    // Pictograph
+    else if (event.GetId() == MyApp::ControlIDs::ID_NEW_PICTOGRAPH)
+        {
+        subframe->SetTitle(_(L"Pictograph"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
+
+        // Total assets (in billions of U.S. dollars) of ten companies from the Forbes 2000
+        // ranking of the world's biggest companies (2004) (from the HSAUR package's
+        // Forbes2000 dataset). These are a random sample of the companies with at least
+        // $100 billion in assets, plus the largest and smallest of those companies.
+        auto companyData = std::make_shared<Wisteria::Data::Dataset>();
+        const std::vector<wxString> companyNames{ L"Citigroup",
+                                                  L"Mizuho Financial",
+                                                  L"Bank of America",
+                                                  L"Merrill Lynch",
+                                                  L"Aviva",
+                                                  L"Bank of Montreal",
+                                                  L"Toyota Motor",
+                                                  L"BHW Holding",
+                                                  L"Lincoln National",
+                                                  L"SBC Communications" };
+        Wisteria::Data::ColumnWithStringTable::StringTableType companyTable;
+        for (size_t i = 0; i < companyNames.size(); ++i)
+            {
+            companyTable.insert({ static_cast<Wisteria::Data::GroupIdType>(i), companyNames[i] });
+            }
+        companyData->AddCategoricalColumn(L"Company", companyTable);
+        companyData->AddContinuousColumn(L"Total Assets");
+        const std::vector<double> totalAssets{ 1264.03, 1115.9, 736.45, 485.77, 287.58,
+                                               194.35,  171.71, 117.96, 100.83, 100.17 };
+        for (size_t i = 0; i < totalAssets.size(); ++i)
+            {
+            companyData->AddRow(Wisteria::Data::RowInfo()
+                                    .Categoricals({ static_cast<Wisteria::Data::GroupIdType>(i) })
+                                    .Continuous({ totalAssets[i] }));
+            }
+
+        auto pictograph = std::make_shared<Wisteria::Graphs::Pictograph>(
+            subframe->m_canvas, Wisteria::Icons::IconShape::PropertyBag,
+            PromptForBarOrientation(subframe));
+        pictograph->SetData(companyData, L"Total Assets", L"Company");
+        pictograph->SetValueFormat(Wisteria::NumberDisplay::Currency);
+        pictograph->GetTitle().SetText(
+            _(L"TOTAL ASSETS OF TEN LARGE COMPANIES. (SAMPLE)\nIN BILLIONS OF U.S. DOLLARS."));
+        pictograph->GetTitle().SetTextAlignment(Wisteria::TextAlignment::Centered);
+        pictograph->GetTitle().SetPadding(5, 5, 5, 5);
+
+        subframe->m_canvas->SetFixedObject(0, 0, pictograph);
+        }
     // Nightingale Rose Chart
     else if (event.GetId() == MyApp::ControlIDs::ID_NEW_NIGHTINGALE_ROSE)
         {
@@ -3672,6 +3723,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_DUBOIS_SPIRAL, _(L"Du Bois Spiral Chart"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/dubois-spiral.svg", iconSize),
                      _(L"Du Bois Spiral Chart"));
+    toolBar->AddTool(MyApp::ID_NEW_PICTOGRAPH, _(L"Pictograph"),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/pictograph.svg", iconSize),
+                     _(L"Pictograph"));
     toolBar->AddTool(MyApp::ID_NEW_WILMARTH_BRIDGE, _(L"Wilmarth Bridge Plot"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/wilmarth-bridge.svg", iconSize),
                      _(L"Wilmarth Bridge Plot"));

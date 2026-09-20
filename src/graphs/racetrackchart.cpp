@@ -229,12 +229,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::RaceTrackChart, Wisteria::Graphs::Gr
         {
         if (m_valueFormat == NumberDisplay::Currency)
             {
-            return wxNumberFormatter::ToString(
-                value, 2,
-                wxNumberFormatter::Style::Style_WithThousandsSep |
-                    wxNumberFormatter::Style::Style_Currency |
-                    wxNumberFormatter::Style::Style_CurrencySymbol |
-                    wxNumberFormatter::Style::Style_NoTrailingZeroes);
+            return wxNumberFormatter::ToString(value, has_fractional_part(value) ? 2 : 0,
+                                               wxNumberFormatter::Style::Style_WithThousandsSep |
+                                                   wxNumberFormatter::Style::Style_Currency |
+                                                   wxNumberFormatter::Style::Style_CurrencySymbol);
             }
         if (m_valueFormat == NumberDisplay::Percentage)
             {

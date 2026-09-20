@@ -36,6 +36,7 @@
 #include "../src/graphs/lrroadmap.h"
 #include "../src/graphs/multi_series_lineplot.h"
 #include "../src/graphs/nightingale_rose_chart.h"
+#include "../src/graphs/pictograph.h"
 #include "../src/graphs/piechart.h"
 #include "../src/graphs/proconroadmap.h"
 #include "../src/graphs/racetrackchart.h"
@@ -136,7 +137,8 @@ class MyApp final : public wxApp
         ID_NEW_BULLET_CHART,
         ID_NEW_WATERFALL_CHART,
         ID_NEW_FUNNEL_CHART,
-        ID_NEW_DUBOIS_SPIRAL
+        ID_NEW_DUBOIS_SPIRAL,
+        ID_NEW_PICTOGRAPH
         };
 
   private:

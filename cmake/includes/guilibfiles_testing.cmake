@@ -76,6 +76,7 @@ SET(WISTERIA_SRC
     ../../src/graphs/lrroadmap.cpp
     ../../src/graphs/multi_series_lineplot.cpp
     ../../src/graphs/nightingale_rose_chart.cpp
+    ../../src/graphs/pictograph.cpp
     ../../src/graphs/piechart.cpp
     ../../src/graphs/proconroadmap.cpp
     ../../src/graphs/racetrackchart.cpp

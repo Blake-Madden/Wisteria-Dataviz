@@ -3684,6 +3684,47 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
         // the label and value variables round-trip through the
         // generic "variables." property templates in SaveGraph()
         }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Pictograph)))
+        {
+        const auto* pictograph = dynamic_cast<const Wisteria::Graphs::Pictograph*>(graph);
+        if (pictograph->GetShape() != Wisteria::Icons::IconShape::Square)
+            {
+            const auto shapeStr =
+                Wisteria::ReportEnumConvert::ConvertIconToString(pictograph->GetShape());
+            if (shapeStr.has_value())
+                {
+                node->Add(L"shape", shapeStr.value());
+                }
+            }
+        if (pictograph->GetOrientation() == Wisteria::Orientation::Horizontal)
+            {
+            node->Add(L"orientation", wxString{ _DT(L"horizontal") });
+            }
+        if (pictograph->GetValueFormat() != Wisteria::NumberDisplay::Value)
+            {
+            const auto vdStr = Wisteria::ReportEnumConvert::ConvertNumberDisplayToString(
+                pictograph->GetValueFormat());
+            if (vdStr.has_value())
+                {
+                node->Add(L"value-display-format", vdStr.value());
+                }
+            }
+        const auto& iconBrush = pictograph->GetIconBrush();
+        const auto defaultBrush = Wisteria::Graphs::Pictograph::GetDefaultIconBrush();
+        if (iconBrush.GetColour() != defaultBrush.GetColour() ||
+            iconBrush.GetStyle() != defaultBrush.GetStyle())
+            {
+            node->Add(L"icon-brush", wxSimpleJSON::Create(SaveBrushToStr(iconBrush)));
+            }
+        const auto& iconPen = pictograph->GetIconPen();
+        const auto defaultPen = Wisteria::Graphs::Pictograph::GetDefaultIconPen();
+        if (iconPen.GetColour() != defaultPen.GetColour() ||
+            iconPen.GetWidth() != defaultPen.GetWidth() ||
+            iconPen.GetStyle() != defaultPen.GetStyle())
+            {
+            node->Add(L"icon-pen", wxSimpleJSON::Create(SavePenToStr(iconPen)));
+            }
+        }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BarChart)))
         {
         const auto* barChart = dynamic_cast<const Wisteria::Graphs::BarChart*>(graph);

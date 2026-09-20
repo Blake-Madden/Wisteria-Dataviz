@@ -70,6 +70,7 @@ page-edit.svg
 page.svg
 paste.svg
 pdf.svg
+pictograph.svg
 piechart-subgrouped.svg
 piechart.svg
 pivot-longer.svg
