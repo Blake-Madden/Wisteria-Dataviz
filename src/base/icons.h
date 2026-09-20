@@ -130,8 +130,10 @@ namespace Wisteria::Icons
         Tractor,                  /*!< A side-view of a tractor.*/
         Butterfly,                /*!< A butterfly.*/
         Star,                     /*!< A star.*/
-        ProhibitedSign            /*!< A red "prohibited" sign (a circle with a diagonal bar
+        ProhibitedSign,           /*!< A red "prohibited" sign (a circle with a diagonal bar
                                        across it), as in "not allowed".*/
+        PropertyBag               /*!< A lumpy brown bag (tied at the top) with dark speckles,
+                                       as in a bag of money or property.*/
         };
 
     /// @brief Item to draw on a legend.

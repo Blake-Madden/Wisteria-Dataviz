@@ -29,15 +29,32 @@ void DrawHawaiianPizza(wxRect rect, wxDC& dc) const;
 Shape Rendering Implementation
 =============================
 
-In `src/base/shapes.cpp`, two changes are needed.
+Two changes are needed, in two different places.
 
-First, register the function in the `shapeMap` inside the `Shape` constructor:
+First, in `src/base/shapes.cpp`, register the function in the `shapeMap` inside the `Shape` constructor:
 
 ```cpp
 { Icons::IconShape::HawaiianPizza, &ShapeRenderer::DrawHawaiianPizza }
 ```
 
-Then implement the draw function. A few conventions to follow:
+Then implement the draw function.
+The draw functions are split by category into `src/base/shapes_*.cpp` files.
+Add the function to the file that fits the new shape (or to the closest match):
+
+- `shapes_art.cpp`
+- `shapes_buildings.cpp`
+- `shapes_business.cpp`
+- `shapes_education.cpp`
+- `shapes_food.cpp` (e.g., `DrawHawaiianPizza`)
+- `shapes_geometric.cpp`
+- `shapes_medical.cpp`
+- `shapes_nature.cpp`
+- `shapes_people.cpp`
+- `shapes_religion.cpp`
+- `shapes_stats.cpp`
+- `shapes_vehicles.cpp`
+
+A few conventions to follow:
 
 - Use `GraphicsContextFallback` to acquire a `wxGraphicsContext` for advanced rendering.
 - Use `GetGraphItemInfo().GetBrush()` for the fill color when applicable.
@@ -70,10 +87,19 @@ void ShapeRenderer::DrawCheesePizza(const wxRect rect, wxDC& dc) const
 JSON Report Support
 =============================
 
-In `src/base/reportenumconvert.h`, add string mappings in the `ConvertIcon` function's `iconEnums` map so that the shape can be used from JSON report files:
+In `src/reporting/reportenumconvert.h`, add the string mapping in both directions so that the
+shape can be read from (and written to) JSON report files.
+
+First, add the string-to-enum mapping to the `m_iconEnums` map (used by `ConvertIcon()`):
 
 ```cpp
 { L"hawaiian-pizza", Icons::IconShape::HawaiianPizza }
+```
+
+Then add the enum-to-string mapping to the map inside `ConvertIconToString()`:
+
+```cpp
+{ Icons::IconShape::HawaiianPizza, L"hawaiian-pizza" }
 ```
 
 Accessibility Name
@@ -90,7 +116,7 @@ case Icons::IconShape::HawaiianPizza:
 UI Support
 =============================
 
-In `src/ui/dialogs/insertshapedlg.cpp`, add the shape to the `shapes` list in `PopulateShapeChoice()` so that it can be selected from the "Insert Shape" dialog:
+In `src/ui/dialogs/editors/insertshapedlg.cpp`, add the shape to the `shapes` list in `PopulateShapeChoice()` so that it can be selected from the "Insert Shape" dialog (the list is alphabetical by label, so insert it in the appropriate place):
 
 ```cpp
 { _(L"Hawaiian pizza"), Icons::IconShape::HawaiianPizza }
@@ -110,8 +136,9 @@ Summary of Files to Modify
 
 1. `src/base/icons.h` - Add enum value(s) to `IconShape`
 2. `src/base/shapes.h` - Declare draw function in `ShapeRenderer`
-3. `src/base/shapes.cpp` - Register in `shapeMap`, implement draw function,
-   and add a `case` to `ShapeInfo::GetReadableShapeName()`
-4. `src/base/reportenumconvert.h` - Add string mapping in `ConvertIcon`
-5. `src/ui/dialogs/insertshapedlg.cpp` - Add to the shape selection dialog
-6. `docs/syntax-manual/graphs-properties.qmd` - Add to icon list in documentation
+3. `src/base/shapes.cpp` - Register in `shapeMap` and add a `case` to
+   `ShapeInfo::GetReadableShapeName()`
+4. `src/base/shapes_*.cpp` - Implement the draw function in the file matching the shape's category (e.g., `shapes_food.cpp`)
+5. `src/reporting/reportenumconvert.h` - Add string mappings to `m_iconEnums` and to `ConvertIconToString()`
+6. `src/ui/dialogs/editors/insertshapedlg.cpp` - Add to the shape selection dialog
+7. `docs/syntax-manual/graphs-properties.qmd` - Add to icon list in documentation

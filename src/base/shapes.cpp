@@ -277,7 +277,8 @@ namespace Wisteria::GraphItems
             { Icons::IconShape::Tractor, &ShapeRenderer::DrawTractor },
             { Icons::IconShape::Butterfly, &ShapeRenderer::DrawButterfly },
             { Icons::IconShape::Star, &ShapeRenderer::DrawStar },
-            { Icons::IconShape::ProhibitedSign, &ShapeRenderer::DrawProhibitedSign }
+            { Icons::IconShape::ProhibitedSign, &ShapeRenderer::DrawProhibitedSign },
+            { Icons::IconShape::PropertyBag, &ShapeRenderer::DrawPropertyBag }
         };
 
         // connect the rendering function to the shape
@@ -590,6 +591,8 @@ namespace Wisteria::GraphItems
             return _(L"crossed-out symbol");
         case Icons::IconShape::ProhibitedSign:
             return _(L"prohibited sign");
+        case Icons::IconShape::PropertyBag:
+            return _(L"property bag");
         case Icons::IconShape::CrescentTop:
         case Icons::IconShape::CrescentBottom:
         case Icons::IconShape::CrescentRight:

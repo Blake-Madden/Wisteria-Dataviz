@@ -791,4 +791,222 @@ namespace Wisteria::GraphItems
                 }
             }
         }
+
+    //---------------------------------------------------
+    void ShapeRenderer::DrawPropertyBag(wxRect rect, wxDC& dc) const
+        {
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+
+        const GraphicsContextFallback gcf{ &dc, rect };
+        auto* gc = gcf.GetGraphicsContext();
+        if (gc == nullptr)
+            {
+            return;
+            }
+
+        rect.Deflate(ScaleToScreenAndCanvas(1));
+
+        constexpr uint32_t BAG_SEED{ 0xBA6B0 };
+        constexpr size_t OUTLINE_POINT_COUNT{ 22 };
+        constexpr size_t INTERIOR_BUMP_COUNT{ 100 };
+        constexpr double SQUARENESS{ 2.6 };
+        constexpr double LUMP_AMOUNT{ 0.07 };
+        constexpr double CATMULL_ROM_DIVISOR{ 6.0 };
+        constexpr double INTERIOR_MAX_RADIUS{ 0.9 };
+        constexpr double EDGE_BUMP_INSET{ 0.94 };
+        constexpr double EDGE_BUMP_CHANCE{ 0.75 };
+
+        const auto width{ static_cast<double>(rect.GetWidth()) };
+        const auto height{ static_cast<double>(rect.GetHeight()) };
+        const double centerX{ rect.GetX() + (width * math_constants::half) };
+        const double bodyCenterY{ rect.GetY() + (height * 0.62) };
+        const double radiusX{ width * 0.46 };
+        const double radiusY{ height * 0.34 };
+
+        // point on a unit super-ellipse, which gives the bag a squarish, slumped shape
+        const double exponent{ safe_divide<double>(2.0, SQUARENESS) };
+        const auto unitPoint = [exponent](const double theta)
+        {
+            const double cosTheta{ std::cos(theta) };
+            const double sinTheta{ std::sin(theta) };
+            return wxPoint2DDouble{ std::copysign(std::pow(std::abs(cosTheta), exponent), cosTheta),
+                                    std::copysign(std::pow(std::abs(sinTheta), exponent),
+                                                  sinTheta) };
+        };
+
+        // This is intentionally a local engine with a fixed seed (rather than GetRNG())
+        // so that the bad shape is drawn deterministically. If use in a pictograph,
+        // all with have the same size and shape.
+        std::mt19937 rng{ BAG_SEED };
+        std::uniform_real_distribution<double> lumpDist{ -LUMP_AMOUNT, LUMP_AMOUNT };
+        std::uniform_real_distribution<double> fullAngleDist{ 0.0, 2 * std::numbers::pi };
+        std::uniform_real_distribution<double> chanceDist{ 0.0, 1.0 };
+        std::uniform_real_distribution<double> bumpSizeDist{ 0.014, 0.038 };
+        std::uniform_real_distribution<double> bumpFlatnessDist{ 0.45, 0.85 };
+
+        // lumpy outline, starting at the top where the bag is gathered
+        std::array<wxPoint2DDouble, OUTLINE_POINT_COUNT> outline{};
+        for (size_t i = 0; i < OUTLINE_POINT_COUNT; ++i)
+            {
+            const double theta{ (-std::numbers::pi * math_constants::half) +
+                                safe_divide<double>(2 * std::numbers::pi * static_cast<double>(i),
+                                                    static_cast<double>(OUTLINE_POINT_COUNT)) };
+            const double lumpFactor{ 1.0 + lumpDist(rng) };
+            const double factor{ (i == 0) ? 1.0 : lumpFactor };
+            const wxPoint2DDouble unit{ unitPoint(theta) };
+            double liftY{ 0.0 };
+            if (i == 0)
+                {
+                liftY = radiusY * 0.14;
+                }
+            else if (i == 1 || i == OUTLINE_POINT_COUNT - 1)
+                {
+                liftY = radiusY * 0.05;
+                }
+            outline[i] = wxPoint2DDouble{ centerX + (unit.m_x * radiusX * factor),
+                                          bodyCenterY + (unit.m_y * radiusY * factor) - liftY };
+            }
+
+        // smooth closed curve through the outline points
+        auto bodyPath{ gc->CreatePath() };
+        bodyPath.MoveToPoint(outline[0].m_x, outline[0].m_y);
+        for (size_t i = 0; i < OUTLINE_POINT_COUNT; ++i)
+            {
+            const auto& prevPt{ outline[(i + OUTLINE_POINT_COUNT - 1) % OUTLINE_POINT_COUNT] };
+            const auto& startPt{ outline[i] };
+            const auto& endPt{ outline[(i + 1) % OUTLINE_POINT_COUNT] };
+            const auto& nextPt{ outline[(i + 2) % OUTLINE_POINT_COUNT] };
+            bodyPath.AddCurveToPoint(startPt.m_x + ((endPt.m_x - prevPt.m_x) / CATMULL_ROM_DIVISOR),
+                                     startPt.m_y + ((endPt.m_y - prevPt.m_y) / CATMULL_ROM_DIVISOR),
+                                     endPt.m_x - ((nextPt.m_x - startPt.m_x) / CATMULL_ROM_DIVISOR),
+                                     endPt.m_y - ((nextPt.m_y - startPt.m_y) / CATMULL_ROM_DIVISOR),
+                                     endPt.m_x, endPt.m_y);
+            }
+        bodyPath.CloseSubpath();
+
+        const wxColour outlineColor{ 92, 60, 34 };
+        const auto outlinePenWidth{ std::max<int>(
+            1, static_cast<int>(ScaleToScreenAndCanvas(math_constants::three_quarters))) };
+        const wxPen outlinePen{ outlineColor, outlinePenWidth };
+
+        // light brown fading to brown across the bag
+        const wxColour lightBrown{ ApplyColorOpacity(wxColour{ 200, 158, 110 }) };
+        const wxColour darkBrown{ ApplyColorOpacity(wxColour{ 139, 91, 54 }) };
+        gc->SetBrush(gc->CreateLinearGradientBrush(rect.GetX(), rect.GetY(), rect.GetX() + width,
+                                                   rect.GetY() + height, lightBrown, darkBrown));
+        gc->SetPen(outlinePen);
+        gc->DrawPath(bodyPath);
+
+        // dark bumps, where every other bump is drawn at half the opacity
+        const std::array<wxColour, 2> bumpColors{ ApplyColorOpacity(wxColour{ 62, 36, 18 }),
+                                                  ApplyColorOpacity(wxColour{ 92, 58, 32 }) };
+        const std::array<wxColour, 2> faintBumpColors{
+            wxColour{ bumpColors[0].Red(), bumpColors[0].Green(), bumpColors[0].Blue(),
+                      static_cast<wxColour::ChannelType>(bumpColors[0].Alpha() / 2) },
+            wxColour{ bumpColors[1].Red(), bumpColors[1].Green(), bumpColors[1].Blue(),
+                      static_cast<wxColour::ChannelType>(bumpColors[1].Alpha() / 2) }
+        };
+        size_t bumpsDrawn{ 0 };
+        const auto drawBump = [gc, &rng, &bumpSizeDist, &bumpFlatnessDist, &fullAngleDist,
+                               &chanceDist, &bumpColors, &faintBumpColors, &bumpsDrawn,
+                               width](const double xPos, const double yPos, const double sizeScale)
+        {
+            const double bumpWidth{ std::max(1.0, width * bumpSizeDist(rng) * sizeScale) };
+            const double bumpHeight{ bumpWidth * bumpFlatnessDist(rng) };
+            const size_t colorIndex{ (chanceDist(rng) < math_constants::half) ? 0U : 1U };
+            const bool isFaint{ (bumpsDrawn % 2) == 1 };
+            ++bumpsDrawn;
+            gc->SetBrush(wxBrush{ isFaint ? faintBumpColors[colorIndex] : bumpColors[colorIndex] });
+            gc->PushState();
+            gc->Translate(xPos, yPos);
+            gc->Rotate(fullAngleDist(rng));
+            gc->DrawEllipse(-bumpWidth * math_constants::half, -bumpHeight * math_constants::half,
+                            bumpWidth, bumpHeight);
+            gc->PopState();
+        };
+
+        gc->SetPen(*wxTRANSPARENT_PEN);
+
+        // scattered across the body
+        for (size_t i = 0; i < INTERIOR_BUMP_COUNT; ++i)
+            {
+            const wxPoint2DDouble unit{ unitPoint(fullAngleDist(rng)) };
+            const double distance{ INTERIOR_MAX_RADIUS * std::sqrt(chanceDist(rng)) };
+            drawBump(centerX + (unit.m_x * radiusX * distance),
+                     bodyCenterY + (unit.m_y * radiusY * distance), 1.0);
+            }
+
+        // along the rim, to make the edge look rough
+        for (size_t i = 1; i < OUTLINE_POINT_COUNT; ++i)
+            {
+            if (chanceDist(rng) < EDGE_BUMP_CHANCE)
+                {
+                drawBump(centerX + ((outline[i].m_x - centerX) * EDGE_BUMP_INSET),
+                         bodyCenterY + ((outline[i].m_y - bodyCenterY) * EDGE_BUMP_INSET),
+                         math_constants::three_quarters);
+                }
+            }
+
+        // gathered neck at the top
+        const double peakY{ outline[0].m_y };
+        const double bandY{ peakY - (height * 0.05) };
+        const double neckBaseHalf{ width * 0.085 };
+        const double neckTopHalf{ width * 0.04 };
+        const double neckOverlap{ height * 0.04 };
+
+        auto neckPath{ gc->CreatePath() };
+        neckPath.MoveToPoint(centerX - neckBaseHalf, peakY + neckOverlap);
+        neckPath.AddQuadCurveToPoint(centerX - neckTopHalf,
+                                     peakY + (neckOverlap * math_constants::fifth),
+                                     centerX - neckTopHalf, bandY);
+        neckPath.AddLineToPoint(centerX + neckTopHalf, bandY);
+        neckPath.AddQuadCurveToPoint(centerX + neckTopHalf,
+                                     peakY + (neckOverlap * math_constants::fifth),
+                                     centerX + neckBaseHalf, peakY + neckOverlap);
+        neckPath.CloseSubpath();
+        gc->SetBrush(wxBrush{ ApplyColorOpacity(wxColour{ 150, 102, 62 }) });
+        gc->FillPath(neckPath);
+
+        // only the sides of the neck get outlined, so that no line crosses the body
+        gc->SetPen(outlinePen);
+        const auto strokeNeckSide = [gc, centerX, peakY, bandY, neckBaseHalf, neckTopHalf,
+                                     neckOverlap](const double direction)
+        {
+            auto sidePath{ gc->CreatePath() };
+            sidePath.MoveToPoint(centerX + (direction * neckBaseHalf), peakY + neckOverlap);
+            sidePath.AddQuadCurveToPoint(centerX + (direction * neckTopHalf),
+                                         peakY + (neckOverlap * math_constants::fifth),
+                                         centerX + (direction * neckTopHalf), bandY);
+            gc->StrokePath(sidePath);
+        };
+        strokeNeckSide(-1.0);
+        strokeNeckSide(1.0);
+
+        // frayed ends of the tie
+        const double tuftTopY{ rect.GetY() + (height * 0.03) };
+        const wxPen tuftPen{ wxColour{ 120, 80, 44 },
+                             std::max<int>(1, static_cast<int>(width * 0.025)) };
+        gc->SetPen(tuftPen);
+        auto leftTuft{ gc->CreatePath() };
+        leftTuft.MoveToPoint(centerX - (neckTopHalf * 0.4), bandY);
+        leftTuft.AddQuadCurveToPoint(centerX - (width * 0.02), tuftTopY + (height * 0.08),
+                                     centerX - (width * 0.07), tuftTopY);
+        gc->StrokePath(leftTuft);
+        auto rightTuft{ gc->CreatePath() };
+        rightTuft.MoveToPoint(centerX + (neckTopHalf * 0.4), bandY);
+        rightTuft.AddQuadCurveToPoint(centerX + (width * 0.015), tuftTopY + (height * 0.10),
+                                      centerX + (width * 0.05), tuftTopY + (height * 0.03));
+        gc->StrokePath(rightTuft);
+
+        // twine wrapped around the neck
+        const double bandWidth{ neckTopHalf * 3.0 };
+        const double bandHeight{ height * 0.04 };
+        gc->SetBrush(wxBrush{ ApplyColorOpacity(wxColour{ 214, 184, 138 }) });
+        gc->SetPen(wxPen{ wxColour{ 120, 86, 50 }, 1 });
+        gc->DrawRoundedRectangle(centerX - (bandWidth * math_constants::half),
+                                 bandY - (bandHeight * math_constants::half), bandWidth, bandHeight,
+                                 bandHeight * math_constants::third);
+        }
     } // namespace Wisteria::GraphItems

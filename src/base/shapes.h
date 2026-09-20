@@ -502,6 +502,10 @@ namespace Wisteria::GraphItems
         /// @param rect The area to draw the image within.
         /// @param dc The DC to draw to.
         void DrawProhibitedSign(wxRect rect, wxDC& dc) const;
+        /// @brief Draws a lumpy brown bag (tied at the top) with dark speckles.
+        /// @param rect The area to draw the image within.
+        /// @param dc The DC to draw to.
+        void DrawPropertyBag(wxRect rect, wxDC& dc) const;
 
         /// @}
 
