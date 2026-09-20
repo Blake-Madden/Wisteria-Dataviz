@@ -24,6 +24,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ProConRoadmap, Wisteria::Graphs::Roa
             {
             return;
             }
+        SetDataset(data);
 
         m_positiveColumnName = positiveColumnName;
         m_positiveValueColumnName = positiveValueColumnName.value_or(wxString{});

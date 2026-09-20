@@ -44,6 +44,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
             {
             return;
             }
+        SetDataset(data);
 
         GetSelectedIds().clear();
         m_longestWinningStreak = 0;

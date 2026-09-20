@@ -25,6 +25,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LRRoadmap, Wisteria::Graphs::Roadmap
             {
             return;
             }
+        SetDataset(data);
 
         m_predictorColumnName = predictorColumnName;
         m_coefficientColumnName = coefficientColumnName;

@@ -622,6 +622,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
             {
             return;
             }
+        SetDataset(data);
 
         GetSelectedIds().clear();
         ClearBarGroups();

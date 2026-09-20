@@ -48,6 +48,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
             {
             return;
             }
+        SetDataset(data);
 
         GetSelectedIds().clear();
         m_sankeyColumns.clear();

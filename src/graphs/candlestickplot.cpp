@@ -22,6 +22,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CandlestickPlot, Wisteria::Graphs::G
             {
             return;
             }
+        SetDataset(data);
 
         GetSelectedIds().clear();
 

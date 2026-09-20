@@ -409,6 +409,7 @@ namespace Wisteria::Graphs
             {
             return;
             }
+        SetDataset(data);
 
         GetSelectedIds().clear();
 
