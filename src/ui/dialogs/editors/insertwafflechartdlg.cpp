@@ -122,10 +122,9 @@ namespace Wisteria::UI
         // row count
         auto* rowCountBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Row Count"));
 
-        auto* rowCountCheck =
-            new wxCheckBox(rowCountBox->GetStaticBox(), wxID_ANY, _(L"Specify row count"),
-                           wxDefaultPosition, wxDefaultSize, 0,
-                           wxGenericValidator{ &m_useRowCount });
+        auto* rowCountCheck = new wxCheckBox(
+            rowCountBox->GetStaticBox(), wxID_ANY, _(L"Specify row count"), wxDefaultPosition,
+            wxDefaultSize, 0, wxGenericValidator{ &m_useRowCount });
         rowCountBox->Add(rowCountCheck, wxSizerFlags{}.Border());
 
         auto* rowCountGrid = new wxFlexGridSizer(
