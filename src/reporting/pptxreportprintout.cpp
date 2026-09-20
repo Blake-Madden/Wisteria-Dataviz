@@ -51,7 +51,7 @@ wxSize Wisteria::PowerPointExportOptions::GetSlideSizeEMU() const
     switch (m_slideSize)
         {
     case SlideSize::Standard4x3:
-        return { 9144000, 6858000 };
+        return { SLIDE_WIDTH_4X3_EMU, SLIDE_HEIGHT_EMU };
     case SlideSize::Custom:
         {
         const double widthInches{ std::clamp(m_customWidthInches, 1.0, MAX_SLIDE_INCHES) };
@@ -61,7 +61,7 @@ wxSize Wisteria::PowerPointExportOptions::GetSlideSizeEMU() const
         }
     case SlideSize::Widescreen16x9:
     default:
-        return { 12192000, 6858000 };
+        return { SLIDE_WIDTH_16X9_EMU, SLIDE_HEIGHT_EMU };
         }
     }
 
@@ -342,7 +342,8 @@ Wisteria::ReportPowerPointExport::BuildTransitionXml(const PowerPointExportOptio
     attribs += options.m_advanceOnClick ? L" advClick=\"1\"" : L" advClick=\"0\"";
     if (autoAdvance)
         {
-        attribs += wxString::Format(L" advTm=\"%d\"", std::max(0, options.m_advanceSeconds) * 1000);
+        attribs += wxString::Format(L" advTm=\"%d\"", std::max(0, options.m_advanceSeconds) *
+                                                          MILLISECONDS_PER_SECOND);
         }
 
     if (options.m_transition == Transition::Morph)
@@ -465,7 +466,7 @@ wxString Wisteria::ReportPowerPointExport::BuildTitleSlideXml(
                    wxString::Format(
                        L"<a:solidFill><a:srgbClr val=\"%s\"><a:alpha val=\"%d\"/></a:srgbClr>"
                        L"</a:solidFill>",
-                       ColorToHex(color), alphaPercent * 1000);
+                       ColorToHex(color), alphaPercent * ALPHA_UNITS_PER_PERCENT);
     };
 
     wxArrayString subtitleLines;
@@ -658,9 +659,6 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
     const wxSize slideDIPs{ options.GetSlideSizeDIPs() };
     const long long slideCx{ slideEMU.GetWidth() };
     const long long slideCy{ slideEMU.GetHeight() };
-    // notes pages use a fixed portrait size
-    constexpr long long NOTES_CX{ 6858000 };
-    constexpr long long NOTES_CY{ 9144000 };
 
     // render every page and collect its notes
     std::vector<RenderedPage> rendered;
@@ -863,9 +861,9 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
         }
     presentation += wxString::Format(L"<p:sldIdLst>%s</p:sldIdLst>", sldIdLst);
     presentation += sldSz;
-    presentation +=
-        wxString::Format(L"<p:notesSz cx=\"%s\" cy=\"%s\"/>", wxString{ std::to_wstring(NOTES_CX) },
-                         wxString{ std::to_wstring(NOTES_CY) });
+    presentation += wxString::Format(L"<p:notesSz cx=\"%s\" cy=\"%s\"/>",
+                                     wxString{ std::to_wstring(NOTES_PAGE_WIDTH_EMU) },
+                                     wxString{ std::to_wstring(NOTES_PAGE_HEIGHT_EMU) });
     presentation += L"<p:defaultTextStyle/></p:presentation>";
 
     std::vector<std::tuple<wxString, wxString, wxString>> presRels{
@@ -990,7 +988,7 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
              ok;
 
         const wxString altText{ page.m_notes.empty() ? pages[pageIndex]->GetLabel() :
-                                                       page.m_notes.Left(2000) };
+                                                       page.m_notes.Left(MAX_ALT_TEXT_LENGTH) };
         // a short, distinct accessible name for the Selection Pane and screen readers,
         // separate from the (possibly long) alt text description above
         const wxString slideTitle{ !pages[pageIndex]->GetLabel().empty() ?

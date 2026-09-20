@@ -392,8 +392,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
         const double sinAngle = std::sin(angleRad);
 
         const double pad = minDim * PLOT_PAD_PROPORTION;
-        const double availW = static_cast<double>(plotArea.GetWidth()) - (pad * 2);
-        const double availH = static_cast<double>(plotArea.GetHeight()) - (pad * 2);
+        const auto availW = static_cast<double>(plotArea.GetWidth()) - (pad * 2);
+        const auto availH = static_cast<double>(plotArea.GetHeight()) - (pad * 2);
         if (availW <= 10 || availH <= 10)
             {
             return;
@@ -402,7 +402,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
         // shrinks the overall scale instead
         const double maxSpiralRadius = std::min(availW, availH) * m_outerRadiusProportion;
         // cap the thickness up front so the hole stays inside the spiral
-        // budget; otherwise every simulation fails and valid data renders blank
+        // budget; otherwise, every simulation fails and valid data renders blank
         applyThickness(
             std::min(lineThickness, std::max(minDim * THINNEST_LINE_PROPORTION,
                                              maxSpiralRadius * math_constants::half * 0.99)));

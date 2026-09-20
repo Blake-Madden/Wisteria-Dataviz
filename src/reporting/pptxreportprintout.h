@@ -62,6 +62,13 @@ namespace Wisteria
         /// @brief English Metric Units per inch. Slide dimensions in @c presentation.xml
         ///     are expressed in EMUs.
         constexpr static double EMU_PER_INCH{ 914400.0 };
+        /// @brief The height, in EMUs, shared by the Standard (4:3) and Widescreen (16:9)
+        ///     slide sizes (7.5in).
+        constexpr static int SLIDE_HEIGHT_EMU{ 6858000 };
+        /// @brief The Standard (4:3) slide width, in EMUs (10in).
+        constexpr static int SLIDE_WIDTH_4X3_EMU{ 9144000 };
+        /// @brief The Widescreen (16:9) slide width, in EMUs (13.333in).
+        constexpr static int SLIDE_WIDTH_16X9_EMU{ 12192000 };
         /// @brief PowerPoint's maximum slide dimension, in inches.
         constexpr static double MAX_SLIDE_INCHES{ 56.0 };
 
@@ -138,8 +145,7 @@ namespace Wisteria
     /// @details Each canvas becomes one slide, rendered to fill the slide. The slide
     ///     picture references a rasterized PNG (the OOXML picture blip) with the
     ///     vector SVG attached through the DrawingML SVG extension, so PowerPoint 2016+
-    ///     shows the crisp vector and other clients show the PNG. The package is an OPC
-    ///     ZIP built directly with @c wxZipOutputStream.
+    ///     shows the crisp vector and other clients show the PNG.
     class ReportPowerPointExport
         {
       public:
@@ -187,6 +193,18 @@ namespace Wisteria
         constexpr static std::wstring_view REL_IMAGE{
             L"http://schemas.openxmlformats.org/officeDocument/2006/relationships/image"
         };
+
+        /// @brief The speaker-notes page width, in EMUs (7.5in, portrait).
+        constexpr static long long NOTES_PAGE_WIDTH_EMU{ 6858000 };
+        /// @brief The speaker-notes page height, in EMUs (10in, portrait).
+        constexpr static long long NOTES_PAGE_HEIGHT_EMU{ 9144000 };
+        /// @brief Milliseconds per second, for the slide @c advTm (auto-advance) attribute.
+        constexpr static int MILLISECONDS_PER_SECOND{ 1000 };
+        /// @brief OOXML alpha units per percent. An @c \<a:alpha\> value is in thousandths
+        ///     of a percent, so 100000 is fully opaque.
+        constexpr static int ALPHA_UNITS_PER_PERCENT{ 1000 };
+        /// @brief The maximum length, in characters, of a slide picture's alt text.
+        constexpr static size_t MAX_ALT_TEXT_LENGTH{ 2000 };
 
         // fixed OPC parts shared by every export
         static const std::wstring_view THEME_XML;
