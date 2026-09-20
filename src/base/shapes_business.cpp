@@ -966,8 +966,74 @@ namespace Wisteria::GraphItems
                                      peakY + (neckOverlap * math_constants::fifth),
                                      centerX + neckBaseHalf, peakY + neckOverlap);
         neckPath.CloseSubpath();
-        gc->SetBrush(wxBrush{ ApplyColorOpacity(wxColour{ 150, 102, 62 }) });
+        // the bag's own color where the neck meets it, darkening toward the twine
+        const auto mixColors =
+            [](const wxColour& fromColor, const wxColour& toColor, const double amount)
+        {
+            const auto mixChannel =
+                [amount](const wxColour::ChannelType fromValue, const wxColour::ChannelType toValue)
+            {
+                return static_cast<wxColour::ChannelType>(
+                    static_cast<double>(fromValue) +
+                    ((static_cast<double>(toValue) - static_cast<double>(fromValue)) * amount));
+            };
+            return wxColour{ mixChannel(fromColor.Red(), toColor.Red()),
+                             mixChannel(fromColor.Green(), toColor.Green()),
+                             mixChannel(fromColor.Blue(), toColor.Blue()) };
+        };
+        const double bagBlend{ std::clamp(safe_divide<double>(((centerX - rect.GetX()) * width) +
+                                                                  ((peakY - rect.GetY()) * height),
+                                                              (width * width) + (height * height)),
+                                          0.0, 1.0) };
+        const wxColour bagColor{ mixColors(lightBrown, darkBrown, bagBlend) };
+        const wxColour neckTopColor{ ApplyColorOpacity(
+            mixColors(bagColor, wxColour{ 62, 36, 18 }, math_constants::half)) };
+        const wxColour neckBaseColor{ bagColor.Red(), bagColor.Green(), bagColor.Blue(), 0 };
+        // stays opaque past the body's outline so the seam is covered, then fades out below it
+        wxGraphicsGradientStops neckStops{ neckTopColor, neckBaseColor };
+        neckStops.Add(ApplyColorOpacity(bagColor), 0.7F);
+        neckStops.Add(ApplyColorOpacity(bagColor), 0.85F);
+        gc->SetBrush(
+            gc->CreateLinearGradientBrush(centerX, bandY, centerX, peakY + neckOverlap, neckStops));
         gc->FillPath(neckPath);
+
+        // faint creases fanning out from the gathered neck and down across the bag
+        constexpr size_t CREASE_COUNT{ 5 };
+        constexpr double CREASE_FAN_WIDTH{ 0.85 };
+        constexpr double CREASE_MAX_LENGTH{ 1.1 };
+        const wxColour creaseColor{ Colors::ColorContrast::ChangeOpacity(wxColour{ 92, 58, 32 },
+                                                                         90) };
+        const wxColour creaseFadedColor{ creaseColor.Red(), creaseColor.Green(), creaseColor.Blue(),
+                                         0 };
+        const double creaseStartY{ peakY + neckOverlap };
+        const auto creaseWidth{ std::max<int>(
+            1, static_cast<int>(ScaleToScreenAndCanvas(math_constants::half))) };
+        gc->SetPen(gc->CreatePen(
+            wxGraphicsPenInfo{ creaseColor, static_cast<double>(creaseWidth) }.LinearGradient(
+                centerX, creaseStartY, centerX, creaseStartY + (radiusY * CREASE_MAX_LENGTH),
+                creaseColor, creaseFadedColor)));
+        // each crease gets its own slot across the width, so they can't clump together
+        std::uniform_real_distribution<double> creaseSpreadDist{ 0.15, 0.85 };
+        std::uniform_real_distribution<double> creaseLengthDist{ 0.6, CREASE_MAX_LENGTH };
+        std::uniform_real_distribution<double> creaseSwayDist{ -0.08, 0.08 };
+        for (size_t i = 0; i < CREASE_COUNT; ++i)
+            {
+            const double spread{ (2.0 * safe_divide<double>(static_cast<double>(i) +
+                                                                creaseSpreadDist(rng),
+                                                            static_cast<double>(CREASE_COUNT))) -
+                                 1.0 };
+            const double length{ creaseLengthDist(rng) };
+            const double sway{ creaseSwayDist(rng) };
+            const double endX{ centerX + (spread * radiusX * CREASE_FAN_WIDTH) };
+            const double endY{ creaseStartY + (radiusY * length) };
+            auto creasePath{ gc->CreatePath() };
+            creasePath.MoveToPoint(centerX + (spread * neckBaseHalf), creaseStartY);
+            creasePath.AddQuadCurveToPoint(
+                centerX + (spread * radiusX * CREASE_FAN_WIDTH * math_constants::half) +
+                    (sway * radiusX),
+                creaseStartY + ((endY - creaseStartY) * math_constants::half), endX, endY);
+            gc->StrokePath(creasePath);
+            }
 
         // only the sides of the neck get outlined, so that no line crosses the body
         gc->SetPen(outlinePen);
