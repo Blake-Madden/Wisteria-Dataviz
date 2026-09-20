@@ -9,6 +9,7 @@
 #include "axis.h"
 #include "lines.h"
 #include <algorithm>
+#include <map>
 #include <random>
 #include <wx/numformatter.h>
 
@@ -2188,8 +2189,10 @@ namespace Wisteria::GraphItems
     //--------------------------------------
     void Axis::DrawBrackets(wxDC& dc, const wxRect axisRect) const
         {
-        for (const auto& bracket : GetBrackets())
+        const auto labelOffsets = CalcBracketLabelOffsets(dc, axisRect);
+        for (size_t bracketIdx = 0; bracketIdx < GetBrackets().size(); ++bracketIdx)
             {
+            const auto& bracket{ GetBrackets()[bracketIdx] };
             wxPen scaledPen = bracket.GetLinePen();
             if (scaledPen.IsOk())
                 {
@@ -2225,6 +2228,7 @@ namespace Wisteria::GraphItems
                     GetPhysicalCoordinate(bracket.GetLabelPosition(), position2) &&
                     GetPhysicalCoordinate(bracket.GetEndPosition(), position3))
                     {
+                    position2 += labelOffsets[bracketIdx];
                     if (bracket.GetBracketLineStyle() != BracketLineStyle::NoConnectionLines)
                         {
                         if (bracket.IsSingleLine())
@@ -2384,6 +2388,7 @@ namespace Wisteria::GraphItems
                     GetPhysicalCoordinate(bracket.GetLabelPosition(), position2) &&
                     GetPhysicalCoordinate(bracket.GetEndPosition(), position3))
                     {
+                    position2 += labelOffsets[bracketIdx];
                     if (bracket.GetBracketLineStyle() != BracketLineStyle::NoConnectionLines)
                         {
                         if (bracket.IsSingleLine())
@@ -2542,6 +2547,7 @@ namespace Wisteria::GraphItems
                     GetPhysicalCoordinate(bracket.GetLabelPosition(), position2) &&
                     GetPhysicalCoordinate(bracket.GetEndPosition(), position3))
                     {
+                    position2 += labelOffsets[bracketIdx];
                     if (bracket.GetBracketLineStyle() != BracketLineStyle::NoConnectionLines)
                         {
                         if (bracket.IsSingleLine())
@@ -2697,6 +2703,7 @@ namespace Wisteria::GraphItems
                     GetPhysicalCoordinate(bracket.GetLabelPosition(), position2) &&
                     GetPhysicalCoordinate(bracket.GetEndPosition(), position3))
                     {
+                    position2 += labelOffsets[bracketIdx];
                     if (bracket.GetBracketLineStyle() != BracketLineStyle::NoConnectionLines)
                         {
                         if (bracket.IsSingleLine())
@@ -4103,6 +4110,84 @@ namespace Wisteria::GraphItems
                                spacing);
             }
         return spacing;
+        }
+
+    //-------------------------------------------
+    std::vector<wxCoord> Axis::CalcBracketLabelOffsets(wxDC& dc, const wxRect axisRect) const
+        {
+        std::vector<wxCoord> offsets(GetBrackets().size(), 0);
+        if (GetBrackets().size() < 2)
+            {
+            return offsets;
+            }
+
+        // bracket indices and label centers, in physical order along the axis
+        std::vector<std::pair<size_t, wxCoord>> centers;
+        centers.reserve(GetBrackets().size());
+        for (size_t i = 0; i < GetBrackets().size(); ++i)
+            {
+            if (wxCoord center{ 0 };
+                GetPhysicalCoordinate(GetBrackets()[i].GetLabelPosition(), center))
+                {
+                centers.emplace_back(i, center);
+                }
+            }
+        if (centers.size() < 2)
+            {
+            return offsets;
+            }
+        std::ranges::stable_sort(centers, {}, &std::pair<size_t, wxCoord>::second);
+
+        // only the labels at the ends and their neighbors are measured
+        std::map<size_t, wxCoord> halfLengths;
+        const auto halfLengthOf = [this, &dc, &halfLengths](const size_t bracketIndex)
+        {
+            if (const auto foundLength = halfLengths.find(bracketIndex);
+                foundLength != halfLengths.cend())
+                {
+                return foundLength->second;
+                }
+            Label bracketLabel(GetBrackets()[bracketIndex].GetLabel());
+            bracketLabel.SetDPIScaleFactor(GetDPIScaleFactor());
+            bracketLabel.SetFont(GetFont());
+            const wxSize labelSize = bracketLabel.GetBoundingBox(dc).GetSize();
+            const wxCoord halfLength{
+                (IsVertical() ? labelSize.GetHeight() : labelSize.GetWidth()) / 2
+            };
+            halfLengths.emplace(bracketIndex, halfLength);
+            return halfLength;
+        };
+
+        const wxCoord lowerBound{ IsVertical() ? axisRect.GetTop() : axisRect.GetLeft() };
+        const wxCoord upperBound{ IsVertical() ? axisRect.GetBottom() : axisRect.GetRight() };
+
+        // first label (top or left) moves toward the start of the axis
+        const auto& firstEntry = centers.front();
+        const auto& secondEntry = centers[1];
+        const wxCoord firstHalf{ halfLengthOf(firstEntry.first) };
+        if (const wxCoord overlap{ (firstEntry.second + firstHalf) -
+                                   (secondEntry.second - halfLengthOf(secondEntry.first)) };
+            overlap > 0)
+            {
+            const wxCoord room{ std::max<wxCoord>(0,
+                                                  (firstEntry.second - firstHalf) - lowerBound) };
+            offsets[firstEntry.first] = -std::min(overlap, room);
+            }
+
+        // last label (bottom or right) moves toward the end of the axis
+        const auto& lastEntry = centers.back();
+        const auto& prevEntry = centers[centers.size() - 2];
+        const wxCoord lastHalf{ halfLengthOf(lastEntry.first) };
+        const wxCoord prevCenter{ prevEntry.second + offsets[prevEntry.first] };
+        if (const wxCoord overlap{ (prevCenter + halfLengthOf(prevEntry.first)) -
+                                   (lastEntry.second - lastHalf) };
+            overlap > 0)
+            {
+            const wxCoord room{ std::max<wxCoord>(0, upperBound - (lastEntry.second + lastHalf)) };
+            offsets[lastEntry.first] = std::min(overlap, room);
+            }
+
+        return offsets;
         }
 
     //-------------------------------------------

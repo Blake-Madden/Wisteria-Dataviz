@@ -2312,6 +2312,16 @@ namespace Wisteria::GraphItems
         /// @returns How much space is needed to fit the brackets.
         [[nodiscard]]
         wxCoord CalcBracketsSpaceRequired(wxDC& dc) const;
+        /// @brief Calculates how far to nudge each bracket label along the axis
+        ///     so that the first and last labels don't overlap their neighbors.
+        /// @details Only the first and last labels (in physical order) are moved,
+        ///     and only away from their neighbor. A label is never moved outside of @c axisRect.
+        /// @param dc The DC used to measure the labels.
+        /// @param axisRect The area of the axis, which limits how far a label can be moved.
+        /// @returns The offset (in pixels) to add to each bracket label's physical position
+        ///     along the axis, in the same order as GetBrackets().
+        [[nodiscard]]
+        std::vector<wxCoord> CalcBracketLabelOffsets(wxDC& dc, wxRect axisRect) const;
         /// @returns Whether the given axis position will display something.
         /// @note Relying on AxisPoint::IsShown() is not adequate because we
         ///     need to take into account if the point doesn't have a custom label
