@@ -113,18 +113,18 @@ namespace Wisteria::UI
 
         auto* columnHeaderCheck = new wxCheckBox(
             this, wxID_ANY, _(L"&Include column headers"), wxDefaultPosition, wxDefaultSize,
-            wxCHK_2STATE, wxGenericValidator(&m_options.m_includeColumnHeaders));
+            wxCHK_2STATE, wxGenericValidator{ &m_options.m_includeColumnHeaders });
         optionsSizer->Add(columnHeaderCheck, wxSizerFlags{}.Border());
 
         optionsSizer->Add(new wxRadioButton(this, ControlIDs::ID_EXPORT_ALL_OPTION,
                                             _(L"&Export all rows"), wxDefaultPosition,
                                             wxDefaultSize, wxRB_GROUP,
-                                            wxGenericValidator(&m_options.m_exportAll)),
+                                            wxGenericValidator{ &m_options.m_exportAll }),
                           wxSizerFlags{}.Border());
 
         m_exportSelectedRadio = new wxRadioButton(
             this, ControlIDs::ID_EXPORT_SELECTED_OPTION, _(L"Export &selected rows"),
-            wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator(&m_options.m_exportSelected));
+            wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator{ &m_options.m_exportSelected });
         optionsSizer->Add(m_exportSelectedRadio, wxSizerFlags{}.Border());
         if (m_exportFormat == GridExportFormat::ExportPdf)
             {
@@ -134,7 +134,7 @@ namespace Wisteria::UI
         optionsSizer->Add(new wxRadioButton(this, ControlIDs::ID_EXPORT_RANGE_OPTION,
                                             _(L"Export a &range of rows"), wxDefaultPosition,
                                             wxDefaultSize, 0,
-                                            wxGenericValidator(&m_options.m_exportRange)),
+                                            wxGenericValidator{ &m_options.m_exportRange }),
                           wxSizerFlags{}.Border());
 
         m_rangeBoxSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Range:"));
@@ -151,7 +151,7 @@ namespace Wisteria::UI
         auto* fromRowSpinCtrl = new wxSpinCtrl(
             m_rangeBoxSizer->GetStaticBox(), ControlIDs::ID_ROWS_FROM_SPIN, L"1", wxDefaultPosition,
             wxDefaultSize, wxSP_ARROW_KEYS, 1, m_options.m_toRow, 1);
-        fromRowSpinCtrl->SetValidator(wxGenericValidator(&m_options.m_fromRow));
+        fromRowSpinCtrl->SetValidator(wxGenericValidator{ &m_options.m_fromRow });
         rangeOptionsSizer->Add(fromRowSpinCtrl, wxSizerFlags{}.Expand());
 
         rangeOptionsSizer->Add(
@@ -161,7 +161,7 @@ namespace Wisteria::UI
         auto* toRowSpinCtrl = new wxSpinCtrl(
             m_rangeBoxSizer->GetStaticBox(), ControlIDs::ID_ROWS_TO_SPIN, L"1", wxDefaultPosition,
             wxDefaultSize, wxSP_ARROW_KEYS, 1, m_options.m_toRow, 1);
-        toRowSpinCtrl->SetValidator(wxGenericValidator(&m_options.m_toRow));
+        toRowSpinCtrl->SetValidator(wxGenericValidator{ &m_options.m_toRow });
         rangeOptionsSizer->Add(toRowSpinCtrl, wxSizerFlags{}.Expand());
 
         // column options
@@ -172,7 +172,7 @@ namespace Wisteria::UI
         auto* fromColumnSpinCtrl =
             new wxSpinCtrl(m_rangeBoxSizer->GetStaticBox(), wxID_ANY, L"1", wxDefaultPosition,
                            wxDefaultSize, wxSP_ARROW_KEYS, 1, m_options.m_toColumn, 1);
-        fromColumnSpinCtrl->SetValidator(wxGenericValidator(&m_options.m_fromColumn));
+        fromColumnSpinCtrl->SetValidator(wxGenericValidator{ &m_options.m_fromColumn });
         rangeOptionsSizer->Add(fromColumnSpinCtrl, wxSizerFlags{}.Expand());
 
         rangeOptionsSizer->Add(
@@ -182,7 +182,7 @@ namespace Wisteria::UI
         auto* toColumnSpinCtrl =
             new wxSpinCtrl(m_rangeBoxSizer->GetStaticBox(), wxID_ANY, L"1", wxDefaultPosition,
                            wxDefaultSize, wxSP_ARROW_KEYS, 1, m_options.m_toColumn, 1);
-        toColumnSpinCtrl->SetValidator(wxGenericValidator(&m_options.m_toColumn));
+        toColumnSpinCtrl->SetValidator(wxGenericValidator{ &m_options.m_toColumn });
         rangeOptionsSizer->Add(toColumnSpinCtrl, wxSizerFlags{}.Expand());
 
         if (m_exportFormat == GridExportFormat::ExportHtml)
@@ -190,7 +190,7 @@ namespace Wisteria::UI
             m_paginateCheckBox =
                 new wxCheckBox(this, wxID_ANY, _(L"&Paginate using printer settings"),
                                wxDefaultPosition, wxDefaultSize, wxCHK_2STATE,
-                               wxGenericValidator(&m_options.m_pageUsingPrinterSettings));
+                               wxGenericValidator{ &m_options.m_pageUsingPrinterSettings });
             optionsSizer->Add(m_paginateCheckBox, wxSizerFlags{}.Border());
             }
 
@@ -208,19 +208,19 @@ namespace Wisteria::UI
             pdfBoxSizer->Add(new wxCheckBox(pdfBoxSizer->GetStaticBox(), wxID_ANY,
                                             _(L"&Simple (booktabs) style"), wxDefaultPosition,
                                             wxDefaultSize, wxCHK_2STATE,
-                                            wxGenericValidator(&m_options.m_pdfSimpleStyle)),
+                                            wxGenericValidator{ &m_options.m_pdfSimpleStyle }),
                              wxSizerFlags{}.Border());
 
             pdfBoxSizer->Add(new wxCheckBox(pdfBoxSizer->GetStaticBox(), wxID_ANY,
                                             _(L"&Fit table to page width"), wxDefaultPosition,
                                             wxDefaultSize, wxCHK_2STATE,
-                                            wxGenericValidator(&m_options.m_pdfFitToPage)),
+                                            wxGenericValidator{ &m_options.m_pdfFitToPage }),
                              wxSizerFlags{}.Border());
 
             pdfBoxSizer->Add(new wxCheckBox(pdfBoxSizer->GetStaticBox(), wxID_ANY,
                                             _(L"Show &continued labels on page breaks"),
                                             wxDefaultPosition, wxDefaultSize, wxCHK_2STATE,
-                                            wxGenericValidator(&m_options.m_pdfShowContinued)),
+                                            wxGenericValidator{ &m_options.m_pdfShowContinued }),
                              wxSizerFlags{}.Border());
             }
 

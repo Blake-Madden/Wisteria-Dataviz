@@ -144,7 +144,7 @@ namespace Wisteria::UI
         leftHeaderPrinterCombo =
             new wxComboBox(headerFrameSizer->GetStaticBox(), ID_LEFT_HEADER_COMBOBOX, wxString{},
                            wxDefaultPosition, wxDefaultSize, choiceStrings, wxCB_DROPDOWN,
-                           wxGenericValidator(&m_leftPrinterHeader));
+                           wxGenericValidator{ &m_leftPrinterHeader });
         headerLeftSizer->Add(leftHeaderPrinterCombo, wxSizerFlags{ 1 }.Expand());
 
         auto* headerCenterSizer = new wxBoxSizer(wxVERTICAL);
@@ -159,7 +159,7 @@ namespace Wisteria::UI
         centerHeaderPrinterCombo =
             new wxComboBox(headerFrameSizer->GetStaticBox(), ID_CENTER_HEADER_COMBOBOX, wxString{},
                            wxDefaultPosition, wxDefaultSize, choiceStrings, wxCB_DROPDOWN,
-                           wxGenericValidator(&m_centerPrinterHeader));
+                           wxGenericValidator{ &m_centerPrinterHeader });
         headerCenterSizer->Add(centerHeaderPrinterCombo, wxSizerFlags{ 1 }.Expand());
 
         auto* headerRightSizer = new wxBoxSizer(wxVERTICAL);
@@ -174,7 +174,7 @@ namespace Wisteria::UI
         rightHeaderPrinterCombo =
             new wxComboBox(headerFrameSizer->GetStaticBox(), ID_RIGHT_HEADER_COMBOBOX, wxString{},
                            wxDefaultPosition, wxDefaultSize, choiceStrings, wxCB_DROPDOWN,
-                           wxGenericValidator(&m_rightPrinterHeader));
+                           wxGenericValidator{ &m_rightPrinterHeader });
         headerRightSizer->Add(rightHeaderPrinterCombo, wxSizerFlags{ 1 }.Expand());
 
         auto* footersTextBox = new wxStaticBox(this, wxID_ANY, _(L"Footers"));
@@ -189,9 +189,10 @@ namespace Wisteria::UI
                              wxDefaultPosition, wxDefaultSize, 0);
         footerLeftSizer->Add(leftFooterPrinterText, wxSizerFlags{}.Expand().Border());
 
-        leftFooterPrinterCombo = new wxComboBox(
-            footerSizer->GetStaticBox(), ID_LEFT_FOOTER_COMBOBOX, wxString{}, wxDefaultPosition,
-            wxDefaultSize, choiceStrings, wxCB_DROPDOWN, wxGenericValidator(&m_leftPrinterFooter));
+        leftFooterPrinterCombo =
+            new wxComboBox(footerSizer->GetStaticBox(), ID_LEFT_FOOTER_COMBOBOX, wxString{},
+                           wxDefaultPosition, wxDefaultSize, choiceStrings, wxCB_DROPDOWN,
+                           wxGenericValidator{ &m_leftPrinterFooter });
         footerLeftSizer->Add(leftFooterPrinterCombo, wxSizerFlags{ 1 }.Expand());
 
         auto* footerCenterSizer = new wxBoxSizer(wxVERTICAL);
@@ -205,7 +206,7 @@ namespace Wisteria::UI
         centerFooterPrinterCombo =
             new wxComboBox(footerSizer->GetStaticBox(), ID_CENTER_FOOTER_COMBOBOX, wxString{},
                            wxDefaultPosition, wxDefaultSize, choiceStrings, wxCB_DROPDOWN,
-                           wxGenericValidator(&m_centerPrinterFooter));
+                           wxGenericValidator{ &m_centerPrinterFooter });
         footerCenterSizer->Add(centerFooterPrinterCombo, wxSizerFlags{ 1 }.Expand());
 
         auto* footerRightSizer = new wxBoxSizer(wxVERTICAL);
@@ -216,9 +217,10 @@ namespace Wisteria::UI
                              wxDefaultPosition, wxDefaultSize, 0);
         footerRightSizer->Add(rightFooterPrinterText, wxSizerFlags{}.Expand().Border(wxBOTTOM));
 
-        rightFooterPrinterCombo = new wxComboBox(
-            footerSizer->GetStaticBox(), ID_RIGHT_FOOTER_COMBOBOX, wxString{}, wxDefaultPosition,
-            wxDefaultSize, choiceStrings, wxCB_DROPDOWN, wxGenericValidator(&m_rightPrinterFooter));
+        rightFooterPrinterCombo =
+            new wxComboBox(footerSizer->GetStaticBox(), ID_RIGHT_FOOTER_COMBOBOX, wxString{},
+                           wxDefaultPosition, wxDefaultSize, choiceStrings, wxCB_DROPDOWN,
+                           wxGenericValidator{ &m_rightPrinterFooter });
         footerRightSizer->Add(rightFooterPrinterCombo, wxSizerFlags{ 1 }.Expand());
 
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL | wxHELP),

@@ -84,7 +84,7 @@ namespace Wisteria::UI
         auto* filePathEdit =
             new wxTextCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition,
                            wxSize{ FromDIP(wxSize{ 600, 600 }).GetWidth(), -1 },
-                           wxTE_RICH2 | wxBORDER_THEME, wxGenericValidator(&m_filePath));
+                           wxTE_RICH2 | wxBORDER_THEME, wxGenericValidator{ &m_filePath });
         filePathEdit->AutoCompleteFileNames();
         fileBrowseBoxSizer->Add(filePathEdit, wxSizerFlags{ 1 }.Expand());
 
@@ -110,12 +110,12 @@ namespace Wisteria::UI
             }
         m_fileFilterCombo = new wxChoice(
             this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(wxSize{ 100, 100 }).GetWidth(), -1),
-            choiceStrings, 0, wxGenericValidator(&m_selectedFileFilter));
+            choiceStrings, 0, wxGenericValidator{ &m_selectedFileFilter });
         fileTypeSizer->Add(m_fileFilterCombo, wxSizerFlags{ 1 }.Expand().Border());
 
         auto* recurseDirsCheckBox =
             new wxCheckBox(this, wxID_ANY, _(L"&Search directories recursively"), wxDefaultPosition,
-                           wxDefaultSize, 0, wxGenericValidator(&m_isRecursive));
+                           wxDefaultSize, 0, wxGenericValidator{ &m_isRecursive });
         mainSizer->Add(recurseDirsCheckBox, 0, wxALIGN_LEFT | wxALL,
                        wxSizerFlags::GetDefaultBorder());
         mainSizer->AddStretchSpacer(1);

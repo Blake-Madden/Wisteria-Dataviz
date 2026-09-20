@@ -124,7 +124,7 @@ namespace Wisteria::UI
             wxSizerFlags{}.CenterVertical());
         auto* opacitySpin = new wxSpinCtrl(ghostBox->GetStaticBox(), wxID_ANY);
         opacitySpin->SetRange(0, 255);
-        opacitySpin->SetValidator(wxGenericValidator(&m_ghostOpacity));
+        opacitySpin->SetValidator(wxGenericValidator{ &m_ghostOpacity });
         ghostOpacitySizer->Add(opacitySpin);
         ghostBox->Add(ghostOpacitySizer, wxSizerFlags{}.Border());
 

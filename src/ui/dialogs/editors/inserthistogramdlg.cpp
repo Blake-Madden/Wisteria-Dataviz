@@ -100,7 +100,7 @@ namespace Wisteria::UI
             {
             auto* binMethodChoice =
                 new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
-                             wxGenericValidator(&m_binningMethod));
+                             wxGenericValidator{ &m_binningMethod });
             binMethodChoice->Append(_(L"Unique values"));
             binMethodChoice->Append(_(L"By range"));
             binMethodChoice->Append(_(L"By integer range"));
@@ -113,7 +113,7 @@ namespace Wisteria::UI
             {
             auto* roundChoice =
                 new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
-                             wxGenericValidator(&m_roundingMethod));
+                             wxGenericValidator{ &m_roundingMethod });
             roundChoice->Append(_(L"Round"));
             roundChoice->Append(_(L"Round down"));
             roundChoice->Append(_(L"Round up"));
@@ -127,7 +127,7 @@ namespace Wisteria::UI
             {
             auto* intervalChoice =
                 new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
-                             wxGenericValidator(&m_intervalDisplay));
+                             wxGenericValidator{ &m_intervalDisplay });
             intervalChoice->Append(_(L"Cutpoints"));
             intervalChoice->Append(_(L"Midpoints"));
             binSizer->Add(intervalChoice);
@@ -139,7 +139,7 @@ namespace Wisteria::UI
             {
             auto* labelChoice =
                 new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
-                             wxGenericValidator(&m_binLabelDisplay));
+                             wxGenericValidator{ &m_binLabelDisplay });
             labelChoice->Append(_(L"Value"));
             labelChoice->Append(_(L"Percentage"));
             labelChoice->Append(_(L"Value & percentage"));
@@ -155,12 +155,12 @@ namespace Wisteria::UI
         // checkboxes
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show full range of values"),
                                          wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showFullRange)),
+                                         wxGenericValidator{ &m_showFullRange }),
                           wxSizerFlags{}.Border());
 
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Use neat intervals"),
                                          wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_neatIntervals)),
+                                         wxGenericValidator{ &m_neatIntervals }),
                           wxSizerFlags{}.Border());
 
         // bin count overrides
@@ -173,7 +173,7 @@ namespace Wisteria::UI
             {
             auto* spin = new wxSpinCtrl(optionsPage, wxID_ANY);
             spin->SetRange(0, 255);
-            spin->SetValidator(wxGenericValidator(&m_suggestedBinCount));
+            spin->SetValidator(wxGenericValidator{ &m_suggestedBinCount });
             binCountSizer->Add(spin);
             }
 
@@ -183,7 +183,7 @@ namespace Wisteria::UI
             {
             auto* spin = new wxSpinCtrl(optionsPage, wxID_ANY);
             spin->SetRange(0, 255);
-            spin->SetValidator(wxGenericValidator(&m_maxBinCount));
+            spin->SetValidator(wxGenericValidator{ &m_maxBinCount });
             binCountSizer->Add(spin);
             }
 
@@ -193,7 +193,7 @@ namespace Wisteria::UI
         auto* binStartSizer = new wxBoxSizer(wxHORIZONTAL);
         auto* binStartCheck =
             new wxCheckBox(optionsPage, wxID_ANY, _(L"Start first bin at:"), wxDefaultPosition,
-                           wxDefaultSize, 0, wxGenericValidator(&m_overrideBinsStart));
+                           wxDefaultSize, 0, wxGenericValidator{ &m_overrideBinsStart });
         binStartSizer->Add(binStartCheck, wxSizerFlags{}.CenterVertical());
             {
             m_startBinSpin = new wxSpinCtrlDouble(optionsPage, wxID_ANY);
@@ -216,14 +216,14 @@ namespace Wisteria::UI
             wxSizerFlags{}.CenterVertical());
         auto* opacitySpin = new wxSpinCtrl(ghostBox->GetStaticBox(), wxID_ANY);
         opacitySpin->SetRange(0, 255);
-        opacitySpin->SetValidator(wxGenericValidator(&m_ghostOpacity));
+        opacitySpin->SetValidator(wxGenericValidator{ &m_ghostOpacity });
         ghostOpacitySizer->Add(opacitySpin);
         ghostBox->Add(ghostOpacitySizer, wxSizerFlags{}.Border());
 
         ghostBox->Add(new wxCheckBox(ghostBox->GetStaticBox(), wxID_ANY,
                                      _(L"Hide labels on non-showcased bars"), wxDefaultPosition,
                                      wxDefaultSize, 0,
-                                     wxGenericValidator(&m_hideLabelsOnGhostedBars)),
+                                     wxGenericValidator{ &m_hideLabelsOnGhostedBars }),
                       wxSizerFlags{}.Border(wxLEFT | wxBOTTOM));
 
         m_showcaseListBox = new wxEditableListBox(

@@ -180,7 +180,7 @@ namespace Wisteria::UI
         auto* scalePrecisionSpin =
             new wxSpinCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
                            wxSP_ARROW_KEYS, 0, 10, 0);
-        scalePrecisionSpin->SetValidator(wxGenericValidator(&m_mainScalePrecision));
+        scalePrecisionSpin->SetValidator(wxGenericValidator{ &m_mainScalePrecision });
         scaleOptGrid->Add(scalePrecisionSpin);
 
         scaleOptGrid->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Scale header:")),
@@ -202,7 +202,7 @@ namespace Wisteria::UI
         // showcase score checkbox
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Showcase score"),
                                          wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showcaseScore)),
+                                         wxGenericValidator{ &m_showcaseScore }),
                           wxSizerFlags{}.Border());
 
         // bind events

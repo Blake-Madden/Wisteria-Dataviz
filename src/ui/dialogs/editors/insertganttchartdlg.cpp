@@ -137,7 +137,7 @@ namespace Wisteria::UI
                      wxSizerFlags{}.CenterVertical());
             {
             auto* choice = new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
-                                        nullptr, 0, wxGenericValidator(&m_dateInterval));
+                                        nullptr, 0, wxGenericValidator{ &m_dateInterval });
             choice->Append(_(L"Daily"));
             choice->Append(_(L"Fiscal quarterly"));
             choice->Append(_(L"Monthly"));
@@ -150,7 +150,7 @@ namespace Wisteria::UI
                      wxSizerFlags{}.CenterVertical());
             {
             auto* choice = new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
-                                        nullptr, 0, wxGenericValidator(&m_fyType));
+                                        nullptr, 0, wxGenericValidator{ &m_fyType });
             choice->Append(_(L"Education"));
             choice->Append(_(L"US Business"));
             optGrid->Add(choice);
@@ -161,7 +161,7 @@ namespace Wisteria::UI
                      wxSizerFlags{}.CenterVertical());
             {
             auto* choice = new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
-                                        nullptr, 0, wxGenericValidator(&m_taskLabelDisplay));
+                                        nullptr, 0, wxGenericValidator{ &m_taskLabelDisplay });
             choice->Append(_(L"Resource"));
             choice->Append(_(L"Description"));
             choice->Append(_(L"Resource and description"));
@@ -190,7 +190,7 @@ namespace Wisteria::UI
         barShapeChoices.Add(_(L"Reverse Arrow"));
         m_shapeAllChoice =
             new wxChoice(shapesBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                         barShapeChoices, 0, wxGenericValidator(&m_barShapeAllIndex));
+                         barShapeChoices, 0, wxGenericValidator{ &m_barShapeAllIndex });
         shapesBox->Add(m_shapeAllChoice, wxSizerFlags{}.Border(wxLEFT | wxBOTTOM));
 
         m_shapePerBarRadio =
@@ -216,14 +216,14 @@ namespace Wisteria::UI
             wxSizerFlags{}.CenterVertical());
         auto* opacitySpin = new wxSpinCtrl(ghostBox->GetStaticBox(), wxID_ANY);
         opacitySpin->SetRange(0, 255);
-        opacitySpin->SetValidator(wxGenericValidator(&m_ghostOpacity));
+        opacitySpin->SetValidator(wxGenericValidator{ &m_ghostOpacity });
         ghostOpacitySizer->Add(opacitySpin);
         ghostBox->Add(ghostOpacitySizer, wxSizerFlags{}.Border());
 
         ghostBox->Add(new wxCheckBox(ghostBox->GetStaticBox(), wxID_ANY,
                                      _(L"Hide labels on non-showcased bars"), wxDefaultPosition,
                                      wxDefaultSize, 0,
-                                     wxGenericValidator(&m_hideLabelsOnGhostedBars)),
+                                     wxGenericValidator{ &m_hideLabelsOnGhostedBars }),
                       wxSizerFlags{}.Border(wxLEFT | wxBOTTOM));
 
         m_showcaseListBox = new wxEditableListBox(

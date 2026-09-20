@@ -103,7 +103,7 @@ namespace Wisteria::UI
         trackCountChoices.Add(_(L"Two"));
         trackSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                      trackCountChoices, 0,
-                                     wxGenericValidator(&m_trackCountSelection)));
+                                     wxGenericValidator{ &m_trackCountSelection }));
 
         trackSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Start angle (degrees):")),
                         wxSizerFlags{}.CenterVertical());
@@ -131,7 +131,7 @@ namespace Wisteria::UI
 
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show track lane labels"),
                                          wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showLabels)),
+                                         wxGenericValidator{ &m_showLabels }),
                           wxSizerFlags{}.Border());
 
         // bind events

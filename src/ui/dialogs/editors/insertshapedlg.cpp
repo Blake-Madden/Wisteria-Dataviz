@@ -163,7 +163,7 @@ namespace Wisteria::UI
         shapeGrid->Add(new wxStaticText(shapePage, wxID_ANY, _(L"Shape:")),
                        wxSizerFlags{}.CenterVertical());
         m_shapeChoice = new wxChoice(shapePage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
-                                     nullptr, 0, wxGenericValidator(&m_shapeIndex));
+                                     nullptr, 0, wxGenericValidator{ &m_shapeIndex });
         PopulateShapeChoice();
         shapeGrid->Add(m_shapeChoice);
 
@@ -217,7 +217,7 @@ namespace Wisteria::UI
                          wxSizerFlags{}.CenterVertical());
             auto* penStyleChoice =
                 new wxChoice(penBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
-                             nullptr, 0, wxGenericValidator(&m_penStyle));
+                             nullptr, 0, wxGenericValidator{ &m_penStyle });
             penStyleChoice->Append(_(L"Solid"));
             penStyleChoice->Append(_(L"Dot"));
             penStyleChoice->Append(_(L"Long dash"));
@@ -246,7 +246,7 @@ namespace Wisteria::UI
                            wxSizerFlags{}.CenterVertical());
             auto* brushStyleChoice =
                 new wxChoice(brushBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                             0, nullptr, 0, wxGenericValidator(&m_brushStyle));
+                             0, nullptr, 0, wxGenericValidator{ &m_brushStyle });
             brushStyleChoice->Append(_(L"Solid"));
             brushStyleChoice->Append(_(L"Transparent"));
             brushStyleChoice->Append(_(L"Backward diagonal hatch"));
@@ -293,9 +293,9 @@ namespace Wisteria::UI
             {
             auto* fillBox = new wxStaticBoxSizer(wxVERTICAL, shapePage, _(L"Fillable"));
 
-            auto* fillableCheck = new wxCheckBox(fillBox->GetStaticBox(), wxID_ANY,
-                                                 _(L"Make shape fillable"), wxDefaultPosition,
-                                                 wxDefaultSize, 0, wxGenericValidator(&m_fillable));
+            auto* fillableCheck = new wxCheckBox(
+                fillBox->GetStaticBox(), wxID_ANY, _(L"Make shape fillable"), wxDefaultPosition,
+                wxDefaultSize, 0, wxGenericValidator{ &m_fillable });
             fillBox->Add(fillableCheck, wxSizerFlags{}.Border());
 
             auto* fillGrid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
@@ -346,7 +346,7 @@ namespace Wisteria::UI
                            wxSizerFlags{}.CenterVertical());
             auto* hAlignChoice =
                 new wxChoice(alignBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                             0, nullptr, 0, wxGenericValidator(&m_horizontalAlign));
+                             0, nullptr, 0, wxGenericValidator{ &m_horizontalAlign });
             hAlignChoice->Append(_(L"Left aligned"));
             hAlignChoice->Append(_(L"Centered"));
             hAlignChoice->Append(_(L"Right aligned"));
@@ -356,7 +356,7 @@ namespace Wisteria::UI
                            wxSizerFlags{}.CenterVertical());
             auto* vAlignChoice =
                 new wxChoice(alignBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                             0, nullptr, 0, wxGenericValidator(&m_verticalAlign));
+                             0, nullptr, 0, wxGenericValidator{ &m_verticalAlign });
             vAlignChoice->Append(_(L"Top aligned"));
             vAlignChoice->Append(_(L"Centered"));
             vAlignChoice->Append(_(L"Bottom aligned"));

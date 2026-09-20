@@ -34,7 +34,7 @@ namespace Wisteria::UI
             auto* checkBox = new wxCheckBox(
                 checksBoxSizer->GetStaticBox(), wxID_ANY, warningLabel.second->GetDescription(),
                 wxDefaultPosition, wxDefaultSize, 0,
-                wxGenericValidator(&warningLabel.second->ShouldBeShown()));
+                wxGenericValidator{ &warningLabel.second->ShouldBeShown() });
             checksBoxSizer->Add(checkBox, wxSizerFlags{}.Border());
             }
 

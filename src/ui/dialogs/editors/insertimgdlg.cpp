@@ -113,7 +113,7 @@ namespace Wisteria::UI
             stitchGrid->Add(new wxStaticText(imagePage, wxID_ANY, _(L"Stitch direction:")),
                             wxSizerFlags{}.CenterVertical());
             m_stitchChoice = new wxChoice(imagePage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
-                                          nullptr, 0, wxGenericValidator(&m_stitchDirection));
+                                          nullptr, 0, wxGenericValidator{ &m_stitchDirection });
             m_stitchChoice->Append(_(L"Horizontal"));
             m_stitchChoice->Append(_(L"Vertical"));
             stitchGrid->Add(m_stitchChoice);
@@ -127,7 +127,7 @@ namespace Wisteria::UI
 
             auto* customSizeCheck = new wxCheckBox(
                 sizeBox->GetStaticBox(), wxID_ANY, _(L"Override default size"), wxDefaultPosition,
-                wxDefaultSize, 0, wxGenericValidator(&m_customSize));
+                wxDefaultSize, 0, wxGenericValidator{ &m_customSize });
             sizeBox->Add(customSizeCheck, wxSizerFlags{}.Border());
 
             auto* sizeGrid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
@@ -170,7 +170,7 @@ namespace Wisteria::UI
             optionsGrid->Add(new wxStaticText(imagePage, wxID_ANY, _(L"Resize method:")),
                              wxSizerFlags{}.CenterVertical());
             auto* resizeChoice = new wxChoice(imagePage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                              0, nullptr, 0, wxGenericValidator(&m_resizeMethod));
+                                              0, nullptr, 0, wxGenericValidator{ &m_resizeMethod });
             resizeChoice->Append(_(L"Downscale or upscale"));
             resizeChoice->Append(_(L"Downscale only"));
             resizeChoice->Append(_(L"Upscale only"));
@@ -183,7 +183,7 @@ namespace Wisteria::UI
             optionsGrid->Add(new wxStaticText(imagePage, wxID_ANY, _(L"Effect:")),
                              wxSizerFlags{}.CenterVertical());
             auto* effectChoice = new wxChoice(imagePage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                              0, nullptr, 0, wxGenericValidator(&m_imageEffect));
+                                              0, nullptr, 0, wxGenericValidator{ &m_imageEffect });
             effectChoice->Append(_(L"None"));
             effectChoice->Append(_(L"Grayscale"));
             effectChoice->Append(_(L"Blur horizontal"));

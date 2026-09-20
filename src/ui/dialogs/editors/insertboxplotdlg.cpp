@@ -114,7 +114,7 @@ namespace Wisteria::UI
         boxEffects.Add(_(L"Marker"));
         boxEffects.Add(_(L"Pencil"));
         m_boxEffectChoice = new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                         boxEffects, 0, wxGenericValidator(&m_boxEffectIndex));
+                                         boxEffects, 0, wxGenericValidator{ &m_boxEffectIndex });
         effectSizer->Add(m_boxEffectChoice, wxSizerFlags{}.CenterVertical());
         optionsSizer->Add(effectSizer, wxSizerFlags{}.Border());
 
@@ -145,16 +145,16 @@ namespace Wisteria::UI
         // checkboxes
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show all points"),
                                          wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showAllPoints)),
+                                         wxGenericValidator{ &m_showAllPoints }),
                           wxSizerFlags{}.Border());
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show labels"),
                                          wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showLabels)),
+                                         wxGenericValidator{ &m_showLabels }),
                           wxSizerFlags{}.Border());
 
         m_midpointCheck =
             new wxCheckBox(optionsPage, wxID_ANY, _(L"Show midpoint connection"), wxDefaultPosition,
-                           wxDefaultSize, 0, wxGenericValidator(&m_showMidpointConnection));
+                           wxDefaultSize, 0, wxGenericValidator{ &m_showMidpointConnection });
         m_midpointCheck->Enable(false);
         optionsSizer->Add(m_midpointCheck, wxSizerFlags{}.Border());
 

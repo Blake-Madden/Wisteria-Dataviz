@@ -108,7 +108,7 @@ namespace Wisteria::UI
             {
             auto* genderChoice =
                 new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
-                             wxGenericValidator(&m_gender));
+                             wxGenericValidator{ &m_gender });
             genderChoice->Append(_(L"Female"));
             genderChoice->Append(_(L"Male"));
             appearanceSizer->Add(genderChoice);
@@ -129,7 +129,7 @@ namespace Wisteria::UI
         m_hairStyleLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Hair style:"));
         appearanceSizer->Add(m_hairStyleLabel, wxSizerFlags{}.CenterVertical());
         m_hairStyleChoice = new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
-                                         nullptr, 0, wxGenericValidator(&m_hairStyle));
+                                         nullptr, 0, wxGenericValidator{ &m_hairStyle });
         PopulateHairStyleChoice();
         appearanceSizer->Add(m_hairStyleChoice);
 
@@ -186,7 +186,7 @@ namespace Wisteria::UI
         // show labels
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show labels (from ID column)"),
                                          wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showLabels)),
+                                         wxGenericValidator{ &m_showLabels }),
                           wxSizerFlags{}.Border());
 
         // bind events
@@ -202,7 +202,7 @@ namespace Wisteria::UI
             GetLegendPage()->GetSizer()->Add(
                 new wxCheckBox(GetLegendPage(), wxID_ANY, _(L"Use enhanced legend"),
                                wxDefaultPosition, wxDefaultSize, 0,
-                               wxGenericValidator(&m_useEnhancedLegend)),
+                               wxGenericValidator{ &m_useEnhancedLegend }),
                 wxSizerFlags{}.Border());
             }
         CreateGraphOptionsPage();

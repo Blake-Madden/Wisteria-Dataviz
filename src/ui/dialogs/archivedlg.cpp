@@ -81,7 +81,7 @@ namespace Wisteria::UI
 
         auto* filePathEdit =
             new wxTextCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
-                           wxTE_RICH2 | wxBORDER_THEME, wxGenericValidator(&m_filePath));
+                           wxTE_RICH2 | wxBORDER_THEME, wxGenericValidator{ &m_filePath });
         filePathEdit->AutoCompleteFileNames();
         fileBrowseBoxSizer->Add(filePathEdit, wxSizerFlags{ 1 }.Expand());
 
@@ -108,7 +108,7 @@ namespace Wisteria::UI
             new wxChoice(this, wxID_ANY, wxDefaultPosition,
                          // need to hard code size in case file filter is too wide
                          wxSize(FromDIP(wxSize{ 150, 150 }).GetWidth(), -1), choiceStrings, 0,
-                         wxGenericValidator(&m_selectedFileFilter));
+                         wxGenericValidator{ &m_selectedFileFilter });
         fileTypeSizer->Add(m_fileFilterCombo, wxSizerFlags{ 1 }.Expand().Border());
 
         mainSizer->AddStretchSpacer();

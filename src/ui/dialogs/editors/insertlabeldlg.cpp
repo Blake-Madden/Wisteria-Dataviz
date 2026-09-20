@@ -127,7 +127,7 @@ namespace Wisteria::UI
             {
             auto* alignChoice =
                 new wxChoice(fontBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
-                             nullptr, 0, wxGenericValidator(&m_alignment));
+                             nullptr, 0, wxGenericValidator{ &m_alignment });
             alignChoice->Append(_(L"Left"));
             alignChoice->Append(_(L"Right"));
             alignChoice->Append(_(L"Center"));
@@ -159,7 +159,7 @@ namespace Wisteria::UI
             {
             auto* orientationChoice =
                 new wxChoice(appearanceBox->GetStaticBox(), wxID_ANY, wxDefaultPosition,
-                             wxDefaultSize, 0, nullptr, 0, wxGenericValidator(&m_orientation));
+                             wxDefaultSize, 0, nullptr, 0, wxGenericValidator{ &m_orientation });
             orientationChoice->Append(_(L"Horizontal"));
             orientationChoice->Append(_(L"Vertical"));
             appearanceGrid->Add(orientationChoice, wxSizerFlags{}.Expand());
@@ -171,7 +171,7 @@ namespace Wisteria::UI
             {
             auto* styleChoice =
                 new wxChoice(appearanceBox->GetStaticBox(), wxID_ANY, wxDefaultPosition,
-                             wxDefaultSize, 0, nullptr, 0, wxGenericValidator(&m_labelStyle));
+                             wxDefaultSize, 0, nullptr, 0, wxGenericValidator{ &m_labelStyle });
             // order must match Wisteria::LabelStyle enum
             styleChoice->Append(_(L"None"));
             styleChoice->Append(_(L"Index card"));
@@ -190,7 +190,7 @@ namespace Wisteria::UI
             {
             auto* shapeChoice =
                 new wxChoice(appearanceBox->GetStaticBox(), wxID_ANY, wxDefaultPosition,
-                             wxDefaultSize, 0, nullptr, 0, wxGenericValidator(&m_labelShape));
+                             wxDefaultSize, 0, nullptr, 0, wxGenericValidator{ &m_labelShape });
             // order must match Wisteria::LabelShape enum
             shapeChoice->Append(_(L"None"));
             shapeChoice->Append(_(L"Word balloon (tail pointing up-left)"));
@@ -206,7 +206,7 @@ namespace Wisteria::UI
             {
             auto* boxSizingChoice = new wxChoice(appearanceBox->GetStaticBox(), wxID_ANY,
                                                  wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
-                                                 wxGenericValidator(&m_boxContentAdjustment));
+                                                 wxGenericValidator{ &m_boxContentAdjustment });
             // order must match Wisteria::LabelBoundingBoxContentAdjustment enum
             boxSizingChoice->Append(_(L"Fill the entire area"));
             boxSizingChoice->Append(_(L"Shrink height to content"));
@@ -223,7 +223,7 @@ namespace Wisteria::UI
 
         auto* enableHeaderCheck = new wxCheckBox(
             headerBox->GetStaticBox(), wxID_ANY, _(L"Treat first line as header"),
-            wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator(&m_headerEnabled));
+            wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator{ &m_headerEnabled });
         headerBox->Add(enableHeaderCheck, wxSizerFlags{}.Border());
 
         auto* headerGrid = new wxFlexGridSizer(2, wxSizerFlags::GetDefaultBorder() * 2,
@@ -247,7 +247,7 @@ namespace Wisteria::UI
                         wxSizerFlags{}.CenterVertical());
         m_headerAlignmentChoice =
             new wxChoice(headerBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
-                         nullptr, 0, wxGenericValidator(&m_headerAlignment));
+                         nullptr, 0, wxGenericValidator{ &m_headerAlignment });
         m_headerAlignmentChoice->Append(_(L"Left"));
         m_headerAlignmentChoice->Append(_(L"Right"));
         m_headerAlignmentChoice->Append(_(L"Center"));

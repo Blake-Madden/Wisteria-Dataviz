@@ -91,7 +91,7 @@ namespace Wisteria::UI
             wxSizerFlags{}.CenterVertical());
         m_kmlIdFieldCombo =
             new wxComboBox(kmlBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
-                           wxDefaultSize, 0, nullptr, 0, wxGenericValidator(&m_kmlIdField));
+                           wxDefaultSize, 0, nullptr, 0, wxGenericValidator{ &m_kmlIdField });
         m_kmlIdFieldCombo->Append(GetRegionNamePlaceholder());
         m_kmlIdFieldCombo->SetValue(GetRegionNamePlaceholder());
         idFieldSizer->Add(m_kmlIdFieldCombo, wxSizerFlags{}.Expand());
@@ -178,7 +178,7 @@ namespace Wisteria::UI
             // ChoroplethMap::ClassificationMethod
             m_classificationChoice =
                 new wxChoice(classBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                             0, nullptr, 0, wxGenericValidator(&m_classificationMethod));
+                             0, nullptr, 0, wxGenericValidator{ &m_classificationMethod });
             m_classificationChoice->Append(_(L"None (continuous ramp)"));
             m_classificationChoice->Append(_(L"Jenks natural breaks"));
             m_classificationChoice->SetSelection(m_classificationMethod);
@@ -191,7 +191,7 @@ namespace Wisteria::UI
         classBox->Add(m_classCountLabel, wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
         m_classCountSpin = new wxSpinCtrl(classBox->GetStaticBox(), wxID_ANY);
         m_classCountSpin->SetRange(2, 12);
-        m_classCountSpin->SetValidator(wxGenericValidator(&m_classCount));
+        m_classCountSpin->SetValidator(wxGenericValidator{ &m_classCount });
         classBox->Add(m_classCountSpin, wxSizerFlags{}.CenterVertical());
         optionsSizer->Add(classBox, wxSizerFlags{}.Expand().Border());
 
@@ -210,7 +210,7 @@ namespace Wisteria::UI
         auto* labelsBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Labels"));
         labelsBox->Add(new wxCheckBox(labelsBox->GetStaticBox(), wxID_ANY,
                                       _(L"Show region labels on the map"), wxDefaultPosition,
-                                      wxDefaultSize, 0, wxGenericValidator(&m_showLabels)),
+                                      wxDefaultSize, 0, wxGenericValidator{ &m_showLabels }),
                        wxSizerFlags{}.Border());
 
         auto* labelContentSizer = new wxBoxSizer(wxHORIZONTAL);

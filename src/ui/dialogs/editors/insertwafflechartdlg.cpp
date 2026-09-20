@@ -84,7 +84,7 @@ namespace Wisteria::UI
 
         auto* gridRoundCheck = new wxCheckBox(
             gridRoundBox->GetStaticBox(), wxID_ANY, _(L"Round grid to a fixed cell count"),
-            wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator(&m_useGridRounding));
+            wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator{ &m_useGridRounding });
         gridRoundBox->Add(gridRoundCheck, wxSizerFlags{}.Border());
 
         auto* gridRoundGrid = new wxFlexGridSizer(
@@ -124,7 +124,8 @@ namespace Wisteria::UI
 
         auto* rowCountCheck =
             new wxCheckBox(rowCountBox->GetStaticBox(), wxID_ANY, _(L"Specify row count"),
-                           wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator(&m_useRowCount));
+                           wxDefaultPosition, wxDefaultSize, 0,
+                           wxGenericValidator{ &m_useRowCount });
         rowCountBox->Add(rowCountCheck, wxSizerFlags{}.Border());
 
         auto* rowCountGrid = new wxFlexGridSizer(

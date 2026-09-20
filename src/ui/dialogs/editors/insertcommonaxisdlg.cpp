@@ -51,7 +51,7 @@ namespace Wisteria::UI
         typeSizer->Add(new wxStaticText(commonAxisPage, wxID_ANY, _(L"Axis type:")),
                        wxSizerFlags{}.CenterVertical());
         m_axisTypeChoice = new wxChoice(commonAxisPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                        wxArrayString{}, 0, wxGenericValidator(&m_axisTypeIndex));
+                                        wxArrayString{}, 0, wxGenericValidator{ &m_axisTypeIndex });
         m_axisTypeChoice->Append(_(L"Bottom X"));
         m_axisTypeChoice->Append(_(L"Top X"));
         m_axisTypeChoice->Append(_(L"Left Y"));
@@ -72,7 +72,7 @@ namespace Wisteria::UI
         // common perpendicular axis
         m_commonPerpAxisCheck = new wxCheckBox(
             commonAxisPage, wxID_ANY, _(L"Use common perpendicular axis"), wxDefaultPosition,
-            wxDefaultSize, 0, wxGenericValidator(&m_commonPerpAxis));
+            wxDefaultSize, 0, wxGenericValidator{ &m_commonPerpAxis });
         mainSizer->Add(m_commonPerpAxisCheck, wxSizerFlags{}.Border());
 
         GetSideBarBook()->AddPage(commonAxisPage, _(L"Common Axis"), ID_COMMON_AXIS_SECTION, true);

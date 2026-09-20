@@ -98,7 +98,7 @@ namespace Wisteria::UI
         m_groupColumnCountSpin = new wxSpinCtrl(optionsPage, wxID_ANY);
         m_groupColumnCountSpin->SetRange(1, 5);
         m_groupColumnCountSpin->SetValue(m_groupColumnCount);
-        m_groupColumnCountSpin->SetValidator(wxGenericValidator(&m_groupColumnCount));
+        m_groupColumnCountSpin->SetValidator(wxGenericValidator{ &m_groupColumnCount });
         groupOptsSizer->Add(m_groupColumnCountSpin, wxSizerFlags{}.CenterVertical());
 
         optionsSizer->Add(groupOptsSizer, wxSizerFlags{}.Border());
@@ -106,7 +106,7 @@ namespace Wisteria::UI
         // show group headers
         m_showGroupHeadersCheck =
             new wxCheckBox(optionsPage, wxID_ANY, _(L"Show group headers"), wxDefaultPosition,
-                           wxDefaultSize, 0, wxGenericValidator(&m_showGroupHeaders));
+                           wxDefaultSize, 0, wxGenericValidator{ &m_showGroupHeaders });
         optionsSizer->Add(m_showGroupHeadersCheck, wxSizerFlags{}.Border(wxLEFT));
 
         // group header prefix
@@ -117,7 +117,7 @@ namespace Wisteria::UI
         prefixSizer->Add(m_groupHeaderPrefixLabel, wxSizerFlags{}.CenterVertical());
         m_groupHeaderPrefixText =
             new wxTextCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize, 0,
-                           wxGenericValidator(&m_groupHeaderPrefix));
+                           wxGenericValidator{ &m_groupHeaderPrefix });
         prefixSizer->Add(m_groupHeaderPrefixText, wxSizerFlags{}.CenterVertical().Expand());
 
         optionsSizer->Add(prefixSizer, wxSizerFlags{}.Border());

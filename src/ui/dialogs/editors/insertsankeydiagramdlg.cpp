@@ -125,7 +125,7 @@ namespace Wisteria::UI
         flowShapes.Add(_(L"Curvy"));
         flowShapes.Add(_(L"Jagged"));
         flowSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                    flowShapes, 0, wxGenericValidator(&m_flowShapeIndex)),
+                                    flowShapes, 0, wxGenericValidator{ &m_flowShapeIndex }),
                        wxSizerFlags{}.CenterVertical());
         optionsSizer->Add(flowSizer, wxSizerFlags{}.Border());
 
@@ -144,7 +144,7 @@ namespace Wisteria::UI
         groupLabelDisplays.Add(_(L"No Display"));
         glSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                   groupLabelDisplays, 0,
-                                  wxGenericValidator(&m_groupLabelDisplayIndex)),
+                                  wxGenericValidator{ &m_groupLabelDisplayIndex }),
                      wxSizerFlags{}.CenterVertical());
         optionsSizer->Add(glSizer, wxSizerFlags{}.Border());
 
@@ -157,9 +157,9 @@ namespace Wisteria::UI
         columnHeaderDisplays.Add(_(L"No Display"));
         columnHeaderDisplays.Add(_(L"As Header"));
         columnHeaderDisplays.Add(_(L"As Footer"));
-        m_columnHeaderChoice =
-            new wxChoice(optionsPage, ID_COLUMN_HEADER_CHOICE, wxDefaultPosition, wxDefaultSize,
-                         columnHeaderDisplays, 0, wxGenericValidator(&m_columnHeaderDisplayIndex));
+        m_columnHeaderChoice = new wxChoice(optionsPage, ID_COLUMN_HEADER_CHOICE, wxDefaultPosition,
+                                            wxDefaultSize, columnHeaderDisplays, 0,
+                                            wxGenericValidator{ &m_columnHeaderDisplayIndex });
         chSizer->Add(m_columnHeaderChoice, wxSizerFlags{}.CenterVertical());
         optionsSizer->Add(chSizer, wxSizerFlags{}.Border());
 
@@ -172,14 +172,14 @@ namespace Wisteria::UI
         clGrid->Add(m_fromColStaticLabel, wxSizerFlags{}.CenterVertical());
         m_fromColText = new wxTextCtrl(clBox->GetStaticBox(), ID_FROM_COL_LABEL, wxEmptyString,
                                        wxDefaultPosition, wxDefaultSize, 0,
-                                       wxGenericValidator(&m_fromColumnLabel));
+                                       wxGenericValidator{ &m_fromColumnLabel });
         clGrid->Add(m_fromColText, wxSizerFlags{ 1 }.Expand().CenterVertical());
 
         m_toColStaticLabel = new wxStaticText(clBox->GetStaticBox(), wxID_ANY, _(L"To:"));
         clGrid->Add(m_toColStaticLabel, wxSizerFlags{}.CenterVertical());
         m_toColText =
             new wxTextCtrl(clBox->GetStaticBox(), ID_TO_COL_LABEL, wxEmptyString, wxDefaultPosition,
-                           wxDefaultSize, 0, wxGenericValidator(&m_toColumnLabel));
+                           wxDefaultSize, 0, wxGenericValidator{ &m_toColumnLabel });
         clGrid->Add(m_toColText, wxSizerFlags{ 1 }.Expand().CenterVertical());
 
         clBox->Add(clGrid, wxSizerFlags{ 1 }.Expand().Border());
@@ -195,13 +195,13 @@ namespace Wisteria::UI
             wxSizerFlags{}.CenterVertical());
         auto* opacitySpin = new wxSpinCtrl(showcaseBox->GetStaticBox(), wxID_ANY);
         opacitySpin->SetRange(0, 255);
-        opacitySpin->SetValidator(wxGenericValidator(&m_ghostOpacity));
+        opacitySpin->SetValidator(wxGenericValidator{ &m_ghostOpacity });
         showcaseGrid->Add(opacitySpin);
         showcaseBox->Add(showcaseGrid, wxSizerFlags{}.Border());
 
         m_ghostGroupsCheck = new wxCheckBox(
             showcaseBox->GetStaticBox(), wxID_ANY, _(L"Also ghost \"To\" labels"),
-            wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator(&m_ghostNonShowcasedLabels));
+            wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator{ &m_ghostNonShowcasedLabels });
         showcaseBox->Add(m_ghostGroupsCheck, wxSizerFlags{}.Border());
 
         m_showcaseListBox = new wxEditableListBox(

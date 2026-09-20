@@ -95,7 +95,7 @@ namespace Wisteria::UI
         // line options
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Auto spline"),
                                          wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_autoSpline)),
+                                         wxGenericValidator{ &m_autoSpline }),
                           wxSizerFlags{}.Border());
 
         // bind events

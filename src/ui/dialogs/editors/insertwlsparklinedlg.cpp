@@ -117,7 +117,7 @@ namespace Wisteria::UI
         // highlight best records
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Highlight best records"),
                                          wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_highlightBestRecords)),
+                                         wxGenericValidator{ &m_highlightBestRecords }),
                           wxSizerFlags{}.Border());
 
         // bind events

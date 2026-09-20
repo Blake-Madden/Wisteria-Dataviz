@@ -88,7 +88,7 @@ namespace Wisteria::UI
         varModeChoices.Add(_(L"Custom selection"));
         m_varModeRadio = new wxRadioBox(columnBox->GetStaticBox(), ID_VAR_MODE_RADIO, _(L"Method"),
                                         wxDefaultPosition, wxDefaultSize, varModeChoices, 1,
-                                        wxRA_SPECIFY_COLS, wxGenericValidator(&m_varModeIndex));
+                                        wxRA_SPECIFY_COLS, wxGenericValidator{ &m_varModeIndex });
         columnBox->Add(m_varModeRadio, wxSizerFlags{}.Border().Expand());
 
         // editable list of column entries (plain names or regex formulas)
@@ -114,19 +114,19 @@ namespace Wisteria::UI
         auto* headerParent = headerBox->GetStaticBox();
 
         headerBox->Add(new wxCheckBox(headerParent, wxID_ANY, _(L"Transpose"), wxDefaultPosition,
-                                      wxDefaultSize, 0, wxGenericValidator(&m_transpose)),
+                                      wxDefaultSize, 0, wxGenericValidator{ &m_transpose }),
                        wxSizerFlags{}.Border());
         headerBox->Add(new wxCheckBox(headerParent, wxID_ANY, _(L"Bold header row"),
                                       wxDefaultPosition, wxDefaultSize, 0,
-                                      wxGenericValidator(&m_boldHeaderRow)),
+                                      wxGenericValidator{ &m_boldHeaderRow }),
                        wxSizerFlags{}.Border());
         headerBox->Add(new wxCheckBox(headerParent, wxID_ANY, _(L"Center header row"),
                                       wxDefaultPosition, wxDefaultSize, 0,
-                                      wxGenericValidator(&m_centerHeaderRow)),
+                                      wxGenericValidator{ &m_centerHeaderRow }),
                        wxSizerFlags{}.Border());
         headerBox->Add(new wxCheckBox(headerParent, wxID_ANY, _(L"Bold first column"),
                                       wxDefaultPosition, wxDefaultSize, 0,
-                                      wxGenericValidator(&m_boldFirstColumn)),
+                                      wxGenericValidator{ &m_boldFirstColumn }),
                        wxSizerFlags{}.Border());
 
         leftColSizer->Add(headerBox, wxSizerFlags{}.Border(wxBOTTOM).Expand());
@@ -138,7 +138,7 @@ namespace Wisteria::UI
         auto* altColorSizer = new wxBoxSizer(wxHORIZONTAL);
         altColorSizer->Add(new wxCheckBox(appearParent, wxID_ANY, _(L"Alternate row colors"),
                                           wxDefaultPosition, wxDefaultSize, 0,
-                                          wxGenericValidator(&m_alternateRowColors)),
+                                          wxGenericValidator{ &m_alternateRowColors }),
                            wxSizerFlags{}.CenterVertical());
         altColorSizer->AddSpacer(wxSizerFlags::GetDefaultBorder() * 2);
         m_altRowColorPicker = new wxColourPickerCtrl(
@@ -148,7 +148,7 @@ namespace Wisteria::UI
 
         appearBox->Add(new wxCheckBox(appearParent, wxID_ANY, _(L"Clear trailing row formatting"),
                                       wxDefaultPosition, wxDefaultSize, 0,
-                                      wxGenericValidator(&m_clearTrailingRowFormatting)),
+                                      wxGenericValidator{ &m_clearTrailingRowFormatting }),
                        wxSizerFlags{}.Border());
 
         leftColSizer->Add(appearBox, wxSizerFlags{}.Border(wxBOTTOM).Expand());
@@ -160,13 +160,13 @@ namespace Wisteria::UI
         auto* minWidthSizer = new wxBoxSizer(wxHORIZONTAL);
         m_minWidthCheck =
             new wxCheckBox(sizeParent, wxID_ANY, _(L"Minimum width (%):"), wxDefaultPosition,
-                           wxDefaultSize, 0, wxGenericValidator(&m_useMinWidth));
+                           wxDefaultSize, 0, wxGenericValidator{ &m_useMinWidth });
         minWidthSizer->Add(m_minWidthCheck, wxSizerFlags{}.CenterVertical());
         minWidthSizer->AddSpacer(wxSizerFlags::GetDefaultBorder() * 2);
         m_minWidthSpin = new wxSpinCtrl(sizeParent, wxID_ANY);
         m_minWidthSpin->SetRange(1, 100);
         m_minWidthSpin->SetValue(m_minWidthPct);
-        m_minWidthSpin->SetValidator(wxGenericValidator(&m_minWidthPct));
+        m_minWidthSpin->SetValidator(wxGenericValidator{ &m_minWidthPct });
         m_minWidthSpin->Enable(m_useMinWidth);
         minWidthSizer->Add(m_minWidthSpin, wxSizerFlags{}.CenterVertical());
         sizeBox->Add(minWidthSizer, wxSizerFlags{}.Border());
@@ -174,13 +174,13 @@ namespace Wisteria::UI
         auto* minHeightSizer = new wxBoxSizer(wxHORIZONTAL);
         m_minHeightCheck =
             new wxCheckBox(sizeParent, wxID_ANY, _(L"Minimum height (%):"), wxDefaultPosition,
-                           wxDefaultSize, 0, wxGenericValidator(&m_useMinHeight));
+                           wxDefaultSize, 0, wxGenericValidator{ &m_useMinHeight });
         minHeightSizer->Add(m_minHeightCheck, wxSizerFlags{}.CenterVertical());
         minHeightSizer->AddSpacer(wxSizerFlags::GetDefaultBorder() * 2);
         m_minHeightSpin = new wxSpinCtrl(sizeParent, wxID_ANY);
         m_minHeightSpin->SetRange(1, 100);
         m_minHeightSpin->SetValue(m_minHeightPct);
-        m_minHeightSpin->SetValidator(wxGenericValidator(&m_minHeightPct));
+        m_minHeightSpin->SetValidator(wxGenericValidator{ &m_minHeightPct });
         m_minHeightSpin->Enable(m_useMinHeight);
         minHeightSizer->Add(m_minHeightSpin, wxSizerFlags{}.CenterVertical());
         sizeBox->Add(minHeightSizer, wxSizerFlags{}.Border());

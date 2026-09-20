@@ -102,12 +102,12 @@ namespace Wisteria::UI
         // regression options
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show regression lines"),
                                          wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showRegressionLines)),
+                                         wxGenericValidator{ &m_showRegressionLines }),
                           wxSizerFlags{}.Border());
 
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show confidence bands"),
                                          wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showConfidenceBands)),
+                                         wxGenericValidator{ &m_showConfidenceBands }),
                           wxSizerFlags{}.Border());
 
         auto* confidenceSizer = new wxFlexGridSizer(

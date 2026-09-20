@@ -102,7 +102,7 @@ namespace Wisteria::UI
         // line options
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Auto spline"),
                                          wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_autoSpline)),
+                                         wxGenericValidator{ &m_autoSpline }),
                           wxSizerFlags{}.Border());
 
         // showcasing
@@ -115,7 +115,7 @@ namespace Wisteria::UI
             wxSizerFlags{}.CenterVertical());
         auto* opacitySpin = new wxSpinCtrl(ghostBox->GetStaticBox(), wxID_ANY);
         opacitySpin->SetRange(0, 255);
-        opacitySpin->SetValidator(wxGenericValidator(&m_ghostOpacity));
+        opacitySpin->SetValidator(wxGenericValidator{ &m_ghostOpacity });
         ghostOpacitySizer->Add(opacitySpin);
         ghostBox->Add(ghostOpacitySizer, wxSizerFlags{}.Border());
 

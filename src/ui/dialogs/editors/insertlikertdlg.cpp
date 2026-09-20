@@ -97,20 +97,20 @@ namespace Wisteria::UI
         // checkboxes
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show response counts"),
                                          wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showResponseCounts)),
+                                         wxGenericValidator{ &m_showResponseCounts }),
                           wxSizerFlags{}.Border());
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show percentages"),
                                          wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showPercentages)),
+                                         wxGenericValidator{ &m_showPercentages }),
                           wxSizerFlags{}.Border());
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show section headers"),
                                          wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_showSectionHeaders)),
+                                         wxGenericValidator{ &m_showSectionHeaders }),
                           wxSizerFlags{}.Border());
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY,
                                          _(L"Adjust bar widths to respondent size"),
                                          wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_adjustBarWidths)),
+                                         wxGenericValidator{ &m_adjustBarWidths }),
                           wxSizerFlags{}.Border());
 
         // colors
@@ -150,19 +150,19 @@ namespace Wisteria::UI
         labelSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Positive label:")),
                         wxSizerFlags{}.CenterVertical());
         labelSizer->Add(new wxTextCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
-                                       wxDefaultSize, 0, wxGenericValidator(&m_positiveLabel)),
+                                       wxDefaultSize, 0, wxGenericValidator{ &m_positiveLabel }),
                         wxSizerFlags{}.CenterVertical().Expand());
 
         labelSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Negative label:")),
                         wxSizerFlags{}.CenterVertical());
         labelSizer->Add(new wxTextCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
-                                       wxDefaultSize, 0, wxGenericValidator(&m_negativeLabel)),
+                                       wxDefaultSize, 0, wxGenericValidator{ &m_negativeLabel }),
                         wxSizerFlags{}.CenterVertical().Expand());
 
         labelSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"No-response label:")),
                         wxSizerFlags{}.CenterVertical());
         labelSizer->Add(new wxTextCtrl(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
-                                       wxDefaultSize, 0, wxGenericValidator(&m_noResponseLabel)),
+                                       wxDefaultSize, 0, wxGenericValidator{ &m_noResponseLabel }),
                         wxSizerFlags{}.CenterVertical().Expand());
 
         optionsSizer->Add(labelSizer, wxSizerFlags{}.Border().Expand());

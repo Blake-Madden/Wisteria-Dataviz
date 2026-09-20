@@ -118,7 +118,7 @@ namespace Wisteria::UI
             {
             auto* filterChoice =
                 new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
-                             wxGenericValidator(&m_predictorsFilter));
+                             wxGenericValidator{ &m_predictorsFilter });
             filterChoice->Append(_(L"All"));
             filterChoice->Append(_(L"Positive only"));
             filterChoice->Append(_(L"Negative only"));
@@ -134,7 +134,7 @@ namespace Wisteria::UI
             {
             auto* labelChoice =
                 new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
-                             wxGenericValidator(&m_markerLabelDisplay));
+                             wxGenericValidator{ &m_markerLabelDisplay });
             labelChoice->Append(_(L"Name only"));
             labelChoice->Append(_(L"Name and value"));
             labelChoice->Append(_(L"Name and absolute value"));
@@ -167,7 +167,7 @@ namespace Wisteria::UI
             {
             auto* sepChoice =
                 new wxChoice(roadBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
-                             nullptr, 0, wxGenericValidator(&m_laneSeparatorStyle));
+                             nullptr, 0, wxGenericValidator{ &m_laneSeparatorStyle });
             sepChoice->Append(_(L"Single line"));
             sepChoice->Append(_(L"Double line"));
             sepChoice->Append(_(L"None"));
@@ -180,7 +180,7 @@ namespace Wisteria::UI
             {
             auto* themeChoice =
                 new wxChoice(roadBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
-                             nullptr, 0, wxGenericValidator(&m_roadStopTheme));
+                             nullptr, 0, wxGenericValidator{ &m_roadStopTheme });
             themeChoice->Append(_(L"Location markers"));
             themeChoice->Append(_(L"Road signs"));
             appearSizer->Add(themeChoice);
@@ -192,7 +192,7 @@ namespace Wisteria::UI
         // default caption
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Add explanatory caption"),
                                          wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator(&m_addDefaultCaption)),
+                                         wxGenericValidator{ &m_addDefaultCaption }),
                           wxSizerFlags{}.Border());
 
         // bind events

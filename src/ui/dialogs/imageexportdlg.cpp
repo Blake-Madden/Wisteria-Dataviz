@@ -103,7 +103,7 @@ namespace Wisteria::UI
             new wxSpinCtrl(imageSizeSizer->GetStaticBox(), ControlIDs::IMAGE_WIDTH_ID,
                            std::to_wstring(m_options.m_imageSize.GetWidth()), wxDefaultPosition,
                            wxDefaultSize, wxSP_ARROW_KEYS, 128, 10'000);
-        widthCtrl->SetValidator(wxGenericValidator(&m_options.m_imageSize.x));
+        widthCtrl->SetValidator(wxGenericValidator{ &m_options.m_imageSize.x });
         imageSizeInfoSizer->Add(widthCtrl, 0);
 
         auto* heightLabel = new wxStaticText(imageSizeSizer->GetStaticBox(), wxID_STATIC,
@@ -113,7 +113,7 @@ namespace Wisteria::UI
             new wxSpinCtrl(imageSizeSizer->GetStaticBox(), ControlIDs::IMAGE_HEIGHT_ID,
                            std::to_wstring(m_options.m_imageSize.GetHeight()), wxDefaultPosition,
                            wxDefaultSize, wxSP_ARROW_KEYS, 128, 10'000);
-        heightCtrl->SetValidator(wxGenericValidator(&m_options.m_imageSize.y));
+        heightCtrl->SetValidator(wxGenericValidator{ &m_options.m_imageSize.y });
         imageSizeInfoSizer->Add(heightCtrl);
         column1Sizer->Add(imageSizeSizer, wxSizerFlags{}.Expand());
 
@@ -126,7 +126,7 @@ namespace Wisteria::UI
             auto* colorModesRadioBox =
                 new wxRadioBox(this, ControlIDs::COLOR_MODE_COMBO_ID, _(L"Color Mode"),
                                wxDefaultPosition, wxDefaultSize, colorModes, 0, wxRA_SPECIFY_ROWS,
-                               wxGenericValidator(&m_options.m_mode));
+                               wxGenericValidator{ &m_options.m_mode });
             column1Sizer->Add(colorModesRadioBox, wxSizerFlags{}.Expand());
             column1Sizer->AddSpacer(wxSizerFlags::GetDefaultBorder());
             }

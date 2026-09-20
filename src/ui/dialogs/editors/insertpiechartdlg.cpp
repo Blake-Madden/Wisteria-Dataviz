@@ -128,7 +128,7 @@ namespace Wisteria::UI
             {
             auto* styleChoice =
                 new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr, 0,
-                             wxGenericValidator(&m_pieStyle));
+                             wxGenericValidator{ &m_pieStyle });
             styleChoice->Append(_(L"None"));
             styleChoice->Append(_(L"Clockface"));
             styleChoice->Append(_(L"Cheese pizza"));
@@ -156,7 +156,7 @@ namespace Wisteria::UI
             {
             auto* midPointChoice =
                 new wxChoice(labelsBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                             0, nullptr, 0, wxGenericValidator(&m_outerMidPointDisplay));
+                             0, nullptr, 0, wxGenericValidator{ &m_outerMidPointDisplay });
             midPointChoice->Append(_(L"Value"));
             midPointChoice->Append(_(L"Percentage"));
             midPointChoice->Append(_(L"Value & percentage"));
@@ -173,7 +173,7 @@ namespace Wisteria::UI
             {
             auto* outerLabelChoice =
                 new wxChoice(labelsBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                             0, nullptr, 0, wxGenericValidator(&m_outerLabelDisplay));
+                             0, nullptr, 0, wxGenericValidator{ &m_outerLabelDisplay });
             outerLabelChoice->Append(_(L"Value"));
             outerLabelChoice->Append(_(L"Percentage"));
             outerLabelChoice->Append(_(L"Value & percentage"));
@@ -190,7 +190,7 @@ namespace Wisteria::UI
             {
             auto* innerMidChoice =
                 new wxChoice(labelsBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                             0, nullptr, 0, wxGenericValidator(&m_innerMidPointDisplay));
+                             0, nullptr, 0, wxGenericValidator{ &m_innerMidPointDisplay });
             innerMidChoice->Append(_(L"Value"));
             innerMidChoice->Append(_(L"Percentage"));
             innerMidChoice->Append(_(L"Value & percentage"));
@@ -207,7 +207,7 @@ namespace Wisteria::UI
             {
             auto* placementChoice =
                 new wxChoice(labelsBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                             0, nullptr, 0, wxGenericValidator(&m_labelPlacement));
+                             0, nullptr, 0, wxGenericValidator{ &m_labelPlacement });
             placementChoice->Append(_(L"Next to slice"));
             placementChoice->Append(_(L"Flush"));
             labelGrid->Add(placementChoice);
@@ -217,17 +217,17 @@ namespace Wisteria::UI
 
         labelsBox->Add(new wxCheckBox(labelsBox->GetStaticBox(), wxID_ANY,
                                       _(L"Show outer pie labels"), wxDefaultPosition, wxDefaultSize,
-                                      0, wxGenericValidator(&m_showOuterPieLabels)),
+                                      0, wxGenericValidator{ &m_showOuterPieLabels }),
                        wxSizerFlags{}.Border());
 
         labelsBox->Add(new wxCheckBox(labelsBox->GetStaticBox(), wxID_ANY,
                                       _(L"Show inner pie labels"), wxDefaultPosition, wxDefaultSize,
-                                      0, wxGenericValidator(&m_showInnerPieLabels)),
+                                      0, wxGenericValidator{ &m_showInnerPieLabels }),
                        wxSizerFlags{}.Border());
 
         labelsBox->Add(new wxCheckBox(labelsBox->GetStaticBox(), wxID_ANY,
                                       _(L"Color-matched labels"), wxDefaultPosition, wxDefaultSize,
-                                      0, wxGenericValidator(&m_useColorLabels)),
+                                      0, wxGenericValidator{ &m_useColorLabels }),
                        wxSizerFlags{}.Border());
 
         leftColumnSizer->Add(labelsBox, wxSizerFlags{}.Border().Expand());
@@ -237,7 +237,7 @@ namespace Wisteria::UI
 
         auto* donutCheckBox = new wxCheckBox(
             donutBox->GetStaticBox(), wxID_ANY, _(L"Include donut hole"), wxDefaultPosition,
-            wxDefaultSize, 0, wxGenericValidator(&m_includeDonutHole));
+            wxDefaultSize, 0, wxGenericValidator{ &m_includeDonutHole });
         donutBox->Add(donutCheckBox, wxSizerFlags{}.Border());
 
         auto* donutGrid = new wxFlexGridSizer(
@@ -249,7 +249,7 @@ namespace Wisteria::UI
 
         auto* donutColorPicker = new wxColourPickerCtrl(
             donutBox->GetStaticBox(), wxID_ANY, *wxWHITE, wxDefaultPosition, wxDefaultSize,
-            wxCLRP_DEFAULT_STYLE, wxGenericValidator(&m_donutHoleColor));
+            wxCLRP_DEFAULT_STYLE, wxGenericValidator{ &m_donutHoleColor });
         m_donutColorPicker = donutColorPicker;
         donutGrid->Add(donutColorPicker, wxSizerFlags{}.CenterVertical());
 
@@ -260,7 +260,7 @@ namespace Wisteria::UI
         auto* proportionSizer = new wxBoxSizer(wxHORIZONTAL);
         auto* donutProportionSpin = new wxSpinCtrl(donutBox->GetStaticBox(), wxID_ANY);
         donutProportionSpin->SetRange(0, 100);
-        donutProportionSpin->SetValidator(wxGenericValidator(&m_donutHoleProportion));
+        donutProportionSpin->SetValidator(wxGenericValidator{ &m_donutHoleProportion });
         m_donutProportionSpin = donutProportionSpin;
         proportionSizer->Add(donutProportionSpin, wxSizerFlags{}.CenterVertical());
         m_donutProportionPercentLabel = new wxStaticText(donutBox->GetStaticBox(), wxID_ANY, L"%");
@@ -285,14 +285,14 @@ namespace Wisteria::UI
             wxSizerFlags{}.CenterVertical());
         auto* opacitySpin = new wxSpinCtrl(showcaseBox->GetStaticBox(), wxID_ANY);
         opacitySpin->SetRange(0, 255);
-        opacitySpin->SetValidator(wxGenericValidator(&m_ghostOpacity));
+        opacitySpin->SetValidator(wxGenericValidator{ &m_ghostOpacity });
         showcaseGrid->Add(opacitySpin);
 
         showcaseGrid->Add(new wxStaticText(showcaseBox->GetStaticBox(), wxID_ANY, _(L"Mode:")),
                           wxSizerFlags{}.CenterVertical());
         m_showcaseModeChoice =
             new wxChoice(showcaseBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
-                         nullptr, 0, wxGenericValidator(&m_showcaseMode));
+                         nullptr, 0, wxGenericValidator{ &m_showcaseMode });
         m_showcaseModeChoice->Append(_(L"None"));
         m_showcaseModeChoice->Append(_(L"Explicit list of outer slices"));
         // quneiform-suppress-begin
@@ -308,7 +308,7 @@ namespace Wisteria::UI
             wxSizerFlags{}.CenterVertical());
         m_showcasedRingChoice =
             new wxChoice(showcaseBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
-                         nullptr, 0, wxGenericValidator(&m_showcasedRingLabels));
+                         nullptr, 0, wxGenericValidator{ &m_showcasedRingLabels });
         m_showcasedRingChoice->Append(_(L"Inner"));
         m_showcasedRingChoice->Append(_(L"Outer"));
         showcaseGrid->Add(m_showcasedRingChoice);
@@ -316,13 +316,13 @@ namespace Wisteria::UI
 
         m_showcaseByGroupCheck = new wxCheckBox(
             showcaseBox->GetStaticBox(), wxID_ANY, _(L"Group by outer slice"), wxDefaultPosition,
-            wxDefaultSize, 0, wxGenericValidator(&m_showcaseByGroup));
+            wxDefaultSize, 0, wxGenericValidator{ &m_showcaseByGroup });
         showcaseBox->Add(m_showcaseByGroupCheck, wxSizerFlags{}.Border());
 
         m_showcaseShowOuterMidPtsCheck = new wxCheckBox(
             showcaseBox->GetStaticBox(), wxID_ANY,
             _(L"Show outer pie midpoint labels while showcasing"), wxDefaultPosition, wxDefaultSize,
-            0, wxGenericValidator(&m_showcaseShowOuterPieMidPointLabels));
+            0, wxGenericValidator{ &m_showcaseShowOuterPieMidPointLabels });
         showcaseBox->Add(m_showcaseShowOuterMidPtsCheck, wxSizerFlags{}.Border());
 
         m_showcaseListBox =
@@ -429,7 +429,7 @@ namespace Wisteria::UI
                         wxSizerFlags{}.CenterVertical());
         auto* effectChoice =
             new wxChoice(sliceImagesBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                         0, nullptr, 0, wxGenericValidator(&m_pieSliceEffect));
+                         0, nullptr, 0, wxGenericValidator{ &m_pieSliceEffect });
         effectChoice->Append(_(L"Solid"));
         effectChoice->Append(_(L"Image"));
         effectGrid->Add(effectChoice);

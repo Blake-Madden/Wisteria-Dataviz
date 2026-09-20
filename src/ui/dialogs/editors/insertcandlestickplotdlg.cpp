@@ -124,7 +124,7 @@ namespace Wisteria::UI
         plotTypes.Add(_(L"Candlestick"));
         plotTypes.Add(/* TRANSLATORS: Open/High/Low/Close chart. */ _(L"OHLC"));
         plotTypeSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                        plotTypes, 0, wxGenericValidator(&m_plotTypeIndex)),
+                                        plotTypes, 0, wxGenericValidator{ &m_plotTypeIndex }),
                            wxSizerFlags{}.CenterVertical());
         optionsSizer->Add(plotTypeSizer, wxSizerFlags{}.Border());
 

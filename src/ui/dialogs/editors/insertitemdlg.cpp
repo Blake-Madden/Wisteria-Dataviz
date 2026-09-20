@@ -377,7 +377,7 @@ namespace Wisteria::UI
                 {
                 auto* hAlignChoice =
                     new wxChoice(pagePage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr,
-                                 0, wxGenericValidator(&m_horizontalAlign));
+                                 0, wxGenericValidator{ &m_horizontalAlign });
                 hAlignChoice->Append(_(L"Left"));
                 hAlignChoice->Append(_(L"Centered"));
                 hAlignChoice->Append(_(L"Right"));
@@ -390,7 +390,7 @@ namespace Wisteria::UI
                 {
                 auto* vAlignChoice =
                     new wxChoice(pagePage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr,
-                                 0, wxGenericValidator(&m_verticalAlign));
+                                 0, wxGenericValidator{ &m_verticalAlign });
                 vAlignChoice->Append(_(L"Top"));
                 vAlignChoice->Append(_(L"Centered"));
                 vAlignChoice->Append(_(L"Bottom"));
@@ -412,7 +412,7 @@ namespace Wisteria::UI
             // lock scaling
             m_lockScalingCheck =
                 new wxCheckBox(pagePage, wxID_ANY, _(L"Lock scaling"), wxDefaultPosition,
-                               wxDefaultSize, 0, wxGenericValidator(&m_lockScaling));
+                               wxDefaultSize, 0, wxGenericValidator{ &m_lockScaling });
             leftColumnSizer->Add(m_lockScalingCheck, wxSizerFlags{}.Border());
 
             // canvas margins (top, right, bottom, left)
@@ -426,7 +426,7 @@ namespace Wisteria::UI
                                 wxSizerFlags{}.CenterVertical());
                 auto* spin = new wxSpinCtrl(marginBox->GetStaticBox(), wxID_ANY);
                 spin->SetRange(0, 100);
-                spin->SetValidator(wxGenericValidator(value));
+                spin->SetValidator(wxGenericValidator{ value });
                 marginGrid->Add(spin);
             };
             addMarginSpin(_(L"Top:"), &m_marginTop);
@@ -448,7 +448,7 @@ namespace Wisteria::UI
                                  wxSizerFlags{}.CenterVertical());
                 auto* spin = new wxSpinCtrl(paddingBox->GetStaticBox(), wxID_ANY);
                 spin->SetRange(0, 100);
-                spin->SetValidator(wxGenericValidator(value));
+                spin->SetValidator(wxGenericValidator{ value });
                 paddingGrid->Add(spin);
             };
             addPaddingSpin(_(L"Top:"), &m_paddingTop);
@@ -462,13 +462,13 @@ namespace Wisteria::UI
             // fit row to content
             leftColumnSizer->Add(new wxCheckBox(pagePage, wxID_ANY, _(L"Fit row to content"),
                                                 wxDefaultPosition, wxDefaultSize, 0,
-                                                wxGenericValidator(&m_fitRowToContent)),
+                                                wxGenericValidator{ &m_fitRowToContent }),
                                  wxSizerFlags{}.Border());
 
             // fixed width
             leftColumnSizer->Add(new wxCheckBox(pagePage, wxID_ANY, _(L"Fixed width"),
                                                 wxDefaultPosition, wxDefaultSize, 0,
-                                                wxGenericValidator(&m_fixedWidth)),
+                                                wxGenericValidator{ &m_fixedWidth }),
                                  wxSizerFlags{}.Border());
 
             // outline pen
@@ -485,15 +485,15 @@ namespace Wisteria::UI
                 {
                 auto* outlineWidthSpin = new wxSpinCtrl(outlineBox->GetStaticBox(), wxID_ANY);
                 outlineWidthSpin->SetRange(1, 20);
-                outlineWidthSpin->SetValidator(wxGenericValidator(&m_outlineWidth));
+                outlineWidthSpin->SetValidator(wxGenericValidator{ &m_outlineWidth });
                 outlineGrid->Add(outlineWidthSpin);
                 }
             outlineGrid->Add(new wxStaticText(outlineBox->GetStaticBox(), wxID_ANY, _(L"Style:")),
                              wxSizerFlags{}.CenterVertical());
                 {
-                auto* outlineStyleChoice =
-                    new wxChoice(outlineBox->GetStaticBox(), wxID_ANY, wxDefaultPosition,
-                                 wxDefaultSize, 0, nullptr, 0, wxGenericValidator(&m_outlineStyle));
+                auto* outlineStyleChoice = new wxChoice(
+                    outlineBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
+                    nullptr, 0, wxGenericValidator{ &m_outlineStyle });
                 outlineStyleChoice->Append(_(L"Solid"));
                 outlineStyleChoice->Append(_(L"Dot"));
                 outlineStyleChoice->Append(_(L"Long dash"));
@@ -507,19 +507,19 @@ namespace Wisteria::UI
             auto* borderSizer = new wxBoxSizer(wxHORIZONTAL);
             borderSizer->Add(new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Top"),
                                             wxDefaultPosition, wxDefaultSize, 0,
-                                            wxGenericValidator(&m_outlineTop)),
+                                            wxGenericValidator{ &m_outlineTop }),
                              wxSizerFlags{}.Border(wxRIGHT));
             borderSizer->Add(new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Right"),
                                             wxDefaultPosition, wxDefaultSize, 0,
-                                            wxGenericValidator(&m_outlineRight)),
+                                            wxGenericValidator{ &m_outlineRight }),
                              wxSizerFlags{}.Border(wxRIGHT));
             borderSizer->Add(new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Bottom"),
                                             wxDefaultPosition, wxDefaultSize, 0,
-                                            wxGenericValidator(&m_outlineBottom)),
+                                            wxGenericValidator{ &m_outlineBottom }),
                              wxSizerFlags{}.Border(wxRIGHT));
             borderSizer->Add(new wxCheckBox(outlineBox->GetStaticBox(), wxID_ANY, _(L"Left"),
                                             wxDefaultPosition, wxDefaultSize, 0,
-                                            wxGenericValidator(&m_outlineLeft)));
+                                            wxGenericValidator{ &m_outlineLeft }));
             outlineBox->Add(borderSizer, wxSizerFlags{}.Border());
 
             leftColumnSizer->Add(outlineBox, wxSizerFlags{}.Border());

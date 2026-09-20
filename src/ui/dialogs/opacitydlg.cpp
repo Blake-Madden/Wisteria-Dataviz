@@ -65,7 +65,7 @@ namespace Wisteria::UI
         mainSizer->Add(new wxSlider(this, wxID_ANY, m_opacity, wxALPHA_TRANSPARENT, wxALPHA_OPAQUE,
                                     wxDefaultPosition, wxDefaultSize,
                                     wxSL_HORIZONTAL | wxSL_LABELS | wxSL_AUTOTICKS,
-                                    wxGenericValidator(&m_opacity)),
+                                    wxGenericValidator{ &m_opacity }),
                        wxSizerFlags{}.Expand().Border());
 
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),

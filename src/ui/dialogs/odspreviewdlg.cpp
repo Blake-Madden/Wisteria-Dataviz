@@ -82,7 +82,7 @@ namespace Wisteria::UI
         const wxArrayString choices = { _(L"All text cells"), _(L"Only highlighted cells") };
         mainSizer->Add(new wxRadioBox(this, wxID_ANY, _(L"Import:"), wxDefaultPosition,
                                       wxDefaultSize, choices, 0, wxRA_SPECIFY_ROWS,
-                                      wxGenericValidator(&m_importMethod)),
+                                      wxGenericValidator{ &m_importMethod }),
                        0, wxLEFT | wxTOP | wxBOTTOM, wxSizerFlags::GetDefaultBorder());
         if (m_wrk != nullptr && !m_wrk->empty())
             {

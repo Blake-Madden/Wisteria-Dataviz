@@ -210,7 +210,7 @@ namespace Wisteria::UI
         {
         m_legendPlacement = defaultSelection;
         auto* choice = new wxChoice(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr,
-                                    0, wxGenericValidator(&m_legendPlacement));
+                                    0, wxGenericValidator{ &m_legendPlacement });
         choice->Append(_(L"(None)"));
         choice->Append(_(L"Right"));
         choice->Append(_(L"Left"));
@@ -401,7 +401,7 @@ namespace Wisteria::UI
             auto* opacitySpin = new wxSpinCtrl(bgBox->GetStaticBox(), wxID_ANY);
             opacitySpin->SetRange(0, 255);
             opacitySpin->SetValue(255);
-            opacitySpin->SetValidator(wxGenericValidator(&m_plotBgImageOpacity));
+            opacitySpin->SetValidator(wxGenericValidator{ &m_plotBgImageOpacity });
             imgOptionsSizer->Add(opacitySpin);
             }
         imgOptionsSizer->Add(new wxStaticText(bgBox->GetStaticBox(), wxID_ANY, _(L"Fit:")),
@@ -409,7 +409,7 @@ namespace Wisteria::UI
             {
             auto* fitChoice =
                 new wxChoice(bgBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
-                             nullptr, 0, wxGenericValidator(&m_plotBgImageFit));
+                             nullptr, 0, wxGenericValidator{ &m_plotBgImageFit });
             fitChoice->Append(_(L"Crop and center"));
             fitChoice->Append(_(L"Shrink"));
             imgOptionsSizer->Add(fitChoice);
@@ -431,7 +431,7 @@ namespace Wisteria::UI
             namedSchemeSizer->Add(m_namedSchemeRadio, wxSizerFlags{}.CenterVertical());
             m_colorSchemeChoice =
                 new wxChoice(colorBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                             GetColorSchemeNames(), 0, wxGenericValidator(&m_colorSchemeIndex));
+                             GetColorSchemeNames(), 0, wxGenericValidator{ &m_colorSchemeIndex });
             namedSchemeSizer->Add(m_colorSchemeChoice,
                                   wxSizerFlags{}.CenterVertical().Border(wxLEFT));
             colorBox->Add(namedSchemeSizer, wxSizerFlags{}.Border());
@@ -489,7 +489,7 @@ namespace Wisteria::UI
             namedShapeSizer->Add(m_namedShapeRadio, wxSizerFlags{}.CenterVertical());
             m_shapeSchemeChoice =
                 new wxChoice(shapeBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                             GetShapeSchemeNames(), 0, wxGenericValidator(&m_shapeSchemeIndex));
+                             GetShapeSchemeNames(), 0, wxGenericValidator{ &m_shapeSchemeIndex });
             namedShapeSizer->Add(m_shapeSchemeChoice,
                                  wxSizerFlags{}.CenterVertical().Border(wxLEFT));
             shapeBox->Add(namedShapeSizer, wxSizerFlags{}.Border());
@@ -642,14 +642,14 @@ namespace Wisteria::UI
                   wxSizerFlags{}.CenterVertical());
         auto* headerCheck =
             new wxCheckBox(m_legendPage, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize, 0,
-                           wxGenericValidator(&m_legendIncludeHeader));
+                           wxGenericValidator{ &m_legendIncludeHeader });
         grid->Add(headerCheck, wxSizerFlags{}.CenterVertical());
 
         m_legendTitleLabel = new wxStaticText(m_legendPage, wxID_ANY, _(L"Custom title:"));
         grid->Add(m_legendTitleLabel, wxSizerFlags{}.CenterVertical());
         m_legendTitleCtrl =
             new wxTextCtrl(m_legendPage, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
-                           wxTE_MULTILINE | wxTE_RICH2, wxGenericValidator(&m_legendTitle));
+                           wxTE_MULTILINE | wxTE_RICH2, wxGenericValidator{ &m_legendTitle });
 #if wxUSE_SPELLCHECK
         m_legendTitleCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
 #endif
@@ -678,7 +678,7 @@ namespace Wisteria::UI
                       wxSizerFlags{}.CenterVertical());
             auto* ringChoice =
                 new wxChoice(m_legendPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, nullptr,
-                             0, wxGenericValidator(&m_legendRingPerimeter));
+                             0, wxGenericValidator{ &m_legendRingPerimeter });
             ringChoice->Append(_(L"Outer"));
             ringChoice->Append(_(L"Inner"));
             grid->Add(ringChoice);

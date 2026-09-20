@@ -333,7 +333,7 @@ namespace Wisteria::UI
             {
             m_checkBox =
                 new wxCheckBox(this, wxID_ANY, _(L"Don't show this again"), wxDefaultPosition,
-                               wxDefaultSize, wxCHK_2STATE, wxGenericValidator(&m_dontShowAgain));
+                               wxDefaultSize, wxCHK_2STATE, wxGenericValidator{ &m_dontShowAgain });
             okCancelSizer->Insert(0, m_checkBox, wxSizerFlags{}.Expand().Border());
             }
 
