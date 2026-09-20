@@ -3649,6 +3649,41 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
         // the stage, value, and target variables round-trip through the
         // generic "variables." property templates in SaveGraph()
         }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::DuBoisSpiralChart)))
+        {
+        const auto* spiralChart = dynamic_cast<const Wisteria::Graphs::DuBoisSpiralChart*>(graph);
+        if (spiralChart->GetValueFormat() != Wisteria::NumberDisplay::Value)
+            {
+            const auto vdStr = Wisteria::ReportEnumConvert::ConvertNumberDisplayToString(
+                spiralChart->GetValueFormat());
+            if (vdStr.has_value())
+                {
+                node->Add(L"value-display-format", vdStr.value());
+                }
+            }
+        if (!spiralChart->IsShowingLabels())
+            {
+            node->Add(L"show-labels", false);
+            }
+        if (!compare_doubles(spiralChart->GetZigZagAngle(),
+                             Wisteria::Graphs::DuBoisSpiralChart::DEFAULT_ZIGZAG_ANGLE))
+            {
+            node->Add(L"zigzag-angle", spiralChart->GetZigZagAngle());
+            }
+        if (!compare_doubles(spiralChart->GetOuterRadiusProportion(),
+                             Wisteria::Graphs::DuBoisSpiralChart::DEFAULT_OUTER_RADIUS_PROPORTION))
+            {
+            node->Add(L"outer-radius-proportion", spiralChart->GetOuterRadiusProportion());
+            }
+        if (!compare_doubles(
+                spiralChart->GetLineThicknessProportion(),
+                Wisteria::Graphs::DuBoisSpiralChart::DEFAULT_LINE_THICKNESS_PROPORTION))
+            {
+            node->Add(L"line-thickness-proportion", spiralChart->GetLineThicknessProportion());
+            }
+        // the label and value variables round-trip through the
+        // generic "variables." property templates in SaveGraph()
+        }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BarChart)))
         {
         const auto* barChart = dynamic_cast<const Wisteria::Graphs::BarChart*>(graph);

@@ -2,6 +2,7 @@
 
 ## 1.2.2
 
+- Added Du Bois Spiral Chart.
 - Added Funnel Chart.
 - Added Waterfall Chart.
 - Added Bullet Chart.

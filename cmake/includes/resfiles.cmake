@@ -39,6 +39,7 @@ divider-vertical-double.svg
 divider-vertical-single.svg
 donut-subgrouped.svg
 donut.svg
+dubois-spiral.svg
 edit.svg
 equals.svg
 file-open.svg

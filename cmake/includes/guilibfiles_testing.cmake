@@ -60,6 +60,7 @@ SET(WISTERIA_SRC
     ../../src/graphs/choroplethmap.cpp
     ../../src/graphs/crawfordgraph.cpp
     ../../src/graphs/danielsonbryan2plot.cpp
+    ../../src/graphs/duboisspiralchart.cpp
     ../../src/graphs/fleschchart.cpp
     ../../src/graphs/funnelchart.cpp
     ../../src/graphs/ganttchart.cpp

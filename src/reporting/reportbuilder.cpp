@@ -481,6 +481,12 @@ namespace Wisteria
                                                     item, canvas, currentRow, currentColumn));
                                                 }
                                             else if (typeProperty->AsString().CmpNoCase(
+                                                         L"dubois-spiral-chart") == 0)
+                                                {
+                                                embeddedGraphs.push_back(LoadDuBoisSpiralChart(
+                                                    item, canvas, currentRow, currentColumn));
+                                                }
+                                            else if (typeProperty->AsString().CmpNoCase(
                                                          L"wilmarth-bridge-plot") == 0)
                                                 {
                                                 embeddedGraphs.push_back(LoadWilmarthBridgePlot(

@@ -25,6 +25,7 @@
 #include "../src/graphs/candlestickplot.h"
 #include "../src/graphs/categoricalbarchart.h"
 #include "../src/graphs/chernoffplot.h"
+#include "../src/graphs/duboisspiralchart.h"
 #include "../src/graphs/funnelchart.h"
 #include "../src/graphs/ganttchart.h"
 #include "../src/graphs/heatmap.h"
@@ -134,7 +135,8 @@ class MyApp final : public wxApp
         ID_NEW_NIGHTINGALE_ROSE,
         ID_NEW_BULLET_CHART,
         ID_NEW_WATERFALL_CHART,
-        ID_NEW_FUNNEL_CHART
+        ID_NEW_FUNNEL_CHART,
+        ID_NEW_DUBOIS_SPIRAL
         };
 
   private:

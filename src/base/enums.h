@@ -876,7 +876,8 @@ namespace Wisteria
         WinLossSparkline,
         BulletChart,
         WaterfallChart,
-        FunnelChart
+        FunnelChart,
+        DuBoisSpiralChart
         };
     } // namespace Wisteria
 

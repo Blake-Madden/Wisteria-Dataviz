@@ -208,6 +208,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_CHERNOFFPLOT);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_STEMANDLEAF);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_RACETRACK);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_DUBOIS_SPIRAL);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_FUNNEL_CHART);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_WILMARTH_BRIDGE);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_NIGHTINGALE_ROSE);
@@ -282,6 +283,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_RACETRACK, _(L"Race Track Chart"));
     fileMenu->Append(MyApp::ID_NEW_WILMARTH_BRIDGE, _(L"Wilmarth Bridge Plot"));
     fileMenu->Append(MyApp::ID_NEW_NIGHTINGALE_ROSE, _(L"Nightingale Rose Chart"));
+    fileMenu->Append(MyApp::ID_NEW_DUBOIS_SPIRAL, _(L"Du Bois Spiral Chart"));
     fileMenu->Append(MyApp::ID_NEW_BULLET_CHART, _(L"Bullet Chart"));
     fileMenu->Append(MyApp::ID_NEW_WATERFALL_CHART, _(L"Waterfall Chart"));
     fileMenu->AppendSeparator();
@@ -3089,6 +3091,48 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, plot);
         }
+    // Du Bois Spiral Chart
+    else if (event.GetId() == MyApp::ControlIDs::ID_NEW_DUBOIS_SPIRAL)
+        {
+        subframe->SetTitle(_(L"Du Bois Spiral Chart"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
+
+        // Areas (in thousands of square miles) of major landmasses, from R's datasets::islands.
+        // The source is The World Almanac and Book of Facts (1975).
+        // The three largest islands lead, and Asia is over 20 times larger than any of them.
+        auto spiralData = std::make_shared<Wisteria::Data::Dataset>();
+        const Wisteria::Data::ColumnWithStringTable::StringTableType labelTable{
+            { 0, L"Greenland" }, { 1, L"New Guinea" }, { 2, L"Borneo" }, { 3, L"Asia" }
+        };
+        spiralData->AddCategoricalColumn(L"Landmass", labelTable);
+        spiralData->AddContinuousColumn(L"Area");
+        // largest-small first, as on the plate: the first bar anchors the scale
+        const std::vector<double> demoValues{ 840, 306, 280, 16988 };
+        for (size_t i = 0; i < demoValues.size(); ++i)
+            {
+            spiralData->AddRow(Wisteria::Data::RowInfo()
+                                   .Categoricals({ static_cast<Wisteria::Data::GroupIdType>(i) })
+                                   .Continuous({ demoValues[i] }));
+            }
+
+        // one color per segment, applied in row order
+        const auto spiralColors = std::make_shared<Wisteria::Colors::Schemes::ColorScheme>(
+            Wisteria::Colors::Schemes::ColorScheme{
+                wxColour{ 46, 107, 79 }, wxColour{ 224, 168, 46 }, wxColour{ 176, 58, 46 },
+                wxColour{ 139, 26, 26 } });
+
+        auto spiralPlot = std::make_shared<Wisteria::Graphs::DuBoisSpiralChart>(
+            subframe->m_canvas, nullptr, spiralColors);
+        spiralPlot->SetData(spiralData, L"Area", L"Landmass");
+        // aged-paper color from the original plate
+        subframe->m_canvas->SetBackgroundColor(wxColour{ 237, 228, 210 });
+        spiralPlot->GetTitle().SetText(
+            _(L"THE WORLD'S LARGEST LANDMASSES. (SAMPLE)\nAREA IN THOUSANDS OF SQUARE MILES."));
+        spiralPlot->GetTitle().SetTextAlignment(Wisteria::TextAlignment::Centered);
+        spiralPlot->GetTitle().SetPadding(5, 5, 5, 5);
+
+        subframe->m_canvas->SetFixedObject(0, 0, spiralPlot);
+        }
     // Nightingale Rose Chart
     else if (event.GetId() == MyApp::ControlIDs::ID_NEW_NIGHTINGALE_ROSE)
         {
@@ -3625,6 +3669,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     toolBar->AddTool(MyApp::ID_NEW_RACETRACK, _(L"Race Track Chart"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/racetrack.svg", iconSize),
                      _(L"Race Track Chart"));
+    toolBar->AddTool(MyApp::ID_NEW_DUBOIS_SPIRAL, _(L"Du Bois Spiral Chart"),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/dubois-spiral.svg", iconSize),
+                     _(L"Du Bois Spiral Chart"));
     toolBar->AddTool(MyApp::ID_NEW_WILMARTH_BRIDGE, _(L"Wilmarth Bridge Plot"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/wilmarth-bridge.svg", iconSize),
                      _(L"Wilmarth Bridge Plot"));

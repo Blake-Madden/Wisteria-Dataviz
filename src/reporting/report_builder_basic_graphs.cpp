@@ -1929,6 +1929,83 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D>
+    ReportBuilder::LoadDuBoisSpiralChart(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                                         size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->AsString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for Du Bois spiral chart."), dsName)
+                    .ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (!variablesNode->IsOk())
+            {
+            throw std::runtime_error(
+                _(L"Variables not defined for Du Bois spiral chart.").ToUTF8());
+            }
+
+        const auto labelVarNameRaw = variablesNode->GetProperty(L"label")->AsString();
+        const auto valueVarNameRaw = variablesNode->GetProperty(L"value")->AsString();
+
+        if (labelVarNameRaw.empty() || valueVarNameRaw.empty())
+            {
+            throw std::runtime_error(
+                wxString::Format(
+                    _(L"%s: label and value variables must be specified for Du Bois spiral chart."),
+                    dsName)
+                    .ToUTF8());
+            }
+
+        auto spiralChart = std::make_shared<Graphs::DuBoisSpiralChart>(
+            canvas, LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
+            LoadGraphColorScheme(graphNode));
+        spiralChart->SetPropertyTemplate(L"dataset", dsName);
+        const auto labelVarName =
+            ExpandAndCache(spiralChart.get(), L"variables.label", labelVarNameRaw);
+        const auto valueVarName =
+            ExpandAndCache(spiralChart.get(), L"variables.value", valueVarNameRaw);
+
+        if (const auto valueDisplay = ReportEnumConvert::ConvertNumberDisplay(
+                graphNode->GetProperty(L"value-display-format")->AsString());
+            valueDisplay.has_value())
+            {
+            spiralChart->SetValueFormat(valueDisplay.value());
+            }
+
+        if (graphNode->HasProperty(L"show-labels"))
+            {
+            spiralChart->ShowLabels(graphNode->GetProperty(L"show-labels")->AsBool());
+            }
+        if (graphNode->HasProperty(L"zigzag-angle"))
+            {
+            spiralChart->SetZigZagAngle(
+                graphNode->GetProperty(L"zigzag-angle")->AsDouble(spiralChart->GetZigZagAngle()));
+            }
+        if (graphNode->HasProperty(L"outer-radius-proportion"))
+            {
+            spiralChart->SetOuterRadiusProportion(
+                graphNode->GetProperty(L"outer-radius-proportion")
+                    ->AsDouble(spiralChart->GetOuterRadiusProportion()));
+            }
+        if (graphNode->HasProperty(L"line-thickness-proportion"))
+            {
+            spiralChart->SetLineThicknessProportion(
+                graphNode->GetProperty(L"line-thickness-proportion")
+                    ->AsDouble(spiralChart->GetLineThicknessProportion()));
+            }
+
+        spiralChart->SetData(foundPos->second, valueVarName, labelVarName);
+
+        LoadGraph(graphNode, canvas, currentRow, currentColumn, spiralChart);
+        return spiralChart;
+        }
+
+    //---------------------------------------------------
     std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadTable(const wxSimpleJSON::Ptr_t& tableNode,
                                                               Canvas* canvas, size_t& currentRow,
                                                               size_t& currentColumn)

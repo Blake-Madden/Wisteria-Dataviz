@@ -58,6 +58,7 @@ SET(WISTERIA_SRC
     src/graphs/choroplethmap.cpp
     src/graphs/crawfordgraph.cpp
     src/graphs/danielsonbryan2plot.cpp
+    src/graphs/duboisspiralchart.cpp
     src/graphs/fleschchart.cpp
     src/graphs/funnelchart.cpp
     src/graphs/ganttchart.cpp
@@ -121,6 +122,7 @@ SET(WISTERIA_SRC
     src/ui/dialogs/editors/insertchernoffdlg.cpp
     src/ui/dialogs/editors/insertchoroplethmapdlg.cpp
     src/ui/dialogs/editors/insertcommonaxisdlg.cpp
+    src/ui/dialogs/editors/insertduboisspiralchartdlg.cpp
     src/ui/dialogs/editors/insertfunnelchartdlg.cpp
     src/ui/dialogs/editors/insertganttchartdlg.cpp
     src/ui/dialogs/editors/insertgraphdlg.cpp

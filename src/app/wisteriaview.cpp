@@ -22,6 +22,7 @@
 #include "../ui/dialogs/editors/insertchernoffdlg.h"
 #include "../ui/dialogs/editors/insertchoroplethmapdlg.h"
 #include "../ui/dialogs/editors/insertcommonaxisdlg.h"
+#include "../ui/dialogs/editors/insertduboisspiralchartdlg.h"
 #include "../ui/dialogs/editors/insertfunnelchartdlg.h"
 #include "../ui/dialogs/editors/insertganttchartdlg.h"
 #include "../ui/dialogs/editors/insertheatmapdlg.h"
@@ -318,6 +319,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertRaceTrackChart, this, ID_NEW_RACETRACK_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertNightingaleRoseChart, this,
                   ID_NEW_NIGHTINGALE_ROSE_CHART);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertDuBoisSpiralChart, this,
+                  ID_NEW_DUBOIS_SPIRAL_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertBulletChart, this, ID_NEW_BULLET_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWaterfallChart, this, ID_NEW_WATERFALL_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertFunnelChart, this, ID_NEW_FUNNEL_CHART);
@@ -1997,6 +2000,8 @@ void WisteriaView::BuildGraphMenus()
                L"racetrack.svg");
     appendItem(m_basicGraphMenu, ID_NEW_NIGHTINGALE_ROSE_CHART, _(L"Nightingale Rose Chart..."),
                L"rose.svg");
+    appendItem(m_basicGraphMenu, ID_NEW_DUBOIS_SPIRAL_CHART, _(L"Du Bois Spiral Chart..."),
+               L"dubois-spiral.svg");
     m_basicGraphMenu.AppendSeparator();
     appendItem(m_basicGraphMenu, ID_NEW_CHOROPLETH_MAP, _(L"Choropleth Map..."), L"choropleth.svg");
 
@@ -2683,6 +2688,10 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::NightingaleRoseChart)))
         {
         EditNightingaleRoseChart(*graph, canvas, itemRow, itemCol);
+        }
+    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::DuBoisSpiralChart)))
+        {
+        EditDuBoisSpiralChart(*graph, canvas, itemRow, itemCol);
         }
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BulletChart)))
         {
@@ -4685,6 +4694,71 @@ void WisteriaView::EditFunnelChart(const Wisteria::Graphs::Graph2D& graph, Wiste
     try
         {
         auto plot = dlg.BuildFunnelChart(&graph);
+        canvas->SetFixedObject(graphRow, graphCol, plot);
+
+        UpdateCanvas(canvas);
+
+        GetDocument()->Modify(true);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertDuBoisSpiralChart([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = EnsureActivePage();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertDuBoisSpiralChartDlg dlg(canvas, &m_reportBuilder, m_frame);
+    SetDialogIcon(dlg, L"dubois-spiral.svg");
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = dlg.BuildDuBoisSpiralChart();
+        canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+
+        UpdateCanvas(canvas);
+
+        GetDocument()->Modify(true);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::EditDuBoisSpiralChart(const Wisteria::Graphs::Graph2D& graph,
+                                         Wisteria::Canvas* canvas, const size_t graphRow,
+                                         const size_t graphCol) const
+    {
+    Wisteria::UI::InsertDuBoisSpiralChartDlg dlg(
+        canvas, &m_reportBuilder, m_frame, _(L"Edit Du Bois Spiral Chart"), wxID_ANY,
+        wxDefaultPosition, wxDefaultSize,
+        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    SetDialogIcon(dlg, L"dubois-spiral.svg");
+    dlg.SetSelectedCell(graphRow, graphCol);
+    dlg.LoadFromGraph(graph);
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = dlg.BuildDuBoisSpiralChart(&graph);
         canvas->SetFixedObject(graphRow, graphCol, plot);
 
         UpdateCanvas(canvas);

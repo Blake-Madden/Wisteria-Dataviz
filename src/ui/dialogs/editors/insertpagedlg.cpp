@@ -21,6 +21,7 @@
 #include "insertchernoffdlg.h"
 #include "insertchoroplethmapdlg.h"
 #include "insertcommonaxisdlg.h"
+#include "insertduboisspiralchartdlg.h"
 #include "insertfunnelchartdlg.h"
 #include "insertganttchartdlg.h"
 #include "insertheatmapdlg.h"
@@ -961,6 +962,9 @@ namespace Wisteria::UI
             break;
         case Wisteria::GalleryItemType::FunnelChart:
             placed = DropFunnelChart(stagingCanvas, row, col);
+            break;
+        case Wisteria::GalleryItemType::DuBoisSpiralChart:
+            placed = DropDuBoisSpiralChart(stagingCanvas, row, col);
             break;
         default:
             // remaining graph types are not wired up yet
@@ -1925,6 +1929,30 @@ namespace Wisteria::UI
         try
             {
             auto plot = dlg.BuildFunnelChart();
+            stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropDuBoisSpiralChart(Canvas* stagingCanvas, const size_t row,
+                                              const size_t col)
+        {
+        Wisteria::UI::InsertDuBoisSpiralChartDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"dubois-spiral.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildDuBoisSpiralChart();
             stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
             return true;
             }

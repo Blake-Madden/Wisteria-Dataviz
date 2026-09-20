@@ -827,6 +827,50 @@ Properties for `"nightingale-rose-chart"` nodes:
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}
+## Du Bois Spiral Chart {#dubois-spiral-chart-properties .unnumbered}
+
+Properties for `"dubois-spiral-chart"` nodes:
+
+- `"variables"`: An item containing the following properties:
+  - `"label"`: The categorical (or ID) column containing the segment labels.
+  - `"value"`: The continuous column containing each segment's value. \
+    Segment lengths are proportional to these values.
+    Rows with a missing, zero, or negative value are skipped.
+- `"value-display-format"`: A string specifying how values in the labels are displayed. \
+  Available options are:
+  - `"value"`: Display the raw value with thousands separators (the default).
+  - `"currency"`: Display using the current locale's currency formatting.
+  - `"percentage"`: Append a `%` suffix to the value.
+  - `"value-simple"`: Display the raw value without thousands separators.
+- `"show-labels"`: If `false`, will hide the labels drawn alongside the segments.
+- `"zigzag-angle"`: The angle (in degrees below horizontal, `10`--`80`) of the diagonal segments. \
+  The default is `40`.
+- `"outer-radius-proportion"`: The outer radius of the spiral as a proportion of the smaller plot dimension (`0.15`--`0.48`). \
+  The default is `0.36`.
+- `"line-thickness-proportion"`: The thickness of the path as a proportion of the smaller plot dimension (`0.005`--`0.08`). \
+  The default is `0.025`.
+- Some base properties available to [graphs](#graph-properties), including `"brush-scheme"` and `"color-scheme"` for coloring the segments. \
+  Each segment is colored according to its position in the dataset.
+
+The rows are drawn in dataset order as a single continuous path.
+The first row is a horizontal bar across the top, the middle rows zigzag diagonally downward, and the last row winds inward as a spiral.
+This suits data where the final value dwarfs the others.
+
+```json
+{
+  "type": "dubois-spiral-chart",
+  "dataset": "Landmasses",
+  "variables": {
+    "label": "Landmass",
+    "value": "Area"
+  },
+  "color-scheme": ["#2e6b4f", "#e0a82e", "#b03a2e", "#8b1a1a"],
+  "title": "The World's Largest Landmasses"
+}
+```
+:::
+
+::: {.minipage data-latex="{\textwidth}"}
 ## Sankey Diagram {#sankey-diagram-properties .unnumbered}
 
 Properties for `"sankey-diagram"` nodes:

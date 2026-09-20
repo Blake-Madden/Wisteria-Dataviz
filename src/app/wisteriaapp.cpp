@@ -1101,6 +1101,10 @@ wxString WisteriaApp::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph)
         {
         return _DT(L"nightingale-rose-chart");
         }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::DuBoisSpiralChart)))
+        {
+        return _DT(L"dubois-spiral-chart");
+        }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::StemAndLeafPlot)))
         {
         return _DT(L"stem-and-leaf-plot");
@@ -1228,6 +1232,10 @@ wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase*
         {
         return L"rose.svg";
         }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::DuBoisSpiralChart)))
+        {
+        return L"dubois-spiral.svg";
+        }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::StemAndLeafPlot)))
         {
         return L"stem-leaf.svg";
@@ -1340,6 +1348,8 @@ const std::vector<Wisteria::GalleryItemInfo>& WisteriaApp::GetGalleryItemCatalog
         { GalleryItemType::RaceTrackChart, _(L"Race Track Chart"), L"racetrack.svg",
           GalleryGroup::Basic },
         { GalleryItemType::NightingaleRoseChart, _(L"Nightingale Rose Chart"), L"rose.svg",
+          GalleryGroup::Basic },
+        { GalleryItemType::DuBoisSpiralChart, _(L"Du Bois Spiral Chart"), L"dubois-spiral.svg",
           GalleryGroup::Basic },
         { GalleryItemType::ChoroplethMap, _(L"Choropleth Map"), L"choropleth.svg",
           GalleryGroup::Basic },

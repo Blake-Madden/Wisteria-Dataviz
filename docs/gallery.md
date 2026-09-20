@@ -66,6 +66,10 @@ Basic
 | :-------------- |
 | ![](docs/images/racetrack.svg) |
 
+| Dubois Spiral Chart (Wisteria::Graphs::DuboisSpiralChart) |
+| :-------------- |
+| ![](docs/images/dubois-spiral-chart.svg) |
+
 | Nightingale Rose Chart (Wisteria::Graphs::NightingaleRoseChart) |
 | :-------------- |
 | ![](docs/images/nightingale_rose_chart.svg) |
