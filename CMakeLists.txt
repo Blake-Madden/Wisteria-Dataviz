@@ -140,6 +140,7 @@ else()
 endif()
 
 set(wxUSE_WEBVIEW_EDGE ON CACHE BOOL "Use Edge backend for WebView (MSW)" FORCE)
+set(wxUSE_WEBVIEW_EDGE_STATIC ON CACHE BOOL "Build Edge backend for WebView (MSW) statically" FORCE)
 set(wxBUILD_SHARED OFF CACHE BOOL "Build wxWidgets statically" FORCE)
 set(wxBUILD_DEBUG_LEVEL ${PROJECT_WX_DEBUG_LEVEL} CACHE STRING "wxWidgets runtime debug level" FORCE)
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
