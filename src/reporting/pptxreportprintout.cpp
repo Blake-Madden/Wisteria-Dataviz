@@ -8,6 +8,7 @@
 
 #include "pptxreportprintout.h"
 #include "../base/colorschemenames.h"
+#include "../base/graphitems.h"
 #include "../base/settings.h"
 #include "../math/safe_math.h"
 #include "reportprintout.h"
@@ -146,7 +147,7 @@ wxString Wisteria::ReportPowerPointExport::CollectAccessibilityText(Canvas* canv
     {
     if (canvas == nullptr)
         {
-        return wxString{};
+        return {};
         }
 
     wxArrayString lines;
@@ -182,7 +183,10 @@ wxString Wisteria::ReportPowerPointExport::CollectAccessibilityText(Canvas* canv
                 }
             if (!label.empty())
                 {
-                lines.Add(label);
+                wxString buffer;
+                Wisteria::GraphItems::GraphItemBase::AddAccessibilityAttribute(buffer, label,
+                                                                               wxString{});
+                lines.Add(buffer);
                 }
             }
         }

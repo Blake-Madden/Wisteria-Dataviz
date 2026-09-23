@@ -2045,6 +2045,18 @@ namespace Wisteria
                 return m_propertyTemplates;
                 }
 
+            /** @brief Appends text to an accessibility string buffer,
+                    removing formatting characters.
+                @details This is a helper method used when building an `AriaLabel` string.
+                    It appends the provided `text` to the `buffer` (preceded by `separator`),
+                    while converting newlines, carriage returns, and tabs to spaces and stripping
+                    `<span>` tags to ensure screen readers read the text clearly.
+                @param[in,out] buffer The string buffer to append to.
+                @param text The text to append to the buffer. If empty, nothing is appended.
+                @param separator The separator to insert before the text (e.g., ", " or ": ").*/
+            static void AddAccessibilityAttribute(wxString& buffer, const wxString& text,
+                                                  const wxString& separator);
+
           protected:
             /** @brief Draws the element.
                 @param dc The canvas to draw the element on.
@@ -2273,36 +2285,6 @@ namespace Wisteria
                     align the axes of multiple plots.
                 @param pt The top point to constrain the content into.*/
             void SetContentRight(const std::optional<wxCoord>& pt) noexcept { m_contentRight = pt; }
-
-            /** @brief Appends text to an accessibility string buffer,
-                    removing formatting characters.
-                @details This is a helper method used when building an `AriaLabel` string.
-                    It appends the provided `text` to the `buffer` (preceded by `separator`),
-                    while converting newlines, carriage returns,
-                    and tabs to spaces to ensure screen readers read the text clearly.
-                @param[in,out] buffer The string buffer to append to.
-                @param text The text to append to the buffer. If empty, nothing is appended.
-                @param separator The separator to insert before the text (e.g., ", " or ": ").*/
-            static void AddAccessibilityAttribute(wxString& buffer, const wxString& text,
-                                                  const wxString& separator)
-                {
-                if (!text.empty())
-                    {
-                    buffer.reserve(buffer.length() + separator.length() + text.length());
-                    buffer += separator;
-                    for (const auto& ch : text)
-                        {
-                        if (ch == L'\n' || ch == L'\r' || ch == L'\t')
-                            {
-                            buffer += L' ';
-                            }
-                        else
-                            {
-                            buffer += ch;
-                            }
-                        }
-                    }
-                }
 
           private:
             /** @brief Sets the original scaling of the element when it was first

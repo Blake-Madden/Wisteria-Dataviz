@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "graphitems.h"
+#include "../import/html_extract_text.h"
 #include "image.h"
 #include "label.h"
 
@@ -18,6 +19,32 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::StandardLineStyles,
 
     namespace Wisteria::GraphItems
     {
+    //-------------------------------------------
+    void GraphItemBase::AddAccessibilityAttribute(wxString & buffer, const wxString& text,
+                                                  const wxString& separator)
+        {
+        if (!text.empty())
+            {
+            buffer.reserve(buffer.length() + separator.length() + text.length());
+            buffer += separator;
+            for (const auto& ch : text)
+                {
+                if (ch == L'\n' || ch == L'\r' || ch == L'\t')
+                    {
+                    buffer += L' ';
+                    }
+                else
+                    {
+                    buffer += ch;
+                    }
+                }
+            // strip HTML tags (e.g., <span> from Label text)
+            lily_of_the_valley::html_extract_text HTML_EXTRACT;
+            HTML_EXTRACT(buffer.wc_str(), buffer.length(), true, false);
+            buffer.assign(HTML_EXTRACT.get_filtered_buffer());
+            }
+        }
+
     //-------------------------------------------
     double GraphItemBase::GetDPIScaleFactor() const
         {

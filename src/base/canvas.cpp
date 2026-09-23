@@ -1826,15 +1826,23 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             if (svgDc != nullptr && !item->IsUsingAutoAccessibility() &&
                 !item->GetAccessibilityAttributes().IsEmpty())
                 {
-                const wxSVGAccessibleGroup accessGroup{ *svgDc,
-                                                        item->GetAccessibilityAttributes() };
+                wxString buffer;
+                auto access{ item->GetAccessibilityAttributes() };
+                // strip and HTML tags (e.g., <span>) from the text
+                Wisteria::GraphItems::GraphItemBase::AddAccessibilityAttribute(
+                    buffer, access.GetAriaLabel(), wxString{});
+                access.AriaLabel(buffer);
+                const wxSVGAccessibleGroup accessGroup{ *svgDc, access };
                 item->Draw(dc);
                 }
             // ...or accessibility features built by the object internally
             else if (svgDc != nullptr && item->IsUsingAutoAccessibility() &&
                      !item->GetAutoAccessibilityAttributes().IsEmpty())
                 {
+                wxString buffer;
                 const auto& autoAttrs = item->GetAutoAccessibilityAttributes();
+                Wisteria::GraphItems::GraphItemBase::AddAccessibilityAttribute(
+                    buffer, autoAttrs.GetAriaLabel(), wxString{});
                 wxSVGAttributes groupAttrs;
                 if (!autoAttrs.GetRole().empty())
                     {
@@ -1842,8 +1850,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     }
                 // use a <desc> child element instead of aria-label;
                 // easier on screen readers when we have long descriptions
-                const wxSVGAccessibleGroup accessGroup{ *svgDc, groupAttrs, wxString{},
-                                                        autoAttrs.GetAriaLabel() };
+                const wxSVGAccessibleGroup accessGroup{ *svgDc, groupAttrs, wxString{}, buffer };
                     {
                     const wxSVGAccessibleGroup hiddenGroup{ *svgDc,
                                                             wxSVGAttributes{}.AriaHidden() };
