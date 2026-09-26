@@ -15,7 +15,7 @@
   --page-gap: 24px;                            /* space between pages */
   --page-max-width: 1600px;                    /* widest a page is drawn */
   --page-radius: 6px;                          /* page corner radius */
-  --card-width: 140px;                         /* width of a page card in the Atlas view */
+  --card-width: 140px;                         /* width of a page card in the Gallery view */
   --toolbar-height: 52px;                      /* replaced with the measured height by the script */
   --strip-height: 0px;                         /* replaced with the measured card strip height */
   }
@@ -308,12 +308,12 @@ html[data-view="story"] .dash-rail
   transform: scale(1.3);
   }
 
-/* ---------- Atlas view --------------------------------------- */
+/* ---------- Gallery view ------------------------------------- */
 
-.dash-atlas
+.dash-gallery
   { display: none; }
 
-html[data-view="atlas"] .dash-atlas
+html[data-view="gallery"] .dash-gallery
   {
   position: sticky;
   top: var(--toolbar-height);
@@ -369,7 +369,7 @@ html[data-view="atlas"] .dash-atlas
   white-space: nowrap;
   }
 
-html[data-view="atlas"] .page:not(.is-current)
+html[data-view="gallery"] .page:not(.is-current)
   { display: none; }
 
 /* pages on a hidden layer */
@@ -504,7 +504,7 @@ html.motion-ready .page:not(.is-revealed) .page-svg
   {
   :root
     { color-scheme: light !important; }
-  .no-print, .dash-rail, .dash-atlas, .page-title
+  .no-print, .dash-rail, .dash-gallery, .page-title
     { display: none !important; }
   html[data-view] .dash-pages
     {

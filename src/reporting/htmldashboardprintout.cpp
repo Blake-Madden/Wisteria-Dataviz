@@ -127,7 +127,7 @@ static wxString GetDashboardScriptPages()
   function readHash() {
     const params = new URLSearchParams(location.hash.slice(1));
     const wanted = params.get('view');
-    if (wanted === 'atlas' || wanted === 'story') view = wanted;
+    if (wanted === 'gallery' || wanted === 'story') view = wanted;
     const index = parseInt(params.get('page'), 10);
     if (!isNaN(index)) current = clampIndex(index);
   }
@@ -137,12 +137,12 @@ static wxString GetDashboardScriptPages()
   function measureChrome() {
     const toolbar = document.querySelector('.dash-toolbar');
     if (toolbar) root.style.setProperty('--toolbar-height', toolbar.offsetHeight + 'px');
-    const strip = document.getElementById('dash-atlas');
+    const strip = document.getElementById('dash-gallery');
     root.style.setProperty('--strip-height',
-                           view === 'atlas' && strip ? strip.offsetHeight + 'px' : '0px');
+                           view === 'gallery' && strip ? strip.offsetHeight + 'px' : '0px');
   }
-  function buildAtlas() {
-    const strip = document.getElementById('dash-atlas');
+  function buildGallery() {
+    const strip = document.getElementById('dash-gallery');
     if (!strip) return;
     const svgNs = 'http://www.w3.org/2000/svg';
     pages.forEach(function(page, i) {
@@ -288,7 +288,7 @@ static wxString GetDashboardScriptNavigation()
   function revealCurrent(behavior) {
     const page = pages[current];
     if (!page) return;
-    if (view === 'atlas') {
+    if (view === 'gallery') {
       window.scrollTo({ top: 0, behavior: 'auto' });
       if (page.card) page.card.scrollIntoView({ behavior: behavior, block: 'nearest', inline: 'center' });
     } else {
@@ -320,7 +320,7 @@ static wxString GetDashboardScriptNavigation()
   function goTo(index, moveFocus) {
     if (!pages.length) return;
     current = clampIndex(index);
-    if (view === 'atlas') {
+    if (view === 'gallery') {
       withTransition(function() {
         renderView();
         revealCurrent('auto');
@@ -611,7 +611,7 @@ static wxString GetDashboardScriptEvents()
     readHash();
     applyColorMode();
     buildRail();
-    buildAtlas();
+    buildGallery();
     bindControls();
     applyLayers();
     assignInk();
@@ -687,7 +687,7 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
 
     // user-facing text used by the script
     const std::vector<std::pair<wxString, wxString>> scriptStrings{
-        { L"atlas", _(L"Atlas") },           { L"story", _(L"Story") },
+        { L"gallery", _(L"Gallery") },       { L"story", _(L"Story") },
         { L"page", _(L"Page {0}") },         { L"pageOf", _(L"Page {0} of {1}") },
         { L"goTo", _(L"Go to {0}") },        { L"pagesShown", _(L"{0} of {1} pages shown") },
         { L"noPages", _(L"No pages shown") }
@@ -762,10 +762,10 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         escapeAttr(_(L"Pages")), escapeAttr(_(L"Previous page")), escapeAttr(_(L"Next page")));
     html += wxString::Format(
         L"<div class=\"dash-views\" role=\"group\" aria-label=\"%s\">\n"
-        "<button type=\"button\" data-view=\"atlas\" aria-pressed=\"false\">%s</button>\n"
+        "<button type=\"button\" data-view=\"gallery\" aria-pressed=\"false\">%s</button>\n"
         "<button type=\"button\" data-view=\"story\" aria-pressed=\"false\">%s</button>\n"
         "</div>\n",
-        escapeAttr(_(L"Views")), escapeText(_(L"Atlas")), escapeText(_(L"Story")));
+        escapeAttr(_(L"Views")), escapeText(_(L"Gallery")), escapeText(_(L"Story")));
     if (!distinctLayers.empty())
         {
         html += wxString::Format(
@@ -795,7 +795,7 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
     html += L"</div>\n<div class=\"dash-progress\" aria-hidden=\"true\"></div>\n</header>\n";
 
     html += wxString::Format(
-        L"<nav id=\"dash-atlas\" class=\"dash-atlas no-print\" aria-label=\"%s\"></nav>\n"
+        L"<nav id=\"dash-gallery\" class=\"dash-gallery no-print\" aria-label=\"%s\"></nav>\n"
         "<nav id=\"dash-rail\" class=\"dash-rail no-print\" aria-label=\"%s\"></nav>\n"
         "<div id=\"dash-status\" class=\"visually-hidden\" role=\"status\" "
         "aria-live=\"polite\"></div>\n",

@@ -38,7 +38,7 @@ namespace Wisteria
             /// @brief Full-height pages in a scrolling column.
             Story,
             /// @brief Small page cards across the top, with the selected page shown below.
-            Atlas
+            Gallery
             };
 
         /// @brief Constructor.
@@ -73,7 +73,7 @@ namespace Wisteria
         [[nodiscard]]
         static wxString ViewToString(const View view)
             {
-            return (view == View::Atlas) ? L"atlas" : L"story";
+            return (view == View::Gallery) ? L"gallery" : L"story";
             }
 
         /// @param str The string to parse.
@@ -82,12 +82,11 @@ namespace Wisteria
         [[nodiscard]]
         static View ParseView(const wxString& str, const View fallback)
             {
-            if (str == L"atlas")
+            if (str == L"gallery")
                 {
-                return View::Atlas;
+                return View::Gallery;
                 }
-            // "focus" was a view in earlier files
-            if (str == L"story" || str == L"focus")
+            if (str == L"story")
                 {
                 return View::Story;
                 }

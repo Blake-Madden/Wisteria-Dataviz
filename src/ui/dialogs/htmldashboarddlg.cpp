@@ -28,7 +28,7 @@ namespace Wisteria::UI
         using View = Wisteria::HtmlDashboardOptions::View;
         using ColorMode = Wisteria::HtmlDashboardOptions::ColorMode;
 
-        m_view = (options.m_view == View::Atlas) ? 0 : 1;
+        m_view = (options.m_view == View::Gallery) ? 0 : 1;
         m_colorMode = (options.m_colorMode == ColorMode::Auto)  ? 0 :
                       (options.m_colorMode == ColorMode::Light) ? 1 :
                                                                   2;
@@ -87,7 +87,7 @@ namespace Wisteria::UI
 
         // initial view
         wxArrayString viewChoices;
-        viewChoices.Add(_(L"Atlas"));
+        viewChoices.Add(_(L"Gallery"));
         viewChoices.Add(_(L"Story"));
         auto* viewRadio = new wxRadioBox(this, wxID_ANY, _(L"Initial View"), wxDefaultPosition,
                                          wxDefaultSize, viewChoices, 1, wxRA_SPECIFY_ROWS);
@@ -128,7 +128,7 @@ namespace Wisteria::UI
     Wisteria::HtmlDashboardOptions::View HtmlDashboardDlg::GetInitialView() const noexcept
         {
         using View = Wisteria::HtmlDashboardOptions::View;
-        return (m_view == 0) ? View::Atlas : View::Story;
+        return (m_view == 0) ? View::Gallery : View::Story;
         }
 
     //------------------------------------------------------
