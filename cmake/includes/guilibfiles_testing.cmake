@@ -109,6 +109,7 @@ SET(WISTERIA_SRC
     ../../src/import/rtf_extract_text.cpp
     ../../src/import/spreadsheet_extract_text.cpp
     ../../src/import/xlsx_extract_text.cpp
+    ../../src/reporting/htmldashboardprintout.cpp
     ../../src/reporting/pptxreportprintout.cpp
     ../../src/reporting/report_builder_basic_graphs.cpp
     ../../src/reporting/report_builder_business_graphs.cpp
@@ -142,6 +143,7 @@ SET(WISTERIA_SRC
     ../../src/ui/dialogs/filelistdlg.cpp
     ../../src/ui/dialogs/getdirdlg.cpp
     ../../src/ui/dialogs/gridexportdlg.cpp
+    ../../src/ui/dialogs/htmldashboarddlg.cpp
     ../../src/ui/dialogs/htmltablepanel.cpp
     ../../src/ui/dialogs/imageeffectdlg.cpp
     ../../src/ui/dialogs/imageexportdlg.cpp

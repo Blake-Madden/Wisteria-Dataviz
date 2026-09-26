@@ -1,0 +1,9 @@
+/* ==========================================================================
+   Wisteria dashboard - autumn theme
+   ========================================================================== */
+
+:root
+  {
+  --accent: light-dark(#B4531A, #F4A259);      /* burnt orange in light mode, amber in dark mode */
+  --accent-text: light-dark(white, black);
+  }

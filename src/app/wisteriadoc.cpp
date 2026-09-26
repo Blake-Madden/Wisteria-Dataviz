@@ -130,6 +130,23 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
         root->Add(L"svg-export", svgNode);
         }
 
+        // html-export (per-project)
+        {
+        const auto& htmlOpts = view->GetReportBuilder().GetHtmlExportOptions();
+        auto htmlNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+        htmlNode->Add(L"theme", htmlOpts.m_theme);
+        htmlNode->Add(L"view", Wisteria::HtmlDashboardOptions::ViewToString(htmlOpts.m_view));
+        htmlNode->Add(L"color-mode",
+                      Wisteria::HtmlDashboardOptions::ColorModeToString(htmlOpts.m_colorMode));
+        htmlNode->Add(L"color-mode-toggle", htmlOpts.m_includeColorModeToggle);
+        htmlNode->Add(L"count-up", htmlOpts.m_countUpNumbers);
+        htmlNode->Add(L"page-width",
+                      static_cast<double>(std::max(0, htmlOpts.m_pageSize.GetWidth())));
+        htmlNode->Add(L"page-height",
+                      static_cast<double>(std::max(0, htmlOpts.m_pageSize.GetHeight())));
+        root->Add(L"html-export", htmlNode);
+        }
+
         // pdf-export (per-project, does not affect canvas paper settings)
         {
         const auto& pdfOpts = view->GetReportBuilder().GetPdfExportOptions();

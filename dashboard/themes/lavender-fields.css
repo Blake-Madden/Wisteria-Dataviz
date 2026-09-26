@@ -1,0 +1,9 @@
+/* ==========================================================================
+   Wisteria dashboard - lavender fields theme
+   ========================================================================== */
+
+:root
+  {
+  --accent: light-dark(#7E57C2, #C3A6FF);      /* violet in light mode, soft lavender in dark mode */
+  --accent-text: light-dark(white, black);
+  }

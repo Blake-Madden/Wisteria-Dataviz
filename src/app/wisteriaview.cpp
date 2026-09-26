@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "wisteriaview.h"
+#include "../reporting/htmldashboardprintout.h"
 #include "../reporting/pdfreportprintout.h"
 #include "../reporting/reportprintout.h"
 #include "../reporting/svgreportprintout.h"
@@ -55,6 +56,7 @@
 #include "../ui/dialogs/editors/pivotlongerdlg.h"
 #include "../ui/dialogs/editors/pivotwiderrdlg.h"
 #include "../ui/dialogs/editors/subsetdlg.h"
+#include "../ui/dialogs/htmldashboarddlg.h"
 #include "../ui/dialogs/pdfexportdlg.h"
 #include "../ui/dialogs/pptxexportdlg.h"
 #include "../ui/dialogs/projectsettingsdlg.h"
@@ -62,6 +64,8 @@
 #include "wisteriaapp.h"
 #include "wisteriadoc.h"
 #include <array>
+#include <wx/dir.h>
+#include <wx/ffile.h>
 #include <wx/filename.h>
 #include <wx/rearrangectrl.h>
 #include <wx/wupdlock.h>
@@ -119,7 +123,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->SetAcceleratorTable(wxAcceleratorTable(entries.size(), entries.data()));
 
     // set the icon
-    const auto appSvg = wxGetApp().GetResourceManager().GetSVG(L"wisteria.svg");
+    const auto appSvg = wxGetApp().GetResourceManager().GetSVG(L"images/wisteria.svg");
     if (appSvg.IsOk())
         {
         wxIcon appIcon;
@@ -187,6 +191,10 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     // bind SVG export button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnSvgExport, this, ID_SVG_EXPORT);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnSvgExport, this, ID_SVG_EXPORT);
+
+    // bind HTML dashboard export button
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnHtmlExport, this, ID_HTML_EXPORT);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnHtmlExport, this, ID_HTML_EXPORT);
 
     // bind PDF export button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPdfExport, this, ID_PDF_EXPORT);
@@ -460,6 +468,10 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         svgOpts.m_paperOrientation =
             static_cast<wxPrintOrientation>(appSettings->GetPrintOrientation());
         }
+    if (!GetReportBuilder().HasLoadedHtmlExportOptions())
+        {
+        GetReportBuilder().GetHtmlExportOptions() = appSettings->GetHtmlExportOptions();
+        }
     if (!GetReportBuilder().HasLoadedPdfExportOptions())
         {
         auto& pdfOpts = GetReportBuilder().GetPdfExportOptions();
@@ -640,8 +652,8 @@ bool WisteriaView::LoadProject(const wxString& filename)
         {
         const wxSize iconSize{ 16, 16 };
         auto* constAttrProvider = new Wisteria::UI::DatasetGridAttrProvider();
-        const std::array<wxString, 4> iconNames = { L"data.svg", L"label.svg", L"constants.svg",
-                                                    L"equals.svg" };
+        const std::array<wxString, 4> iconNames = { L"images/data.svg", L"images/label.svg",
+                                                    L"images/constants.svg", L"images/equals.svg" };
         for (size_t col = 0; col < iconNames.size(); ++col)
             {
             const auto bmp = wxGetApp().ReadSvgIcon(iconNames[col], iconSize);
@@ -1150,6 +1162,125 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
+void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
+    {
+    if (m_pages.empty())
+        {
+        return;
+        }
+
+    const wxString dashboardFolder{ wxGetApp().FindResourceDirectory(L"res/dashboard") };
+    const wxString themesFolder{ dashboardFolder + wxFileName::GetPathSeparator() + L"themes" };
+
+    const auto readTextFile = [](wxString path)
+    {
+        wxString content;
+        if (!wxFileName::FileExists(path) ||
+            !Wisteria::TextStream::ReadFile(
+                path, content, wxString{},
+                Wisteria::TextStream::ReadFileInteractivityMode::NoInteractivity))
+            {
+            return wxString{};
+            }
+        return content;
+    };
+
+    const wxString coreCss{ dashboardFolder.empty() ?
+                                wxString{} :
+                                readTextFile(dashboardFolder + wxFileName::GetPathSeparator() +
+                                             L"dashboard.css") };
+    if (coreCss.empty())
+        {
+        wxMessageBox(_(L"Unable to find the dashboard stylesheet (dashboard.css)."),
+                     _(L"Export Error"), wxOK | wxICON_ERROR);
+        return;
+        }
+
+    wxArrayString themePaths;
+    if (!dashboardFolder.empty() && wxDir::Exists(themesFolder))
+        {
+        wxDir::GetAllFiles(themesFolder, &themePaths, L"*.css", wxDIR_FILES);
+        }
+    wxArrayString themes;
+    for (const auto& themePath : themePaths)
+        {
+        themes.Add(wxFileName{ themePath }.GetName());
+        }
+    themes.Sort();
+    if (const auto defaultIndex = themes.Index(L"default"); defaultIndex != wxNOT_FOUND)
+        {
+        themes.RemoveAt(static_cast<size_t>(defaultIndex));
+        themes.Insert(L"default", 0);
+        }
+
+    Wisteria::HtmlDashboardOptions& savedOptions = GetReportBuilder().GetHtmlExportOptions();
+
+    Wisteria::HtmlDashboardOptions dlgOptions{ savedOptions };
+    dlgOptions.Title(GetReportBuilder().GetName().empty() ? GetDocument()->GetUserReadableName() :
+                                                            GetReportBuilder().GetName());
+    const wxString initialTheme{ savedOptions.m_theme.empty() ? wxString{ L"default" } :
+                                                                savedOptions.m_theme };
+    Wisteria::UI::HtmlDashboardDlg optionsDlg(m_frame, themes, dlgOptions, initialTheme);
+    if (optionsDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    // persist the choices to the project, and to the app settings for new projects
+    const bool changed =
+        (savedOptions.m_theme != optionsDlg.GetTheme()) ||
+        (savedOptions.m_view != optionsDlg.GetInitialView()) ||
+        (savedOptions.m_colorMode != optionsDlg.GetInitialColorMode()) ||
+        (savedOptions.m_includeColorModeToggle != optionsDlg.IncludeColorModeToggle()) ||
+        (savedOptions.m_countUpNumbers != optionsDlg.CountUpNumbers()) ||
+        (savedOptions.m_pageSize != optionsDlg.GetPageSize());
+    savedOptions.m_theme = optionsDlg.GetTheme();
+    savedOptions.m_view = optionsDlg.GetInitialView();
+    savedOptions.m_colorMode = optionsDlg.GetInitialColorMode();
+    savedOptions.m_includeColorModeToggle = optionsDlg.IncludeColorModeToggle();
+    savedOptions.m_countUpNumbers = optionsDlg.CountUpNumbers();
+    savedOptions.m_pageSize = optionsDlg.GetPageSize();
+    if (changed)
+        {
+        GetDocument()->Modify(true);
+        }
+    wxGetApp().GetAppSettings()->GetHtmlExportOptions() = savedOptions;
+
+    const wxString themeCss{ readTextFile(themesFolder + wxFileName::GetPathSeparator() +
+                                          optionsDlg.GetTheme() + L".css") };
+
+    wxFileDialog fileDlg(m_frame, _(L"Export to HTML"), wxString{},
+                         GetDocument()->GetUserReadableName(), _(L"HTML files (*.html)|*.html"),
+                         wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    if (fileDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    // page labels hold the raw name template, so the expanded titles are only used for the export
+    std::vector<wxString> pageTitles;
+    pageTitles.reserve(m_pages.size());
+    for (const auto* page : m_pages)
+        {
+        pageTitles.push_back((page != nullptr && !page->GetNameTemplate().empty()) ?
+                                 GetReportBuilder().ExpandConstants(page->GetNameTemplate()) :
+                                 wxString{});
+        }
+
+    [[maybe_unused]]
+    Wisteria::HtmlDashboardPrintout htmlDashboard(
+        m_pages, Wisteria::HtmlDashboardOptions(fileDlg.GetPath())
+                     .Title(GetReportBuilder().ExpandConstants(optionsDlg.GetDashboardTitle()))
+                     .Css(coreCss + L"\n" + themeCss)
+                     .InitialView(optionsDlg.GetInitialView())
+                     .InitialColorMode(optionsDlg.GetInitialColorMode())
+                     .ColorModeToggle(optionsDlg.IncludeColorModeToggle())
+                     .CountUpNumbers(optionsDlg.CountUpNumbers())
+                     .PageSize(optionsDlg.GetPageSize())
+                     .PageTitles(std::move(pageTitles)));
+    }
+
+//-------------------------------------------
 void WisteriaView::OnPdfExport([[maybe_unused]] wxCommandEvent& event)
     {
     if (m_pages.empty())
@@ -1328,13 +1459,13 @@ void WisteriaView::ApplyColumnHeaderIcons(const wxGrid* grid, Wisteria::UI::Data
         case Wisteria::UI::DatasetGridColumnType::Id:
             [[fallthrough]];
         case Wisteria::UI::DatasetGridColumnType::Categorical:
-            svgName = L"categorical.svg";
+            svgName = L"images/categorical.svg";
             break;
         case Wisteria::UI::DatasetGridColumnType::Date:
-            svgName = L"date.svg";
+            svgName = L"images/date.svg";
             break;
         case Wisteria::UI::DatasetGridColumnType::Continuous:
-            svgName = L"scale.svg";
+            svgName = L"images/scale.svg";
             break;
             }
         const auto bmpBundle = wxGetApp().GetResourceManager().GetSVG(svgName);
@@ -1973,87 +2104,93 @@ void WisteriaView::BuildGraphMenus()
         menu.Append(item);
     };
 
-    appendItem(m_saveMenu, ID_SAVE_PROJECT, _(L"Save"), L"file-save.svg");
-    appendItem(m_saveMenu, ID_SAVE_PROJECT_AS, _(L"Save As..."), L"file-save.svg");
+    appendItem(m_saveMenu, ID_SAVE_PROJECT, _(L"Save"), L"images/file-save.svg");
+    appendItem(m_saveMenu, ID_SAVE_PROJECT_AS, _(L"Save As..."), L"images/file-save.svg");
 
     appendItem(m_dividerMenu, ID_NEW_DIVIDER_HORIZONTAL_SINGLE, _(L"Horizontal (Single Line)"),
-               L"divider-horizontal-single.svg");
+               L"images/divider-horizontal-single.svg");
     appendItem(m_dividerMenu, ID_NEW_DIVIDER_HORIZONTAL_DOUBLE, _(L"Horizontal (Double Line)"),
-               L"divider-horizontal-double.svg");
+               L"images/divider-horizontal-double.svg");
     m_dividerMenu.AppendSeparator();
     appendItem(m_dividerMenu, ID_NEW_DIVIDER_VERTICAL_SINGLE, _(L"Vertical (Single Line)"),
-               L"divider-vertical-single.svg");
+               L"images/divider-vertical-single.svg");
     appendItem(m_dividerMenu, ID_NEW_DIVIDER_VERTICAL_DOUBLE, _(L"Vertical (Double Line)"),
-               L"divider-vertical-double.svg");
+               L"images/divider-vertical-double.svg");
 
     // Basic graphs
-    appendItem(m_basicGraphMenu, ID_NEW_BARCHART, _(L"Bar Chart..."), L"barchart.svg");
+    appendItem(m_basicGraphMenu, ID_NEW_BARCHART, _(L"Bar Chart..."), L"images/barchart.svg");
     m_basicGraphMenu.AppendSeparator();
-    appendItem(m_basicGraphMenu, ID_NEW_PIECHART, _(L"Pie Chart..."), L"piechart.svg");
+    appendItem(m_basicGraphMenu, ID_NEW_PIECHART, _(L"Pie Chart..."), L"images/piechart.svg");
     m_basicGraphMenu.AppendSeparator();
-    appendItem(m_basicGraphMenu, ID_NEW_LINEPLOT, _(L"Line Plot..."), L"lineplot.svg");
+    appendItem(m_basicGraphMenu, ID_NEW_LINEPLOT, _(L"Line Plot..."), L"images/lineplot.svg");
     appendItem(m_basicGraphMenu, ID_NEW_MULTI_SERIES_LINEPLOT, _(L"Multi-Series Line Plot..."),
-               L"lineplot.svg");
+               L"images/lineplot.svg");
     m_basicGraphMenu.AppendSeparator();
-    appendItem(m_basicGraphMenu, ID_NEW_TABLE, _(L"Table..."), L"table.svg");
-    appendItem(m_basicGraphMenu, ID_NEW_SANKEY_DIAGRAM, _(L"Sankey Diagram..."), L"sankey.svg");
-    appendItem(m_basicGraphMenu, ID_NEW_WAFFLE_CHART, _(L"Waffle Chart..."), L"waffle.svg");
+    appendItem(m_basicGraphMenu, ID_NEW_TABLE, _(L"Table..."), L"images/table.svg");
+    appendItem(m_basicGraphMenu, ID_NEW_SANKEY_DIAGRAM, _(L"Sankey Diagram..."),
+               L"images/sankey.svg");
+    appendItem(m_basicGraphMenu, ID_NEW_WAFFLE_CHART, _(L"Waffle Chart..."), L"images/waffle.svg");
     appendItem(m_basicGraphMenu, ID_NEW_RACETRACK_CHART, _(L"Race Track Chart..."),
-               L"racetrack.svg");
+               L"images/racetrack.svg");
     appendItem(m_basicGraphMenu, ID_NEW_NIGHTINGALE_ROSE_CHART, _(L"Nightingale Rose Chart..."),
-               L"rose.svg");
+               L"images/rose.svg");
     appendItem(m_basicGraphMenu, ID_NEW_DUBOIS_SPIRAL_CHART, _(L"Du Bois Spiral Chart..."),
-               L"dubois-spiral.svg");
-    appendItem(m_basicGraphMenu, ID_NEW_PICTOGRAPH, _(L"Pictograph..."), L"pictograph.svg");
+               L"images/dubois-spiral.svg");
+    appendItem(m_basicGraphMenu, ID_NEW_PICTOGRAPH, _(L"Pictograph..."), L"images/pictograph.svg");
     m_basicGraphMenu.AppendSeparator();
-    appendItem(m_basicGraphMenu, ID_NEW_CHOROPLETH_MAP, _(L"Choropleth Map..."), L"choropleth.svg");
+    appendItem(m_basicGraphMenu, ID_NEW_CHOROPLETH_MAP, _(L"Choropleth Map..."),
+               L"images/choropleth.svg");
 
     // Business graphs
-    appendItem(m_businessGraphMenu, ID_NEW_GANTT, _(L"Gantt Chart..."), L"gantt.svg");
+    appendItem(m_businessGraphMenu, ID_NEW_GANTT, _(L"Gantt Chart..."), L"images/gantt.svg");
     appendItem(m_businessGraphMenu, ID_NEW_CANDLESTICK, _(L"Candlestick Plot..."),
-               L"candlestick.svg");
-    appendItem(m_businessGraphMenu, ID_NEW_BULLET_CHART, _(L"Bullet Chart..."), L"bulletchart.svg");
+               L"images/candlestick.svg");
+    appendItem(m_businessGraphMenu, ID_NEW_BULLET_CHART, _(L"Bullet Chart..."),
+               L"images/bulletchart.svg");
     appendItem(m_businessGraphMenu, ID_NEW_WATERFALL_CHART, _(L"Waterfall Chart..."),
-               L"waterfallchart.svg");
-    appendItem(m_businessGraphMenu, ID_NEW_FUNNEL_CHART, _(L"Funnel Chart..."), L"funnel.svg");
+               L"images/waterfallchart.svg");
+    appendItem(m_businessGraphMenu, ID_NEW_FUNNEL_CHART, _(L"Funnel Chart..."),
+               L"images/funnel.svg");
 
     // Statistical graphs
-    appendItem(m_statisticalGraphMenu, ID_NEW_HISTOGRAM, _(L"Histogram..."), L"histogram.svg");
+    appendItem(m_statisticalGraphMenu, ID_NEW_HISTOGRAM, _(L"Histogram..."),
+               L"images/histogram.svg");
     m_statisticalGraphMenu.AppendSeparator();
-    appendItem(m_statisticalGraphMenu, ID_NEW_BOXPLOT, _(L"Box Plot..."), L"boxplot.svg");
+    appendItem(m_statisticalGraphMenu, ID_NEW_BOXPLOT, _(L"Box Plot..."), L"images/boxplot.svg");
     appendItem(m_statisticalGraphMenu, ID_NEW_STEMANDLEAF, _(L"Stem-and-Leaf Plot..."),
-               L"stem-leaf.svg");
+               L"images/stem-leaf.svg");
     m_statisticalGraphMenu.AppendSeparator();
-    appendItem(m_statisticalGraphMenu, ID_NEW_HEATMAP, _(L"Heat Map..."), L"heatmap.svg");
+    appendItem(m_statisticalGraphMenu, ID_NEW_HEATMAP, _(L"Heat Map..."), L"images/heatmap.svg");
     m_statisticalGraphMenu.AppendSeparator();
     appendItem(m_statisticalGraphMenu, ID_NEW_SCATTERPLOT, _(L"Scatter Plot..."),
-               L"scatterplot.svg");
-    appendItem(m_statisticalGraphMenu, ID_NEW_BUBBLEPLOT, _(L"Bubble Plot..."), L"bubbleplot.svg");
+               L"images/scatterplot.svg");
+    appendItem(m_statisticalGraphMenu, ID_NEW_BUBBLEPLOT, _(L"Bubble Plot..."),
+               L"images/bubbleplot.svg");
     appendItem(m_statisticalGraphMenu, ID_NEW_CHERNOFFPLOT, _(L"Chernoff Faces Plot..."),
-               L"chernoffplot.svg");
+               L"images/chernoffplot.svg");
     m_statisticalGraphMenu.AppendSeparator();
     appendItem(m_statisticalGraphMenu, ID_NEW_WILMARTH_BRIDGE_PLOT, _(L"Wilmarth Bridge Plot..."),
-               L"wilmarth-bridge.svg");
+               L"images/wilmarth-bridge.svg");
 
     // Survey graphs
-    appendItem(m_surveyGraphMenu, ID_NEW_LIKERT, _(L"Likert Chart..."), L"likert7.svg");
+    appendItem(m_surveyGraphMenu, ID_NEW_LIKERT, _(L"Likert Chart..."), L"images/likert7.svg");
     m_surveyGraphMenu.AppendSeparator();
-    appendItem(m_surveyGraphMenu, ID_NEW_WORD_CLOUD, _(L"Word Cloud..."), L"wordcloud.svg");
+    appendItem(m_surveyGraphMenu, ID_NEW_WORD_CLOUD, _(L"Word Cloud..."), L"images/wordcloud.svg");
     m_surveyGraphMenu.AppendSeparator();
     appendItem(m_surveyGraphMenu, ID_NEW_PROCON_ROADMAP, _(L"Pro && Con Roadmap..."),
-               L"roadmap.svg");
+               L"images/roadmap.svg");
 
     // Education graphs
-    appendItem(m_educationGraphMenu, ID_NEW_SCALE_CHART, _(L"Scale Chart..."), L"scale.svg");
+    appendItem(m_educationGraphMenu, ID_NEW_SCALE_CHART, _(L"Scale Chart..."), L"images/scale.svg");
 
     // Social Sciences graphs
-    appendItem(m_socialGraphMenu, ID_NEW_WCURVE, _(L"W-Curve Plot..."), L"wcurve.svg");
+    appendItem(m_socialGraphMenu, ID_NEW_WCURVE, _(L"W-Curve Plot..."), L"images/wcurve.svg");
     appendItem(m_socialGraphMenu, ID_NEW_LR_ROADMAP, _(L"Linear Regression Roadmap..."),
-               L"roadmap.svg");
+               L"images/roadmap.svg");
 
     // Sports graphs
     appendItem(m_sportsGraphMenu, ID_NEW_WIN_LOSS_SPARKLINE, _(L"Win/Loss Sparkline..."),
-               L"sparkline.svg");
+               L"images/sparkline.svg");
     }
 
 //-------------------------------------------
@@ -2334,7 +2471,7 @@ void WisteriaView::OnInsertChernoffPlot([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertChernoffDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"chernoffplot.svg");
+    SetDialogIcon(dlg, L"images/chernoffplot.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -2375,7 +2512,7 @@ void WisteriaView::OnInsertScatterPlot([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertScatterPlotDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"scatterplot.svg");
+    SetDialogIcon(dlg, L"images/scatterplot.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -2437,7 +2574,7 @@ void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertTableDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"table.svg");
+    SetDialogIcon(dlg, L"images/table.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -2465,7 +2602,7 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
                                      wxDefaultPosition, wxDefaultSize,
                                      wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                      Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"table.svg");
+    SetDialogIcon(dlg, L"images/table.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -2912,7 +3049,7 @@ void WisteriaView::EditScatterPlot(const Wisteria::Graphs::Graph2D& graph, Wiste
         canvas, &m_reportBuilder, m_frame, _(L"Edit Scatter Plot"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"scatterplot.svg");
+    SetDialogIcon(dlg, L"images/scatterplot.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -2947,7 +3084,7 @@ void WisteriaView::OnInsertBubblePlot([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertBubblePlotDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"bubbleplot.svg");
+    SetDialogIcon(dlg, L"images/bubbleplot.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -2975,7 +3112,7 @@ void WisteriaView::EditBubblePlot(const Wisteria::Graphs::Graph2D& graph, Wister
         canvas, &m_reportBuilder, m_frame, _(L"Edit Bubble Plot"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"bubbleplot.svg");
+    SetDialogIcon(dlg, L"images/bubbleplot.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3010,7 +3147,7 @@ void WisteriaView::EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph,
                                         wxDefaultSize,
                                         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"chernoffplot.svg");
+    SetDialogIcon(dlg, L"images/chernoffplot.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3056,7 +3193,7 @@ void WisteriaView::OnInsertLinePlot([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertLinePlotDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"lineplot.svg");
+    SetDialogIcon(dlg, L"images/lineplot.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -3084,7 +3221,7 @@ void WisteriaView::EditLinePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria
                                         wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"lineplot.svg");
+    SetDialogIcon(dlg, L"images/lineplot.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3119,7 +3256,7 @@ void WisteriaView::OnInsertMultiSeriesLinePlot([[maybe_unused]] wxCommandEvent& 
         }
 
     Wisteria::UI::InsertMultiSeriesLinePlotDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"lineplot.svg");
+    SetDialogIcon(dlg, L"images/lineplot.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -3149,7 +3286,7 @@ void WisteriaView::EditMultiSeriesLinePlot(const Wisteria::Graphs::Graph2D& grap
         wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"lineplot.svg");
+    SetDialogIcon(dlg, L"images/lineplot.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3184,7 +3321,7 @@ void WisteriaView::OnInsertWCurvePlot([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertWCurveDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"wcurve.svg");
+    SetDialogIcon(dlg, L"images/wcurve.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -3212,7 +3349,7 @@ void WisteriaView::EditWCurvePlot(const Wisteria::Graphs::Graph2D& graph, Wister
                                       wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                       wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                       Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"wcurve.svg");
+    SetDialogIcon(dlg, L"images/wcurve.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3247,7 +3384,7 @@ void WisteriaView::OnInsertLRRoadmap([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertLRRoadmapDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"roadmap.svg");
+    SetDialogIcon(dlg, L"images/roadmap.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -3276,7 +3413,7 @@ void WisteriaView::EditLRRoadmap(const Wisteria::Graphs::Graph2D& graph, Wisteri
                                          wxDefaultPosition, wxDefaultSize,
                                          wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                          Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"roadmap.svg");
+    SetDialogIcon(dlg, L"images/roadmap.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3311,7 +3448,7 @@ void WisteriaView::OnInsertProConRoadmap([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertProConRoadmapDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"roadmap.svg");
+    SetDialogIcon(dlg, L"images/roadmap.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -3341,7 +3478,7 @@ void WisteriaView::EditProConRoadmap(const Wisteria::Graphs::Graph2D& graph,
         wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"roadmap.svg");
+    SetDialogIcon(dlg, L"images/roadmap.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3376,7 +3513,7 @@ void WisteriaView::OnInsertGanttChart([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertGanttChartDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"gantt.svg");
+    SetDialogIcon(dlg, L"images/gantt.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -3404,7 +3541,7 @@ void WisteriaView::EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
         canvas, &m_reportBuilder, m_frame, _(L"Edit Gantt Chart"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"gantt.svg");
+    SetDialogIcon(dlg, L"images/gantt.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3439,7 +3576,7 @@ void WisteriaView::OnInsertCandlestickPlot([[maybe_unused]] wxCommandEvent& even
         }
 
     Wisteria::UI::InsertCandlestickPlotDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"candlestick.svg");
+    SetDialogIcon(dlg, L"images/candlestick.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -3469,7 +3606,7 @@ void WisteriaView::EditCandlestickPlot(const Wisteria::Graphs::Graph2D& graph,
         canvas, &m_reportBuilder, m_frame, _(L"Edit Candlestick Plot"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"candlestick.svg");
+    SetDialogIcon(dlg, L"images/candlestick.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3503,7 +3640,7 @@ void WisteriaView::OnInsertSankeyDiagram([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertSankeyDiagramDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"sankey.svg");
+    SetDialogIcon(dlg, L"images/sankey.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -3534,7 +3671,7 @@ void WisteriaView::EditSankeyDiagram(const Wisteria::Graphs::Graph2D& graph,
         canvas, &m_reportBuilder, m_frame, _(L"Edit Sankey Diagram"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"sankey.svg");
+    SetDialogIcon(dlg, L"images/sankey.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3575,7 +3712,7 @@ void WisteriaView::OnInsertBoxPlot([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertBoxPlotDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"boxplot.svg");
+    SetDialogIcon(dlg, L"images/boxplot.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -3610,7 +3747,7 @@ void WisteriaView::EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
                                        wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                        Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"boxplot.svg");
+    SetDialogIcon(dlg, L"images/boxplot.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3651,7 +3788,7 @@ void WisteriaView::OnInsertCatBarChart([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertCatBarChartDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"barchart.svg");
+    SetDialogIcon(dlg, L"images/barchart.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -3686,7 +3823,7 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         canvas, &m_reportBuilder, m_frame, _(L"Edit Bar Chart"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"barchart.svg");
+    SetDialogIcon(dlg, L"images/barchart.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3721,7 +3858,7 @@ void WisteriaView::OnInsertLikertChart([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertLikertDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"likert7.svg");
+    SetDialogIcon(dlg, L"images/likert7.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -3749,7 +3886,7 @@ void WisteriaView::EditLikertChart(const Wisteria::Graphs::Graph2D& graph, Wiste
                                       wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                       wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                       Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"likert7.svg");
+    SetDialogIcon(dlg, L"images/likert7.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3784,7 +3921,7 @@ void WisteriaView::OnInsertHeatMap([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertHeatMapDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"heatmap.svg");
+    SetDialogIcon(dlg, L"images/heatmap.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -3812,7 +3949,7 @@ void WisteriaView::EditHeatMap(const Wisteria::Graphs::Graph2D& graph, Wisteria:
                                        wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                        Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"heatmap.svg");
+    SetDialogIcon(dlg, L"images/heatmap.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3847,7 +3984,7 @@ void WisteriaView::OnInsertHistogram([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertHistogramDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"histogram.svg");
+    SetDialogIcon(dlg, L"images/histogram.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -3875,7 +4012,7 @@ void WisteriaView::EditHistogram(const Wisteria::Graphs::Graph2D& graph, Wisteri
                                          wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                          wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                          Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"histogram.svg");
+    SetDialogIcon(dlg, L"images/histogram.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3910,7 +4047,7 @@ void WisteriaView::OnInsertScaleChart([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertScaleChartDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"scale.svg");
+    SetDialogIcon(dlg, L"images/scale.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -3938,7 +4075,7 @@ void WisteriaView::EditScaleChart(const Wisteria::Graphs::Graph2D& graph, Wister
         canvas, &m_reportBuilder, m_frame, _(L"Edit Scale Chart"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"scale.svg");
+    SetDialogIcon(dlg, L"images/scale.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -3973,7 +4110,7 @@ void WisteriaView::OnInsertWordCloud([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertWordCloudDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"wordcloud.svg");
+    SetDialogIcon(dlg, L"images/wordcloud.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4004,7 +4141,7 @@ void WisteriaView::OnInsertChoroplethMap([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertChoroplethMapDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"choropleth.svg");
+    SetDialogIcon(dlg, L"images/choropleth.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4049,7 +4186,7 @@ void WisteriaView::EditChoroplethMap(const Wisteria::Graphs::Graph2D& graph,
         canvas, &m_reportBuilder, m_frame, _(L"Edit Choropleth Map"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"choropleth.svg");
+    SetDialogIcon(dlg, L"images/choropleth.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -4097,7 +4234,7 @@ void WisteriaView::EditWordCloud(const Wisteria::Graphs::Graph2D& graph, Wisteri
                                          wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                          wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                          Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"wordcloud.svg");
+    SetDialogIcon(dlg, L"images/wordcloud.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -4132,7 +4269,7 @@ void WisteriaView::OnInsertWLSparkline([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertWLSparklineDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"sparkline.svg");
+    SetDialogIcon(dlg, L"images/sparkline.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4161,7 +4298,7 @@ void WisteriaView::EditWLSparkline(const Wisteria::Graphs::Graph2D& graph, Wiste
         wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"sparkline.svg");
+    SetDialogIcon(dlg, L"images/sparkline.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -4196,7 +4333,7 @@ void WisteriaView::OnInsertStemAndLeaf([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertStemAndLeafDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"stem-leaf.svg");
+    SetDialogIcon(dlg, L"images/stem-leaf.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4225,7 +4362,7 @@ void WisteriaView::EditStemAndLeaf(const Wisteria::Graphs::Graph2D& graph, Wiste
         wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"stem-leaf.svg");
+    SetDialogIcon(dlg, L"images/stem-leaf.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -4266,7 +4403,7 @@ void WisteriaView::OnInsertPieChart([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertPieChartDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"piechart.svg");
+    SetDialogIcon(dlg, L"images/piechart.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4301,7 +4438,7 @@ void WisteriaView::EditPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria
                                         wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"piechart.svg");
+    SetDialogIcon(dlg, L"images/piechart.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -4336,7 +4473,7 @@ void WisteriaView::OnInsertWaffleChart([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertWaffleChartDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"waffle.svg");
+    SetDialogIcon(dlg, L"images/waffle.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4364,7 +4501,7 @@ void WisteriaView::EditWaffleChart(const Wisteria::Graphs::Graph2D& graph, Wiste
         canvas, &m_reportBuilder, m_frame, _(L"Edit Waffle Chart"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"waffle.svg");
+    SetDialogIcon(dlg, L"images/waffle.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -4401,7 +4538,7 @@ void WisteriaView::OnInsertRaceTrackChart([[maybe_unused]] wxCommandEvent& event
         }
 
     Wisteria::UI::InsertRaceTrackChartDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"racetrack.svg");
+    SetDialogIcon(dlg, L"images/racetrack.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4430,7 +4567,7 @@ void WisteriaView::EditRaceTrackChart(const Wisteria::Graphs::Graph2D& graph,
         canvas, &m_reportBuilder, m_frame, _(L"Edit Race Track Chart"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"racetrack.svg");
+    SetDialogIcon(dlg, L"images/racetrack.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -4466,7 +4603,7 @@ void WisteriaView::OnInsertNightingaleRoseChart([[maybe_unused]] wxCommandEvent&
         }
 
     Wisteria::UI::InsertNightingaleRoseChartDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"rose.svg");
+    SetDialogIcon(dlg, L"images/rose.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4496,7 +4633,7 @@ void WisteriaView::EditNightingaleRoseChart(const Wisteria::Graphs::Graph2D& gra
         wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"rose.svg");
+    SetDialogIcon(dlg, L"images/rose.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -4533,7 +4670,7 @@ void WisteriaView::OnInsertBulletChart([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertBulletChartDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"bulletchart.svg");
+    SetDialogIcon(dlg, L"images/bulletchart.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4562,7 +4699,7 @@ void WisteriaView::EditBulletChart(const Wisteria::Graphs::Graph2D& graph, Wiste
         canvas, &m_reportBuilder, m_frame, _(L"Edit Bullet Chart"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"bulletchart.svg");
+    SetDialogIcon(dlg, L"images/bulletchart.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -4596,7 +4733,7 @@ void WisteriaView::OnInsertWaterfallChart([[maybe_unused]] wxCommandEvent& event
         }
 
     Wisteria::UI::InsertWaterfallChartDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"waterfallchart.svg");
+    SetDialogIcon(dlg, L"images/waterfallchart.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4626,7 +4763,7 @@ void WisteriaView::EditWaterfallChart(const Wisteria::Graphs::Graph2D& graph,
         canvas, &m_reportBuilder, m_frame, _(L"Edit Waterfall Chart"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"waterfallchart.svg");
+    SetDialogIcon(dlg, L"images/waterfallchart.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -4660,7 +4797,7 @@ void WisteriaView::OnInsertFunnelChart([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertFunnelChartDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"funnel.svg");
+    SetDialogIcon(dlg, L"images/funnel.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4689,7 +4826,7 @@ void WisteriaView::EditFunnelChart(const Wisteria::Graphs::Graph2D& graph, Wiste
         canvas, &m_reportBuilder, m_frame, _(L"Edit Funnel Chart"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"funnel.svg");
+    SetDialogIcon(dlg, L"images/funnel.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -4723,7 +4860,7 @@ void WisteriaView::OnInsertDuBoisSpiralChart([[maybe_unused]] wxCommandEvent& ev
         }
 
     Wisteria::UI::InsertDuBoisSpiralChartDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"dubois-spiral.svg");
+    SetDialogIcon(dlg, L"images/dubois-spiral.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4754,7 +4891,7 @@ void WisteriaView::EditDuBoisSpiralChart(const Wisteria::Graphs::Graph2D& graph,
         wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"dubois-spiral.svg");
+    SetDialogIcon(dlg, L"images/dubois-spiral.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -4788,7 +4925,7 @@ void WisteriaView::OnInsertPictograph([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertPictographDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"pictograph.svg");
+    SetDialogIcon(dlg, L"images/pictograph.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4817,7 +4954,7 @@ void WisteriaView::EditPictograph(const Wisteria::Graphs::Graph2D& graph, Wister
         canvas, &m_reportBuilder, m_frame, _(L"Edit Pictograph"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"pictograph.svg");
+    SetDialogIcon(dlg, L"images/pictograph.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -4851,7 +4988,7 @@ void WisteriaView::OnInsertWilmarthBridgePlot([[maybe_unused]] wxCommandEvent& e
         }
 
     Wisteria::UI::InsertWilmarthBridgePlotDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"wilmarth-bridge.svg");
+    SetDialogIcon(dlg, L"images/wilmarth-bridge.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4881,7 +5018,7 @@ void WisteriaView::EditWilmarthBridgePlot(const Wisteria::Graphs::Graph2D& graph
         wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"wilmarth-bridge.svg");
+    SetDialogIcon(dlg, L"images/wilmarth-bridge.svg");
     dlg.SetSelectedCell(graphRow, graphCol);
     dlg.LoadFromGraph(graph);
 
@@ -4917,7 +5054,7 @@ void WisteriaView::OnInsertLabel([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertLabelDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"label.svg");
+    SetDialogIcon(dlg, L"images/label.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4941,7 +5078,7 @@ void WisteriaView::OnInsertKpiCard([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertKpiCardDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"kpi-card.svg");
+    SetDialogIcon(dlg, L"images/kpi-card.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -4972,7 +5109,7 @@ void WisteriaView::EditLabel(const Wisteria::GraphItems::Label& label, Wisteria:
             wxDefaultPosition, wxDefaultSize,
             wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
             Wisteria::UI::InsertItemDlg::EditMode::Edit, Wisteria::UI::LabelDlgIncludePageOptions);
-        SetDialogIcon(dlg, L"spacer.svg");
+        SetDialogIcon(dlg, L"images/spacer.svg");
         dlg.SetSelectedCell(labelRow, labelCol);
 
         if (dlg.ShowModal() != wxID_OK)
@@ -5021,7 +5158,7 @@ void WisteriaView::EditLabel(const Wisteria::GraphItems::Label& label, Wisteria:
                                      wxDefaultPosition, wxDefaultSize,
                                      wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                      Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"label.svg");
+    SetDialogIcon(dlg, L"images/label.svg");
     dlg.SetSelectedCell(labelRow, labelCol);
     dlg.LoadFromLabel(label);
 
@@ -5049,7 +5186,7 @@ void WisteriaView::OnInsertSpacer([[maybe_unused]] wxCommandEvent& event)
         canvas, &m_reportBuilder, m_frame, _(L"Insert Spacer"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Insert, Wisteria::UI::LabelDlgIncludePageOptions);
-    SetDialogIcon(dlg, L"spacer.svg");
+    SetDialogIcon(dlg, L"images/spacer.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -5081,11 +5218,13 @@ void WisteriaView::OnInsertDivider(wxCommandEvent& event)
                       (event.GetId() == ID_NEW_DIVIDER_VERTICAL_SINGLE) ?
                           Wisteria::DividerType::VerticalSingleLine :
                           Wisteria::DividerType::VerticalDoubleLine;
-    const wxString iconName =
-        (type == Wisteria::DividerType::HorizontalSingleLine) ? L"divider-horizontal-single.svg" :
-        (type == Wisteria::DividerType::HorizontalDoubleLine) ? L"divider-horizontal-double.svg" :
-        (type == Wisteria::DividerType::VerticalSingleLine)   ? L"divider-vertical-single.svg" :
-                                                                L"divider-vertical-double.svg";
+    const wxString iconName = (type == Wisteria::DividerType::HorizontalSingleLine) ?
+                                  L"images/divider-horizontal-single.svg" :
+                              (type == Wisteria::DividerType::HorizontalDoubleLine) ?
+                                  L"images/divider-horizontal-double.svg" :
+                              (type == Wisteria::DividerType::VerticalSingleLine) ?
+                                  L"images/divider-vertical-single.svg" :
+                                  L"images/divider-vertical-double.svg";
 
     auto label = Wisteria::UI::InsertLabelDlg::BuildDividerLabel(canvas, type);
 
@@ -5125,7 +5264,7 @@ void WisteriaView::OnInsertImage([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertImageDlg dlg(canvas, nullptr, m_frame);
-    SetDialogIcon(dlg, L"image.svg");
+    SetDialogIcon(dlg, L"images/image.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -5160,7 +5299,7 @@ void WisteriaView::EditImage(Wisteria::GraphItems::Image& image, Wisteria::Canva
                                      wxDefaultPosition, wxDefaultSize,
                                      wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                      Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"image.svg");
+    SetDialogIcon(dlg, L"images/image.svg");
     dlg.SetSelectedCell(imageRow, imageCol);
     dlg.LoadFromImage(image);
 
@@ -5191,7 +5330,7 @@ void WisteriaView::OnInsertShape([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertShapeDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"shape.svg");
+    SetDialogIcon(dlg, L"images/shape.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -5213,7 +5352,7 @@ void WisteriaView::EditShape(const Wisteria::GraphItems::Shape& shape, Wisteria:
                                      wxDefaultPosition, wxDefaultSize,
                                      wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                      Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"shape.svg");
+    SetDialogIcon(dlg, L"images/shape.svg");
     dlg.SetSelectedCell(shapeRow, shapeCol);
     dlg.LoadFromShape(shape);
 
@@ -5237,7 +5376,7 @@ void WisteriaView::EditFillableShape(const Wisteria::GraphItems::FillableShape& 
                                      wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                      wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                      Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"shape.svg");
+    SetDialogIcon(dlg, L"images/shape.svg");
     dlg.SetSelectedCell(shapeRow, shapeCol);
     dlg.LoadFromFillableShape(shape);
 
@@ -5262,7 +5401,7 @@ void WisteriaView::OnInsertCommonAxis([[maybe_unused]] wxCommandEvent& event)
         }
 
     Wisteria::UI::InsertCommonAxisDlg dlg(canvas, &m_reportBuilder, m_frame);
-    SetDialogIcon(dlg, L"axis.svg");
+    SetDialogIcon(dlg, L"images/axis.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
         return;
@@ -5291,7 +5430,7 @@ void WisteriaView::EditCommonAxis(Wisteria::GraphItems::Axis& axis, Wisteria::Ca
         canvas, &m_reportBuilder, m_frame, _(L"Edit Common Axis"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
         Wisteria::UI::InsertItemDlg::EditMode::Edit);
-    SetDialogIcon(dlg, L"axis.svg");
+    SetDialogIcon(dlg, L"images/axis.svg");
     dlg.LoadFromAxis(axis);
     dlg.LoadPageOptions(axis);
 

@@ -10,6 +10,7 @@
 #define WISTERIA_APPSETTINGS_H
 
 #include "../base/enums.h"
+#include "../reporting/htmldashboardprintout.h"
 #include "../reporting/pptxreportprintout.h"
 #include "../reporting/svgreportprintout.h"
 #include <set>
@@ -152,6 +153,23 @@ class AppSettings
         return m_svgExportOptions;
         }
 
+    // HTML dashboard export options
+    //------------------------------
+
+    /// @returns The HTML dashboard export options.
+    [[nodiscard]]
+    Wisteria::HtmlDashboardOptions& GetHtmlExportOptions() noexcept
+        {
+        return m_htmlExportOptions;
+        }
+
+    /// @private
+    [[nodiscard]]
+    const Wisteria::HtmlDashboardOptions& GetHtmlExportOptions() const noexcept
+        {
+        return m_htmlExportOptions;
+        }
+
     // PowerPoint export options
     //---------------------------
 
@@ -197,6 +215,7 @@ class AppSettings
     bool m_logVerbose{ false };
 
     Wisteria::SVGReportOptions m_svgExportOptions{ wxString{} };
+    Wisteria::HtmlDashboardOptions m_htmlExportOptions{ wxString{} };
     Wisteria::PowerPointExportOptions m_powerPointExportOptions;
     std::set<Wisteria::GalleryGroup> m_collapsedGalleryGroups;
     };

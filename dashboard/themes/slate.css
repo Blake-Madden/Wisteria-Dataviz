@@ -1,0 +1,10 @@
+/* ==========================================================================
+   Wisteria dashboard - slate theme
+   ========================================================================== */
+
+:root
+  {
+  --accent: light-dark(#475569, #94A3B8);      /* dark slate in light mode, light slate in dark mode */
+  --accent-text: light-dark(white, black);
+  --border-color: light-dark(rgba(71, 85, 105, 0.35), rgba(148, 163, 184, 0.35));
+  }

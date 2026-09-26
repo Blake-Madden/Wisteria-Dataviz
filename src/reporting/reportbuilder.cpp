@@ -23,9 +23,11 @@ namespace Wisteria
         m_name.clear();
         m_datasets.clear();
         m_svgExportOptions = SVGReportOptions{ wxString{} };
+        m_htmlExportOptions = HtmlDashboardOptions{ wxString{} };
         m_pdfExportOptions = PdfExportOptions{};
         m_powerPointExportOptions = PowerPointExportOptions{};
         m_svgExportOptionsLoaded = false;
+        m_htmlExportOptionsLoaded = false;
         m_pdfExportOptionsLoaded = false;
         m_powerPointExportOptionsLoaded = false;
         m_resolvedMissingDatasets = false;
@@ -168,6 +170,49 @@ namespace Wisteria
                     (static_cast<int>(*layout) == 0) ? SVGReportOptions::PageLayout::Single :
                     (static_cast<int>(*layout) == 1) ? SVGReportOptions::PageLayout::Duplex :
                                                        SVGReportOptions::PageLayout::Stacked;
+                }
+            }
+
+        // HTML dashboard export options
+        if (const auto htmlExportNode = json->GetProperty(L"html-export"); htmlExportNode->IsOk())
+            {
+            m_htmlExportOptionsLoaded = true;
+            if (const auto themeNode = htmlExportNode->GetProperty(L"theme"); themeNode->IsOk())
+                {
+                m_htmlExportOptions.m_theme = themeNode->AsString();
+                }
+            if (const auto viewNode = htmlExportNode->GetProperty(L"view"); viewNode->IsOk())
+                {
+                m_htmlExportOptions.m_view = HtmlDashboardOptions::ParseView(
+                    viewNode->AsString(), m_htmlExportOptions.m_view);
+                }
+            if (const auto modeNode = htmlExportNode->GetProperty(L"color-mode"); modeNode->IsOk())
+                {
+                m_htmlExportOptions.m_colorMode = HtmlDashboardOptions::ParseColorMode(
+                    modeNode->AsString(), m_htmlExportOptions.m_colorMode);
+                }
+            if (const auto toggleNode = htmlExportNode->GetProperty(L"color-mode-toggle");
+                toggleNode->IsOk())
+                {
+                m_htmlExportOptions.m_includeColorModeToggle =
+                    toggleNode->AsBool(m_htmlExportOptions.m_includeColorModeToggle);
+                }
+            if (const auto countUpNode = htmlExportNode->GetProperty(L"count-up");
+                countUpNode->IsOk())
+                {
+                m_htmlExportOptions.m_countUpNumbers =
+                    countUpNode->AsBool(m_htmlExportOptions.m_countUpNumbers);
+                }
+            if (const auto widthNode = htmlExportNode->GetProperty(L"page-width");
+                widthNode->IsOk() && widthNode->AsDouble(-1) > 0)
+                {
+                m_htmlExportOptions.m_pageSize.SetWidth(static_cast<int>(widthNode->AsDouble(-1)));
+                }
+            if (const auto heightNode = htmlExportNode->GetProperty(L"page-height");
+                heightNode->IsOk() && heightNode->AsDouble(-1) > 0)
+                {
+                m_htmlExportOptions.m_pageSize.SetHeight(
+                    static_cast<int>(heightNode->AsDouble(-1)));
                 }
             }
 

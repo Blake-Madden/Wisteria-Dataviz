@@ -1,0 +1,535 @@
+/* ==========================================================================
+   Wisteria dashboard - core stylesheet
+   Themes (see themes/) only override the variables in the first :root block.
+   ========================================================================== */
+
+/* ---------- Variables ---------------------------------------- */
+
+:root
+  {
+  color-scheme: light dark;
+  --accent: light-dark(#673AB7, #B39DDB);      /* buttons, active states, focus accents */
+  --accent-text: light-dark(white, black);     /* text/icon color on the accent */
+  --border-color: rgba(128, 128, 128, 0.3);    /* general borders */
+  --toolbar-bg: color-mix(in srgb, var(--accent) 8%, Canvas);
+  --page-gap: 24px;                            /* space between pages */
+  --page-max-width: 1600px;                    /* widest a page is drawn */
+  --page-radius: 6px;                          /* page corner radius */
+  --card-width: 140px;                         /* width of a page card in the Atlas view */
+  --toolbar-height: 52px;                      /* replaced with the measured height by the script */
+  --strip-height: 0px;                         /* replaced with the measured card strip height */
+  }
+
+/* ---------- Base --------------------------------------------- */
+
+body
+  {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif;
+  background-color: Canvas;
+  color: CanvasText;
+  }
+
+.page:focus
+  { outline: none; }
+
+.visually-hidden, .page-title
+  {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+  }
+
+/* ---------- Toolbar ------------------------------------------ */
+
+.dash-toolbar
+  {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 8px 16px;
+  background-color: var(--toolbar-bg);
+  border-bottom: 1px solid var(--border-color);
+  }
+
+.dash-title
+  {
+  margin: 0;
+  font-size: 1.1em;
+  }
+
+.dash-controls
+  {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  }
+
+.dash-views, .dash-modes, .dash-layers
+  {
+  display: flex;
+  gap: 4px;
+  }
+
+.dash-pager
+  {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  }
+
+.dash-pager button
+  {
+  width: 30px;
+  padding: 2px 0;
+  line-height: 1.2;
+  }
+
+.dash-pager button[aria-disabled="true"]
+  {
+  opacity: 0.4;
+  cursor: default;
+  }
+
+.dash-pager-label
+  {
+  max-width: 28ch;
+  overflow: hidden;
+  font-size: 0.9em;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  }
+
+/* reading progress through the Story view */
+.dash-progress
+  {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: none;
+  width: 100%;
+  height: 3px;
+  background-color: var(--accent);
+  transform: scaleX(var(--progress, 0));
+  transform-origin: 0 50%;
+  }
+
+html[data-view="story"] .dash-progress
+  { display: block; }
+
+/* the layer toggles sit in a labeled capsule */
+.dash-layers
+  {
+  align-items: center;
+  padding: 3px 4px 3px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  }
+
+.dash-group-label
+  {
+  margin-right: 4px;
+  font-size: 0.8em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  }
+
+.dash-views button, .dash-modes button, .dash-layers button, .dash-pager button
+  {
+  padding: 4px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+.dash-views button:hover, .dash-modes button:hover, .dash-layers button:hover,
+.dash-pager button:hover:not([aria-disabled="true"])
+  { border-color: var(--accent); }
+
+.dash-views button[aria-pressed="true"], .dash-modes button[aria-pressed="true"],
+.dash-layers button[aria-pressed="true"]
+  {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  }
+
+.dash-views button:focus-visible, .dash-modes button:focus-visible,
+.dash-layers button:focus-visible, .dash-pager button:focus-visible,
+.dash-rail button:focus-visible, .dash-card:focus-visible
+  {
+  outline: 2px solid Highlight;
+  outline-offset: 2px;
+  }
+
+/* ---------- Pages -------------------------------------------- */
+
+.dash-pages
+  {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--page-gap);
+  padding: var(--page-gap) 16px;
+  }
+
+.page
+  {
+  width: 100%;
+  max-width: var(--page-max-width);
+  }
+
+/* a page fits the viewport height as well as the width, using its own aspect ratio */
+.page-svg
+  {
+  display: block;
+  width: min(100%, calc((100vh - var(--toolbar-height) - var(--strip-height)
+    - 2 * var(--page-gap)) * var(--page-w) / var(--page-h)));
+  height: auto;
+  margin: 0 auto;
+  background-color: light-dark(#FFFFFF, #000000);
+  border: 1px solid var(--border-color);
+  border-radius: var(--page-radius);
+  }
+
+/* structural colors painted into the pages follow light/dark mode, not the theme */
+.page-svg [fill="#FFFFFF"]:not(.ink-keep)
+  { fill: light-dark(#FFFFFF, #000000); }
+
+.page-svg [fill="#000000"]:not(.ink-keep), .page-svg [fill="black"]:not(.ink-keep)
+  { fill: light-dark(#000000, #E8E8E8); }
+
+/* lays a page out invisibly so the script can measure it */
+.page.ink-measure
+  {
+  display: block !important;
+  position: absolute;
+  visibility: hidden;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  }
+
+.page-svg [stroke="#000000"], .page-svg [stroke="black"]
+  { stroke: light-dark(#000000, #E8E8E8); }
+
+.page-svg [stroke="#FFFFFF"]
+  { stroke: light-dark(#FFFFFF, #000000); }
+
+/* ---------- Story view --------------------------------------- */
+
+html[data-view="story"]
+  { scroll-snap-type: y proximity; }
+
+html[data-view="story"] .dash-pages
+  {
+  gap: 0;
+  padding: 0 16px;
+  }
+
+html[data-view="story"] .page
+  {
+  min-height: calc(100vh - var(--toolbar-height));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: start;
+  scroll-margin-top: var(--toolbar-height);
+  }
+
+/* progress rail */
+
+.dash-rail
+  {
+  position: fixed;
+  right: 4px;
+  top: 50%;
+  z-index: 5;
+  transform: translateY(-50%);
+  display: none;
+  flex-direction: column;
+  }
+
+html[data-view="story"] .dash-rail
+  { display: flex; }
+
+.dash-rail button
+  {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  }
+
+.dash-rail button::before
+  {
+  content: "";
+  display: block;
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  background-color: transparent;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  }
+
+.dash-rail button:hover::before
+  { transform: scale(1.3); }
+
+.dash-rail button[aria-current="true"]::before
+  {
+  background-color: var(--accent);
+  transform: scale(1.3);
+  }
+
+/* ---------- Atlas view --------------------------------------- */
+
+.dash-atlas
+  { display: none; }
+
+html[data-view="atlas"] .dash-atlas
+  {
+  position: sticky;
+  top: var(--toolbar-height);
+  z-index: 9;
+  display: flex;
+  gap: 12px;
+  padding: 10px 16px;
+  overflow-x: auto;
+  background-color: var(--toolbar-bg);
+  border-bottom: 1px solid var(--border-color);
+  }
+
+.dash-card
+  {
+  flex: 0 0 var(--card-width);
+  padding: 4px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+
+.dash-card:hover
+  {
+  border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  transform: translateY(-2px);
+  }
+
+.dash-card[aria-current="true"]
+  { border-color: var(--accent); }
+
+.dash-card-thumb
+  {
+  display: block;
+  width: 100%;
+  height: auto;
+  background-color: light-dark(#FFFFFF, #000000);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  }
+
+.dash-card-title
+  {
+  display: block;
+  margin-top: 4px;
+  overflow: hidden;
+  font-size: 0.75em;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  }
+
+html[data-view="atlas"] .page:not(.is-current)
+  { display: none; }
+
+/* pages on a hidden layer */
+
+html[data-view] .page.is-filtered, .dash-card.is-filtered, .dash-rail button.is-filtered
+  { display: none; }
+
+/* ---------- Motion ------------------------------------------- */
+
+/* pages stay hidden until they scroll into view and the script reveals them */
+html.motion-ready .page:not(.is-revealed) .page-svg
+  { opacity: 0; }
+
+.mk-grow, .mk-pop
+  { transform-box: fill-box; }
+
+.mk-grow
+  { transform-origin: 50% 100%; }
+
+.mk-pop
+  { transform-origin: 50% 50%; }
+
+.mk-spot
+  { transition: opacity 0.2s ease; }
+
+.page-svg.is-spotting .mk-spot:not(.is-spot)
+  { opacity: 0.25; }
+
+.page.is-entering .page-svg
+  { animation: page-enter 0.5s ease-out backwards; }
+
+.page.is-arriving .page-svg
+  { animation: page-arrive 0.8s ease-out; }
+
+.page.is-revealed .mk
+  {
+  animation-duration: 0.55s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation-fill-mode: backwards;
+  animation-delay: min(calc(var(--i, 0) * 14ms), 900ms);
+  }
+
+.page.is-revealed .mk-grow
+  { animation-name: mk-grow; }
+
+.page.is-revealed .mk-pop
+  { animation-name: mk-pop; }
+
+.page.is-revealed .mk-draw
+  {
+  animation-name: mk-draw;
+  animation-duration: 0.9s;
+  animation-timing-function: ease-out;
+  }
+
+.page.is-revealed .mk-fade
+  {
+  animation-name: mk-fade;
+  animation-duration: 0.45s;
+  animation-delay: min(calc(var(--i, 0) * 6ms), 600ms);
+  }
+
+@keyframes page-enter
+  {
+  from
+    {
+    opacity: 0;
+    transform: translateY(16px);
+    }
+  }
+
+@keyframes page-arrive
+  {
+  0%
+    { box-shadow: 0 0 0 0 transparent; }
+  35%
+    { box-shadow: 0 0 24px 2px color-mix(in srgb, var(--accent) 55%, transparent); }
+  100%
+    { box-shadow: 0 0 0 0 transparent; }
+  }
+
+@keyframes mk-grow
+  {
+  from
+    {
+    opacity: 0;
+    transform: scaleY(0);
+    }
+  }
+
+@keyframes mk-pop
+  {
+  from
+    {
+    opacity: 0;
+    transform: scale(0);
+    }
+  }
+
+@keyframes mk-fade
+  {
+  from
+    { opacity: 0; }
+  }
+
+@keyframes mk-draw
+  {
+  from
+    {
+    stroke-dasharray: var(--len);
+    stroke-dashoffset: var(--len);
+    }
+  to
+    {
+    stroke-dasharray: var(--len);
+    stroke-dashoffset: 0;
+    }
+  }
+
+@media (prefers-reduced-motion: reduce)
+  {
+  *, *::before, *::after
+    {
+    animation: none !important;
+    transition: none !important;
+    }
+  }
+
+/* ---------- Print -------------------------------------------- */
+
+@media print
+  {
+  :root
+    { color-scheme: light !important; }
+  .no-print, .dash-rail, .dash-atlas, .page-title
+    { display: none !important; }
+  html[data-view] .dash-pages
+    {
+    display: block;
+    min-height: 0;
+    padding: 0;
+    }
+  html[data-view] .page
+    {
+    display: block !important;
+    min-height: 0;
+    max-width: none;
+    break-after: page;
+    }
+  html[data-view] .page.is-filtered
+    { display: none !important; }
+  html.motion-ready .page .page-svg
+    { opacity: 1 !important; }
+  html[data-view] .page-svg
+    {
+    width: 100%;
+    border: none;
+    border-radius: 0;
+    animation: none !important;
+    }
+  .mk
+    { animation: none !important; }
+  }

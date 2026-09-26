@@ -453,6 +453,16 @@ add_custom_command(TARGET ${WISTERIA_APP}
                    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/res"
                    COMMENT "Building application resource bundle...")
 
+# Copy the (unbundled) dashboard files into res/dashboard next to the executable
+add_custom_command(TARGET ${WISTERIA_APP}
+                   POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E remove_directory
+                   $<TARGET_FILE_DIR:${WISTERIA_APP}>/res/dashboard
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${CMAKE_SOURCE_DIR}/dashboard
+                   $<TARGET_FILE_DIR:${WISTERIA_APP}>/res/dashboard
+                   COMMENT "Copying dashboard resources...")
+
 # Copy datasets into build folder
 add_custom_command(TARGET ${WISTERIA_APP}
                    POST_BUILD

@@ -98,6 +98,7 @@ SET(APP_WISTERIA_SRC
     src/graphs/wordcloud.cpp
     src/import/spreadsheet_extract_text.cpp
     src/import/xlsx_extract_text.cpp
+    src/reporting/htmldashboardprintout.cpp
     src/reporting/pdfreportprintout.cpp
     src/reporting/pptxreportprintout.cpp
     src/reporting/report_builder_basic_graphs.cpp
@@ -170,6 +171,7 @@ SET(APP_WISTERIA_SRC
     src/ui/dialogs/editors/subsetdlg.cpp
     src/ui/dialogs/excelpreviewdlg.cpp
     src/ui/dialogs/gridexportdlg.cpp
+    src/ui/dialogs/htmldashboarddlg.cpp
     src/ui/dialogs/imageeffectdlg.cpp
     src/ui/dialogs/imageexportdlg.cpp
     src/ui/dialogs/imagemergedlg.cpp

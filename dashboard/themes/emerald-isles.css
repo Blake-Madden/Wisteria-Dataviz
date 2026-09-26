@@ -1,0 +1,9 @@
+/* ==========================================================================
+   Wisteria dashboard - emerald isles theme
+   ========================================================================== */
+
+:root
+  {
+  --accent: light-dark(#0B7A5B, #4FD1A5);      /* deep green in light mode, mint in dark mode */
+  --accent-text: light-dark(white, black);
+  }

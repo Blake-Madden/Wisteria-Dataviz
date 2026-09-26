@@ -55,6 +55,7 @@
 #include "../reporting/reportenumconvert.h"
 #include "../reporting/reporttableloader.h"
 #include "../wxSimpleJSON/src/wxSimpleJSON.h"
+#include "htmldashboardprintout.h"
 #include "pptxreportprintout.h"
 #include "svgreportprintout.h"
 #include <functional>
@@ -703,6 +704,29 @@ namespace Wisteria
         bool HasLoadedSvgExportOptions() const noexcept
             {
             return m_svgExportOptionsLoaded;
+            }
+
+        /// @returns The HTML dashboard export options for the report.
+        [[nodiscard]]
+        const HtmlDashboardOptions& GetHtmlExportOptions() const noexcept
+            {
+            return m_htmlExportOptions;
+            }
+
+        /// @returns The HTML dashboard export options for the report.
+        [[nodiscard]]
+        HtmlDashboardOptions& GetHtmlExportOptions() noexcept
+            {
+            return m_htmlExportOptions;
+            }
+
+        /// @returns @c true if the HTML dashboard export options were read from the loaded
+        ///     project file. When @c false, the caller should seed them
+        ///     (e.g., from the global application settings).
+        [[nodiscard]]
+        bool HasLoadedHtmlExportOptions() const noexcept
+            {
+            return m_htmlExportOptionsLoaded;
             }
 
         /// @returns The PDF export options for the report.
@@ -1564,9 +1588,11 @@ namespace Wisteria
         wxColour m_watermarkColor;
 
         SVGReportOptions m_svgExportOptions{ wxString{} };
+        HtmlDashboardOptions m_htmlExportOptions{ wxString{} };
         PdfExportOptions m_pdfExportOptions{};
         PowerPointExportOptions m_powerPointExportOptions{};
         bool m_svgExportOptionsLoaded{ false };
+        bool m_htmlExportOptionsLoaded{ false };
         bool m_pdfExportOptionsLoaded{ false };
         bool m_powerPointExportOptionsLoaded{ false };
 

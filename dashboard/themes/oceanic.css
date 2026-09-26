@@ -1,0 +1,9 @@
+/* ==========================================================================
+   Wisteria dashboard - oceanic theme
+   ========================================================================== */
+
+:root
+  {
+  --accent: light-dark(#0B6E99, #5FB8E6);      /* deep blue in light mode, sky blue in dark mode */
+  --accent-text: light-dark(white, black);
+  }

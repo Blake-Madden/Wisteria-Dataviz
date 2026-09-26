@@ -1006,5 +1006,7 @@ wxString Wisteria::SVGReportPrintout::EscapeJsString(const wxString& str)
     result.Replace(L"'", L"\\'");
     result.Replace(L"\n", L"\\n");
     result.Replace(L"\r", wxString{});
+    result.Replace(L"<", L"\\x3C");
+    result.Replace(L">", L"\\x3E");
     return result;
     }

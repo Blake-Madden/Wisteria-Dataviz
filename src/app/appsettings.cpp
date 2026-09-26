@@ -142,6 +142,31 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                     }
                 }
             }
+        else if (child->GetName() == L"html-export")
+            {
+            m_htmlExportOptions.m_theme =
+                child->GetAttribute(L"theme", m_htmlExportOptions.m_theme);
+            m_htmlExportOptions.m_view = Wisteria::HtmlDashboardOptions::ParseView(
+                child->GetAttribute(L"view"), m_htmlExportOptions.m_view);
+            m_htmlExportOptions.m_colorMode = Wisteria::HtmlDashboardOptions::ParseColorMode(
+                child->GetAttribute(L"color-mode"), m_htmlExportOptions.m_colorMode);
+            m_htmlExportOptions.m_includeColorModeToggle =
+                child->GetAttribute(L"color-mode-toggle",
+                                    m_htmlExportOptions.m_includeColorModeToggle ? L"1" : L"0") ==
+                L"1";
+            m_htmlExportOptions.m_countUpNumbers =
+                child->GetAttribute(L"count-up",
+                                    m_htmlExportOptions.m_countUpNumbers ? L"1" : L"0") == L"1";
+            long val{ 0 };
+            if (child->GetAttribute(L"page-width").ToLong(&val) && val > 0)
+                {
+                m_htmlExportOptions.m_pageSize.SetWidth(static_cast<int>(val));
+                }
+            if (child->GetAttribute(L"page-height").ToLong(&val) && val > 0)
+                {
+                m_htmlExportOptions.m_pageSize.SetHeight(static_cast<int>(val));
+                }
+            }
         else if (child->GetName() == L"powerpoint-export")
             {
             const auto boolAttr = [&child](const wxString& name, const bool fallback)
@@ -300,6 +325,21 @@ bool AppSettings::SaveSettingsFile(const wxString& filePath)
         m_svgExportOptions.m_layout == Wisteria::SVGReportOptions::PageLayout::Duplex ? L"1" :
                                                                                         L"2");
     root->AddChild(svgNode);
+
+    auto* htmlNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"html-export");
+    htmlNode->AddAttribute(L"theme", m_htmlExportOptions.m_theme);
+    htmlNode->AddAttribute(
+        L"view", Wisteria::HtmlDashboardOptions::ViewToString(m_htmlExportOptions.m_view));
+    htmlNode->AddAttribute(L"color-mode", Wisteria::HtmlDashboardOptions::ColorModeToString(
+                                              m_htmlExportOptions.m_colorMode));
+    htmlNode->AddAttribute(L"color-mode-toggle",
+                           m_htmlExportOptions.m_includeColorModeToggle ? L"1" : L"0");
+    htmlNode->AddAttribute(L"count-up", m_htmlExportOptions.m_countUpNumbers ? L"1" : L"0");
+    htmlNode->AddAttribute(L"page-width",
+                           std::to_wstring(std::max(0, m_htmlExportOptions.m_pageSize.GetWidth())));
+    htmlNode->AddAttribute(
+        L"page-height", std::to_wstring(std::max(0, m_htmlExportOptions.m_pageSize.GetHeight())));
+    root->AddChild(htmlNode);
 
     auto* pptxNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"powerpoint-export");
     pptxNode->AddAttribute(

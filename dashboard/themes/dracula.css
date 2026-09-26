@@ -1,0 +1,9 @@
+/* ==========================================================================
+   Wisteria dashboard - dracula theme
+   ========================================================================== */
+
+:root
+  {
+  --accent: light-dark(#8A3FBF, #FF79C6);      /* purple in light mode, pink in dark mode */
+  --accent-text: light-dark(white, #282A36);   /* dracula background, for contrast on pink */
+  }
