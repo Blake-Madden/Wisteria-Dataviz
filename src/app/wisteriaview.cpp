@@ -1283,8 +1283,7 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    const wxArrayString themes{ FindThemeNames(dashboardFolder.empty() ? wxString{} :
-                                                                         themesFolder) };
+    const wxArrayString themes(FindThemeNames(dashboardFolder.empty() ? wxString{} : themesFolder));
 
     Wisteria::HtmlDashboardOptions& savedOptions = GetReportBuilder().GetHtmlExportOptions();
 
