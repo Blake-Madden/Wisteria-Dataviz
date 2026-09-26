@@ -247,7 +247,13 @@ namespace Wisteria
         [[nodiscard]]
         static wxString GenerateDarkModeFillReplacements(std::wstring_view svgContent);
 
-      private:
+        /// @brief Renders a canvas as an SVG fragment, without the outer @c \<svg\> element.
+        /// @param canvas The canvas to render.
+        /// @param layoutSize The size (in DIPs) to render at.
+        /// @returns The SVG body of the canvas.
+        [[nodiscard]]
+        static wxString RenderCanvasToSvg(Canvas* canvas, const wxSize& layoutSize);
+
         /// @brief Strips the outer @c \<svg\> and @c \</svg\> tags from an SVG string,
         ///     returning just the body content.
         /// @param svgDoc The full SVG document string.

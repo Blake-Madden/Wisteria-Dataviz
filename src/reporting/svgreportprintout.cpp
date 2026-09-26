@@ -193,58 +193,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             useOverrideSize ? options.m_pageSize.GetHeight() : renderSize.GetHeight();
         ++pageIndex;
 
-        // render at the layout size so bitmaps are rasterized at the target resolution
-        wxSVGFileDC svgDC{ wxString{}, layoutWidth, layoutHeight, wxSVG_DEFAULT_DPI,
-                           canvas->GetLabel() };
-        svgDC.SetBitmapHandler(new wxSVGBitmapEmbedHandler{});
-
-        // freeze the canvas to hide the resize flicker
-        const wxWindowUpdateLocker updateLocker{ canvas };
-
-        // temporarily resize the canvas to match the target page dimensions
-        const int origMinWidth = canvas->GetCanvasMinWidthDIPs();
-        const int origMinHeight = canvas->GetCanvasMinHeightDIPs();
-        const wxSize origSize = canvas->GetSize();
-
-        if (canvas->IsFittingToPageWhenPrinting())
-            {
-            const auto scaledHeight =
-                geometry::rescaled_height(std::make_pair(layoutWidth, layoutHeight), layoutWidth);
-            if (scaledHeight > 0)
-                {
-                canvas->SetCanvasMinWidthDIPs(layoutWidth);
-                canvas->SetCanvasMinHeightDIPs(scaledHeight);
-                // Normally, calling SetSize before CalcRowDimensions() is not necessary,
-                // but for SVG we need to because some internals look at the window size.
-                // Note that doing this in report printout breaks things doing this,
-                // this is an SVG only quirk.
-                canvas->SetSize(canvas->FromDIP(wxSize(layoutWidth, scaledHeight)));
-                canvas->CalcRowDimensions();
-                canvas->SetSize(canvas->FromDIP(wxSize(layoutWidth, scaledHeight)));
-                }
-            }
-
-            {
-            // block events only during rendering to the SVG DC
-            const wxEventBlocker blocker{ canvas };
-            canvas->CalcAllSizes(svgDC);
-            canvas->OnDraw(svgDC);
-            canvas->DrawWatermarkLabel(svgDC);
-            }
-
-        // restore original canvas dimensions
-        if (canvas->IsFittingToPageWhenPrinting())
-            {
-            canvas->SetCanvasMinWidthDIPs(origMinWidth);
-            canvas->SetCanvasMinHeightDIPs(origMinHeight);
-            canvas->SetSize(origSize);
-            canvas->CalcRowDimensions();
-            canvas->SetSize(origSize);
-            }
-        canvas->ResetResizeDelay();
-        canvas->ZoomReset();
-        canvas->SendSizeEvent();
-        canvas->Refresh();
+        const wxString pageSvg{ RenderCanvasToSvg(canvas, wxSize{ layoutWidth, layoutHeight }) };
 
         const wxString escapedLayer = EscapeXmlAttr(canvas->GetLayer());
         svgContent += wxString::Format(
@@ -252,7 +201,7 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             "data-height=\"%d\" transform=\"translate(0,%d)\"%s>\n",
             pageIndex - 1, escapedLayer, layoutWidth, layoutHeight, yOffset,
             options.m_includePageShadow ? L" filter=\"url(#page-shadow)\"" : L"");
-        svgContent += StripSvgTags(svgDC.GetSVGDocument());
+        svgContent += pageSvg;
 
         if (options.m_includeDarkModeToggle)
             {
@@ -869,6 +818,68 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             wxString::Format(_(L"Failed to save SVG report to \"%s\"."), options.m_filePath),
             _(L"Export Error"), wxOK | wxICON_ERROR);
         }
+    }
+
+//------------------------------------------------------
+wxString Wisteria::SVGReportPrintout::RenderCanvasToSvg(Canvas* canvas, const wxSize& layoutSize)
+    {
+    const int layoutWidth{ layoutSize.GetWidth() };
+    const int layoutHeight{ layoutSize.GetHeight() };
+
+    // render at the layout size so bitmaps are rasterized at the target resolution
+    wxSVGFileDC svgDC{ wxString{}, layoutWidth, layoutHeight, wxSVG_DEFAULT_DPI,
+                       canvas->GetLabel() };
+    svgDC.SetBitmapHandler(new wxSVGBitmapEmbedHandler{});
+
+    // freeze the canvas to hide the resize flicker
+    const wxWindowUpdateLocker updateLocker{ canvas };
+
+    // temporarily resize the canvas to match the target page dimensions
+    const int origMinWidth = canvas->GetCanvasMinWidthDIPs();
+    const int origMinHeight = canvas->GetCanvasMinHeightDIPs();
+    const wxSize origSize = canvas->GetSize();
+
+    if (canvas->IsFittingToPageWhenPrinting())
+        {
+        const auto scaledHeight =
+            geometry::rescaled_height(std::make_pair(layoutWidth, layoutHeight), layoutWidth);
+        if (scaledHeight > 0)
+            {
+            canvas->SetCanvasMinWidthDIPs(layoutWidth);
+            canvas->SetCanvasMinHeightDIPs(scaledHeight);
+            // Normally, calling SetSize before CalcRowDimensions() is not necessary,
+            // but for SVG we need to because some internals look at the window size.
+            // Note that doing this in report printout breaks things doing this,
+            // this is an SVG only quirk.
+            canvas->SetSize(canvas->FromDIP(wxSize(layoutWidth, scaledHeight)));
+            canvas->CalcRowDimensions();
+            canvas->SetSize(canvas->FromDIP(wxSize(layoutWidth, scaledHeight)));
+            }
+        }
+
+        {
+        // block events only during rendering to the SVG DC
+        const wxEventBlocker blocker{ canvas };
+        canvas->CalcAllSizes(svgDC);
+        canvas->OnDraw(svgDC);
+        canvas->DrawWatermarkLabel(svgDC);
+        }
+
+    // restore original canvas dimensions
+    if (canvas->IsFittingToPageWhenPrinting())
+        {
+        canvas->SetCanvasMinWidthDIPs(origMinWidth);
+        canvas->SetCanvasMinHeightDIPs(origMinHeight);
+        canvas->SetSize(origSize);
+        canvas->CalcRowDimensions();
+        canvas->SetSize(origSize);
+        }
+    canvas->ResetResizeDelay();
+    canvas->ZoomReset();
+    canvas->SendSizeEvent();
+    canvas->Refresh();
+
+    return StripSvgTags(svgDC.GetSVGDocument());
     }
 
 //------------------------------------------------------
