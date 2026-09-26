@@ -142,7 +142,7 @@ static wxColour GetThemeAccentColor(const wxString& themeCss)
     value.Trim().Trim(false);
 
     // the main color is the light-mode one, the first argument of light-dark()
-    const wxString lightDark{ L"light-dark(" };
+    const wxString lightDark{ _DT(L"light-dark(") };
     if (value.StartsWith(lightDark))
         {
         int depth{ 0 };
@@ -1162,7 +1162,7 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
 
     Wisteria::SVGReportOptions& savedOptions = GetReportBuilder().GetSvgExportOptions();
 
-    const wxString dashboardFolder{ wxGetApp().FindResourceDirectory(L"res/dashboard") };
+    const wxString dashboardFolder{ wxGetApp().FindResourceDirectory(_DT(L"res/dashboard")) };
     const wxString themesFolder{ dashboardFolder.empty() ?
                                      wxString{} :
                                      dashboardFolder + wxFileName::GetPathSeparator() + L"themes" };
@@ -1262,7 +1262,7 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    const wxString dashboardFolder{ wxGetApp().FindResourceDirectory(L"res/dashboard") };
+    const wxString dashboardFolder{ wxGetApp().FindResourceDirectory(_DT(L"res/dashboard")) };
     const wxString themesFolder{ dashboardFolder + wxFileName::GetPathSeparator() + L"themes" };
 
     const wxString coreCss{ dashboardFolder.empty() ?
