@@ -130,19 +130,19 @@ namespace Wisteria::UI
         case GalleryGroup::Objects:
             return {};
         case GalleryGroup::Basic:
-            return L"chart-basic.svg";
+            return L"images/chart-basic.svg";
         case GalleryGroup::Business:
-            return L"chart-business.svg";
+            return L"images/chart-business.svg";
         case GalleryGroup::Statistical:
-            return L"chart-statistical.svg";
+            return L"images/chart-statistical.svg";
         case GalleryGroup::Survey:
-            return L"chart-survey.svg";
+            return L"images/chart-survey.svg";
         case GalleryGroup::Education:
-            return L"chart-education.svg";
+            return L"images/chart-education.svg";
         case GalleryGroup::Social:
-            return L"chart-social.svg";
+            return L"images/chart-social.svg";
         case GalleryGroup::Sports:
-            return L"chart-sports.svg";
+            return L"images/chart-sports.svg";
             }
         return {};
         }
