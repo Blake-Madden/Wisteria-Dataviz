@@ -165,6 +165,14 @@ namespace Wisteria::UI
     //-------------------------------------------
     void SideBar::OnChar(wxKeyEvent& event)
         {
+        // wxWANTS_CHARS delivers Tab here, so move focus to the next/previous control
+        if (event.GetKeyCode() == WXK_TAB)
+            {
+            Navigate(event.ShiftDown() ? wxNavigationKeyEvent::IsBackward :
+                                         wxNavigationKeyEvent::IsForward);
+            return;
+            }
+
         ClearHighlightedItems();
         // if going down, select next item. If it has subitems, then select the first subitem.
         if (event.GetKeyCode() == WXK_DOWN)
