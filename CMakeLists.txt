@@ -221,41 +221,47 @@ set(SUBMODULES
     ${wxWidgets_BASEDIR}/3rdparty/nanosvg
     ${wxWidgets_BASEDIR}/3rdparty/pcre)
 
-set(SUBMODULE_HASHES "")
+if(Git_FOUND)
+    set(SUBMODULE_HASHES "")
 
-foreach(PATH IN LISTS SUBMODULES)
-    get_filename_component(NAME "${PATH}" NAME)
-    string(REGEX REPLACE "[^A-Za-z0-9_]" "_" SAFE_NAME "${NAME}")
-    string(TOUPPER "${SAFE_NAME}" VAR_NAME)
+    foreach(PATH IN LISTS SUBMODULES)
+        get_filename_component(NAME "${PATH}" NAME)
+        string(REGEX REPLACE "[^A-Za-z0-9_]" "_" SAFE_NAME "${NAME}")
+        string(TOUPPER "${SAFE_NAME}" VAR_NAME)
 
-    get_git_submodule_hash("${PATH}" HASH)
-    get_git_submodule_origin("${PATH}" ORIGIN)
+        get_git_submodule_hash("${PATH}" HASH)
+        get_git_submodule_origin("${PATH}" ORIGIN)
 
-    # Attempt to get version tag/description
-    set(DESCRIPTION "")
-    get_git_submodule_description("${PATH}" DESCRIPTION)
+        # Attempt to get version tag/description
+        set(DESCRIPTION "")
+        get_git_submodule_description("${PATH}" DESCRIPTION)
 
-    # Always define HASH and ORIGIN
-    string(APPEND SUBMODULE_HASHES
-        "#define ${VAR_NAME}_HASH \"${HASH}\"\n"
-        "#define ${VAR_NAME}_ORIGIN \"${ORIGIN}\"\n")
-
-    # Only define VERSION_TAG if DESCRIPTION is not empty
-    if(DESCRIPTION)
+        # Always define HASH and ORIGIN
         string(APPEND SUBMODULE_HASHES
-            "#define ${VAR_NAME}_VERSION_TAG \"${DESCRIPTION}\"\n")
-    endif()
+            "#define ${VAR_NAME}_HASH \"${HASH}\"\n"
+            "#define ${VAR_NAME}_ORIGIN \"${ORIGIN}\"\n")
 
-    # Separate entries
-    string(APPEND SUBMODULE_HASHES "\n")
-endforeach()
+        # Only define VERSION_TAG if DESCRIPTION is not empty
+        if(DESCRIPTION)
+            string(APPEND SUBMODULE_HASHES
+                "#define ${VAR_NAME}_VERSION_TAG \"${DESCRIPTION}\"\n")
+        endif()
 
-string(REGEX REPLACE "[ \t\r\n]+$" "" SUBMODULE_HASHES "${SUBMODULE_HASHES}")
+        # Separate entries
+        string(APPEND SUBMODULE_HASHES "\n")
+    endforeach()
 
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/sbom.h.in"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/app/sbom.h"
-    @ONLY)
+    string(REGEX REPLACE "[ \t\r\n]+$" "" SUBMODULE_HASHES "${SUBMODULE_HASHES}")
+
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/sbom.h.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/app/sbom.h"
+        @ONLY)
+else()
+    message(WARNING
+        "Git was not found. Submodule commit hashes and version tags will not be collected, "
+        "and sbom.h will not be regenerated.")
+endif()
 
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
