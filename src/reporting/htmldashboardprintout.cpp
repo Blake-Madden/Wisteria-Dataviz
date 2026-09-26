@@ -60,8 +60,12 @@ static wxString GetDashboardScriptState()
     const el = document.getElementById('dash-status');
     if (el) { el.textContent = ''; el.textContent = text; }
   }
+  function markReady() {
+    root.classList.remove('is-loading');
+  }
   root.style.colorScheme = schemeFor(colorMode);
   if (!reduceMotion.matches) root.classList.add('motion-ready');
+  root.classList.add('is-loading');
 )JS";
     }
 
@@ -244,6 +248,7 @@ static wxString GetDashboardScriptInk()
   // black or white text drawn on a colored shape keeps its painted color in dark mode
   function tagInk(page) {
     const shapes = [];
+    const keep = [];
     const nodes = page.el.querySelectorAll('rect, path, polygon, ellipse, circle, text');
     nodes.forEach(function(el) {
       if (el.tagName !== 'text') {
@@ -265,10 +270,12 @@ static wxString GetDashboardScriptInk()
         if (x < shape.box.left || x > shape.box.right ||
             y < shape.box.top || y > shape.box.bottom) continue;
         if (!insideShape(shape.el, x, y)) continue;
-        if (shape.kind === 'color') el.classList.add('ink-keep');
+        if (shape.kind === 'color') keep.push(el);
         return;
       }
     });
+    // classes are added after all measuring so that layout is not forced between texts
+    keep.forEach(function(el) { el.classList.add('ink-keep'); });
   }
   function assignInk() {
     const hidden = pages.filter(function(page) { return page.el.getClientRects().length === 0; });
@@ -456,8 +463,7 @@ static wxString GetDashboardScriptMotion()
     if (style.stroke === 'none' || style.strokeDasharray !== 'none') return '';
     return (tag === 'path' || tag === 'polyline' || tag === 'line') ? 'draw' : 'fade';
   }
-  function registerSpot(page, el, style) {
-    const key = rgbKey(style.fill);
+  function registerSpot(page, el, key) {
     if (!key || isNearWhite(key)) return;
     el.classList.add('mk-spot');
     page.spotKeys.set(el, key);
@@ -476,20 +482,28 @@ static wxString GetDashboardScriptMotion()
       const limitArea = viewBox.width * viewBox.height * 0.2;
       page.spot = new Map();
       page.spotKeys = new WeakMap();
-      let index = 0;
+      // all reads come before any writes so that layout is computed once
+      const marks = [];
       shapes.forEach(function(el) {
         const style = getComputedStyle(el);
         const kind = classifyMark(el, style, limitArea);
         if (!kind) return;
+        let length = 0;
         if (kind === 'draw') {
-          let length = 0;
           try { length = el.getTotalLength(); } catch (e) {}
           if (!(length > 1)) return;
-          el.style.setProperty('--len', String(length));
         }
-        el.classList.add('mk', 'mk-' + kind);
-        el.style.setProperty('--i', String(kind === 'fade' ? fadeIndex++ : index++));
-        if (kind === 'pop' || kind === 'grow') registerSpot(page, el, style);
+        marks.push({
+          el: el, kind: kind, length: length,
+          key: (kind === 'pop' || kind === 'grow') ? rgbKey(style.fill) : ''
+        });
+      });
+      let index = 0;
+      marks.forEach(function(mark) {
+        if (mark.kind === 'draw') mark.el.style.setProperty('--len', String(mark.length));
+        mark.el.classList.add('mk', 'mk-' + mark.kind);
+        mark.el.style.setProperty('--i', String(mark.kind === 'fade' ? fadeIndex++ : index++));
+        registerSpot(page, mark.el, mark.key);
       });
     }
     svg.querySelectorAll('text').forEach(function(el) {
@@ -514,6 +528,26 @@ static wxString GetDashboardScriptMotion()
     }
     svg.addEventListener('mouseover', function(e) { setKey(page.spotKeys.get(e.target) || ''); });
     svg.addEventListener('mouseleave', function() { setKey(''); });
+  }
+  const slowPageElements = 400;
+  let pendingSlow = 0;
+
+  function scheduleReveal(page) {
+    const svg = page.el.querySelector('.page-svg');
+    const size = svg ? svg.querySelectorAll(shapeSelector + ', text').length : 0;
+    if (size <= slowPageElements) {
+      revealPage(page);
+      if (!pendingSlow) markReady();
+      return;
+    }
+    ++pendingSlow;
+    root.classList.add('is-loading');
+    window.requestAnimationFrame(function() {
+      window.setTimeout(function() {
+        revealPage(page);
+        if (--pendingSlow === 0) markReady();
+      }, 0);
+    });
   }
   function revealPage(page) {
     prepareMarks(page);
@@ -556,7 +590,7 @@ static wxString GetDashboardScriptMotion()
         if (!page || page.revealed) return;
         page.revealed = true;
         observer.unobserve(entry.target);
-        revealPage(page);
+        scheduleReveal(page);
       });
     }, { threshold: 0.2 });
     pages.forEach(function(page) { observer.observe(page.el); });
@@ -614,11 +648,17 @@ static wxString GetDashboardScriptEvents()
     buildGallery();
     bindControls();
     applyLayers();
-    assignInk();
     renderView();
     revealCurrent('auto');
-    setupMotion();
     observeStory();
+    // let the loading indicator paint before the heavy work starts
+    window.requestAnimationFrame(function() {
+      window.setTimeout(function() {
+        assignInk();
+        setupMotion();
+        if (!pages.length || !root.classList.contains('motion-ready')) markReady();
+      }, 0);
+    });
   });
 })();
 )JS";
@@ -800,6 +840,14 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         "<div id=\"dash-status\" class=\"visually-hidden\" role=\"status\" "
         "aria-live=\"polite\"></div>\n",
         escapeAttr(_(L"Pages")), escapeAttr(_(L"Pages")));
+
+    const wxString loadingText{ _(L"Loading...") };
+    html += wxString::Format(
+        L"<div class=\"dash-loading no-print\" role=\"progressbar\" aria-label=\"%s\">\n"
+        "<div class=\"dash-loading-bar\"></div>\n"
+        "<div class=\"dash-loading-label\" aria-hidden=\"true\">%s</div>\n"
+        "</div>\n",
+        escapeAttr(loadingText), escapeText(loadingText));
 
     html += wxString::Format(L"<main class=\"dash-pages\" style=\"--page-w:%d;--page-h:%d\">\n",
                              pageSize.GetWidth(), pageSize.GetHeight());

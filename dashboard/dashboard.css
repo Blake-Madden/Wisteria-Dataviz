@@ -377,6 +377,60 @@ html[data-view="gallery"] .page:not(.is-current)
 html[data-view] .page.is-filtered, .dash-card.is-filtered, .dash-rail button.is-filtered
   { display: none; }
 
+/* ---------- Loading ------------------------------------------ */
+
+.dash-loading
+  { display: none; }
+
+/* centered in the page area, over the pages that are still hidden */
+html.is-loading .dash-loading
+  {
+  position: fixed;
+  top: calc(var(--toolbar-height) + var(--strip-height));
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  pointer-events: none;
+  }
+
+.dash-loading-bar
+  {
+  width: min(240px, 60%);
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background-color: var(--border-color);
+  }
+
+.dash-loading-bar::before
+  {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: dash-loading 1.2s ease-in-out infinite;
+  }
+
+.dash-loading-label
+  {
+  font-size: 0.875rem;
+  opacity: 0.7;
+  }
+
+@keyframes dash-loading
+  {
+  from
+    { transform: translateX(-100%); }
+  to
+    { transform: translateX(100%); }
+  }
+
 /* ---------- Motion ------------------------------------------- */
 
 /* pages stay hidden until they scroll into view and the script reveals them */
