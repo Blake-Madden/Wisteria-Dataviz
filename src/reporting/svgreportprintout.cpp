@@ -11,6 +11,7 @@
 #include "../import/html_extract_text.h"
 #include <algorithm>
 #include <set>
+#include <wx/app.h>
 #include <wx/dcsvg.h>
 #include <wx/file.h>
 #include <wx/paper.h>
@@ -251,6 +252,13 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
     header += L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n";
     header += L"<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" "
               "\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n";
+    if (wxTheApp != nullptr && !wxTheApp->GetAppDisplayName().empty())
+        {
+        // "--" is not allowed inside an XML comment
+        wxString generatorName{ wxTheApp->GetAppDisplayName() };
+        generatorName.Replace(L"--", L"-");
+        header += wxString::Format(L"<!-- Generator: %s -->\n", generatorName);
+        }
     header += wxString::Format(L"<svg xmlns=\"http://www.w3.org/2000/svg\" "
                                "xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" "
                                "width=\"100%%\" height=\"%d\" %s"
@@ -545,6 +553,84 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
 
         if (options.m_includeDarkModeToggle)
             {
+            // text drawn on a colored shape keeps its painted color in dark mode
+            header += LR"JS(
+  function tagInk() {
+    const svg = document.querySelector('svg');
+    const ns = 'http://www.w3.org/2000/svg';
+    const remapped = new Map();
+    function isRemapped(value) {
+      if (remapped.has(value)) return remapped.get(value);
+      const probe = document.createElementNS(ns, 'rect');
+      probe.setAttribute('fill', value);
+      probe.setAttribute('width', '0');
+      probe.setAttribute('height', '0');
+      svg.appendChild(probe);
+      const wasDark = svg.classList.contains('dark-mode');
+      svg.classList.remove('dark-mode');
+      const light = getComputedStyle(probe).fill;
+      svg.classList.add('dark-mode');
+      const dark = getComputedStyle(probe).fill;
+      if (!wasDark) svg.classList.remove('dark-mode');
+      svg.removeChild(probe);
+      const result = light !== dark;
+      remapped.set(value, result);
+      return result;
+    }
+    function paintKind(el) {
+      const holder = el.closest('[fill]');
+      const fill = holder ? holder.getAttribute('fill') : 'none';
+      if (fill === 'none') return 'none';
+      const opacity = parseFloat(holder.getAttribute('fill-opacity'));
+      if (!isNaN(opacity) && opacity < 0.5) return 'none';
+      return isRemapped(fill) ? 'page' : 'color';
+    }
+    function insideShape(el, x, y) {
+      try {
+        if (typeof el.isPointInFill !== 'function') return true;
+        const matrix = el.getScreenCTM();
+        if (!matrix) return true;
+        return el.isPointInFill(new DOMPoint(x, y).matrixTransform(matrix.inverse()));
+      } catch (e) {
+        return true;
+      }
+    }
+    function tagPage(page) {
+      const shapes = [];
+      page.querySelectorAll('rect, path, polygon, ellipse, circle, text').forEach(function(el) {
+        if (el.tagName !== 'text') {
+          if (el.closest('defs, clipPath, pattern, marker, mask')) return;
+          const kind = paintKind(el);
+          if (kind === 'none') return;
+          const box = el.getBoundingClientRect();
+          if (box.width >= 2 && box.height >= 2) shapes.push({ el: el, box: box, kind: kind });
+          return;
+        }
+        const fill = el.getAttribute('fill');
+        if (!fill || !isRemapped(fill)) return;
+        const box = el.getBoundingClientRect();
+        if (!box.width && !box.height) return;
+        const x = box.left + box.width / 2;
+        const y = box.top + box.height / 2;
+        for (let i = shapes.length - 1; i >= 0; --i) {
+          const shape = shapes[i];
+          if (x < shape.box.left || x > shape.box.right ||
+              y < shape.box.top || y > shape.box.bottom) continue;
+          if (!insideShape(shape.el, x, y)) continue;
+          if (shape.kind === 'color') el.style.fill = fill;
+          return;
+        }
+      });
+    }
+    document.querySelectorAll('.page').forEach(function(page) {
+      const shown = page.style.display;
+      page.style.display = 'inline';
+      try { tagPage(page); } catch (e) {}
+      page.style.display = shown;
+    });
+  }
+  window.addEventListener('load', tagInk);
+)JS";
             header += L"  function toggleDarkMode() {\n"
                       "    const svg = document.querySelector('svg');\n"
                       "    svg.classList.toggle('dark-mode');\n"
