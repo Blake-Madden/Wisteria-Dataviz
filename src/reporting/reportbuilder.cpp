@@ -156,13 +156,9 @@ namespace Wisteria
                 boolAttr(L"page-shadow", m_svgExportOptions.m_includePageShadow);
             m_svgExportOptions.m_includeLayerControls =
                 boolAttr(L"layer-controls", m_svgExportOptions.m_includeLayerControls);
-            if (const auto colorNode = svgExportNode->GetProperty(L"theme-color");
-                colorNode->IsOk())
+            if (const auto themeNode = svgExportNode->GetProperty(L"theme"); themeNode->IsOk())
                 {
-                if (const wxColour color{ colorNode->AsString() }; color.IsOk())
-                    {
-                    m_svgExportOptions.m_themeColor = color;
-                    }
+                m_svgExportOptions.m_theme = themeNode->AsString();
                 }
             if (const auto layout = numberAttr(L"layout"); layout && *layout >= 0)
                 {

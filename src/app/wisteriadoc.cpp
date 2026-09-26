@@ -122,7 +122,7 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
         svgNode->Add(L"slideshow", svgOpts.m_includeSlideshow);
         svgNode->Add(L"page-shadow", svgOpts.m_includePageShadow);
         svgNode->Add(L"layer-controls", svgOpts.m_includeLayerControls);
-        svgNode->Add(L"theme-color", svgOpts.m_themeColor.GetAsString(wxC2S_HTML_SYNTAX));
+        svgNode->Add(L"theme", svgOpts.m_theme);
         svgNode->Add(L"layout",
                      svgOpts.m_layout == Wisteria::SVGReportOptions::PageLayout::Single ? 0.0 :
                      svgOpts.m_layout == Wisteria::SVGReportOptions::PageLayout::Duplex ? 1.0 :

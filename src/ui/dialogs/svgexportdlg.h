@@ -33,6 +33,7 @@ namespace Wisteria::UI
             @param defaultSize The default page size (in DIPs/pixels) to
                 pre-populate the spin controls with.
             @param printData The print data to pre-populate the dialog with.
+            @param themes The names of the themes to choose from.
             @param savedOptions Previously saved export options to restore into the dialog,
                 or @c nullptr to use defaults. The @c m_filePath field is ignored.
             @param id The window ID.
@@ -41,6 +42,7 @@ namespace Wisteria::UI
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/
         SvgExportDlg(wxWindow* parent, const wxSize& defaultSize, const wxPrintData& printData,
+                     const wxArrayString& themes,
                      const Wisteria::SVGReportOptions* savedOptions = nullptr,
                      wxWindowID id = wxID_ANY, const wxString& caption = _(L"SVG Export Options"),
                      const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
@@ -119,11 +121,11 @@ namespace Wisteria::UI
             return m_includeLayerControls;
             }
 
-        /// @returns The selected theme color.
+        /// @returns The name of the selected theme.
         [[nodiscard]]
-        wxColour GetThemeColor() const noexcept
+        const wxString& GetTheme() const noexcept
             {
-            return m_themeColor;
+            return m_theme;
             }
 
         /// @returns The selected layout.
@@ -134,7 +136,7 @@ namespace Wisteria::UI
             }
 
       private:
-        void CreateControls();
+        void CreateControls(const wxArrayString& themes);
         void OnPaintPreview(wxPaintEvent& event);
         void UpdatePreview();
         void UpdateLabels();
@@ -152,7 +154,6 @@ namespace Wisteria::UI
                 }
             }
 
-        constexpr static wxWindowID THEME_COLOR_ID{ wxID_HIGHEST + 3 };
         constexpr static wxWindowID LAYOUT_RADIO_ID{ wxID_HIGHEST + 4 };
 
         wxPrintData m_printData;
@@ -169,7 +170,7 @@ namespace Wisteria::UI
         bool m_includeSlideshow{ true };
         bool m_includePageShadow{ true };
         bool m_includeLayerControls{ true };
-        wxColour m_themeColor{ 103, 58, 183 };
+        wxString m_theme{ L"default" };
         Wisteria::SVGReportOptions::PageLayout m_layout{
             Wisteria::SVGReportOptions::PageLayout::Duplex
         };

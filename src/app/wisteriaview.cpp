@@ -68,6 +68,7 @@
 #include <wx/ffile.h>
 #include <wx/filename.h>
 #include <wx/rearrangectrl.h>
+#include <wx/regex.h>
 #include <wx/wupdlock.h>
 
 wxIMPLEMENT_DYNAMIC_CLASS(WisteriaView, wxView);
@@ -90,6 +91,89 @@ class PastePlacementDlg final : public Wisteria::UI::InsertItemDlg
         Centre();
         }
     };
+
+//-------------------------------------------
+static wxString ReadTextFile(wxString path)
+    {
+    wxString content;
+    if (!wxFileName::FileExists(path) ||
+        !Wisteria::TextStream::ReadFile(
+            path, content, wxString{},
+            Wisteria::TextStream::ReadFileInteractivityMode::NoInteractivity))
+        {
+        return wxString{};
+        }
+    return content;
+    }
+
+//-------------------------------------------
+static wxArrayString FindThemeNames(const wxString& themesFolder)
+    {
+    wxArrayString themePaths;
+    if (!themesFolder.empty() && wxDir::Exists(themesFolder))
+        {
+        wxDir::GetAllFiles(themesFolder, &themePaths, L"*.css", wxDIR_FILES);
+        }
+    wxArrayString themes;
+    for (const auto& themePath : themePaths)
+        {
+        themes.Add(wxFileName{ themePath }.GetName());
+        }
+    themes.Sort();
+    if (const auto defaultIndex = themes.Index(L"default"); defaultIndex != wxNOT_FOUND)
+        {
+        themes.RemoveAt(static_cast<size_t>(defaultIndex));
+        themes.Insert(L"default", 0);
+        }
+    return themes;
+    }
+
+//-------------------------------------------
+static wxColour GetThemeAccentColor(const wxString& themeCss)
+    {
+    const wxColour fallback{ 103, 58, 183 };
+
+    const wxRegEx accentRegex{ L"--accent[[:space:]]*:[[:space:]]*([^;]+);" };
+    if (!accentRegex.IsValid() || !accentRegex.Matches(themeCss))
+        {
+        return fallback;
+        }
+    wxString value{ accentRegex.GetMatch(themeCss, 1) };
+    value.Trim().Trim(false);
+
+    // the main color is the light-mode one, the first argument of light-dark()
+    const wxString lightDark{ L"light-dark(" };
+    if (value.StartsWith(lightDark))
+        {
+        int depth{ 0 };
+        size_t comma{ wxString::npos };
+        for (size_t i = lightDark.length(); i < value.length(); ++i)
+            {
+            if (value[i] == L'(')
+                {
+                ++depth;
+                }
+            else if (value[i] == L')')
+                {
+                --depth;
+                }
+            else if (value[i] == L',' && depth == 0)
+                {
+                comma = i;
+                break;
+                }
+            }
+        if (comma == wxString::npos)
+            {
+            return fallback;
+            }
+        value = value.substr(lightDark.length(), comma - lightDark.length());
+        value.Trim().Trim(false);
+        }
+
+    const wxColour color{ value };
+    return color.IsOk() ? color : fallback;
+    }
 
 //-------------------------------------------
 bool WisteriaView::OnCreate(wxDocument* doc, long flags)
@@ -1078,6 +1162,11 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
 
     Wisteria::SVGReportOptions& savedOptions = GetReportBuilder().GetSvgExportOptions();
 
+    const wxString dashboardFolder{ wxGetApp().FindResourceDirectory(L"res/dashboard") };
+    const wxString themesFolder{ dashboardFolder.empty() ?
+                                     wxString{} :
+                                     dashboardFolder + wxFileName::GetPathSeparator() + L"themes" };
+
     wxPrintData printData;
     printData.SetOrientation(savedOptions.m_paperOrientation);
     printData.SetPaperId(savedOptions.m_paperId);
@@ -1088,7 +1177,8 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
                                        Wisteria::SVGReportPrintout::GetPaperSizeDIPs(
                                            savedOptions.m_paperId, savedOptions.m_paperOrientation);
 
-    Wisteria::UI::SvgExportDlg sizeDlg(m_frame, defaultPageSize, printData, &savedOptions);
+    Wisteria::UI::SvgExportDlg sizeDlg(m_frame, defaultPageSize, printData,
+                                       FindThemeNames(themesFolder), &savedOptions);
     if (sizeDlg.ShowModal() != wxID_OK)
         {
         return;
@@ -1111,7 +1201,7 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
         (savedOptions.m_includeSlideshow != sizeDlg.IncludeSlideshow()) ||
         (savedOptions.m_includePageShadow != sizeDlg.IncludePageShadow()) ||
         (savedOptions.m_includeLayerControls != sizeDlg.IncludeLayerControls()) ||
-        (savedOptions.m_themeColor != sizeDlg.GetThemeColor()) ||
+        (savedOptions.m_theme != sizeDlg.GetTheme()) ||
         (savedOptions.m_layout != sizeDlg.GetLayout());
     if (!newUseGlobal)
         {
@@ -1127,7 +1217,7 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
     savedOptions.m_includeSlideshow = sizeDlg.IncludeSlideshow();
     savedOptions.m_includePageShadow = sizeDlg.IncludePageShadow();
     savedOptions.m_includeLayerControls = sizeDlg.IncludeLayerControls();
-    savedOptions.m_themeColor = sizeDlg.GetThemeColor();
+    savedOptions.m_theme = sizeDlg.GetTheme();
     savedOptions.m_layout = sizeDlg.GetLayout();
     if (changed)
         {
@@ -1145,20 +1235,23 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
     // RAII creates the report, maybe_unused is to silence clang-tidy false positive
     [[maybe_unused]]
     Wisteria::SVGReportPrintout svgReport(
-        m_pages, Wisteria::SVGReportOptions(fileDlg.GetPath())
-                     .PageSize(savedOptions.m_pageSize)
-                     .UseGlobalPrintSettings(savedOptions.m_useGlobalPrintSettings)
-                     .PaperId(savedOptions.m_paperId)
-                     .PaperOrientation(savedOptions.m_paperOrientation)
-                     .Transitions(savedOptions.m_includeTransitions)
-                     .PageShadow(savedOptions.m_includePageShadow)
-                     .Highlighting(savedOptions.m_includeHighlighting)
-                     .LayoutOptions(savedOptions.m_includeLayoutOptions)
-                     .DarkModeToggle(savedOptions.m_includeDarkModeToggle)
-                     .Slideshow(savedOptions.m_includeSlideshow)
-                     .LayerControls(savedOptions.m_includeLayerControls)
-                     .Layout(savedOptions.m_layout)
-                     .ThemeColor(savedOptions.m_themeColor));
+        m_pages,
+        Wisteria::SVGReportOptions(fileDlg.GetPath())
+            .PageSize(savedOptions.m_pageSize)
+            .UseGlobalPrintSettings(savedOptions.m_useGlobalPrintSettings)
+            .PaperId(savedOptions.m_paperId)
+            .PaperOrientation(savedOptions.m_paperOrientation)
+            .Transitions(savedOptions.m_includeTransitions)
+            .PageShadow(savedOptions.m_includePageShadow)
+            .Highlighting(savedOptions.m_includeHighlighting)
+            .LayoutOptions(savedOptions.m_includeLayoutOptions)
+            .DarkModeToggle(savedOptions.m_includeDarkModeToggle)
+            .Slideshow(savedOptions.m_includeSlideshow)
+            .LayerControls(savedOptions.m_includeLayerControls)
+            .Layout(savedOptions.m_layout)
+            .Theme(savedOptions.m_theme)
+            .ThemeColor(GetThemeAccentColor(ReadTextFile(
+                themesFolder + wxFileName::GetPathSeparator() + savedOptions.m_theme + L".css"))));
     }
 
 //-------------------------------------------
@@ -1172,22 +1265,9 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
     const wxString dashboardFolder{ wxGetApp().FindResourceDirectory(L"res/dashboard") };
     const wxString themesFolder{ dashboardFolder + wxFileName::GetPathSeparator() + L"themes" };
 
-    const auto readTextFile = [](wxString path)
-    {
-        wxString content;
-        if (!wxFileName::FileExists(path) ||
-            !Wisteria::TextStream::ReadFile(
-                path, content, wxString{},
-                Wisteria::TextStream::ReadFileInteractivityMode::NoInteractivity))
-            {
-            return wxString{};
-            }
-        return content;
-    };
-
     const wxString coreCss{ dashboardFolder.empty() ?
                                 wxString{} :
-                                readTextFile(dashboardFolder + wxFileName::GetPathSeparator() +
+                                ReadTextFile(dashboardFolder + wxFileName::GetPathSeparator() +
                                              L"dashboard.css") };
     if (coreCss.empty())
         {
@@ -1196,22 +1276,8 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    wxArrayString themePaths;
-    if (!dashboardFolder.empty() && wxDir::Exists(themesFolder))
-        {
-        wxDir::GetAllFiles(themesFolder, &themePaths, L"*.css", wxDIR_FILES);
-        }
-    wxArrayString themes;
-    for (const auto& themePath : themePaths)
-        {
-        themes.Add(wxFileName{ themePath }.GetName());
-        }
-    themes.Sort();
-    if (const auto defaultIndex = themes.Index(L"default"); defaultIndex != wxNOT_FOUND)
-        {
-        themes.RemoveAt(static_cast<size_t>(defaultIndex));
-        themes.Insert(L"default", 0);
-        }
+    const wxArrayString themes{ FindThemeNames(dashboardFolder.empty() ? wxString{} :
+                                                                         themesFolder) };
 
     Wisteria::HtmlDashboardOptions& savedOptions = GetReportBuilder().GetHtmlExportOptions();
 
@@ -1246,7 +1312,7 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
         }
     wxGetApp().GetAppSettings()->GetHtmlExportOptions() = savedOptions;
 
-    const wxString themeCss{ readTextFile(themesFolder + wxFileName::GetPathSeparator() +
+    const wxString themeCss{ ReadTextFile(themesFolder + wxFileName::GetPathSeparator() +
                                           optionsDlg.GetTheme() + L".css") };
 
     wxFileDialog fileDlg(m_frame, _(L"Export to HTML"), wxString{},

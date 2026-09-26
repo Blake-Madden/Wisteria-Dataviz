@@ -114,12 +114,7 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                 boolAttr(L"layer-controls", m_svgExportOptions.m_includeLayerControls);
             m_svgExportOptions.m_useGlobalPrintSettings = boolAttr(
                 L"svg-use-global-print-settings", m_svgExportOptions.m_useGlobalPrintSettings);
-            const wxString colorStr = child->GetAttribute(
-                L"themeColor", m_svgExportOptions.m_themeColor.GetAsString(wxC2S_HTML_SYNTAX));
-            if (const wxColour color{ colorStr }; color.IsOk())
-                {
-                m_svgExportOptions.m_themeColor = color;
-                }
+            m_svgExportOptions.m_theme = child->GetAttribute(L"theme", m_svgExportOptions.m_theme);
             const wxString layoutDefault =
                 (m_svgExportOptions.m_layout == Wisteria::SVGReportOptions::PageLayout::Single) ?
                     L"0" :
@@ -317,8 +312,7 @@ bool AppSettings::SaveSettingsFile(const wxString& filePath)
                           m_svgExportOptions.m_includeLayerControls ? L"1" : L"0");
     svgNode->AddAttribute(L"svg-use-global-print-settings",
                           m_svgExportOptions.m_useGlobalPrintSettings ? L"1" : L"0");
-    svgNode->AddAttribute(L"themeColor",
-                          m_svgExportOptions.m_themeColor.GetAsString(wxC2S_HTML_SYNTAX));
+    svgNode->AddAttribute(L"theme", m_svgExportOptions.m_theme);
     svgNode->AddAttribute(
         L"layout",
         m_svgExportOptions.m_layout == Wisteria::SVGReportOptions::PageLayout::Single ? L"0" :

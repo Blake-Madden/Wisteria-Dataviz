@@ -9,7 +9,6 @@
 #include "svgexportdlg.h"
 #include "../../base/settings.h"
 #include <utility>
-#include <wx/clrpicker.h>
 #include <wx/dcgraph.h>
 #include <wx/graphics.h>
 #include <wx/paper.h>
@@ -20,7 +19,7 @@ namespace Wisteria::UI
     {
     //------------------------------------------------------
     SvgExportDlg::SvgExportDlg(wxWindow* parent, const wxSize& defaultSize,
-                               const wxPrintData& printData,
+                               const wxPrintData& printData, const wxArrayString& themes,
                                const Wisteria::SVGReportOptions* savedOptions /*= nullptr*/,
                                wxWindowID id /*= wxID_ANY*/,
                                const wxString& caption /*= _(L"SVG Export Options")*/,
@@ -40,13 +39,16 @@ namespace Wisteria::UI
             m_includeSlideshow = savedOptions->m_includeSlideshow;
             m_includePageShadow = savedOptions->m_includePageShadow;
             m_includeLayerControls = savedOptions->m_includeLayerControls;
-            m_themeColor = savedOptions->m_themeColor;
+            if (!savedOptions->m_theme.empty())
+                {
+                m_theme = savedOptions->m_theme;
+                }
             m_layout = savedOptions->m_layout;
             }
 
         SetExtraStyle(GetExtraStyle() | wxWS_EX_VALIDATE_RECURSIVELY | wxWS_EX_BLOCK_EVENTS);
 
-        CreateControls();
+        CreateControls(themes);
 
         Bind(wxEVT_BUTTON, &SvgExportDlg::OnOK, this, wxID_OK);
         m_previewPanel->Bind(wxEVT_PAINT, &SvgExportDlg::OnPaintPreview, this);
@@ -57,7 +59,7 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    void SvgExportDlg::CreateControls()
+    void SvgExportDlg::CreateControls(const wxArrayString& themes)
         {
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
@@ -288,15 +290,14 @@ namespace Wisteria::UI
         highlightingCheck->SetValidator(wxGenericValidator{ &m_includeHighlighting });
         featuresSizer->Add(highlightingCheck, wxSizerFlags{}.Border());
 
-        auto* colorSizer = new wxBoxSizer(wxHORIZONTAL);
-        colorSizer->Add(
-            new wxStaticText(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Theme color:")),
-            wxSizerFlags{}.CenterVertical());
-        auto* colorPicker =
-            new wxColourPickerCtrl(featuresSizer->GetStaticBox(), THEME_COLOR_ID, m_themeColor);
-        colorPicker->SetValidator(wxGenericValidator{ &m_themeColor });
-        colorSizer->Add(colorPicker, wxSizerFlags{}.Border());
-        featuresSizer->Add(colorSizer, wxSizerFlags{}.Expand().Border());
+        auto* themeSizer = new wxBoxSizer(wxHORIZONTAL);
+        themeSizer->Add(new wxStaticText(featuresSizer->GetStaticBox(), wxID_ANY, _(L"Theme:")),
+                        wxSizerFlags{}.CenterVertical());
+        auto* themeChoice = new wxChoice(featuresSizer->GetStaticBox(), wxID_ANY, wxDefaultPosition,
+                                         wxDefaultSize, themes);
+        themeChoice->SetValidator(wxGenericValidator{ &m_theme });
+        themeSizer->Add(themeChoice, wxSizerFlags{}.Border());
+        featuresSizer->Add(themeSizer, wxSizerFlags{}.Expand().Border());
 
         leftColumnSizer->Add(featuresSizer, wxSizerFlags{}.Expand());
 

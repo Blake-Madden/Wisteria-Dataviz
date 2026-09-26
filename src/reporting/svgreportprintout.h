@@ -55,7 +55,11 @@ namespace Wisteria
         bool m_includePageShadow{ true };
         /// @brief Whether to include layer filter checkboxes (when pages have layers).
         bool m_includeLayerControls{ true };
+        /// @brief The name of the theme that the theme color comes from.
+        ///     Empty means the default theme.
+        wxString m_theme;
         /// @brief The background color for the overlay buttons and effects.
+        /// @details This is the main color read from the theme's file by the caller.
         wxColour m_themeColor{ 103, 58, 183 };
         /// @brief Uniform page size (in DIPs). If default, uses per-canvas paper sizes.
         wxSize m_pageSize{ wxDefaultSize };
@@ -163,6 +167,15 @@ namespace Wisteria
         SVGReportOptions& LayerControls(bool include)
             {
             m_includeLayerControls = include;
+            return *this;
+            }
+
+        /// @brief Sets the theme name.
+        /// @param theme The theme name.
+        /// @returns A reference to this object.
+        SVGReportOptions& Theme(const wxString& theme)
+            {
+            m_theme = theme;
             return *this;
             }
 
