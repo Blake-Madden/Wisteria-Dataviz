@@ -134,7 +134,7 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     /// @brief Returns the SVG icon filename for a canvas item,
     ///     based on its RTTI type.
     /// @param item The canvas item to look up.
-    /// @returns The SVG filename (e.g., @c "barchart.svg"), or an empty
+    /// @returns The SVG filename (e.g., @c "images/barchart.svg"), or an empty
     ///     string if the type is not recognized.
     [[nodiscard]]
     static wxString GetItemIconName(const Wisteria::GraphItems::GraphItemBase* item);

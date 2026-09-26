@@ -68,7 +68,7 @@ wxBitmapBundle WisteriaArtProvider::CreateBitmapBundle(const wxArtID& id, const 
     const auto filePath = m_idFileMap.find(id);
 
     return (filePath != m_idFileMap.cend()) ?
-               wxGetApp().GetResourceManager().GetSVG(filePath->second) :
+               wxGetApp().GetResourceManager().GetSVG(L"images/" + filePath->second) :
                wxArtProvider::CreateBitmapBundle(id, client, size);
     }
 
@@ -118,9 +118,11 @@ MyFrame::MyFrame()
     SetSize(FromDIP(wxSize(750, 500)));
 
     const wxString appDir{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() };
-    const wxSize iconSize = Wisteria::GraphItems::Image::GetSVGSize(appDir + L"/res/wisteria.svg");
+    const wxSize iconSize =
+        Wisteria::GraphItems::Image::GetSVGSize(appDir + L"/res/images/wisteria.svg");
 
-    SetIcon(wxBitmapBundle::FromSVGFile(appDir + L"/res/wisteria.svg", iconSize).GetIcon(iconSize));
+    SetIcon(wxBitmapBundle::FromSVGFile(appDir + L"/res/images/wisteria.svg", iconSize)
+                .GetIcon(iconSize));
 
     // Associate the menu bar with the frame
     wxMDIParentFrame::SetMenuBar(CreateMainMenubar());
@@ -1257,8 +1259,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
         // add a watermark to the bottom right corner
         subframe->m_canvas->SetWatermarkLogo(
             wxBitmapBundle::FromSVGFile(
-                appDir + L"/res/wisteria.svg",
-                Wisteria::GraphItems::Image::GetSVGSize(appDir + L"/res/wisteria.svg")),
+                appDir + L"/res/images/wisteria.svg",
+                Wisteria::GraphItems::Image::GetSVGSize(appDir + L"/res/images/wisteria.svg")),
             wxSize(32, 32));
         }
     // Scatter Plot
@@ -1866,7 +1868,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // Photo by ThisisEngineering RAEng on Unsplash
         auto bgImage = Wisteria::GraphItems::Image::LoadFile(
-            appDir + L"/res/thisisengineering-raeng-64YrPKiguAE-unsplash.jpg");
+            appDir + L"/res/images/thisisengineering-raeng-64YrPKiguAE-unsplash.jpg");
         plot->SetImageScheme(std::make_shared<Wisteria::Images::Schemes::ImageScheme>(
             std::vector<wxBitmapBundle>{ wxBitmapBundle(bgImage) }));
         // To create a selective colorization effect with the bars, uncomment the following:
@@ -2033,8 +2035,8 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         // do this to use an image instead of a built-in vector icon:
         /* plot->SetStippleBrush(wxBitmapBundle::FromSVGFile(appDir +
-           L"/res/tobias_Blue_Twingo.svg", Image::GetSVGSize(appDir +
-           L"/res/tobias_Blue_Twingo.svg")));
+           L"/res/images/tobias_Blue_Twingo.svg", Image::GetSVGSize(appDir +
+           L"/res/images/tobias_Blue_Twingo.svg")));
 
            plot->SetBarEffect(BoxEffect::StippleImage);*/
 
@@ -3594,163 +3596,173 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
     const wxSize iconSize{ wxSize(16, 16) };
 
     toolBar->AddTool(MyApp::ID_NEW_BARCHART, _(L"Bar Chart"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/barchart.svg", iconSize),
                      _(L"Bar Chart"));
-    toolBar->AddTool(MyApp::ID_NEW_BARCHART_STYLIZED, _(L"Bar Chart (Stylized)"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-stylized.svg", iconSize),
-                     _(L"Bar Chart (Stylized)"));
-    toolBar->AddTool(MyApp::ID_NEW_BARCHART_IMAGE, _(L"Bar Chart (Common Image)"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-image.svg", iconSize),
-                     _(L"Bar Chart (Common Image)"));
+    toolBar->AddTool(
+        MyApp::ID_NEW_BARCHART_STYLIZED, _(L"Bar Chart (Stylized)"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/images/barchart-stylized.svg", iconSize),
+        _(L"Bar Chart (Stylized)"));
+    toolBar->AddTool(
+        MyApp::ID_NEW_BARCHART_IMAGE, _(L"Bar Chart (Common Image)"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/images/barchart-image.svg", iconSize),
+        _(L"Bar Chart (Common Image)"));
     toolBar->AddTool(
         MyApp::ID_NEW_BARCHART_SERPENTINE, _(L"Bar Chart (Serpentine)"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-serpentine.svg", iconSize),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/images/barchart-serpentine.svg", iconSize),
         _(L"Bar Chart (Serpentine)"));
-    toolBar->AddTool(
-        MyApp::ID_NEW_BARCHART_SERPENTINE_AGGRESSIVE, _(L"Bar Chart (Aggressive Serpentine)"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart-serpentine-aggressive.svg", iconSize),
-        _(L"Bar Chart (Aggressive Serpentine)"));
+    toolBar->AddTool(MyApp::ID_NEW_BARCHART_SERPENTINE_AGGRESSIVE,
+                     _(L"Bar Chart (Aggressive Serpentine)"),
+                     wxBitmapBundle::FromSVGFile(
+                         appDir + L"/res/images/barchart-serpentine-aggressive.svg", iconSize),
+                     _(L"Bar Chart (Aggressive Serpentine)"));
     toolBar->AddTool(MyApp::ID_NEW_CATEGORICAL_BARCHART, _(L"Bar Chart (Categorical Data)"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/barchart.svg", iconSize),
                      _(L"Bar Chart (Categorical Data)"));
     toolBar->AddTool(MyApp::ID_NEW_CATEGORICAL_BARCHART_GROUPED,
                      _(L"Bar Chart (Categorical Data, Grouped)"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/barchart.svg", iconSize),
                      _(L"Bar Chart (Categorical Data, Grouped)"));
     toolBar->AddTool(MyApp::ID_NEW_CATEGORICAL_BARCHART_STIPPLED, _(L"Bar Chart (Stipple Icon)"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/barchart.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/barchart.svg", iconSize),
                      _(L"Bar Chart (Stipple Icon)"));
 
     toolBar->AddTool(MyApp::ID_NEW_PIECHART, _(L"Pie Chart"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/piechart.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/piechart.svg", iconSize),
                      _(L"Pie Chart"));
     toolBar->AddTool(
         MyApp::ID_NEW_PIECHART_GROUPED, _(L"Pie Chart (with Subgroup)"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/piechart-subgrouped.svg", iconSize),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/images/piechart-subgrouped.svg", iconSize),
         _(L"Pie Chart (with Subgroup)"));
 
     toolBar->AddTool(MyApp::ID_NEW_DONUTCHART, _(L"Donut Chart"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/donut.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/donut.svg", iconSize),
                      _(L"Donut Chart"));
-    toolBar->AddTool(MyApp::ID_NEW_DONUTCHART_GROUPED, _(L"Donut Chart (with Subgroup)"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/donut-subgrouped.svg", iconSize),
-                     _(L"Donut Chart (with Subgroup)"));
+    toolBar->AddTool(
+        MyApp::ID_NEW_DONUTCHART_GROUPED, _(L"Donut Chart (with Subgroup)"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/images/donut-subgrouped.svg", iconSize),
+        _(L"Donut Chart (with Subgroup)"));
 
     toolBar->AddTool(MyApp::ID_NEW_HISTOGRAM, _(L"Histogram"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/histogram.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/histogram.svg", iconSize),
                      _(L"Histogram"));
 
     toolBar->AddTool(MyApp::ID_NEW_HISTOGRAM_UNIQUE_VALUES,
                      _(L"Histogram (Discrete Category Counts)"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/histogram.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/histogram.svg", iconSize),
                      _(L"Histogram (Discrete Category Counts)"));
 
     toolBar->AddTool(MyApp::ID_NEW_LINEPLOT, _(L"Line Plot"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/lineplot.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/lineplot.svg", iconSize),
                      _(L"Line Plot"));
-    toolBar->AddTool(MyApp::ID_NEW_LINEPLOT_CUSTOMIZED, _(L"Line Plot (Customized)"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/lineplot-points.svg", iconSize),
-                     _(L"Line Plot (Customized)"));
+    toolBar->AddTool(
+        MyApp::ID_NEW_LINEPLOT_CUSTOMIZED, _(L"Line Plot (Customized)"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/images/lineplot-points.svg", iconSize),
+        _(L"Line Plot (Customized)"));
     toolBar->AddTool(MyApp::ID_NEW_SCATTERPLOT, _(L"Scatter Plot"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/scatterplot.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/scatterplot.svg", iconSize),
                      _(L"Scatter Plot"));
     toolBar->AddTool(MyApp::ID_NEW_BUBBLEPLOT, _(L"Bubble Plot"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/bubbleplot.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/bubbleplot.svg", iconSize),
                      _(L"Bubble Plot"));
-    toolBar->AddTool(MyApp::ID_NEW_CHERNOFFPLOT, _(L"Chernoff Faces Plot"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/chernoffplot.svg", iconSize),
-                     _(L"Chernoff Faces Plot"));
+    toolBar->AddTool(
+        MyApp::ID_NEW_CHERNOFFPLOT, _(L"Chernoff Faces Plot"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/images/chernoffplot.svg", iconSize),
+        _(L"Chernoff Faces Plot"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_BOXPLOT, _(L"Box Plot"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/boxplot.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/boxplot.svg", iconSize),
                      _(L"Box Plot"));
     toolBar->AddTool(MyApp::ID_NEW_STEMANDLEAF, _(L"Stem-and-Leaf Plot"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/stem-leaf.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/stem-leaf.svg", iconSize),
                      _(L"Stem-and-Leaf Plot"));
     toolBar->AddTool(MyApp::ID_NEW_HEATMAP, _(L"Heat Map"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/heatmap.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/heatmap.svg", iconSize),
                      _(L"Heat Map"));
-    toolBar->AddTool(MyApp::ID_NEW_HEATMAP_GROUPED, _(L"Heat Map (Grouped)"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/heatmap-grouped.svg", iconSize),
-                     _(L"Heat Map (Grouped)"));
+    toolBar->AddTool(
+        MyApp::ID_NEW_HEATMAP_GROUPED, _(L"Heat Map (Grouped)"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/images/heatmap-grouped.svg", iconSize),
+        _(L"Heat Map (Grouped)"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_SCALE_CHART, _(L"Scale Chart"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/scale.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/scale.svg", iconSize),
                      _(L"Scale Chart"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_GANTT, _(L"Gantt Chart"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/gantt.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/gantt.svg", iconSize),
                      _(L"Gantt Chart"));
 
     toolBar->AddTool(MyApp::ID_NEW_CANDLESTICK_AXIS, _(L"Candlestick Plot"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/candlestick.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/candlestick.svg", iconSize),
                      _(L"Candlestick Plot"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_LIKERT_3POINT, _(L"Likert Chart (3-Point Scale)"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/likert3.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/likert3.svg", iconSize),
                      _(L"Likert Chart (3-Point Scale)"));
     toolBar->AddTool(MyApp::ID_NEW_LIKERT_7POINT, _(L"Likert Chart (7-Point Scale)"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/likert7.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/likert7.svg", iconSize),
                      _(L"Likert Chart (7-Point Scale)"));
     toolBar->AddTool(MyApp::ID_NEW_WCURVE, _(L"W-Curve Plot"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/wcurve.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/wcurve.svg", iconSize),
                      _(L"W-Curve Plot"));
     toolBar->AddTool(MyApp::ID_NEW_FUNNEL_CHART, _(L"Funnel Chart (Sales Pipeline)"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/funnel.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/funnel.svg", iconSize),
                      _(L"Funnel Chart (Sales Pipeline)"));
     toolBar->AddTool(MyApp::ID_NEW_LR_ROADMAP_GRAPH, _(L"Linear Regression Roadmap"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/roadmap.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/roadmap.svg", iconSize),
                      _(L"Linear Regression Roadmap"));
     toolBar->AddTool(MyApp::ID_NEW_PROCON_ROADMAP_GRAPH, _(L"Pros & Cons Roadmap"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/roadmap.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/roadmap.svg", iconSize),
                      _(L"Pros & Cons Roadmap"));
     toolBar->AddTool(MyApp::ID_NEW_SANKEY_DIAGRAM, _(L"Sankey Diagram"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/sankey.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/sankey.svg", iconSize),
                      _(L"Sankey Diagram"));
     toolBar->AddTool(MyApp::ID_NEW_GROUPED_SANKEY_DIAGRAM, _(L"Grouped Sankey Diagram"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/sankey.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/sankey.svg", iconSize),
                      _(L"Grouped Sankey Diagram"));
     toolBar->AddTool(MyApp::ID_NEW_WORD_CLOUD, _(L"Word Cloud"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/wordcloud.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/wordcloud.svg", iconSize),
                      _(L"Word Cloud"));
     toolBar->AddTool(MyApp::ID_NEW_RACETRACK, _(L"Race Track Chart"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/racetrack.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/racetrack.svg", iconSize),
                      _(L"Race Track Chart"));
-    toolBar->AddTool(MyApp::ID_NEW_DUBOIS_SPIRAL, _(L"Du Bois Spiral Chart"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/dubois-spiral.svg", iconSize),
-                     _(L"Du Bois Spiral Chart"));
+    toolBar->AddTool(
+        MyApp::ID_NEW_DUBOIS_SPIRAL, _(L"Du Bois Spiral Chart"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/images/dubois-spiral.svg", iconSize),
+        _(L"Du Bois Spiral Chart"));
     toolBar->AddTool(MyApp::ID_NEW_PICTOGRAPH, _(L"Pictograph"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/pictograph.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/pictograph.svg", iconSize),
                      _(L"Pictograph"));
-    toolBar->AddTool(MyApp::ID_NEW_WILMARTH_BRIDGE, _(L"Wilmarth Bridge Plot"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/wilmarth-bridge.svg", iconSize),
-                     _(L"Wilmarth Bridge Plot"));
+    toolBar->AddTool(
+        MyApp::ID_NEW_WILMARTH_BRIDGE, _(L"Wilmarth Bridge Plot"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/images/wilmarth-bridge.svg", iconSize),
+        _(L"Wilmarth Bridge Plot"));
     toolBar->AddTool(MyApp::ID_NEW_NIGHTINGALE_ROSE, _(L"Nightingale Rose Chart"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/rose.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/rose.svg", iconSize),
                      _(L"Nightingale Rose Chart"));
     toolBar->AddTool(MyApp::ID_NEW_BULLET_CHART, _(L"Bullet Chart"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/bulletchart.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/bulletchart.svg", iconSize),
                      _(L"Bullet Chart"));
-    toolBar->AddTool(MyApp::ID_NEW_WATERFALL_CHART, _(L"Waterfall Chart"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/waterfallchart.svg", iconSize),
-                     _(L"Waterfall Chart"));
+    toolBar->AddTool(
+        MyApp::ID_NEW_WATERFALL_CHART, _(L"Waterfall Chart"),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/images/waterfallchart.svg", iconSize),
+        _(L"Waterfall Chart"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_MULTIPLOT, _(L"Multiple Plots"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/multiplot.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/multiplot.svg", iconSize),
                      _(L"Multiple Plots"));
     toolBar->AddTool(
         MyApp::ID_NEW_MULTIPLOT_COMMON_AXIS, _(L"Multiple Plots (Common Axis)"),
-        wxBitmapBundle::FromSVGFile(appDir + L"/res/multiplot-common-axis.svg", iconSize),
+        wxBitmapBundle::FromSVGFile(appDir + L"/res/images/multiplot-common-axis.svg", iconSize),
         _(L"Multiple Plots (Common Axis)"));
     toolBar->AddSeparator();
 
     toolBar->AddTool(MyApp::ID_NEW_TABLE, _(L"Table"),
-                     wxBitmapBundle::FromSVGFile(appDir + L"/res/table.svg", iconSize),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/table.svg", iconSize),
                      _(L"Table"));
 
     toolBar->Realize();
@@ -3763,9 +3775,11 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
 MyChild::MyChild(wxMDIParentFrame* parent) : wxMDIChildFrame(parent, wxID_ANY, L"")
     {
     const wxString appDir{ wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() };
-    const wxSize iconSize = Wisteria::GraphItems::Image::GetSVGSize(appDir + L"/res/wisteria.svg");
+    const wxSize iconSize =
+        Wisteria::GraphItems::Image::GetSVGSize(appDir + L"/res/images/wisteria.svg");
 
-    SetIcon(wxBitmapBundle::FromSVGFile(appDir + L"/res/wisteria.svg", iconSize).GetIcon(iconSize));
+    SetIcon(wxBitmapBundle::FromSVGFile(appDir + L"/res/images/wisteria.svg", iconSize)
+                .GetIcon(iconSize));
 
     // create our menu bar and associate it with the frame
     wxMDIChildFrame::SetMenuBar(MyFrame::CreateMainMenubar());

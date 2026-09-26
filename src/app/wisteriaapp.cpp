@@ -26,24 +26,24 @@ wxIMPLEMENT_CLASS(MainFrame, Wisteria::UI::BaseMainFrame);
 WisteriaArtProvider::WisteriaArtProvider()
     {
     // cppcheck-suppress useInitializationList
-    m_idFileMap = { { L"ID_CONTINUOUS", L"scale.svg" },
-                    { L"ID_CATEGORICAL", L"categorical.svg" },
-                    { L"ID_DISCRETE", L"discrete.svg" },
-                    { L"ID_DATE", L"date.svg" },
-                    { L"ID_DICHOTOMOUS_CATEGORICAL", L"dichotomous-categorical.svg" },
-                    { L"ID_DICHOTOMOUS_DISCRETE", L"dichotomous-discrete.svg" },
-                    { wxART_FILE_OPEN, L"file-open.svg" },
-                    { wxART_FILE_SAVE, L"file-save.svg" },
-                    { wxART_PRINT, L"print.svg" },
-                    { wxART_COPY, L"copy.svg" },
-                    { wxART_FIND, L"find.svg" },
-                    { wxART_DELETE, L"delete.svg" },
-                    { L"ID_SELECT_ALL", L"select-all.svg" },
-                    { L"ID_LIST_SORT", L"sort.svg" },
-                    { L"ID_CLEAR", L"clear.svg" },
-                    { L"ID_REFRESH", L"reload.svg" },
-                    { L"ID_REALTIME_UPDATE", L"realtime.svg" },
-                    { wxART_EDIT, L"edit.svg" } };
+    m_idFileMap = { { L"ID_CONTINUOUS", L"images/scale.svg" },
+                    { L"ID_CATEGORICAL", L"images/categorical.svg" },
+                    { L"ID_DISCRETE", L"images/discrete.svg" },
+                    { L"ID_DATE", L"images/date.svg" },
+                    { L"ID_DICHOTOMOUS_CATEGORICAL", L"images/dichotomous-categorical.svg" },
+                    { L"ID_DICHOTOMOUS_DISCRETE", L"images/dichotomous-discrete.svg" },
+                    { wxART_FILE_OPEN, L"images/file-open.svg" },
+                    { wxART_FILE_SAVE, L"images/file-save.svg" },
+                    { wxART_PRINT, L"images/print.svg" },
+                    { wxART_COPY, L"images/copy.svg" },
+                    { wxART_FIND, L"images/find.svg" },
+                    { wxART_DELETE, L"images/delete.svg" },
+                    { L"ID_SELECT_ALL", L"images/select-all.svg" },
+                    { L"ID_LIST_SORT", L"images/sort.svg" },
+                    { L"ID_CLEAR", L"images/clear.svg" },
+                    { L"ID_REFRESH", L"images/reload.svg" },
+                    { L"ID_REALTIME_UPDATE", L"images/realtime.svg" },
+                    { wxART_EDIT, L"images/edit.svg" } };
     }
 
 //-------------------------------------------
@@ -148,8 +148,8 @@ void WisteriaApp::LoadInterface()
         mruFiles.Add(GetDocManager()->GetFileHistory()->GetHistoryFile(i));
         }
     m_startPage = new wxStartPage(GetMainFrame(), wxID_ANY, mruFiles,
-                                  GetResourceManager().GetSVG(L"wisteria.svg"));
-    m_startPage->AddButton(GetResourceManager().GetSVG(L"wisteria.svg"),
+                                  GetResourceManager().GetSVG(L"images/wisteria.svg"));
+    m_startPage->AddButton(GetResourceManager().GetSVG(L"images/wisteria.svg"),
                            _(L"Create a New Project"));
     m_startPage->AddButton(wxArtProvider::GetBitmapBundle(wxART_FILE_OPEN, wxART_BUTTON),
                            _(L"Open a Project"));
@@ -194,7 +194,7 @@ void WisteriaApp::LoadInterface()
                          wxID_OPEN);
 
     wxIcon appIcon;
-    const auto appSvg = GetResourceManager().GetSVG(L"wisteria.svg");
+    const auto appSvg = GetResourceManager().GetSVG(L"images/wisteria.svg");
     if (appSvg.IsOk())
         {
         appIcon.CopyFromBitmap(appSvg.GetBitmap(GetMainFrame()->FromDIP(wxSize{ 32, 32 })));
@@ -519,10 +519,10 @@ void WisteriaApp::LoadRibbonLogPage(wxRibbonBar* ribbon)
     auto* exportBar = new wxRibbonButtonBar(new wxRibbonPanel(
         GetMainFrameEx()->GetLogRibbonPage(), wxID_ANY, _(L"Export"), wxNullBitmap,
         wxDefaultPosition, wxDefaultSize, wxRIBBON_PANEL_NO_AUTO_MINIMISE));
-    exportBar->AddButton(ID_LOG_TAB_SAVE, _(L"Save"), ReadSvgIcon(L"file-save.svg"),
+    exportBar->AddButton(ID_LOG_TAB_SAVE, _(L"Save"), ReadSvgIcon(L"images/file-save.svg"),
                          _(L"Save the log report."));
     exportBar->SetKeyTip(ID_LOG_TAB_SAVE, _DT(L"S"));
-    exportBar->AddButton(ID_LOG_TAB_PRINT, _(L"Print"), ReadSvgIcon(L"print.svg"),
+    exportBar->AddButton(ID_LOG_TAB_PRINT, _(L"Print"), ReadSvgIcon(L"images/print.svg"),
                          _(L"Print the log report."));
     exportBar->SetKeyTip(ID_LOG_TAB_PRINT, _DT(L"R"));
 
@@ -530,29 +530,30 @@ void WisteriaApp::LoadRibbonLogPage(wxRibbonBar* ribbon)
         new wxRibbonPanel(GetMainFrameEx()->GetLogRibbonPage(), wxID_ANY, _(L"Edit"), wxNullBitmap,
                           wxDefaultPosition, wxDefaultSize, wxRIBBON_PANEL_NO_AUTO_MINIMISE));
     GetMainFrameEx()->m_logEditButtonBar->AddButton(ID_LOG_TAB_COPY, _(L"Copy Selection"),
-                                                    ReadSvgIcon(L"copy.svg"),
+                                                    ReadSvgIcon(L"images/copy.svg"),
                                                     _(L"Copy the selected items."));
     GetMainFrameEx()->m_logEditButtonBar->SetKeyTip(ID_LOG_TAB_COPY, _DT(L"C"));
     GetMainFrameEx()->m_logEditButtonBar->AddButton(ID_LOG_TAB_SELECT_ALL, _(L"Select All"),
-                                                    ReadSvgIcon(L"select-all.svg"),
+                                                    ReadSvgIcon(L"images/select-all.svg"),
                                                     _(L"Select the entire list."));
     GetMainFrameEx()->m_logEditButtonBar->SetKeyTip(ID_LOG_TAB_SELECT_ALL, _DT(L"T"));
-    GetMainFrameEx()->m_logEditButtonBar->AddButton(ID_LOG_TAB_SORT, _(L"Sort"),
-                                                    ReadSvgIcon(L"sort.svg"), _(L"Sort the list."));
-    GetMainFrameEx()->m_logEditButtonBar->SetKeyTip(ID_LOG_TAB_SORT, _DT(L"O"));
     GetMainFrameEx()->m_logEditButtonBar->AddButton(
-        ID_LOG_TAB_CLEAR, _(L"Clear"), ReadSvgIcon(L"clear.svg"), _(L"Clear the log report."));
+        ID_LOG_TAB_SORT, _(L"Sort"), ReadSvgIcon(L"images/sort.svg"), _(L"Sort the list."));
+    GetMainFrameEx()->m_logEditButtonBar->SetKeyTip(ID_LOG_TAB_SORT, _DT(L"O"));
+    GetMainFrameEx()->m_logEditButtonBar->AddButton(ID_LOG_TAB_CLEAR, _(L"Clear"),
+                                                    ReadSvgIcon(L"images/clear.svg"),
+                                                    _(L"Clear the log report."));
     GetMainFrameEx()->m_logEditButtonBar->SetKeyTip(ID_LOG_TAB_CLEAR, _DT(L"B"));
     GetMainFrameEx()->m_logEditButtonBar->AddButton(ID_LOG_TAB_REFRESH, _(L"Refresh"),
-                                                    ReadSvgIcon(L"reload.svg"),
+                                                    ReadSvgIcon(L"images/reload.svg"),
                                                     _(L"Refresh the log report."));
     GetMainFrameEx()->m_logEditButtonBar->SetKeyTip(ID_LOG_TAB_REFRESH, _DT(L"F"));
     GetMainFrameEx()->m_logEditButtonBar->AddToggleButton(
-        ID_LOG_TAB_REALTIME_UPDATE, _(L"Auto Refresh"), ReadSvgIcon(L"realtime.svg"),
+        ID_LOG_TAB_REALTIME_UPDATE, _(L"Auto Refresh"), ReadSvgIcon(L"images/realtime.svg"),
         _(L"Refresh the log report automatically."));
     GetMainFrameEx()->m_logEditButtonBar->SetKeyTip(ID_LOG_TAB_REALTIME_UPDATE, _DT(L"U"));
     GetMainFrameEx()->m_logEditButtonBar->AddToggleButton(
-        ID_LOG_TAB_VERBOSE, _(L"Verbose"), ReadSvgIcon(L"edit.svg"),
+        ID_LOG_TAB_VERBOSE, _(L"Verbose"), ReadSvgIcon(L"images/edit.svg"),
         _(L"Toggles whether the logging system includes more detailed information."));
     GetMainFrameEx()->m_logEditButtonBar->SetKeyTip(ID_LOG_TAB_VERBOSE, _DT(L"V"));
     }
@@ -704,9 +705,10 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                    wxRIBBON_BAR_SHOW_PAGE_ICONS | wxRIBBON_BAR_DEFAULT_STYLE);
 
     // Home tab
-    const auto homeIcon = ReadSvgIcon(
-        wxSystemSettings::GetAppearance().IsDark() ? L"home-dark-mode.svg" : L"home.svg",
-        wxSize{ 16, 16 });
+    const auto homeIcon =
+        ReadSvgIcon(wxSystemSettings::GetAppearance().IsDark() ? L"images/home-dark-mode.svg" :
+                                                                 L"images/home.svg",
+                    wxSize{ 16, 16 });
     auto* homePage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Home"), homeIcon);
     ribbon->SetPageKeyTip(homePage, _DT(L"H"));
 
@@ -715,11 +717,11 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
     projectPanel->SetKeyTip(_DT(L"Q"));
     auto* projectButtonBar = new wxRibbonButtonBar(projectPanel, wxID_ANY);
 
-    projectButtonBar->AddButton(wxID_NEW, _(L"New"), ReadSvgIcon(L"wisteria.svg"),
+    projectButtonBar->AddButton(wxID_NEW, _(L"New"), ReadSvgIcon(L"images/wisteria.svg"),
                                 _(L"Create a new project"));
     projectButtonBar->SetKeyTip(wxID_NEW, _DT(L"N"));
 
-    projectButtonBar->AddHybridButton(wxID_OPEN, _(L"Open"), ReadSvgIcon(L"file-open.svg"),
+    projectButtonBar->AddHybridButton(wxID_OPEN, _(L"Open"), ReadSvgIcon(L"images/file-open.svg"),
                                       _(L"Open a data file"));
     projectButtonBar->SetKeyTip(wxID_OPEN, _DT(L"O"));
     projectButtonBar->SetDropdownKeyTip(wxID_OPEN, _DT(L"U"));
@@ -727,24 +729,30 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
     if (isProjectRibbon)
         {
         projectButtonBar->AddHybridButton(ID_SAVE_PROJECT, _(L"Save"),
-                                          ReadSvgIcon(L"file-save.svg"), _(L"Save the project"));
+                                          ReadSvgIcon(L"images/file-save.svg"),
+                                          _(L"Save the project"));
         projectButtonBar->SetKeyTip(ID_SAVE_PROJECT, _DT(L"S"));
         projectButtonBar->SetDropdownKeyTip(ID_SAVE_PROJECT, _DT(L"X"));
-        projectButtonBar->AddButton(ID_SVG_EXPORT, _(L"SVG Export"), ReadSvgIcon(L"report.svg"),
+        projectButtonBar->AddButton(ID_SVG_EXPORT, _(L"SVG Export"),
+                                    ReadSvgIcon(L"images/report.svg"),
                                     _(L"Export all pages to SVG"));
         projectButtonBar->SetKeyTip(ID_SVG_EXPORT, _DT(L"V"));
-        projectButtonBar->AddButton(ID_PDF_EXPORT, _(L"PDF Export"), ReadSvgIcon(L"pdf.svg"),
+        projectButtonBar->AddButton(ID_HTML_EXPORT, _(L"HTML Export"),
+                                    ReadSvgIcon(L"images/dashboard.svg"),
+                                    _(L"Export all pages to an interactive HTML dashboard"));
+        projectButtonBar->SetKeyTip(ID_HTML_EXPORT, _DT(L"M"));
+        projectButtonBar->AddButton(ID_PDF_EXPORT, _(L"PDF Export"), ReadSvgIcon(L"images/pdf.svg"),
                                     _(L"Export all pages to PDF"));
         projectButtonBar->SetKeyTip(ID_PDF_EXPORT, _DT(L"F"));
         projectButtonBar->AddButton(ID_PPTX_EXPORT, _(L"PowerPoint Export"),
-                                    ReadSvgIcon(L"powerpoint.svg"),
+                                    ReadSvgIcon(L"images/powerpoint.svg"),
                                     _(L"Export all pages to PowerPoint"));
         projectButtonBar->SetKeyTip(ID_PPTX_EXPORT, _DT(L"W"));
-        projectButtonBar->AddButton(ID_REFRESH_ALL, _(L"Refresh All"), ReadSvgIcon(L"reload.svg"),
-                                    _(L"Reload the project"));
+        projectButtonBar->AddButton(ID_REFRESH_ALL, _(L"Refresh All"),
+                                    ReadSvgIcon(L"images/reload.svg"), _(L"Reload the project"));
         projectButtonBar->SetKeyTip(ID_REFRESH_ALL, _DT(L"R"));
         projectButtonBar->AddButton(ID_PROJECT_SETTINGS, _(L"Project Settings"),
-                                    ReadSvgIcon(L"project-settings.svg"),
+                                    ReadSvgIcon(L"images/project-settings.svg"),
                                     _(L"Edit the project settings"));
         projectButtonBar->SetKeyTip(ID_PROJECT_SETTINGS, _DT(L"J"));
 
@@ -752,10 +760,11 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         auto* printPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Print"));
         printPanel->SetKeyTip(_DT(L"T"));
         auto* printButtonBar = new wxRibbonButtonBar(printPanel, wxID_ANY);
-        printButtonBar->AddButton(wxID_PRINT, _(L"Print"), ReadSvgIcon(L"print.svg"),
+        printButtonBar->AddButton(wxID_PRINT, _(L"Print"), ReadSvgIcon(L"images/print.svg"),
                                   _(L"Print all pages"));
         printButtonBar->SetKeyTip(wxID_PRINT, _DT(L"I"));
-        printButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Setup"), ReadSvgIcon(L"print-setup.svg"),
+        printButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Setup"),
+                                  ReadSvgIcon(L"images/print-setup.svg"),
                                   _(L"Configure print settings"));
         printButtonBar->SetKeyTip(ID_PRINT_SETUP, _DT(L"G"));
 
@@ -768,19 +777,22 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         pagesPanel->SetKeyTip(_DT(L"S"));
         auto* pagesButtonBar = new wxRibbonButtonBar(pagesPanel, ID_PAGES_BUTTONBAR);
 
-        pagesButtonBar->AddButton(ID_INSERT_PAGE, _(L"Add"), ReadSvgIcon(L"page-add.svg"),
+        pagesButtonBar->AddButton(ID_INSERT_PAGE, _(L"Add"), ReadSvgIcon(L"images/page-add.svg"),
                                   _(L"Add a new page to the project"));
         pagesButtonBar->SetKeyTip(ID_INSERT_PAGE, _DT(L"N"));
-        pagesButtonBar->AddButton(ID_EDIT_PAGE, _(L"Edit"), ReadSvgIcon(L"page-edit.svg"),
+        pagesButtonBar->AddButton(ID_EDIT_PAGE, _(L"Edit"), ReadSvgIcon(L"images/page-edit.svg"),
                                   _(L"Edit the current page"));
         pagesButtonBar->SetKeyTip(ID_EDIT_PAGE, _DT(L"I"));
-        pagesButtonBar->AddButton(ID_DELETE_PAGE, _(L"Delete"), ReadSvgIcon(L"page-delete.svg"),
+        pagesButtonBar->AddButton(ID_DELETE_PAGE, _(L"Delete"),
+                                  ReadSvgIcon(L"images/page-delete.svg"),
                                   _(L"Delete the current page"));
         pagesButtonBar->SetKeyTip(ID_DELETE_PAGE, _DT(L"T"));
-        pagesButtonBar->AddButton(ID_REARRANGE_PAGES, _(L"Reorder"), ReadSvgIcon(L"sort.svg"),
+        pagesButtonBar->AddButton(ID_REARRANGE_PAGES, _(L"Reorder"),
+                                  ReadSvgIcon(L"images/sort.svg"),
                                   _(L"Reorder or remove the project's pages"));
         pagesButtonBar->SetKeyTip(ID_REARRANGE_PAGES, _DT(L"R"));
-        pagesButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Setup"), ReadSvgIcon(L"print-setup.svg"),
+        pagesButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Setup"),
+                                  ReadSvgIcon(L"images/print-setup.svg"),
                                   _(L"Configure print settings"));
         pagesButtonBar->SetKeyTip(ID_PRINT_SETUP, _DT(L"G"));
 
@@ -789,41 +801,43 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         objectsPanel->SetKeyTip(_DT(L"OB"));
         auto* objectsButtonBar = new wxRibbonButtonBar(objectsPanel, ID_OBJECTS_BUTTONBAR);
 
-        objectsButtonBar->AddButton(ID_NEW_LABEL, _(L"Label"), ReadSvgIcon(L"label.svg"),
+        objectsButtonBar->AddButton(ID_NEW_LABEL, _(L"Label"), ReadSvgIcon(L"images/label.svg"),
                                     _(L"Insert a text label"));
         objectsButtonBar->SetKeyTip(ID_NEW_LABEL, _DT(L"B"));
-        objectsButtonBar->AddButton(ID_NEW_KPI_CARD, _(L"KPI Card"), ReadSvgIcon(L"kpi-card.svg"),
+        objectsButtonBar->AddButton(ID_NEW_KPI_CARD, _(L"KPI Card"),
+                                    ReadSvgIcon(L"images/kpi-card.svg"),
                                     _(L"Insert a KPI card (a big number with a caption)"));
         objectsButtonBar->SetKeyTip(ID_NEW_KPI_CARD, _DT(L"C"));
-        objectsButtonBar->AddButton(ID_NEW_IMAGE, _(L"Image"), ReadSvgIcon(L"image.svg"),
+        objectsButtonBar->AddButton(ID_NEW_IMAGE, _(L"Image"), ReadSvgIcon(L"images/image.svg"),
                                     _(L"Insert an image"));
         objectsButtonBar->SetKeyTip(ID_NEW_IMAGE, _DT(L"F"));
-        objectsButtonBar->AddButton(ID_NEW_SHAPE, _(L"Shape"), ReadSvgIcon(L"shape.svg"),
+        objectsButtonBar->AddButton(ID_NEW_SHAPE, _(L"Shape"), ReadSvgIcon(L"images/shape.svg"),
                                     _(L"Insert a shape"));
         objectsButtonBar->SetKeyTip(ID_NEW_SHAPE, _DT(L"J"));
-        objectsButtonBar->AddButton(ID_NEW_COMMON_AXIS, _(L"Axis"), ReadSvgIcon(L"axis.svg"),
+        objectsButtonBar->AddButton(ID_NEW_COMMON_AXIS, _(L"Axis"), ReadSvgIcon(L"images/axis.svg"),
                                     _(L"Insert an axis"));
         objectsButtonBar->SetKeyTip(ID_NEW_COMMON_AXIS, _DT(L"X"));
-        objectsButtonBar->AddButton(ID_NEW_SPACER, _(L"Spacer"), ReadSvgIcon(L"spacer.svg"),
+        objectsButtonBar->AddButton(ID_NEW_SPACER, _(L"Spacer"), ReadSvgIcon(L"images/spacer.svg"),
                                     _(L"Insert a spacer"));
         objectsButtonBar->SetKeyTip(ID_NEW_SPACER, _DT(L"V"));
         objectsButtonBar->AddDropdownButton(ID_NEW_DIVIDER, _(L"Divider"),
-                                            ReadSvgIcon(L"divider-horizontal-double.svg"),
+                                            ReadSvgIcon(L"images/divider-horizontal-double.svg"),
                                             _(L"Insert a divider line"));
         objectsButtonBar->SetKeyTip(ID_NEW_DIVIDER, _DT(L"Q"));
-        objectsButtonBar->AddButton(wxID_COPY, _(L"Copy"), ReadSvgIcon(L"copy.svg"),
+        objectsButtonBar->AddButton(wxID_COPY, _(L"Copy"), ReadSvgIcon(L"images/copy.svg"),
                                     _(L"Copy the selected item"));
         objectsButtonBar->SetKeyTip(wxID_COPY, _DT(L"Y"));
-        objectsButtonBar->AddButton(wxID_PASTE, _(L"Paste"), ReadSvgIcon(L"paste.svg"),
+        objectsButtonBar->AddButton(wxID_PASTE, _(L"Paste"), ReadSvgIcon(L"images/paste.svg"),
                                     _(L"Paste the copied item"));
         objectsButtonBar->SetKeyTip(wxID_PASTE, _DT(L"U"));
-        objectsButtonBar->AddButton(ID_EDIT_ITEM, _(L"Edit"), ReadSvgIcon(L"edit.svg"),
+        objectsButtonBar->AddButton(ID_EDIT_ITEM, _(L"Edit"), ReadSvgIcon(L"images/edit.svg"),
                                     _(L"Edit the selected item"));
         objectsButtonBar->SetKeyTip(ID_EDIT_ITEM, _DT(L"W"));
-        objectsButtonBar->AddButton(ID_GOTO_DATASOURCE, _(L"Datasource"), ReadSvgIcon(L"data.svg"),
+        objectsButtonBar->AddButton(ID_GOTO_DATASOURCE, _(L"Datasource"),
+                                    ReadSvgIcon(L"images/data.svg"),
                                     _(L"Jump to this graph's dataset"));
         objectsButtonBar->SetKeyTip(ID_GOTO_DATASOURCE, _DT(L"Z"));
-        objectsButtonBar->AddButton(ID_DELETE_ITEM, _(L"Delete"), ReadSvgIcon(L"delete.svg"),
+        objectsButtonBar->AddButton(ID_DELETE_ITEM, _(L"Delete"), ReadSvgIcon(L"images/delete.svg"),
                                     _(L"Delete the selected item"));
         objectsButtonBar->SetKeyTip(ID_DELETE_ITEM, _DT(L"OD"));
 
@@ -836,13 +850,14 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         dataPanel->SetKeyTip(_DT(L"S"));
         auto* dataButtonBar = new wxRibbonButtonBar(dataPanel, ID_DATASET_BUTTONBAR);
 
-        dataButtonBar->AddButton(ID_INSERT_DATASET, _(L"Add"), ReadSvgIcon(L"data-add.svg"),
+        dataButtonBar->AddButton(ID_INSERT_DATASET, _(L"Add"), ReadSvgIcon(L"images/data-add.svg"),
                                  _(L"Import a dataset into the project"));
         dataButtonBar->SetKeyTip(ID_INSERT_DATASET, _DT(L"N"));
-        dataButtonBar->AddButton(ID_EDIT_DATASET, _(L"Edit"), ReadSvgIcon(L"data-edit.svg"),
+        dataButtonBar->AddButton(ID_EDIT_DATASET, _(L"Edit"), ReadSvgIcon(L"images/data-edit.svg"),
                                  _(L"Edit the selected dataset's import options"));
         dataButtonBar->SetKeyTip(ID_EDIT_DATASET, _DT(L"I"));
-        dataButtonBar->AddButton(ID_DELETE_DATASET, _(L"Delete"), ReadSvgIcon(L"data-delete.svg"),
+        dataButtonBar->AddButton(ID_DELETE_DATASET, _(L"Delete"),
+                                 ReadSvgIcon(L"images/data-delete.svg"),
                                  _(L"Delete the selected dataset from the project"));
         dataButtonBar->SetKeyTip(ID_DELETE_DATASET, _DT(L"T"));
 
@@ -851,18 +866,19 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         transformPanel->SetKeyTip(_DT(L"R"));
         auto* transformButtonBar = new wxRibbonButtonBar(transformPanel, wxID_ANY);
 
-        transformButtonBar->AddButton(ID_SUBSET_DATASET, _(L"Subset"), ReadSvgIcon(L"subset.svg"),
+        transformButtonBar->AddButton(ID_SUBSET_DATASET, _(L"Subset"),
+                                      ReadSvgIcon(L"images/subset.svg"),
                                       _(L"Create a subset of a dataset"));
         transformButtonBar->SetKeyTip(ID_SUBSET_DATASET, _DT(L"U"));
-        transformButtonBar->AddButton(ID_JOIN_DATASET, _(L"Join"), ReadSvgIcon(L"join.svg"),
+        transformButtonBar->AddButton(ID_JOIN_DATASET, _(L"Join"), ReadSvgIcon(L"images/join.svg"),
                                       _(L"Join two datasets"));
         transformButtonBar->SetKeyTip(ID_JOIN_DATASET, _DT(L"J"));
         transformButtonBar->AddButton(ID_PIVOT_WIDER, _(L"Pivot Wider"),
-                                      ReadSvgIcon(L"pivot-wider.svg"),
+                                      ReadSvgIcon(L"images/pivot-wider.svg"),
                                       _(L"Pivot a dataset wider (unstack)"));
         transformButtonBar->SetKeyTip(ID_PIVOT_WIDER, _DT(L"V"));
         transformButtonBar->AddButton(ID_PIVOT_LONGER, _(L"Pivot Longer"),
-                                      ReadSvgIcon(L"pivot-longer.svg"),
+                                      ReadSvgIcon(L"images/pivot-longer.svg"),
                                       _(L"Pivot a dataset longer (stack)"));
         transformButtonBar->SetKeyTip(ID_PIVOT_LONGER, _DT(L"O"));
 
@@ -871,11 +887,12 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         constantsPanel->SetKeyTip(_DT(L"F"));
         auto* constantsButtonBar = new wxRibbonButtonBar(constantsPanel, wxID_ANY);
 
-        constantsButtonBar->AddButton(ID_ADD_CONSTANT, _(L"Add"), ReadSvgIcon(L"constants-add.svg"),
+        constantsButtonBar->AddButton(ID_ADD_CONSTANT, _(L"Add"),
+                                      ReadSvgIcon(L"images/constants-add.svg"),
                                       _(L"Add a constant to the project"));
         constantsButtonBar->SetKeyTip(ID_ADD_CONSTANT, _DT(L"B"));
         constantsButtonBar->AddButton(ID_DELETE_CONSTANT, _(L"Delete"),
-                                      ReadSvgIcon(L"constants-delete.svg"),
+                                      ReadSvgIcon(L"images/constants-delete.svg"),
                                       _(L"Delete the selected constant"));
         constantsButtonBar->SetKeyTip(ID_DELETE_CONSTANT, _DT(L"C"));
 
@@ -884,7 +901,8 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         sourcesPanel->SetKeyTip(_DT(L"Q"));
         auto* sourcesButtonBar = new wxRibbonButtonBar(sourcesPanel, ID_SOURCES_BUTTONBAR);
 
-        sourcesButtonBar->AddButton(ID_GOTO_DATASOURCE, _(L"Datasource"), ReadSvgIcon(L"data.svg"),
+        sourcesButtonBar->AddButton(ID_GOTO_DATASOURCE, _(L"Datasource"),
+                                    ReadSvgIcon(L"images/data.svg"),
                                     _(L"Jump to this graph's dataset"));
         sourcesButtonBar->SetKeyTip(ID_GOTO_DATASOURCE, _DT(L"G"));
 
@@ -898,44 +916,46 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         auto* graphButtonBar = new wxRibbonButtonBar(graphPanel, ID_GRAPH_BUTTONBAR);
 
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_BASIC, _(L"Basic"),
-                                          ReadSvgIcon(L"chart-basic.svg"), _(L"Basic graphs"));
+                                          ReadSvgIcon(L"images/chart-basic.svg"),
+                                          _(L"Basic graphs"));
         graphButtonBar->SetKeyTip(ID_INSERT_GRAPH_BASIC, _DT(L"B"));
 
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_BUSINESS, _(L"Business"),
-                                          ReadSvgIcon(L"chart-business.svg"),
+                                          ReadSvgIcon(L"images/chart-business.svg"),
                                           _(L"Business graphs"));
         graphButtonBar->SetKeyTip(ID_INSERT_GRAPH_BUSINESS, _DT(L"U"));
 
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_STATISTICAL, _(L"Statistical"),
-                                          ReadSvgIcon(L"chart-statistical.svg"),
+                                          ReadSvgIcon(L"images/chart-statistical.svg"),
                                           _(L"Statistical graphs"));
         graphButtonBar->SetKeyTip(ID_INSERT_GRAPH_STATISTICAL, _DT(L"S"));
 
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_SURVEY, _(L"Survey"),
-                                          ReadSvgIcon(L"chart-survey.svg"),
+                                          ReadSvgIcon(L"images/chart-survey.svg"),
                                           _(L"Survey data graphs"));
         graphButtonBar->SetKeyTip(ID_INSERT_GRAPH_SURVEY, _DT(L"R"));
 
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_EDUCATION, _(L"Education"),
-                                          ReadSvgIcon(L"chart-education.svg"),
+                                          ReadSvgIcon(L"images/chart-education.svg"),
                                           _(L"Education graphs"));
         graphButtonBar->SetKeyTip(ID_INSERT_GRAPH_EDUCATION, _DT(L"C"));
 
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_SOCIAL, _(L"Social Sciences"),
-                                          ReadSvgIcon(L"chart-social.svg"),
+                                          ReadSvgIcon(L"images/chart-social.svg"),
                                           _(L"Social sciences graphs"));
         graphButtonBar->SetKeyTip(ID_INSERT_GRAPH_SOCIAL, _DT(L"O"));
 
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_SPORTS, _(L"Sports"),
-                                          ReadSvgIcon(L"chart-sports.svg"), _(L"Sports graphs"));
+                                          ReadSvgIcon(L"images/chart-sports.svg"),
+                                          _(L"Sports graphs"));
         graphButtonBar->SetKeyTip(ID_INSERT_GRAPH_SPORTS, _DT(L"T"));
 
         // Tools panel (project frames only, navigates to main frame log tab)
         auto* toolsPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Tools"));
         toolsPanel->SetKeyTip(_DT(L"C"));
         auto* toolsButtonBar = new wxRibbonButtonBar(toolsPanel, wxID_ANY);
-        toolsButtonBar->AddButton(ID_VIEW_LOG_REPORT, _(L"Log"), ReadSvgIcon(L"log-book.svg"),
-                                  _(L"View the log report"));
+        toolsButtonBar->AddButton(ID_VIEW_LOG_REPORT, _(L"Log"),
+                                  ReadSvgIcon(L"images/log-book.svg"), _(L"View the log report"));
         toolsButtonBar->SetKeyTip(ID_VIEW_LOG_REPORT, _DT(L"B"));
         }
     else
@@ -944,7 +964,8 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         auto* printPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Print"));
         printPanel->SetKeyTip(_DT(L"R"));
         auto* printButtonBar = new wxRibbonButtonBar(printPanel, wxID_ANY);
-        printButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Setup"), ReadSvgIcon(L"print-setup.svg"),
+        printButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Setup"),
+                                  ReadSvgIcon(L"images/print-setup.svg"),
                                   _(L"Configure print settings"));
         printButtonBar->SetKeyTip(ID_PRINT_SETUP, _DT(L"G"));
 
@@ -964,7 +985,7 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
     aboutPanel->SetKeyTip(_DT(L"O"));
     auto* aboutButtonBar = new wxRibbonButtonBar(aboutPanel, wxID_ANY);
 
-    aboutButtonBar->AddButton(wxID_ABOUT, _(L"About"), ReadSvgIcon(L"wisteria.svg"),
+    aboutButtonBar->AddButton(wxID_ABOUT, _(L"About"), ReadSvgIcon(L"images/wisteria.svg"),
                               _(L"About Wisteria Dataviz"));
     aboutButtonBar->SetKeyTip(wxID_ABOUT, _DT(L"B"));
 
@@ -980,13 +1001,13 @@ void WisteriaApp::InitProjectSidebar()
     // fill in the icons for the projects' sidebars
     // Do NOT change the ordering of these (indices are used by LoadProject());
     // new ones always get added at the bottom.
-    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"data.svg"));
-    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"page.svg"));
-    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"constants.svg"));
-    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"pivot-wider.svg"));
-    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"pivot-longer.svg"));
-    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"subset.svg"));
-    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"join.svg"));
+    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"images/data.svg"));
+    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"images/page.svg"));
+    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"images/constants.svg"));
+    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"images/pivot-wider.svg"));
+    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"images/pivot-longer.svg"));
+    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"images/subset.svg"));
+    m_projectSideBarImageList.emplace_back(ReadSvgIcon(L"images/join.svg"));
     }
 
 //-------------------------------------------
@@ -1142,178 +1163,178 @@ wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase*
     // check most-derived types first
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BubblePlot)))
         {
-        return L"bubbleplot.svg";
+        return L"images/bubbleplot.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScatterPlot)))
         {
-        return L"scatterplot.svg";
+        return L"images/scatterplot.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::MultiSeriesLinePlot)))
         {
-        return L"lineplot.svg";
+        return L"images/lineplot.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WCurvePlot)))
         {
-        return L"wcurve.svg";
+        return L"images/wcurve.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LinePlot)))
         {
-        return L"lineplot.svg";
+        return L"images/lineplot.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CandlestickPlot)))
         {
-        return L"candlestick.svg";
+        return L"images/candlestick.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot)))
         {
-        return L"chernoffplot.svg";
+        return L"images/chernoffplot.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::GanttChart)))
         {
-        return L"gantt.svg";
+        return L"images/gantt.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Histogram)))
         {
-        return L"histogram.svg";
+        return L"images/histogram.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LikertChart)))
         {
-        return L"likert7.svg";
+        return L"images/likert7.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CategoricalBarChart)))
         {
-        return L"barchart.svg";
+        return L"images/barchart.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScaleChart)))
         {
-        return L"scale.svg";
+        return L"images/scale.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BulletChart)))
         {
-        return L"bulletchart.svg";
+        return L"images/bulletchart.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BarChart)))
         {
-        return L"barchart.svg";
+        return L"images/barchart.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BoxPlot)))
         {
-        return L"boxplot.svg";
+        return L"images/boxplot.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::HeatMap)))
         {
-        return L"heatmap.svg";
+        return L"images/heatmap.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChoroplethMap)))
         {
-        return L"choropleth.svg";
+        return L"images/choropleth.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::PieChart)))
         {
-        return L"piechart.svg";
+        return L"images/piechart.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Table)))
         {
-        return L"table.svg";
+        return L"images/table.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::SankeyDiagram)))
         {
-        return L"sankey.svg";
+        return L"images/sankey.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WaffleChart)))
         {
-        return L"waffle.svg";
+        return L"images/waffle.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::RaceTrackChart)))
         {
-        return L"racetrack.svg";
+        return L"images/racetrack.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WilmarthBridgePlot)))
         {
-        return L"wilmarth-bridge.svg";
+        return L"images/wilmarth-bridge.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::NightingaleRoseChart)))
         {
-        return L"rose.svg";
+        return L"images/rose.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::DuBoisSpiralChart)))
         {
-        return L"dubois-spiral.svg";
+        return L"images/dubois-spiral.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Pictograph)))
         {
-        return L"pictograph.svg";
+        return L"images/pictograph.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::StemAndLeafPlot)))
         {
-        return L"stem-leaf.svg";
+        return L"images/stem-leaf.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WordCloud)))
         {
-        return L"wordcloud.svg";
+        return L"images/wordcloud.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ProConRoadmap)))
         {
-        return L"roadmap.svg";
+        return L"images/roadmap.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LRRoadmap)))
         {
-        return L"roadmap.svg";
+        return L"images/roadmap.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WinLossSparkline)))
         {
-        return L"sparkline.svg";
+        return L"images/sparkline.svg";
         }
     // non-graph items
     if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Axis)))
         {
-        return L"axis.svg";
+        return L"images/axis.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Label)))
         {
         const auto* label = dynamic_cast<const Wisteria::GraphItems::Label*>(item);
         if (label == nullptr)
             {
-            return L"label.svg";
+            return L"images/label.svg";
             }
 
         const auto spacerType = GetSpacerType(*label);
         if (spacerType == Wisteria::SpacerType::EmptySpacer ||
             spacerType == Wisteria::SpacerType::Spacer)
             {
-            return L"spacer.svg";
+            return L"images/spacer.svg";
             }
 
         switch (GetDividerType(*label))
             {
         case Wisteria::DividerType::HorizontalSingleLine:
-            return L"divider-horizontal-single.svg";
+            return L"images/divider-horizontal-single.svg";
         case Wisteria::DividerType::HorizontalDoubleLine:
-            return L"divider-horizontal-double.svg";
+            return L"images/divider-horizontal-double.svg";
         case Wisteria::DividerType::VerticalSingleLine:
-            return L"divider-vertical-single.svg";
+            return L"images/divider-vertical-single.svg";
         case Wisteria::DividerType::VerticalDoubleLine:
-            return L"divider-vertical-double.svg";
+            return L"images/divider-vertical-double.svg";
         case Wisteria::DividerType::NotDivider:
         default:
-            return L"label.svg";
+            return L"images/label.svg";
             }
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot::ChernoffLegend)))
         {
-        return L"label.svg";
+        return L"images/label.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Image)))
         {
-        return L"image.svg";
+        return L"images/image.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::FillableShape)))
         {
-        return L"shape.svg";
+        return L"images/shape.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Shape)))
         {
-        return L"shape.svg";
+        return L"images/shape.svg";
         }
 
     return {};
@@ -1328,77 +1349,87 @@ const std::vector<Wisteria::GalleryItemInfo>& WisteriaApp::GetGalleryItemCatalog
 
     static const std::vector<Wisteria::GalleryItemInfo> catalog = {
         // Objects
-        { GalleryItemType::Label, _(L"Label"), L"label.svg", GalleryGroup::Objects },
-        { GalleryItemType::KpiCard, _(L"KPI Card"), L"kpi-card.svg", GalleryGroup::Objects },
-        { GalleryItemType::Image, _(L"Image"), L"image.svg", GalleryGroup::Objects },
-        { GalleryItemType::Shape, _(L"Shape"), L"shape.svg", GalleryGroup::Objects },
-        { GalleryItemType::Axis, _(L"Axis"), L"axis.svg", GalleryGroup::Objects,
+        { GalleryItemType::Label, _(L"Label"), L"images/label.svg", GalleryGroup::Objects },
+        { GalleryItemType::KpiCard, _(L"KPI Card"), L"images/kpi-card.svg", GalleryGroup::Objects },
+        { GalleryItemType::Image, _(L"Image"), L"images/image.svg", GalleryGroup::Objects },
+        { GalleryItemType::Shape, _(L"Shape"), L"images/shape.svg", GalleryGroup::Objects },
+        { GalleryItemType::Axis, _(L"Axis"), L"images/axis.svg", GalleryGroup::Objects,
           GalleryItemBehavior::RequiresExistingGraphs },
-        { GalleryItemType::Spacer, _(L"Spacer"), L"spacer.svg", GalleryGroup::Objects },
+        { GalleryItemType::Spacer, _(L"Spacer"), L"images/spacer.svg", GalleryGroup::Objects },
         { GalleryItemType::DividerHorizontalSingle, _(L"Divider: Horizontal (Single)"),
-          L"divider-horizontal-single.svg", GalleryGroup::Objects },
+          L"images/divider-horizontal-single.svg", GalleryGroup::Objects },
         { GalleryItemType::DividerHorizontalDouble, _(L"Divider: Horizontal (Double)"),
-          L"divider-horizontal-double.svg", GalleryGroup::Objects },
+          L"images/divider-horizontal-double.svg", GalleryGroup::Objects },
         { GalleryItemType::DividerVerticalSingle, _(L"Divider: Vertical (Single)"),
-          L"divider-vertical-single.svg", GalleryGroup::Objects },
+          L"images/divider-vertical-single.svg", GalleryGroup::Objects },
         { GalleryItemType::DividerVerticalDouble, _(L"Divider: Vertical (Double)"),
-          L"divider-vertical-double.svg", GalleryGroup::Objects },
+          L"images/divider-vertical-double.svg", GalleryGroup::Objects },
         // Basic
-        { GalleryItemType::BarChart, _(L"Bar Chart"), L"barchart.svg", GalleryGroup::Basic },
-        { GalleryItemType::PieChart, _(L"Pie Chart"), L"piechart.svg", GalleryGroup::Basic },
-        { GalleryItemType::LinePlot, _(L"Line Plot"), L"lineplot.svg", GalleryGroup::Basic },
-        { GalleryItemType::MultiSeriesLinePlot, _(L"Multi-Series Line Plot"), L"lineplot.svg",
+        { GalleryItemType::BarChart, _(L"Bar Chart"), L"images/barchart.svg", GalleryGroup::Basic },
+        { GalleryItemType::PieChart, _(L"Pie Chart"), L"images/piechart.svg", GalleryGroup::Basic },
+        { GalleryItemType::LinePlot, _(L"Line Plot"), L"images/lineplot.svg", GalleryGroup::Basic },
+        { GalleryItemType::MultiSeriesLinePlot, _(L"Multi-Series Line Plot"),
+          L"images/lineplot.svg", GalleryGroup::Basic },
+        { GalleryItemType::Table, _(L"Table"), L"images/table.svg", GalleryGroup::Basic },
+        { GalleryItemType::SankeyDiagram, _(L"Sankey Diagram"), L"images/sankey.svg",
           GalleryGroup::Basic },
-        { GalleryItemType::Table, _(L"Table"), L"table.svg", GalleryGroup::Basic },
-        { GalleryItemType::SankeyDiagram, _(L"Sankey Diagram"), L"sankey.svg",
+        { GalleryItemType::WaffleChart, _(L"Waffle Chart"), L"images/waffle.svg",
           GalleryGroup::Basic },
-        { GalleryItemType::WaffleChart, _(L"Waffle Chart"), L"waffle.svg", GalleryGroup::Basic },
-        { GalleryItemType::RaceTrackChart, _(L"Race Track Chart"), L"racetrack.svg",
+        { GalleryItemType::RaceTrackChart, _(L"Race Track Chart"), L"images/racetrack.svg",
           GalleryGroup::Basic },
-        { GalleryItemType::NightingaleRoseChart, _(L"Nightingale Rose Chart"), L"rose.svg",
+        { GalleryItemType::NightingaleRoseChart, _(L"Nightingale Rose Chart"), L"images/rose.svg",
           GalleryGroup::Basic },
-        { GalleryItemType::DuBoisSpiralChart, _(L"Du Bois Spiral Chart"), L"dubois-spiral.svg",
+        { GalleryItemType::DuBoisSpiralChart, _(L"Du Bois Spiral Chart"),
+          L"images/dubois-spiral.svg", GalleryGroup::Basic },
+        { GalleryItemType::Pictograph, _(L"Pictograph"), L"images/pictograph.svg",
           GalleryGroup::Basic },
-        { GalleryItemType::Pictograph, _(L"Pictograph"), L"pictograph.svg", GalleryGroup::Basic },
-        { GalleryItemType::ChoroplethMap, _(L"Choropleth Map"), L"choropleth.svg",
+        { GalleryItemType::ChoroplethMap, _(L"Choropleth Map"), L"images/choropleth.svg",
           GalleryGroup::Basic },
         // Business
-        { GalleryItemType::GanttChart, _(L"Gantt Chart"), L"gantt.svg", GalleryGroup::Business },
-        { GalleryItemType::CandlestickPlot, _(L"Candlestick Plot"), L"candlestick.svg",
+        { GalleryItemType::GanttChart, _(L"Gantt Chart"), L"images/gantt.svg",
           GalleryGroup::Business },
-        { GalleryItemType::BulletChart, _(L"Bullet Chart"), L"bulletchart.svg",
+        { GalleryItemType::CandlestickPlot, _(L"Candlestick Plot"), L"images/candlestick.svg",
           GalleryGroup::Business },
-        { GalleryItemType::WaterfallChart, _(L"Waterfall Chart"), L"waterfallchart.svg",
+        { GalleryItemType::BulletChart, _(L"Bullet Chart"), L"images/bulletchart.svg",
           GalleryGroup::Business },
-        { GalleryItemType::FunnelChart, _(L"Funnel Chart"), L"funnel.svg", GalleryGroup::Business },
+        { GalleryItemType::WaterfallChart, _(L"Waterfall Chart"), L"images/waterfallchart.svg",
+          GalleryGroup::Business },
+        { GalleryItemType::FunnelChart, _(L"Funnel Chart"), L"images/funnel.svg",
+          GalleryGroup::Business },
         // Statistical
-        { GalleryItemType::Histogram, _(L"Histogram"), L"histogram.svg",
+        { GalleryItemType::Histogram, _(L"Histogram"), L"images/histogram.svg",
           GalleryGroup::Statistical },
-        { GalleryItemType::BoxPlot, _(L"Box Plot"), L"boxplot.svg", GalleryGroup::Statistical },
-        { GalleryItemType::StemAndLeafPlot, _(L"Stem-and-Leaf Plot"), L"stem-leaf.svg",
+        { GalleryItemType::BoxPlot, _(L"Box Plot"), L"images/boxplot.svg",
           GalleryGroup::Statistical },
-        { GalleryItemType::HeatMap, _(L"Heat Map"), L"heatmap.svg", GalleryGroup::Statistical },
-        { GalleryItemType::ScatterPlot, _(L"Scatter Plot"), L"scatterplot.svg",
+        { GalleryItemType::StemAndLeafPlot, _(L"Stem-and-Leaf Plot"), L"images/stem-leaf.svg",
           GalleryGroup::Statistical },
-        { GalleryItemType::BubblePlot, _(L"Bubble Plot"), L"bubbleplot.svg",
+        { GalleryItemType::HeatMap, _(L"Heat Map"), L"images/heatmap.svg",
           GalleryGroup::Statistical },
-        { GalleryItemType::ChernoffFacesPlot, _(L"Chernoff Faces Plot"), L"chernoffplot.svg",
+        { GalleryItemType::ScatterPlot, _(L"Scatter Plot"), L"images/scatterplot.svg",
           GalleryGroup::Statistical },
-        { GalleryItemType::WilmarthBridgePlot, _(L"Wilmarth Bridge Plot"), L"wilmarth-bridge.svg",
+        { GalleryItemType::BubblePlot, _(L"Bubble Plot"), L"images/bubbleplot.svg",
           GalleryGroup::Statistical },
+        { GalleryItemType::ChernoffFacesPlot, _(L"Chernoff Faces Plot"), L"images/chernoffplot.svg",
+          GalleryGroup::Statistical },
+        { GalleryItemType::WilmarthBridgePlot, _(L"Wilmarth Bridge Plot"),
+          L"images/wilmarth-bridge.svg", GalleryGroup::Statistical },
         // Survey
-        { GalleryItemType::LikertChart, _(L"Likert Chart"), L"likert7.svg", GalleryGroup::Survey },
-        { GalleryItemType::WordCloud, _(L"Word Cloud"), L"wordcloud.svg", GalleryGroup::Survey },
-        { GalleryItemType::ProConRoadmap, _(L"Pro && Con Roadmap"), L"roadmap.svg",
+        { GalleryItemType::LikertChart, _(L"Likert Chart"), L"images/likert7.svg",
+          GalleryGroup::Survey },
+        { GalleryItemType::WordCloud, _(L"Word Cloud"), L"images/wordcloud.svg",
+          GalleryGroup::Survey },
+        { GalleryItemType::ProConRoadmap, _(L"Pro && Con Roadmap"), L"images/roadmap.svg",
           GalleryGroup::Survey },
         // Education
-        { GalleryItemType::ScaleChart, _(L"Scale Chart"), L"scale.svg", GalleryGroup::Education },
+        { GalleryItemType::ScaleChart, _(L"Scale Chart"), L"images/scale.svg",
+          GalleryGroup::Education },
         // Social Sciences
-        { GalleryItemType::WCurvePlot, _(L"W-Curve Plot"), L"wcurve.svg", GalleryGroup::Social },
-        { GalleryItemType::LRRoadmap, _(L"Linear Regression Roadmap"), L"roadmap.svg",
+        { GalleryItemType::WCurvePlot, _(L"W-Curve Plot"), L"images/wcurve.svg",
+          GalleryGroup::Social },
+        { GalleryItemType::LRRoadmap, _(L"Linear Regression Roadmap"), L"images/roadmap.svg",
           GalleryGroup::Social },
         // Sports
-        { GalleryItemType::WinLossSparkline, _(L"Win/Loss Sparkline"), L"sparkline.svg",
+        { GalleryItemType::WinLossSparkline, _(L"Win/Loss Sparkline"), L"images/sparkline.svg",
           GalleryGroup::Sports },
     };
 

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- Dashboard frame -->
+  <rect x="28" y="28" width="200" height="200" rx="20" fill="none" stroke="#808080" stroke-width="10"/>
+  <!-- Panel dividers -->
+  <path d="M128,28 V228 M28,128 H228" fill="none" stroke="#808080" stroke-width="6"/>
+  <!-- Bar chart panel -->
+  <rect x="51" y="82" width="14" height="24" rx="3" fill="#5B9BD5"/>
+  <rect x="71" y="66" width="14" height="40" rx="3" fill="#5B9BD5"/>
+  <rect x="91" y="50" width="14" height="56" rx="3" fill="#5B9BD5"/>
+  <!-- Line chart panel -->
+  <path d="M150,100 L170,74 L188,90 L208,56" fill="none" stroke="#70AD47" stroke-width="10"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Donut panel -->
+  <path d="M78,152 A26,26 0 1 1 53.3,186" fill="none" stroke="#ED7D31" stroke-width="14"/>
+  <path d="M53.3,186 A26,26 0 0 1 78,152" fill="none" stroke="#FFC000" stroke-width="14"/>
+  <!-- Ranked horizontal bars panel -->
+  <path d="M152,152 H206 M152,178 H188 M152,204 H172" fill="none" stroke="#8E7CC3"
+        stroke-width="10" stroke-linecap="round"/>
+</svg>
