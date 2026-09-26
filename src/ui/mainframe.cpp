@@ -152,12 +152,10 @@ void Wisteria::UI::BaseMainFrame::InitControls(wxRibbonBar* ribbon)
     {
     m_ribbon = ribbon;
 
-    auto* mainSizer = new wxBoxSizer(wxVERTICAL);
     if (m_ribbon != nullptr)
         {
-        mainSizer->Add(m_ribbon, wxSizerFlags{}.Expand());
+        m_panel->GetSizer()->Add(m_ribbon, wxSizerFlags{}.Expand());
         }
-    SetSizer(mainSizer);
     }
 
 //-------------------------------------------------------
@@ -168,6 +166,13 @@ Wisteria::UI::BaseMainFrame::BaseMainFrame(wxDocManager* manager, wxFrame* frame
     : wxDocParentFrame(manager, frame, wxID_ANY, title, pos, size, style),
       m_defaultFileExtensions(std::move(defaultFileExtensions))
     {
+    // host all controls in a panel so that tab navigation works
+    m_panel = new wxPanel(this);
+    m_panel->SetSizer(new wxBoxSizer(wxVERTICAL));
+    auto* frameSizer = new wxBoxSizer(wxVERTICAL);
+    frameSizer->Add(m_panel, wxSizerFlags{ 1 }.Expand());
+    SetSizer(frameSizer);
+
     // set up drag 'n' drop
     wxWindow::SetDropTarget(new DropFiles(this));
     // create default printer settings

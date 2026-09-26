@@ -71,7 +71,16 @@ namespace Wisteria::UI
 
         /// @brief Initializes the main sizer and (optionally) the ribbon.
         /// @param ribbon The ribbon to add to the main frame, or nullptr to not include a ribbon.
+        ///     The ribbon must be a child of GetPanel().
         void InitControls(wxRibbonBar* ribbon);
+
+        /// @returns The panel that hosts the frame's controls (ribbon, pages, etc.).
+        /// @note Parent controls to this (not the frame) so that tab navigation works.
+        [[nodiscard]]
+        wxPanel* GetPanel() noexcept
+            {
+            return m_panel;
+            }
 
         /// @brief Connects DisplayHelp() to various help events, opening the default topic.
         /// @details Override this to call a different function.
@@ -157,6 +166,7 @@ namespace Wisteria::UI
         /// @private
         void OnRibbonToolBarClick(const wxRibbonToolBarEvent& evt);
 
+        wxPanel* m_panel{ nullptr };
         wxRibbonBar* m_ribbon{ nullptr };
         wxPrintData* m_printData{ nullptr };
         wxString m_helpFolder;

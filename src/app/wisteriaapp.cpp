@@ -119,11 +119,11 @@ void WisteriaApp::LoadInterface()
                                wxPoint{ 0, 0 }, GetAppSettings()->GetAppWindowSize(),
                                wxDEFAULT_FRAME_STYLE));
 
-    GetMainFrame()->InitControls(CreateRibbon(GetMainFrame()));
+    GetMainFrame()->InitControls(CreateRibbon(GetMainFrame()->GetPanel()));
 
     // create the embedded log panel (hidden until Log tab is activated)
     GetMainFrameEx()->m_logDataProvider = std::make_shared<Wisteria::UI::ListCtrlExDataProvider>();
-    GetMainFrameEx()->m_logPanel = new wxPanel(GetMainFrameEx());
+    GetMainFrameEx()->m_logPanel = new wxPanel(GetMainFrame()->GetPanel());
     GetMainFrameEx()->m_logPanel->Hide();
     GetMainFrameEx()->m_logListCtrl =
         new Wisteria::UI::ListCtrlEx(GetMainFrameEx()->m_logPanel, wxID_ANY, wxDefaultPosition,
@@ -132,7 +132,8 @@ void WisteriaApp::LoadInterface()
     auto* logPanelSizer = new wxBoxSizer(wxVERTICAL);
     logPanelSizer->Add(GetMainFrameEx()->m_logListCtrl, wxSizerFlags{ 1 }.Expand());
     GetMainFrameEx()->m_logPanel->SetSizer(logPanelSizer);
-    GetMainFrameEx()->GetSizer()->Add(GetMainFrameEx()->m_logPanel, wxSizerFlags{ 1 }.Expand());
+    GetMainFrame()->GetPanel()->GetSizer()->Add(GetMainFrameEx()->m_logPanel,
+                                                wxSizerFlags{ 1 }.Expand());
 
     GetMainFrameEx()->SetLogAutoRefresh(GetAppSettings()->IsLogAutoRefresh());
     wxLog::SetVerbose(GetAppSettings()->IsLogVerbose());
@@ -147,13 +148,13 @@ void WisteriaApp::LoadInterface()
         {
         mruFiles.Add(GetDocManager()->GetFileHistory()->GetHistoryFile(i));
         }
-    m_startPage = new wxStartPage(GetMainFrame(), wxID_ANY, mruFiles,
+    m_startPage = new wxStartPage(GetMainFrame()->GetPanel(), wxID_ANY, mruFiles,
                                   GetResourceManager().GetSVG(L"images/wisteria.svg"));
     m_startPage->AddButton(GetResourceManager().GetSVG(L"images/wisteria.svg"),
                            _(L"Create a New Project"));
     m_startPage->AddButton(wxArtProvider::GetBitmapBundle(wxART_FILE_OPEN, wxART_BUTTON),
                            _(L"Open a Project"));
-    GetMainFrame()->GetSizer()->Add(m_startPage, wxSizerFlags{ 1 }.Expand());
+    GetMainFrame()->GetPanel()->GetSizer()->Add(m_startPage, wxSizerFlags{ 1 }.Expand());
 
     GetMainFrame()->Bind(wxEVT_STARTPAGE_CLICKED,
                          [this](const wxCommandEvent& event)
@@ -316,7 +317,7 @@ void WisteriaApp::LoadInterface()
                                  {
                                  GetMainFrameEx()->m_logAutoRefreshTimer.Stop();
                                  }
-                             GetMainFrame()->Layout();
+                             GetMainFrame()->GetPanel()->Layout();
                              evt.Skip();
                          });
 

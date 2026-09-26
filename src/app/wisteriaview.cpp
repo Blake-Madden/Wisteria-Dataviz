@@ -215,13 +215,16 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         m_frame->SetIcon(appIcon);
         }
 
+    // host all controls in a panel so that tab navigation works
+    auto* panel = new wxPanel(m_frame);
+
     // create the ribbon
     auto* sizer = new wxBoxSizer(wxVERTICAL);
-    auto* ribbon = wxGetApp().CreateRibbon(m_frame, doc);
+    auto* ribbon = wxGetApp().CreateRibbon(panel, doc);
     sizer->Add(ribbon, wxSizerFlags{}.Expand());
 
     // create the splitter with sidebar and work area
-    m_splitter = new wxSplitterWindow(m_frame, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+    m_splitter = new wxSplitterWindow(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                       wxSP_3D | wxSP_LIVE_UPDATE);
     m_splitter->SetMinimumPaneSize(m_frame->FromDIP(150));
 
@@ -232,7 +235,11 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_splitter->SplitVertically(m_sideBar, m_workArea, m_frame->FromDIP(200));
 
     sizer->Add(m_splitter, wxSizerFlags{ 1 }.Expand());
-    m_frame->SetSizer(sizer);
+    panel->SetSizer(sizer);
+
+    auto* frameSizer = new wxBoxSizer(wxVERTICAL);
+    frameSizer->Add(panel, wxSizerFlags{ 1 }.Expand());
+    m_frame->SetSizer(frameSizer);
 
     // find button bars for enabling/disabling
     m_datasetButtonBar =
