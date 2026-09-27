@@ -449,6 +449,11 @@ static wxString GetDashboardScriptMotion()
     const c = key.split(',');
     return +c[0] > 245 && +c[1] > 245 && +c[2] > 245;
   }
+  function isNeutral(key) {
+    // grayscale-ish (low saturation): axis lines, gridlines, outlines, not a data color
+    const c = key.split(',').map(Number);
+    return (Math.max(c[0], c[1], c[2]) - Math.min(c[0], c[1], c[2])) < 12;
+  }
   function classifyMark(el, style, limitArea) {
     if (el.hasAttribute('transform')) return 'fade';
     try {
@@ -503,10 +508,14 @@ static wxString GetDashboardScriptMotion()
           try { length = el.getTotalLength(); } catch (e) {}
           if (!(length > 1)) return;
         }
-        marks.push({
-          el: el, kind: kind, length: length,
-          key: (kind === 'pop' || kind === 'grow') ? rgbKey(style.fill) : ''
-        });
+        let key = '';
+        if (kind === 'pop' || kind === 'grow') {
+          key = rgbKey(style.fill);
+        } else if (kind === 'draw') {
+          const strokeKey = rgbKey(style.stroke);
+          if (strokeKey && !isNeutral(strokeKey)) key = strokeKey;
+        }
+        marks.push({ el: el, kind: kind, length: length, key: key });
       });
       let index = 0;
       marks.forEach(function(mark) {
@@ -868,7 +877,7 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         "<button type=\"button\" data-view=\"gallery\" aria-pressed=\"false\">%s</button>\n"
         "<button type=\"button\" data-view=\"story\" aria-pressed=\"false\">%s</button>\n"
         "</div>\n",
-        escapeAttr(_(L"Views")), escapeText(_(L"Gallery")), escapeText(_(L"Story")));
+        escapeAttr(_(L"Views")), escapeText(_(L"Gallery")), escapeText(_(L"Storyline")));
     if (!distinctLayers.empty())
         {
         html += wxString::Format(

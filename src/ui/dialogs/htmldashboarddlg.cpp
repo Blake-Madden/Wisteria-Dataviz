@@ -88,7 +88,7 @@ namespace Wisteria::UI
         // initial view
         wxArrayString viewChoices;
         viewChoices.Add(_(L"Gallery"));
-        viewChoices.Add(_(L"Story"));
+        viewChoices.Add(_(L"Storyline"));
         auto* viewRadio = new wxRadioBox(this, wxID_ANY, _(L"Initial View"), wxDefaultPosition,
                                          wxDefaultSize, viewChoices, 1, wxRA_SPECIFY_ROWS);
         viewRadio->SetValidator(wxGenericValidator{ &m_view });
