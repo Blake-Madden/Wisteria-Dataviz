@@ -824,11 +824,156 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptHelp()
     }
 
 //------------------------------------------------------
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSave()
+    {
+    return LR"JS(
+  let saveOpen = false;
+  function pageContentSize() {
+    const main = document.querySelector('.dash-pages');
+    const style = main ? getComputedStyle(main) : null;
+    const width = style ? parseFloat(style.getPropertyValue('--page-w')) : 0;
+    const height = style ? parseFloat(style.getPropertyValue('--page-h')) : 0;
+    return { width: width || 0, height: height || 0 };
+  }
+  function slugify(text) {
+    const slug = (text || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    return slug || 'page';
+  }
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+  }
+  // colors painted into pages are remapped by the stylesheet for light/dark mode, so the
+  // resolved colors are baked into the exported copy to keep it correct outside the dashboard
+  function clonePageSvg(page, size) {
+    const svg = page.el.querySelector('.page-svg');
+    if (!svg) return null;
+    const clone = svg.cloneNode(true);
+    clone.removeAttribute('class');
+    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    clone.setAttribute('viewBox', '0 0 ' + size.width + ' ' + size.height);
+    clone.setAttribute('width', String(size.width));
+    clone.setAttribute('height', String(size.height));
+    const liveNodes = svg.querySelectorAll('[fill], [stroke]');
+    const cloneNodes = clone.querySelectorAll('[fill], [stroke]');
+    liveNodes.forEach(function(el, i) {
+      const target = cloneNodes[i];
+      if (!target) return;
+      const computed = getComputedStyle(el);
+      if (el.hasAttribute('fill')) target.setAttribute('fill', computed.fill);
+      if (el.hasAttribute('stroke')) target.setAttribute('stroke', computed.stroke);
+    });
+    const background = getComputedStyle(svg).backgroundColor;
+    if (background) {
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', '0');
+      rect.setAttribute('y', '0');
+      rect.setAttribute('width', String(size.width));
+      rect.setAttribute('height', String(size.height));
+      rect.setAttribute('fill', background);
+      clone.insertBefore(rect, clone.firstChild);
+    }
+    return clone;
+  }
+  function savePageAsSvg(page) {
+    const clone = clonePageSvg(page, pageContentSize());
+    if (!clone) return;
+    const xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      new XMLSerializer().serializeToString(clone);
+    downloadBlob(new Blob([xml], { type: 'image/svg+xml' }), slugify(page.title) + '.svg');
+  }
+  function savePageAsPng(page) {
+    const size = pageContentSize();
+    const clone = clonePageSvg(page, size);
+    if (!clone) return;
+    const xml = new XMLSerializer().serializeToString(clone);
+    const scale = window.devicePixelRatio || 1;
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(size.width * scale);
+      canvas.height = Math.round(size.height * scale);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(function(blob) {
+        if (blob) downloadBlob(blob, slugify(page.title) + '.png');
+      }, 'image/png');
+    };
+    img.src = 'data:image/svg+xml;charset=utf-8;base64,' +
+      btoa(unescape(encodeURIComponent(xml)));
+  }
+  function bindSave() {
+    const btn = document.getElementById('dash-save');
+    const menu = document.getElementById('dash-save-menu');
+    if (!btn || !menu) return;
+    function positionMenu() {
+      const rect = btn.getBoundingClientRect();
+      const menuRect = menu.getBoundingClientRect();
+      const left = Math.min(Math.max(8, rect.right - menuRect.width),
+        window.innerWidth - menuRect.width - 8);
+      menu.style.left = left + 'px';
+      menu.style.top = (rect.bottom + 8) + 'px';
+    }
+    function onOutsidePointerDown(e) {
+      if (menu.contains(e.target) || e.target === btn) return;
+      closeMenu(false);
+    }
+    function onMenuKeyDown(e) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeMenu(true);
+      }
+    }
+    function openMenu() {
+      saveOpen = true;
+      menu.hidden = false;
+      positionMenu();
+      window.requestAnimationFrame(function() { menu.classList.add('is-open'); });
+      btn.setAttribute('aria-expanded', 'true');
+      document.addEventListener('keydown', onMenuKeyDown);
+      document.addEventListener('pointerdown', onOutsidePointerDown, true);
+      window.addEventListener('resize', positionMenu);
+      const first = menu.querySelector('button');
+      if (first) first.focus();
+    }
+    function closeMenu(returnFocus) {
+      saveOpen = false;
+      menu.classList.remove('is-open');
+      btn.setAttribute('aria-expanded', 'false');
+      document.removeEventListener('keydown', onMenuKeyDown);
+      document.removeEventListener('pointerdown', onOutsidePointerDown, true);
+      window.removeEventListener('resize', positionMenu);
+      window.setTimeout(function() { menu.hidden = true; }, 150);
+      if (returnFocus) btn.focus();
+    }
+    btn.addEventListener('click', function() {
+      if (menu.hidden) openMenu(); else closeMenu(true);
+    });
+    menu.querySelectorAll('button[data-format]').forEach(function(item) {
+      item.addEventListener('click', function() {
+        closeMenu(true);
+        const page = pages[current];
+        if (!page) return;
+        if (item.dataset.format === 'svg') savePageAsSvg(page); else savePageAsPng(page);
+      });
+    });
+  }
+)JS";
+    }
+
+//------------------------------------------------------
 wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
     {
     return LR"JS(
   function onKeyDown(e) {
-    if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || !pages.length || helpOpen) {
+    if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || !pages.length ||
+        helpOpen || saveOpen) {
       return;
     }
     const tag = e.target && e.target.tagName;
@@ -868,6 +1013,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
     window.addEventListener('resize', measureChrome);
     bindTooltips();
     bindHelp();
+    bindSave();
   }
   document.addEventListener('DOMContentLoaded', function() {
     collectPages();
@@ -992,7 +1138,8 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
                      GetDashboardScriptInk() + GetDashboardScriptNavigation() +
                      GetDashboardScriptCounters() + GetDashboardScriptMotion() +
                      GetDashboardScriptZoom() + GetDashboardScriptTooltips() +
-                     GetDashboardScriptHelp() + GetDashboardScriptEvents() };
+                     GetDashboardScriptHelp() + GetDashboardScriptSave() +
+                     GetDashboardScriptEvents() };
     script.Replace(L"{{TOGGLE}}", options.m_includeColorModeToggle ? L"true" : L"false");
     script.Replace(L"{{COUNTUP}}", options.m_countUpNumbers ? L"true" : L"false");
     script.Replace(L"{{MODE}}", initialMode);
@@ -1065,6 +1212,11 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
             escapeText(_(L"Dark")));
         }
     html += wxString::Format(
+        L"<button type=\"button\" id=\"dash-save\" class=\"dash-save-btn\" "
+        "aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"dash-save-menu\" "
+        "aria-label=\"%s\">%s</button>\n",
+        escapeAttr(_(L"Save page")), escapeText(_(L"Save")));
+    html += wxString::Format(
         L"<button type=\"button\" id=\"dash-help\" class=\"dash-help-btn\" "
         "aria-haspopup=\"dialog\" aria-expanded=\"false\" aria-controls=\"dash-help-panel\" "
         "aria-label=\"%s\">?</button>\n",
@@ -1078,6 +1230,14 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         "aria-live=\"polite\"></div>\n"
         "<div id=\"dash-tooltip\" class=\"dash-tooltip no-print\" aria-hidden=\"true\"></div>\n",
         escapeAttr(_(L"Pages")), escapeAttr(_(L"Pages")));
+
+    html += wxString::Format(
+        L"<div id=\"dash-save-menu\" class=\"dash-help-panel dash-save-menu no-print\" "
+        "role=\"menu\" aria-label=\"%s\" hidden>\n"
+        "<button type=\"button\" role=\"menuitem\" data-format=\"svg\">%s</button>\n"
+        "<button type=\"button\" role=\"menuitem\" data-format=\"png\">%s</button>\n"
+        "</div>\n",
+        escapeAttr(_(L"Save page")), escapeText(_(L"Save as SVG")), escapeText(_(L"Save as PNG")));
 
     html += wxString::Format(
         L"<div id=\"dash-help-panel\" class=\"dash-help-panel no-print\" role=\"dialog\" "

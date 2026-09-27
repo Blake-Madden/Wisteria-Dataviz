@@ -241,6 +241,9 @@ namespace Wisteria
         /// @returns The script opening and closing the keyboard and mouse shortcuts panel.
         [[nodiscard]]
         static wxString GetDashboardScriptHelp();
+        /// @returns The script saving the current page as a standalone SVG or PNG file.
+        [[nodiscard]]
+        static wxString GetDashboardScriptSave();
         /// @returns The script wiring up controls and the initial page load.
         [[nodiscard]]
         static wxString GetDashboardScriptEvents();

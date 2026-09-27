@@ -151,7 +151,7 @@ html[data-view="story"] .dash-progress
   }
 
 .dash-views button, .dash-modes button, .dash-layers button, .dash-pager button,
-.dash-help-btn
+.dash-help-btn, .dash-save-btn
   {
   padding: 4px 12px;
   border: 1px solid var(--border-color);
@@ -164,11 +164,13 @@ html[data-view="story"] .dash-progress
   }
 
 .dash-views button:hover, .dash-modes button:hover, .dash-layers button:hover,
-.dash-pager button:hover:not([aria-disabled="true"]), .dash-help-btn:hover
+.dash-pager button:hover:not([aria-disabled="true"]), .dash-help-btn:hover,
+.dash-save-btn:hover
   { border-color: var(--accent); }
 
 .dash-views button[aria-pressed="true"], .dash-modes button[aria-pressed="true"],
-.dash-layers button[aria-pressed="true"], .dash-help-btn[aria-expanded="true"]
+.dash-layers button[aria-pressed="true"], .dash-help-btn[aria-expanded="true"],
+.dash-save-btn[aria-expanded="true"]
   {
   background-color: var(--accent);
   border-color: var(--accent);
@@ -177,7 +179,8 @@ html[data-view="story"] .dash-progress
 
 .dash-views button:focus-visible, .dash-modes button:focus-visible,
 .dash-layers button:focus-visible, .dash-pager button:focus-visible,
-.dash-rail button:focus-visible, .dash-card:focus-visible, .dash-help-btn:focus-visible
+.dash-rail button:focus-visible, .dash-card:focus-visible, .dash-help-btn:focus-visible,
+.dash-save-btn:focus-visible
   {
   outline: 2px solid Highlight;
   outline-offset: 2px;
@@ -680,6 +683,36 @@ html.motion-ready .page:not(.is-revealed) .page-svg
   background-color: color-mix(in srgb, CanvasText 10%, Canvas);
   font-family: inherit;
   font-size: 0.9em;
+  }
+
+/* ---------- Save menu -------------------------------------------- */
+
+.dash-save-menu
+  {
+  width: max-content;
+  min-width: 180px;
+  padding: 6px;
+  }
+
+.dash-save-menu button
+  {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  }
+
+.dash-save-menu button:hover, .dash-save-menu button:focus-visible
+  {
+  background-color: var(--accent);
+  color: var(--accent-text);
+  outline: none;
   }
 
 /* ---------- Print -------------------------------------------- */
