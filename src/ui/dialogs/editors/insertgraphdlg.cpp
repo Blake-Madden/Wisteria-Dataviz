@@ -327,7 +327,8 @@ namespace Wisteria::UI
 
         // graph ID, used to link legends and reference the graph
         auto* idSizer = new wxBoxSizer(wxHORIZONTAL);
-        idSizer->Add(new wxStaticText(graphPage, wxID_ANY, _(L"ID:")),
+        idSizer->Add(new wxStaticText(graphPage, wxID_ANY,
+                                      /* TRANSLATORS: The ID number for a graph. */ _(L"ID:")),
                      wxSizerFlags{}.CenterVertical());
             {
             auto* idSpin = new wxSpinCtrl(graphPage, wxID_ANY, wxString{}, wxDefaultPosition,
