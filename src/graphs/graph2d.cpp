@@ -1213,7 +1213,7 @@ namespace Wisteria::Graphs
         // draw the plot objects
         for (const auto& object : m_plotObjects)
             {
-            object->Draw(dc);
+            Canvas::DrawWithAccessibility(dc, object.get());
             }
         for (const auto& object : m_embeddedObjects)
             {
