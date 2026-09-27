@@ -13,6 +13,7 @@
 #define WISTERIA_REPORT_PPTX_EXPORT_H
 
 #include "../base/canvas.h"
+#include "reportslideexportbase.h"
 #include <string_view>
 #include <tuple>
 #include <vector>
@@ -146,7 +147,7 @@ namespace Wisteria
     ///     picture references a rasterized PNG (the OOXML picture blip) with the
     ///     vector SVG attached through the DrawingML SVG extension, so PowerPoint 2016+
     ///     shows the crisp vector and other clients show the PNG.
-    class ReportPowerPointExport
+    class ReportPowerPointExport : public ReportSlideExportBase
         {
       public:
         /** @brief Constructor. Exports all canvases as slides to a @c .pptx file immediately.
@@ -212,38 +213,9 @@ namespace Wisteria
         static const std::wstring_view SLIDE_LAYOUT_XML;
         static const std::wstring_view NOTES_MASTER_XML;
 
-        /// @brief One rendered page, ready to be written into the package.
-        struct RenderedPage
-            {
-            wxString m_svg;
-            wxMemoryBuffer m_png;
-            int m_pixelWidth{ 0 };
-            int m_pixelHeight{ 0 };
-            wxString m_notes;
-            };
-
-        /// @brief Escapes text for XML element content or attribute values and drops the
-        ///     control characters that are illegal in XML 1.0.
-        [[nodiscard]]
-        static wxString EscapeXml(const wxString& str);
-        /// @brief Escapes text for a single-line XML attribute value (e.g., @c title or
-        ///     @c descr on @c \<p:cNvPr\>). Collapses embedded newlines/tabs down to single
-        ///     spaces before escaping.
-        [[nodiscard]]
-        static wxString EscapeXmlAttribute(const wxString& str);
         [[nodiscard]]
         static wxString BuildRelationshipsXml(
             const std::vector<std::tuple<wxString, wxString, wxString>>& relationships);
-        /// @brief Gathers a slide's speaker-notes text from the canvas titles and from every
-        ///     fixed object's accessibility label (user override first, then the
-        ///     auto-generated description). Paragraphs are separated by blank lines.
-        [[nodiscard]]
-        static wxString CollectAccessibilityText(Canvas* canvas);
-        /// @brief Renders one canvas to both an in-memory SVG document and in-memory PNG bytes,
-        ///     laid out at renderSize (DIPs). The canvas is temporarily resized for the
-        ///     render and restored afterward.
-        static void RenderCanvas(Canvas* canvas, wxSize renderSize, wxString& svgOut,
-                                 wxMemoryBuffer& pngOut);
         /// @returns The @c \<p:transition\> element (or MCE @c AlternateContent for Morph)
         ///     for a slide, or an empty string when there is nothing to emit.
         [[nodiscard]]
@@ -265,10 +237,6 @@ namespace Wisteria
         static wxString BuildTitleSlideXml(const PowerPointExportOptions& options,
                                            long long slideCx, long long slideCy,
                                            const wxString& transitionXml);
-        /// @returns @p color as an uppercase @c "RRGGBB" hex string (no leading @c '#'),
-        ///     suitable for an OOXML @c \<a:srgbClr val="..."/\> attribute.
-        [[nodiscard]]
-        static wxString ColorToHex(const wxColour& color);
         };
     } // namespace Wisteria
 
