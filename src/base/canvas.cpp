@@ -1985,8 +1985,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 if (svgDc != nullptr && objectPtr->GetId() != wxID_ANY)
                     {
                     const wxSVGAccessibleGroup chartScope{
-                        *svgDc, wxSVGAttributes{}.Add(L"data-chart-id",
-                                                      wxString::Format(L"%ld", objectPtr->GetId()))
+                        *svgDc,
+                        wxSVGAttributes{}.Add(L"data-chart-id", std::to_wstring(objectPtr->GetId()))
                     };
                     DrawWithAccessibility(dc, objectPtr.get());
                     }
