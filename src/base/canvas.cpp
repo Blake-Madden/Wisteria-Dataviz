@@ -1953,7 +1953,25 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             {
             for (const auto& objectPtr : fixedObjectsRow)
                 {
-                DrawWithAccessibility(dc, objectPtr.get());
+                if (objectPtr == nullptr)
+                    {
+                    continue;
+                    }
+                // scope the object's SVG output to its own chart ID (if it has one), so that
+                // client-side scripts can tell one chart's elements apart from another's
+                auto* svgDc = dynamic_cast<wxSVGFileDC*>(&dc);
+                if (svgDc != nullptr && objectPtr->GetId() != wxID_ANY)
+                    {
+                    const wxSVGAccessibleGroup chartScope{
+                        *svgDc, wxSVGAttributes{}.Add(L"data-chart-id",
+                                                      wxString::Format(L"%ld", objectPtr->GetId()))
+                    };
+                    DrawWithAccessibility(dc, objectPtr.get());
+                    }
+                else
+                    {
+                    DrawWithAccessibility(dc, objectPtr.get());
+                    }
                 }
             }
 

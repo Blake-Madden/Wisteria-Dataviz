@@ -463,12 +463,23 @@ static wxString GetDashboardScriptMotion()
     if (style.stroke === 'none' || style.strokeDasharray !== 'none') return '';
     return (tag === 'path' || tag === 'polyline' || tag === 'line') ? 'draw' : 'fade';
   }
+  function scopeIdFor(el) {
+    const scoped = el.closest('[data-chart-id]');
+    return scoped ? scoped.getAttribute('data-chart-id') : '';
+  }
+  function getScope(page, scopeId) {
+    if (!page.scopes.has(scopeId)) {
+      page.scopes.set(scopeId, { spot: new Map(), keys: new WeakMap() });
+    }
+    return page.scopes.get(scopeId);
+  }
   function registerSpot(page, el, key) {
     if (!key || isNearWhite(key)) return;
     el.classList.add('mk-spot');
-    page.spotKeys.set(el, key);
-    if (!page.spot.has(key)) page.spot.set(key, []);
-    page.spot.get(key).push(el);
+    const scope = getScope(page, scopeIdFor(el));
+    scope.keys.set(el, key);
+    if (!scope.spot.has(key)) scope.spot.set(key, []);
+    scope.spot.get(key).push(el);
   }
   function prepareMarks(page) {
     if (page.prepared) return;
@@ -480,8 +491,7 @@ static wxString GetDashboardScriptMotion()
     if (shapes.length <= maxAnimatedMarks) {
       const viewBox = svg.viewBox.baseVal;
       const limitArea = viewBox.width * viewBox.height * 0.2;
-      page.spot = new Map();
-      page.spotKeys = new WeakMap();
+      page.scopes = new Map();
       // all reads come before any writes so that layout is computed once
       const marks = [];
       shapes.forEach(function(el) {
@@ -513,21 +523,33 @@ static wxString GetDashboardScriptMotion()
     if (countUp) page.counters = collectCounters(svg);
   }
   function bindSpot(page) {
-    if (page.spotBound || !page.spot || page.spot.size < 2) return;
+    if (page.spotBound || !page.scopes || !page.scopes.size) return;
     page.spotBound = true;
     const svg = page.el.querySelector('.page-svg');
+    let currentScope = null;
     let currentKey = '';
-    function setKey(key) {
-      if (key === currentKey) return;
-      if (currentKey) {
-        page.spot.get(currentKey).forEach(function(el) { el.classList.remove('is-spot'); });
+    function clear() {
+      if (currentScope && currentKey) {
+        currentScope.spot.get(currentKey).forEach(function(el) { el.classList.remove('is-spot'); });
       }
-      currentKey = key;
-      if (key) page.spot.get(key).forEach(function(el) { el.classList.add('is-spot'); });
-      svg.classList.toggle('is-spotting', !!key);
+      currentScope = null;
+      currentKey = '';
+      svg.classList.remove('is-spotting');
     }
-    svg.addEventListener('mouseover', function(e) { setKey(page.spotKeys.get(e.target) || ''); });
-    svg.addEventListener('mouseleave', function() { setKey(''); });
+    function setKey(scope, key) {
+      if (scope === currentScope && key === currentKey) return;
+      clear();
+      if (!scope || !key || scope.spot.size < 2) return;
+      currentScope = scope;
+      currentKey = key;
+      scope.spot.get(key).forEach(function(el) { el.classList.add('is-spot'); });
+      svg.classList.add('is-spotting');
+    }
+    svg.addEventListener('mouseover', function(e) {
+      const scope = page.scopes.get(scopeIdFor(e.target));
+      setKey(scope, scope ? scope.keys.get(e.target) : undefined);
+    });
+    svg.addEventListener('mouseleave', clear);
   }
   const slowPageElements = 400;
   let pendingSlow = 0;
@@ -713,6 +735,7 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         if (canvas != nullptr)
             {
             canvas->ApplyAutoAccessibilityAttributes();
+            canvas->FillChartIds();
             }
         }
 
