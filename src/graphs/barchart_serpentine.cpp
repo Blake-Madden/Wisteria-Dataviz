@@ -638,6 +638,11 @@ namespace Wisteria::Graphs
                     .Scaling(GetScaling())
                     .Outline(true, true, true, true)
                     .ShowLabelWhenSelected(true);
+                if (!blockInfo.GetText().empty())
+                    {
+                    blockInfo.Accessibility(
+                        wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(blockInfo.GetText()));
+                    }
                 std::array<wxPoint, 4> boxPoints{};
                 GraphItems::Polygon::GetRectPoints(rect, boxPoints);
                 barRenderInfo.m_barRect = rect;
@@ -647,13 +652,13 @@ namespace Wisteria::Graphs
             // A run is shaped like an ordinary bar for this orientation, but a
             // connector bridging two rows (or columns) has the opposite aspect
             // ratio, so its stipple icons tile along the other axis.
-            const auto drawRect = [this, useStippleShapeEffect, &blockColors, &barRenderInfo,
-                                   &drawHandCraftedRect,
+            const auto drawRect = [this, useStippleShapeEffect, &barBlock, &blockColors,
+                                   &barRenderInfo, &drawHandCraftedRect,
                                    isHorizontal](const wxRect& rect, const bool isConnector)
             {
                 if (useStippleShapeEffect)
                     {
-                    DrawStippleShapeRun(rect, isConnector ? !isHorizontal : isHorizontal,
+                    DrawStippleShapeRun(rect, isConnector ? !isHorizontal : isHorizontal, barBlock,
                                         blockColors, barRenderInfo);
                     }
                 else

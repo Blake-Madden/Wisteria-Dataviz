@@ -1063,6 +1063,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
         };
         const auto shadowOrNone = [this](const ShadowType shadowType)
         { return (GetShadowType() != ShadowType::NoDisplay) ? shadowType : ShadowType::NoDisplay; };
+        const auto makeImageInfo = [&barBlock]()
+        {
+            Wisteria::GraphItems::GraphItemInfo info{ barBlock.GetSelectionLabel().GetText() };
+            if (!info.GetText().empty())
+                {
+                info.Accessibility(wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(info.GetText()));
+                }
+            return info;
+        };
 
         if (bar.GetEffect() == BoxEffect::CommonImage && barRenderInfo.m_scaledCommonImg.IsOk())
             {
@@ -1070,9 +1079,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             imgSubRect.Offset(-GetPlotAreaBoundingBox().GetX(), -GetPlotAreaBoundingBox().GetY());
             addImage(
                 std::make_unique<Wisteria::GraphItems::Image>(
-                    Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
-                        .Pen(GetImageOutlineColor())
-                        .AnchorPoint(barRect.GetTopLeft()),
+                    makeImageInfo().Pen(GetImageOutlineColor()).AnchorPoint(barRect.GetTopLeft()),
                     barRenderInfo.m_scaledCommonImg.GetSubImage(imgSubRect)),
                 shadowOrNone(isHorizontal ? ShadowType::RightSideAndBottomShadow :
                                             ShadowType::RightSideShadow));
@@ -1083,9 +1090,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             const auto& barScaledImage = GetImageScheme()->GetImage(barIndex);
             addImage(
                 std::make_unique<Wisteria::GraphItems::Image>(
-                    Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
-                        .Pen(GetImageOutlineColor())
-                        .AnchorPoint(barRect.GetTopLeft()),
+                    makeImageInfo().Pen(GetImageOutlineColor()).AnchorPoint(barRect.GetTopLeft()),
                     Wisteria::GraphItems::Image::CropImageToRect(
                         barScaledImage.GetBitmap(barScaledImage.GetDefaultSize()).ConvertToImage(),
                         barRect, true)),
@@ -1097,9 +1102,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             {
             addImage(
                 std::make_unique<Wisteria::GraphItems::Image>(
-                    Wisteria::GraphItems::GraphItemInfo{ barBlock.GetSelectionLabel().GetText() }
-                        .Pen(wxNullPen)
-                        .AnchorPoint(barRect.GetTopLeft()),
+                    makeImageInfo().Pen(wxNullPen).AnchorPoint(barRect.GetTopLeft()),
                     Wisteria::GraphItems::Image::CreateStippledImage(
                         GetStippleBrush()
                             .GetBitmap(GetStippleBrush().GetDefaultSize())
@@ -1114,7 +1117,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             }
         if (bar.GetEffect() == BoxEffect::StippleShape)
             {
-            DrawStippleShapeRun(barRect, isHorizontal, colors, barRenderInfo);
+            DrawStippleShapeRun(barRect, isHorizontal, barBlock, colors, barRenderInfo);
             return true;
             }
 
@@ -1123,7 +1126,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
 
     //-----------------------------------
     void BarChart::DrawStippleShapeRun(const wxRect& rect, const bool tileHorizontally,
-                                       const BlockColors& colors,
+                                       const BarBlock& barBlock, const BlockColors& colors,
                                        const BarRenderInfo& barRenderInfo)
         {
         auto shapeWidth{ barRenderInfo.m_barWidth };
@@ -1155,20 +1158,24 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 }
             }
 
-        const auto addStipple = [this, &barRenderInfo, &rect, opacityToApply = colors.m_opacity,
-                                 shapeWidth,
+        const auto addStipple = [this, &barRenderInfo, &rect, &barBlock,
+                                 opacityToApply = colors.m_opacity, shapeWidth,
                                  shapeHeight](const wxPoint& anchorPt, const wxSize& stippleImgSize)
         {
-            auto shape = std::make_unique<Wisteria::GraphItems::Shape>(
-                Wisteria::GraphItems::GraphItemInfo{}
-                    .Pen(wxNullPen)
-                    .Brush(Colors::ColorContrast::ChangeOpacity(GetStippleShapeColor(),
-                                                                opacityToApply))
-                    .AnchorPoint(anchorPt)
-                    .Anchoring(Anchoring::TopLeftCorner)
-                    .DPIScaling(GetDPIScaleFactor())
-                    .Scaling(GetScaling()),
-                GetStippleShape(), stippleImgSize);
+            Wisteria::GraphItems::GraphItemInfo tileInfo{ barBlock.GetSelectionLabel().GetText() };
+            tileInfo.Pen(wxNullPen)
+                .Brush(Colors::ColorContrast::ChangeOpacity(GetStippleShapeColor(), opacityToApply))
+                .AnchorPoint(anchorPt)
+                .Anchoring(Anchoring::TopLeftCorner)
+                .DPIScaling(GetDPIScaleFactor())
+                .Scaling(GetScaling());
+            if (!tileInfo.GetText().empty())
+                {
+                tileInfo.Accessibility(
+                    wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(tileInfo.GetText()));
+                }
+            auto shape = std::make_unique<Wisteria::GraphItems::Shape>(tileInfo, GetStippleShape(),
+                                                                       stippleImgSize);
             shape->SetBoundingBox(wxRect{ anchorPt, wxSize{ static_cast<int>(shapeWidth),
                                                             static_cast<int>(shapeHeight) } },
                                   barRenderInfo.m_dc, GetScaling());
@@ -1212,6 +1219,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             .Scaling(GetScaling())
             .Outline(true, true, true, true)
             .ShowLabelWhenSelected(true);
+        if (!blockInfo.GetText().empty())
+            {
+            blockInfo.Accessibility(
+                wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(blockInfo.GetText()));
+            }
 
         std::array<wxPoint, 4> boxPoints{};
         std::unique_ptr<GraphItems::Polygon> box{ nullptr };

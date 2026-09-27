@@ -1861,10 +1861,12 @@ namespace Wisteria::Graphs
         /// @param rect The rectangle to tile the icon across.
         /// @param tileHorizontally @c true to lay the icons out left to right across the
         ///     rectangle's width, @c false to stack them bottom to top across its height.
+        /// @param barBlock The bar block being tiled (used for its selection label).
         /// @param colors The resolved block colors (only the opacity is used).
         /// @param barRenderInfo The current render state (bar width and DC).
         void DrawStippleShapeRun(const wxRect& rect, bool tileHorizontally,
-                                 const BlockColors& colors, const BarRenderInfo& barRenderInfo);
+                                 const BarBlock& barBlock, const BlockColors& colors,
+                                 const BarRenderInfo& barRenderInfo);
         /// @brief Draws a bar block as a color-filled polygon, shaped as a rectangle or an arrow.
         /// @returns @c false if no polygon could be built for the bar's shape, in which case the
         ///     caller must return without adding a decal.
