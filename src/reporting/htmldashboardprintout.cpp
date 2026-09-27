@@ -599,6 +599,45 @@ static wxString GetDashboardScriptMotion()
     }
 
 //------------------------------------------------------
+static wxString GetDashboardScriptTooltips()
+    {
+    return LR"JS(
+  function bindTooltips() {
+    const tip = document.getElementById('dash-tooltip');
+    if (!tip) return;
+    let target = null;
+    function place(e) {
+      const margin = 14;
+      let x = e.clientX + margin;
+      let y = e.clientY + margin;
+      const rect = tip.getBoundingClientRect();
+      if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - margin;
+      if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - margin;
+      tip.style.left = Math.max(0, x) + 'px';
+      tip.style.top = Math.max(0, y) + 'px';
+    }
+    document.addEventListener('mouseover', function(e) {
+      const hit = e.target.closest('.page-svg [role="img"][aria-label]');
+      if (!hit || hit === target) return;
+      target = hit;
+      tip.textContent = hit.getAttribute('aria-label');
+      tip.classList.add('is-visible');
+      place(e);
+    });
+    document.addEventListener('mousemove', function(e) {
+      if (target) place(e);
+    });
+    document.addEventListener('mouseout', function(e) {
+      if (!target) return;
+      if (e.relatedTarget && target.contains(e.relatedTarget)) return;
+      target = null;
+      tip.classList.remove('is-visible');
+    });
+  }
+)JS";
+    }
+
+//------------------------------------------------------
 static wxString GetDashboardScriptEvents()
     {
     return LR"JS(
@@ -639,6 +678,7 @@ static wxString GetDashboardScriptEvents()
     document.addEventListener('keydown', onKeyDown);
     window.addEventListener('scroll', updateProgress, { passive: true });
     window.addEventListener('resize', measureChrome);
+    bindTooltips();
   }
   document.addEventListener('DOMContentLoaded', function() {
     collectPages();
@@ -761,7 +801,7 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
     wxString script{ GetDashboardScriptState() + GetDashboardScriptPages() +
                      GetDashboardScriptInk() + GetDashboardScriptNavigation() +
                      GetDashboardScriptCounters() + GetDashboardScriptMotion() +
-                     GetDashboardScriptEvents() };
+                     GetDashboardScriptTooltips() + GetDashboardScriptEvents() };
     script.Replace(L"{{TOGGLE}}", options.m_includeColorModeToggle ? L"true" : L"false");
     script.Replace(L"{{COUNTUP}}", options.m_countUpNumbers ? L"true" : L"false");
     script.Replace(L"{{MODE}}", initialMode);
@@ -839,7 +879,8 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         L"<nav id=\"dash-gallery\" class=\"dash-gallery no-print\" aria-label=\"%s\"></nav>\n"
         "<nav id=\"dash-rail\" class=\"dash-rail no-print\" aria-label=\"%s\"></nav>\n"
         "<div id=\"dash-status\" class=\"visually-hidden\" role=\"status\" "
-        "aria-live=\"polite\"></div>\n",
+        "aria-live=\"polite\"></div>\n"
+        "<div id=\"dash-tooltip\" class=\"dash-tooltip no-print\" aria-hidden=\"true\"></div>\n",
         escapeAttr(_(L"Pages")), escapeAttr(_(L"Pages")));
 
     const wxString loadingText{ _(L"Loading...") };
