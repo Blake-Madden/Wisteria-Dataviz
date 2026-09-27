@@ -732,7 +732,7 @@ namespace Wisteria::UI
                 SyncBarGroupsToList();
             });
         m_barGroupListBox->GetNewButton()->SetBitmapLabel(
-            wxGetApp().ReadSvgIcon(L"group.svg", wxSize{ 16, 16 }));
+            wxGetApp().ReadSvgIcon(L"images/group.svg", wxSize{ 16, 16 }));
 
         // override Edit button
         m_barGroupListBox->GetEditButton()->Bind(

@@ -52,7 +52,7 @@ namespace Wisteria::UI
 
         // change New button icon to image icon
         m_pathListBox->GetNewButton()->SetBitmapLabel(
-            wxGetApp().ReadSvgIcon(L"image.svg", wxSize{ 16, 16 }));
+            wxGetApp().ReadSvgIcon(L"images/image.svg", wxSize{ 16, 16 }));
 
         // override New to open a multi-select file dialog
         m_pathListBox->GetNewButton()->Bind(

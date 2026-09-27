@@ -407,7 +407,7 @@ namespace Wisteria::UI
         m_bracketListBox->GetNewButton()->Bind(wxEVT_BUTTON,
                                                [this](wxCommandEvent&) { OnAddBracket(); });
         m_bracketListBox->GetNewButton()->SetBitmapLabel(
-            wxGetApp().ReadSvgIcon(L"label.svg", wxSize{ 16, 16 }));
+            wxGetApp().ReadSvgIcon(L"images/label.svg", wxSize{ 16, 16 }));
         m_bracketListBox->GetEditButton()->Bind(wxEVT_BUTTON,
                                                 [this](wxCommandEvent&) { OnEditBracket(); });
         m_bracketListBox->GetDelButton()->Bind(wxEVT_BUTTON,

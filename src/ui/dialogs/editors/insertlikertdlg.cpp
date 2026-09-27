@@ -265,7 +265,7 @@ namespace Wisteria::UI
                 SyncBracketsToList();
             });
         m_bracketListBox->GetNewButton()->SetBitmapLabel(
-            wxGetApp().ReadSvgIcon(L"question-mark.svg", wxSize{ 16, 16 }));
+            wxGetApp().ReadSvgIcon(L"images/question-mark.svg", wxSize{ 16, 16 }));
 
         // override Edit button to open a structured sub-dialog for the selected item
         m_bracketListBox->GetEditButton()->Bind(wxEVT_BUTTON,

@@ -371,7 +371,7 @@ namespace Wisteria::UI
         m_topShapeListBox->GetNewButton()->Bind(wxEVT_BUTTON,
                                                 [this](wxCommandEvent&) { OnAddTopShape(); });
         m_topShapeListBox->GetNewButton()->SetBitmapLabel(
-            wxGetApp().ReadSvgIcon(L"shape.svg", wxSize{ 16, 16 }));
+            wxGetApp().ReadSvgIcon(L"images/shape.svg", wxSize{ 16, 16 }));
 
         // override Edit to open shape dialog with selected shape
         m_topShapeListBox->GetEditButton()->Bind(wxEVT_BUTTON,

@@ -990,7 +990,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropLabel(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertLabelDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"label.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/label.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1007,7 +1007,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropKpiCard(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertKpiCardDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"kpi-card.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/kpi-card.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1028,7 +1028,7 @@ namespace Wisteria::UI
                                          wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
                                          Wisteria::UI::InsertItemDlg::EditMode::Insert,
                                          Wisteria::UI::LabelDlgIncludePageOptions);
-        WisteriaView::SetDialogIcon(dlg, L"spacer.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/spacer.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1048,12 +1048,12 @@ namespace Wisteria::UI
                                     const Wisteria::DividerType type)
         {
         const wxString iconName = (type == Wisteria::DividerType::HorizontalSingleLine) ?
-                                      L"divider-horizontal-single.svg" :
+                                      L"images/divider-horizontal-single.svg" :
                                   (type == Wisteria::DividerType::HorizontalDoubleLine) ?
-                                      L"divider-horizontal-double.svg" :
+                                      L"images/divider-horizontal-double.svg" :
                                   (type == Wisteria::DividerType::VerticalSingleLine) ?
-                                      L"divider-vertical-single.svg" :
-                                      L"divider-vertical-double.svg";
+                                      L"images/divider-vertical-single.svg" :
+                                      L"images/divider-vertical-double.svg";
 
         auto label = Wisteria::UI::InsertLabelDlg::BuildDividerLabel(stagingCanvas, type);
 
@@ -1081,7 +1081,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropShape(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertShapeDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"shape.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/shape.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1098,7 +1098,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropImage(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertImageDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"image.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/image.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1121,7 +1121,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropAxis(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertCommonAxisDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"axis.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/axis.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1145,7 +1145,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropHistogram(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertHistogramDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"histogram.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/histogram.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1171,7 +1171,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropBoxPlot(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertBoxPlotDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"boxplot.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/boxplot.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1197,7 +1197,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropStemAndLeaf(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertStemAndLeafDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"stem-leaf.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/stem-leaf.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1223,7 +1223,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropHeatMap(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertHeatMapDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"heatmap.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/heatmap.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1249,7 +1249,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropScatterPlot(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertScatterPlotDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"scatterplot.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/scatterplot.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1275,7 +1275,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropBubblePlot(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertBubblePlotDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"bubbleplot.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/bubbleplot.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1302,7 +1302,7 @@ namespace Wisteria::UI
                                               const size_t col)
         {
         Wisteria::UI::InsertChernoffDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"chernoffplot.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/chernoffplot.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1340,7 +1340,7 @@ namespace Wisteria::UI
                                                const size_t col)
         {
         Wisteria::UI::InsertWilmarthBridgePlotDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"wilmarth-bridge.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/wilmarth-bridge.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1367,7 +1367,7 @@ namespace Wisteria::UI
                                              const size_t col)
         {
         Wisteria::UI::InsertWLSparklineDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"sparkline.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/sparkline.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1393,7 +1393,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropGanttChart(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertGanttChartDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"gantt.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/gantt.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1420,7 +1420,7 @@ namespace Wisteria::UI
                                             const size_t col)
         {
         Wisteria::UI::InsertCandlestickPlotDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"candlestick.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/candlestick.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1443,7 +1443,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropScaleChart(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertScaleChartDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"scale.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/scale.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1469,7 +1469,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropWCurvePlot(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertWCurveDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"wcurve.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/wcurve.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1495,7 +1495,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropLRRoadmap(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertLRRoadmapDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"roadmap.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/roadmap.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1521,7 +1521,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropLikertChart(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertLikertDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"likert7.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/likert7.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1547,7 +1547,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropWordCloud(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertWordCloudDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"wordcloud.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/wordcloud.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1573,7 +1573,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropProConRoadmap(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertProConRoadmapDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"roadmap.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/roadmap.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1599,7 +1599,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropBarChart(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertCatBarChartDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"barchart.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/barchart.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1625,7 +1625,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropPieChart(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertPieChartDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"piechart.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/piechart.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1651,7 +1651,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropLinePlot(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertLinePlotDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"lineplot.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/lineplot.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1678,7 +1678,7 @@ namespace Wisteria::UI
                                                 const size_t col)
         {
         Wisteria::UI::InsertMultiSeriesLinePlotDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"lineplot.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/lineplot.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1704,7 +1704,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropTable(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertTableDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"table.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/table.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1730,7 +1730,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropChoroplethMap(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertChoroplethMapDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"choropleth.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/choropleth.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1772,7 +1772,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropSankeyDiagram(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertSankeyDiagramDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"sankey.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/sankey.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1796,7 +1796,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropWaffleChart(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertWaffleChartDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"waffle.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/waffle.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1823,7 +1823,7 @@ namespace Wisteria::UI
                                            const size_t col)
         {
         Wisteria::UI::InsertRaceTrackChartDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"racetrack.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/racetrack.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1850,7 +1850,7 @@ namespace Wisteria::UI
                                                  const size_t col)
         {
         Wisteria::UI::InsertNightingaleRoseChartDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"rose.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/rose.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1876,7 +1876,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropBulletChart(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertBulletChartDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"bulletchart.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/bulletchart.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1900,7 +1900,7 @@ namespace Wisteria::UI
                                            const size_t col)
         {
         Wisteria::UI::InsertWaterfallChartDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"waterfallchart.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/waterfallchart.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1923,7 +1923,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropFunnelChart(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertFunnelChartDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"funnel.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/funnel.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1947,7 +1947,7 @@ namespace Wisteria::UI
                                               const size_t col)
         {
         Wisteria::UI::InsertDuBoisSpiralChartDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"dubois-spiral.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/dubois-spiral.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -1970,7 +1970,7 @@ namespace Wisteria::UI
     bool InsertPageDlg::DropPictograph(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
         Wisteria::UI::InsertPictographDlg dlg(stagingCanvas, m_reportBuilder, this);
-        WisteriaView::SetDialogIcon(dlg, L"pictograph.svg");
+        WisteriaView::SetDialogIcon(dlg, L"images/pictograph.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)
             {

@@ -69,7 +69,7 @@ namespace Wisteria::UI
         // override New to open the shape sub-dialog
         m_shapeListBox->GetNewButton()->Bind(wxEVT_BUTTON, &InsertWaffleChartDlg::OnAddShape, this);
         m_shapeListBox->GetNewButton()->SetBitmapLabel(
-            wxGetApp().ReadSvgIcon(L"shape.svg", wxSize{ 16, 16 }));
+            wxGetApp().ReadSvgIcon(L"images/shape.svg", wxSize{ 16, 16 }));
 
         // override Edit to open the shape sub-dialog for the selected item
         m_shapeListBox->GetEditButton()->Bind(wxEVT_BUTTON, &InsertWaffleChartDlg::OnEditShape,

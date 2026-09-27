@@ -453,7 +453,7 @@ namespace Wisteria::UI
             m_customColorListBox->GetNewButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
                                                        { OnAddCustomColor(); });
             m_customColorListBox->GetNewButton()->SetBitmapLabel(
-                wxGetApp().ReadSvgIcon(L"color-wheel.svg", wxSize{ 16, 16 }));
+                wxGetApp().ReadSvgIcon(L"images/color-wheel.svg", wxSize{ 16, 16 }));
 
             // override Edit to open a color picker for the selected item
             m_customColorListBox->GetEditButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
@@ -511,7 +511,7 @@ namespace Wisteria::UI
             m_customShapeListBox->GetNewButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
                                                        { OnAddCustomShape(); });
             m_customShapeListBox->GetNewButton()->SetBitmapLabel(
-                wxGetApp().ReadSvgIcon(L"shape.svg", wxSize{ 16, 16 }));
+                wxGetApp().ReadSvgIcon(L"images/shape.svg", wxSize{ 16, 16 }));
 
             // override Edit to open a shape picker for the selected item
             m_customShapeListBox->GetEditButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
@@ -557,7 +557,7 @@ namespace Wisteria::UI
         m_annotationListBox->GetNewButton()->Bind(wxEVT_BUTTON,
                                                   [this](wxCommandEvent&) { OnAddAnnotation(); });
         m_annotationListBox->GetNewButton()->SetBitmapLabel(
-            wxGetApp().ReadSvgIcon(L"label.svg", wxSize{ 16, 16 }));
+            wxGetApp().ReadSvgIcon(L"images/label.svg", wxSize{ 16, 16 }));
         m_annotationListBox->GetEditButton()->Bind(wxEVT_BUTTON,
                                                    [this](wxCommandEvent&) { OnEditAnnotation(); });
         m_annotationListBox->GetDelButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
@@ -579,7 +579,7 @@ namespace Wisteria::UI
         m_refLineListBox->GetNewButton()->Bind(wxEVT_BUTTON,
                                                [this](wxCommandEvent&) { OnAddReferenceLine(); });
         m_refLineListBox->GetNewButton()->SetBitmapLabel(
-            wxGetApp().ReadSvgIcon(L"label.svg", wxSize{ 16, 16 }));
+            wxGetApp().ReadSvgIcon(L"images/label.svg", wxSize{ 16, 16 }));
         m_refLineListBox->GetEditButton()->Bind(wxEVT_BUTTON,
                                                 [this](wxCommandEvent&) { OnEditReferenceLine(); });
         m_refLineListBox->GetDelButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
@@ -601,7 +601,7 @@ namespace Wisteria::UI
         m_refAreaListBox->GetNewButton()->Bind(wxEVT_BUTTON,
                                                [this](wxCommandEvent&) { OnAddReferenceArea(); });
         m_refAreaListBox->GetNewButton()->SetBitmapLabel(
-            wxGetApp().ReadSvgIcon(L"label.svg", wxSize{ 16, 16 }));
+            wxGetApp().ReadSvgIcon(L"images/label.svg", wxSize{ 16, 16 }));
         m_refAreaListBox->GetEditButton()->Bind(wxEVT_BUTTON,
                                                 [this](wxCommandEvent&) { OnEditReferenceArea(); });
         m_refAreaListBox->GetDelButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
