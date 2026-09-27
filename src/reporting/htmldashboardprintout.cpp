@@ -765,11 +765,72 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptTooltips()
     }
 
 //------------------------------------------------------
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptHelp()
+    {
+    return LR"JS(
+  let helpOpen = false;
+  function bindHelp() {
+    const btn = document.getElementById('dash-help');
+    const panel = document.getElementById('dash-help-panel');
+    if (!btn || !panel) return;
+    const closeBtn = document.getElementById('dash-help-close');
+    function positionPanel() {
+      const rect = btn.getBoundingClientRect();
+      const panelRect = panel.getBoundingClientRect();
+      const left = Math.min(Math.max(8, rect.right - panelRect.width),
+        window.innerWidth - panelRect.width - 8);
+      panel.style.left = left + 'px';
+      panel.style.top = (rect.bottom + 8) + 'px';
+    }
+    function onOutsidePointerDown(e) {
+      if (panel.contains(e.target) || e.target === btn) return;
+      closeHelp(false);
+    }
+    function onHelpKeyDown(e) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeHelp(true);
+      }
+    }
+    function openHelp() {
+      helpOpen = true;
+      panel.hidden = false;
+      positionPanel();
+      window.requestAnimationFrame(function() { panel.classList.add('is-open'); });
+      btn.setAttribute('aria-expanded', 'true');
+      document.addEventListener('keydown', onHelpKeyDown);
+      document.addEventListener('pointerdown', onOutsidePointerDown, true);
+      window.addEventListener('resize', positionPanel);
+      if (closeBtn) closeBtn.focus();
+    }
+    function closeHelp(returnFocus) {
+      helpOpen = false;
+      panel.classList.remove('is-open');
+      btn.setAttribute('aria-expanded', 'false');
+      document.removeEventListener('keydown', onHelpKeyDown);
+      document.removeEventListener('pointerdown', onOutsidePointerDown, true);
+      window.removeEventListener('resize', positionPanel);
+      window.setTimeout(function() { panel.hidden = true; }, 150);
+      if (returnFocus) btn.focus();
+    }
+    btn.addEventListener('click', function() {
+      if (panel.hidden) openHelp(); else closeHelp(true);
+    });
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function() { closeHelp(true); });
+    }
+  }
+)JS";
+    }
+
+//------------------------------------------------------
 wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
     {
     return LR"JS(
   function onKeyDown(e) {
-    if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || !pages.length) return;
+    if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || !pages.length || helpOpen) {
+      return;
+    }
     const tag = e.target && e.target.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) return;
     if (e.key === 'ArrowRight' || e.key === 'PageDown') {
@@ -806,6 +867,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
     window.addEventListener('scroll', updateProgress, { passive: true });
     window.addEventListener('resize', measureChrome);
     bindTooltips();
+    bindHelp();
   }
   document.addEventListener('DOMContentLoaded', function() {
     collectPages();
@@ -930,7 +992,7 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
                      GetDashboardScriptInk() + GetDashboardScriptNavigation() +
                      GetDashboardScriptCounters() + GetDashboardScriptMotion() +
                      GetDashboardScriptZoom() + GetDashboardScriptTooltips() +
-                     GetDashboardScriptEvents() };
+                     GetDashboardScriptHelp() + GetDashboardScriptEvents() };
     script.Replace(L"{{TOGGLE}}", options.m_includeColorModeToggle ? L"true" : L"false");
     script.Replace(L"{{COUNTUP}}", options.m_countUpNumbers ? L"true" : L"false");
     script.Replace(L"{{MODE}}", initialMode);
@@ -1002,6 +1064,11 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
             escapeText(_(L"Theme")), escapeText(_(L"Auto")), escapeText(_(L"Light")),
             escapeText(_(L"Dark")));
         }
+    html += wxString::Format(
+        L"<button type=\"button\" id=\"dash-help\" class=\"dash-help-btn\" "
+        "aria-haspopup=\"dialog\" aria-expanded=\"false\" aria-controls=\"dash-help-panel\" "
+        "aria-label=\"%s\">?</button>\n",
+        escapeAttr(_(L"Keyboard and mouse shortcuts")));
     html += L"</div>\n<div class=\"dash-progress\" aria-hidden=\"true\"></div>\n</header>\n";
 
     html += wxString::Format(
@@ -1011,6 +1078,29 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         "aria-live=\"polite\"></div>\n"
         "<div id=\"dash-tooltip\" class=\"dash-tooltip no-print\" aria-hidden=\"true\"></div>\n",
         escapeAttr(_(L"Pages")), escapeAttr(_(L"Pages")));
+
+    html += wxString::Format(
+        L"<div id=\"dash-help-panel\" class=\"dash-help-panel no-print\" role=\"dialog\" "
+        "aria-modal=\"false\" aria-labelledby=\"dash-help-title\" hidden>\n"
+        "<div class=\"dash-help-header\">\n"
+        "<h2 id=\"dash-help-title\">%s</h2>\n"
+        "<button type=\"button\" id=\"dash-help-close\" aria-label=\"%s\">&times;</button>\n"
+        "</div>\n"
+        "<dl class=\"dash-help-list\">\n"
+        "<dt><kbd>&larr;</kbd> <kbd>&rarr;</kbd></dt><dd>%s</dd>\n"
+        "<dt><kbd>Home</kbd> <kbd>End</kbd></dt><dd>%s</dd>\n"
+        "<dt>%s</dt><dd>%s</dd>\n"
+        "<dt>%s</dt><dd>%s</dd>\n"
+        "<dt>%s</dt><dd>%s</dd>\n"
+        "</dl>\n"
+        "</div>\n",
+        escapeText(_(L"Keyboard & mouse shortcuts")), escapeAttr(_(L"Close")),
+        escapeText(_(L"Go to the previous or next page")),
+        escapeText(_(L"Jump to the first or last page")),
+        escapeText(_(L"Ctrl") + L"+" + _(L"scroll") + L" / " + _(L"pinch")),
+        escapeText(_(L"Zoom in or out, centered on the cursor")), escapeText(_(L"Drag")),
+        escapeText(_(L"Pan around a zoomed-in page")), escapeText(_(L"Double-click")),
+        escapeText(_(L"Reset zoom")));
 
     const wxString loadingText{ _(L"Loading...") };
     html += wxString::Format(

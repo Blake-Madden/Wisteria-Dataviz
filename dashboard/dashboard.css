@@ -150,7 +150,8 @@ html[data-view="story"] .dash-progress
   opacity: 0.7;
   }
 
-.dash-views button, .dash-modes button, .dash-layers button, .dash-pager button
+.dash-views button, .dash-modes button, .dash-layers button, .dash-pager button,
+.dash-help-btn
   {
   padding: 4px 12px;
   border: 1px solid var(--border-color);
@@ -163,11 +164,11 @@ html[data-view="story"] .dash-progress
   }
 
 .dash-views button:hover, .dash-modes button:hover, .dash-layers button:hover,
-.dash-pager button:hover:not([aria-disabled="true"])
+.dash-pager button:hover:not([aria-disabled="true"]), .dash-help-btn:hover
   { border-color: var(--accent); }
 
 .dash-views button[aria-pressed="true"], .dash-modes button[aria-pressed="true"],
-.dash-layers button[aria-pressed="true"]
+.dash-layers button[aria-pressed="true"], .dash-help-btn[aria-expanded="true"]
   {
   background-color: var(--accent);
   border-color: var(--accent);
@@ -176,10 +177,18 @@ html[data-view="story"] .dash-progress
 
 .dash-views button:focus-visible, .dash-modes button:focus-visible,
 .dash-layers button:focus-visible, .dash-pager button:focus-visible,
-.dash-rail button:focus-visible, .dash-card:focus-visible
+.dash-rail button:focus-visible, .dash-card:focus-visible, .dash-help-btn:focus-visible
   {
   outline: 2px solid Highlight;
   outline-offset: 2px;
+  }
+
+.dash-help-btn
+  {
+  width: 30px;
+  padding: 2px 0;
+  font-weight: 600;
+  line-height: 1.2;
   }
 
 /* ---------- Pages -------------------------------------------- */
@@ -587,6 +596,90 @@ html.motion-ready .page:not(.is-revealed) .page-svg
   {
   opacity: 1;
   visibility: visible;
+  }
+
+/* ---------- Help panel ----------------------------------------- */
+
+.dash-help-panel
+  {
+  position: fixed;
+  z-index: 1100;
+  width: min(340px, calc(100vw - 16px));
+  padding: 12px 16px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background-color: Canvas;
+  color: CanvasText;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+
+.dash-help-panel[hidden]
+  { display: none; }
+
+.dash-help-panel.is-open
+  {
+  opacity: 1;
+  transform: translateY(0);
+  }
+
+.dash-help-header
+  {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  }
+
+.dash-help-header h2
+  {
+  margin: 0;
+  font-size: 1em;
+  }
+
+#dash-help-close
+  {
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font-size: 1.2em;
+  line-height: 1;
+  cursor: pointer;
+  }
+
+.dash-help-list
+  {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  gap: 8px 12px;
+  margin: 0;
+  font-size: 0.9em;
+  }
+
+.dash-help-list dt
+  {
+  white-space: nowrap;
+  opacity: 0.7;
+  }
+
+.dash-help-list dd
+  {
+  margin: 0;
+  }
+
+.dash-help-list kbd
+  {
+  padding: 1px 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: color-mix(in srgb, CanvasText 10%, Canvas);
+  font-family: inherit;
+  font-size: 0.9em;
   }
 
 /* ---------- Print -------------------------------------------- */
