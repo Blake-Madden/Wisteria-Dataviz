@@ -56,6 +56,7 @@
 #include "../reporting/reporttableloader.h"
 #include "../wxSimpleJSON/src/wxSimpleJSON.h"
 #include "htmldashboardprintout.h"
+#include "odpreportprintout.h"
 #include "pptxreportprintout.h"
 #include "svgreportprintout.h"
 #include <functional>
@@ -784,6 +785,33 @@ namespace Wisteria
         bool HasLoadedPowerPointExportOptions() const noexcept
             {
             return m_powerPointExportOptionsLoaded;
+            }
+
+        /// @returns The ODP export options for the report.
+        [[nodiscard]]
+        const OdpExportOptions& GetOdpExportOptions() const noexcept
+            {
+            return m_odpExportOptions;
+            }
+
+        /// @returns The ODP export options for the report (mutable).
+        [[nodiscard]]
+        OdpExportOptions& GetOdpExportOptions() noexcept
+            {
+            return m_odpExportOptions;
+            }
+
+        /// @brief Sets the ODP export options for the report.
+        /// @param options The new ODP export options.
+        void SetOdpExportOptions(const OdpExportOptions& options) { m_odpExportOptions = options; }
+
+        /// @returns @c true if the ODP export options were read from the loaded
+        ///     project file. When @c false, the options are still at their defaults and
+        ///     the caller should seed them (e.g., from the global application settings).
+        [[nodiscard]]
+        bool HasLoadedOdpExportOptions() const noexcept
+            {
+            return m_odpExportOptionsLoaded;
             }
 
         /** @brief Expands embedded placeholders in strings into their values.
@@ -1591,10 +1619,12 @@ namespace Wisteria
         HtmlDashboardOptions m_htmlExportOptions{ wxString{} };
         PdfExportOptions m_pdfExportOptions{};
         PowerPointExportOptions m_powerPointExportOptions{};
+        OdpExportOptions m_odpExportOptions{};
         bool m_svgExportOptionsLoaded{ false };
         bool m_htmlExportOptionsLoaded{ false };
         bool m_pdfExportOptionsLoaded{ false };
         bool m_powerPointExportOptionsLoaded{ false };
+        bool m_odpExportOptionsLoaded{ false };
 
         size_t m_pageNumber{ 1 };
 

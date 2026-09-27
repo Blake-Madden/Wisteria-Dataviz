@@ -65,6 +65,7 @@ images/lineplot.svg
 images/log-book.svg
 images/multiplot-common-axis.svg
 images/multiplot.svg
+images/odp.svg
 images/page-add.svg
 images/page-delete.svg
 images/page-edit.svg

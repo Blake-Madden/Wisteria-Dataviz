@@ -741,7 +741,7 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         projectButtonBar->AddButton(ID_HTML_EXPORT, _(L"HTML Export"),
                                     ReadSvgIcon(L"images/dashboard.svg"),
                                     _(L"Export all pages to an interactive HTML dashboard"));
-        projectButtonBar->SetKeyTip(ID_HTML_EXPORT, _DT(L"M"));
+        projectButtonBar->SetKeyTip(ID_HTML_EXPORT, _DT(L"HE"));
         projectButtonBar->AddButton(ID_PDF_EXPORT, _(L"PDF Export"), ReadSvgIcon(L"images/pdf.svg"),
                                     _(L"Export all pages to PDF"));
         projectButtonBar->SetKeyTip(ID_PDF_EXPORT, _DT(L"F"));
@@ -749,6 +749,9 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                     ReadSvgIcon(L"images/powerpoint.svg"),
                                     _(L"Export all pages to PowerPoint"));
         projectButtonBar->SetKeyTip(ID_PPTX_EXPORT, _DT(L"W"));
+        projectButtonBar->AddButton(ID_ODP_EXPORT, _(L"ODP Export"), ReadSvgIcon(L"images/odp.svg"),
+                                    _(L"Export all pages to an OpenDocument presentation"));
+        projectButtonBar->SetKeyTip(ID_ODP_EXPORT, _DT(L"Z"));
         projectButtonBar->AddButton(ID_REFRESH_ALL, _(L"Refresh All"),
                                     ReadSvgIcon(L"images/reload.svg"), _(L"Reload the project"));
         projectButtonBar->SetKeyTip(ID_REFRESH_ALL, _DT(L"R"));

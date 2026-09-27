@@ -129,7 +129,7 @@ wxString Wisteria::ReportSlideExportBase::CollectAccessibilityText(Canvas* canva
 
 //------------------------------------------------------
 void Wisteria::ReportSlideExportBase::RenderCanvas(Canvas* canvas, const wxSize renderSize,
-                                                   wxString& svgOut, wxMemoryBuffer& pngOut)
+                                                   wxString& svgOut, wxMemoryBuffer* pngOut)
     {
     const wxSize safeSize{ std::max(1, renderSize.GetWidth()),
                            std::max(1, renderSize.GetHeight()) };
@@ -151,8 +151,9 @@ void Wisteria::ReportSlideExportBase::RenderCanvas(Canvas* canvas, const wxSize 
         canvas->SetSize(canvas->FromDIP(safeSize));
         }
 
-        // PNG first, mirroring the raster path in Canvas::Save so the layout the
-        // resize produced is drawn without an intervening re-measure.
+    // PNG first, mirroring the raster path in Canvas::Save so the layout the
+    // resize produced is drawn without an intervening re-measure.
+    if (pngOut != nullptr)
         {
         wxBitmap exportBmp;
         exportBmp.CreateWithDIPSize(safeSize, canvas->GetDPIScaleFactor());
@@ -205,9 +206,9 @@ void Wisteria::ReportSlideExportBase::RenderCanvas(Canvas* canvas, const wxSize 
         exportImg.SaveFile(pngStream, wxBITMAP_TYPE_PNG);
 
         const size_t pngLength{ static_cast<size_t>(pngStream.GetLength()) };
-        pngOut = wxMemoryBuffer(pngLength);
-        pngStream.CopyTo(pngOut.GetData(), pngLength);
-        pngOut.SetDataLen(pngLength);
+        *pngOut = wxMemoryBuffer(pngLength);
+        pngStream.CopyTo(pngOut->GetData(), pngLength);
+        pngOut->SetDataLen(pngLength);
         }
 
         // SVG

@@ -27,39 +27,8 @@ namespace Wisteria
     /// @details Plain aggregate, like @c PdfExportOptions. Holds document metadata,
     ///     the slide size, the deck-wide transition, auto-advance/loop behavior, and
     ///     whether chart accessibility descriptions are written as speaker notes.
-    struct PowerPointExportOptions
+    struct PowerPointExportOptions : public SlideExportOptionsBase
         {
-        /// @brief The slide dimensions.
-        enum class SlideSize
-            {
-            /// @brief 13.333in x 7.5in (PowerPoint "Widescreen").
-            Widescreen16x9,
-            /// @brief 10in x 7.5in (PowerPoint "Standard").
-            Standard4x3,
-            /// @brief A custom size, taken from @c m_customWidthInches / @c m_customHeightInches.
-            Custom
-            };
-
-        /// @brief The deck-wide slide transition effect.
-        enum class Transition
-            {
-            None,
-            Fade,
-            Push,
-            Wipe,
-            Split,
-            Cut,
-            Morph
-            };
-
-        /// @brief The transition playback speed.
-        enum class TransitionSpeed
-            {
-            Slow,
-            Medium,
-            Fast
-            };
-
         /// @brief English Metric Units per inch. Slide dimensions in @c presentation.xml
         ///     are expressed in EMUs.
         constexpr static double EMU_PER_INCH{ 914400.0 };
@@ -70,68 +39,14 @@ namespace Wisteria
         constexpr static int SLIDE_WIDTH_4X3_EMU{ 9144000 };
         /// @brief The Widescreen (16:9) slide width, in EMUs (13.333in).
         constexpr static int SLIDE_WIDTH_16X9_EMU{ 12192000 };
-        /// @brief PowerPoint's maximum slide dimension, in inches.
-        constexpr static double MAX_SLIDE_INCHES{ 56.0 };
 
-        /// @brief The document title.
-        wxString m_title;
-        /// @brief The document author.
-        wxString m_author{ wxGetUserName() };
-        /// @brief The document subject.
-        wxString m_subject;
-        /// @brief The document keywords.
-        wxString m_keywords;
-        /// @brief The document publisher, shown as the extended-properties "Company"
-        ///     field and, when set, at the bottom of the title slide.
-        wxString m_publisher;
-
-        // title slide
-        //------------
-
-        /// @brief Whether to add a title slide (deck title, author, and publisher)
-        ///     before the report pages. Has no effect when @c m_title is empty.
-        bool m_includeTitleSlide{ true };
-        /// @brief The lowercase key of a named color scheme (e.g. @c L"dusk") used to give
-        ///     the title slide a themed background, accent bar, and colored title text.
-        ///     Empty means the title slide is plain (white background, dark text).
-        wxString m_titleSlideTheme;
-
-        // slide size
-        //-----------
-
-        /// @brief The slide size preset.
-        SlideSize m_slideSize{ SlideSize::Widescreen16x9 };
-        /// @brief Custom slide width in inches (used only when @c m_slideSize is @c Custom).
-        double m_customWidthInches{ 13.333 };
-        /// @brief Custom slide height in inches (used only when @c m_slideSize is @c Custom).
-        double m_customHeightInches{ 7.5 };
-
-        // transitions
-        //------------
-
-        /// @brief The deck-wide transition effect.
-        Transition m_transition{ Transition::Fade };
-        /// @brief The transition speed.
-        TransitionSpeed m_transitionSpeed{ TransitionSpeed::Medium };
-
-        // auto-advance / kiosk
+        // auto-advance / kiosk (not modeled by the ODP exporter)
         //---------------------
 
         /// @brief Whether a mouse click advances to the next slide.
         bool m_advanceOnClick{ true };
-        /// @brief Whether slides advance automatically after @c m_advanceSeconds.
-        bool m_advanceAutomatically{ false };
-        /// @brief Seconds each slide is shown when @c m_advanceAutomatically is @c true.
-        int m_advanceSeconds{ 5 };
         /// @brief Whether the slideshow loops continuously until Esc.
         bool m_loopContinuously{ false };
-
-        // notes
-        //------
-
-        /// @brief Whether to write each page's auto-generated chart descriptions
-        ///     into that slide's speaker-notes page.
-        bool m_includeAccessibilityNotes{ true };
 
         /// @returns The slide size in English Metric Units (@c EMU_PER_INCH per inch).
         [[nodiscard]]

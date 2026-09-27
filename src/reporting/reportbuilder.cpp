@@ -26,10 +26,12 @@ namespace Wisteria
         m_htmlExportOptions = HtmlDashboardOptions{ wxString{} };
         m_pdfExportOptions = PdfExportOptions{};
         m_powerPointExportOptions = PowerPointExportOptions{};
+        m_odpExportOptions = OdpExportOptions{};
         m_svgExportOptionsLoaded = false;
         m_htmlExportOptionsLoaded = false;
         m_pdfExportOptionsLoaded = false;
         m_powerPointExportOptionsLoaded = false;
+        m_odpExportOptionsLoaded = false;
         m_resolvedMissingDatasets = false;
         m_dpiScaleFactor = parent->GetDPIScaleFactor();
 
@@ -320,6 +322,83 @@ namespace Wisteria
                 publisherNode->IsOk())
                 {
                 m_powerPointExportOptions.m_publisher = publisherNode->AsString();
+                }
+            }
+
+        // ODP export options
+        if (const auto odpExportNode = json->GetProperty(L"odp-export"); odpExportNode->IsOk())
+            {
+            m_odpExportOptionsLoaded = true;
+            const auto boolAttr = [&odpExportNode](const wxString& name, const bool fallback)
+            {
+                const auto prop = odpExportNode->GetProperty(name);
+                return prop->IsOk() ? prop->AsBool(fallback) : fallback;
+            };
+            const auto numberAttr = [&odpExportNode](const wxString& name) -> std::optional<double>
+            {
+                const auto prop = odpExportNode->GetProperty(name);
+                return prop->IsOk() ? std::optional<double>{ prop->AsDouble(-1) } : std::nullopt;
+            };
+
+            if (const auto slideSize = numberAttr(L"slide-size"); slideSize && *slideSize >= 0)
+                {
+                const auto value{ static_cast<int>(*slideSize) };
+                m_odpExportOptions.m_slideSize =
+                    (value == 0) ? OdpExportOptions::SlideSize::Widescreen16x9 :
+                    (value == 1) ? OdpExportOptions::SlideSize::Standard4x3 :
+                                   OdpExportOptions::SlideSize::Custom;
+                }
+            if (const auto customWidth = numberAttr(L"custom-width");
+                customWidth && *customWidth > 0)
+                {
+                m_odpExportOptions.m_customWidthInches = *customWidth;
+                }
+            if (const auto customHeight = numberAttr(L"custom-height");
+                customHeight && *customHeight > 0)
+                {
+                m_odpExportOptions.m_customHeightInches = *customHeight;
+                }
+            if (const auto transition = numberAttr(L"transition");
+                transition && *transition >= 0 &&
+                *transition <=
+                    static_cast<double>(static_cast<int>(OdpExportOptions::Transition::Morph)))
+                {
+                m_odpExportOptions.m_transition =
+                    static_cast<OdpExportOptions::Transition>(static_cast<int>(*transition));
+                }
+            if (const auto transitionSpeed = numberAttr(L"transition-speed");
+                transitionSpeed && *transitionSpeed >= 0 &&
+                *transitionSpeed <=
+                    static_cast<double>(static_cast<int>(OdpExportOptions::TransitionSpeed::Fast)))
+                {
+                m_odpExportOptions.m_transitionSpeed =
+                    static_cast<OdpExportOptions::TransitionSpeed>(
+                        static_cast<int>(*transitionSpeed));
+                }
+            m_odpExportOptions.m_advanceAutomatically =
+                boolAttr(L"advance-automatically", m_odpExportOptions.m_advanceAutomatically);
+            if (const auto advanceSeconds = numberAttr(L"advance-seconds");
+                advanceSeconds && *advanceSeconds > 0)
+                {
+                m_odpExportOptions.m_advanceSeconds = static_cast<int>(*advanceSeconds);
+                }
+            m_odpExportOptions.m_includeAccessibilityNotes =
+                boolAttr(L"accessibility-notes", m_odpExportOptions.m_includeAccessibilityNotes);
+            m_odpExportOptions.m_includeTitleSlide =
+                boolAttr(L"title-slide", m_odpExportOptions.m_includeTitleSlide);
+            if (const auto themeNode = odpExportNode->GetProperty(L"title-slide-theme");
+                themeNode->IsOk())
+                {
+                m_odpExportOptions.m_titleSlideTheme = themeNode->AsString();
+                }
+            if (const auto authorNode = odpExportNode->GetProperty(L"author"); authorNode->IsOk())
+                {
+                m_odpExportOptions.m_author = authorNode->AsString();
+                }
+            if (const auto publisherNode = odpExportNode->GetProperty(L"publisher");
+                publisherNode->IsOk())
+                {
+                m_odpExportOptions.m_publisher = publisherNode->AsString();
                 }
             }
 

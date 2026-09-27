@@ -11,6 +11,7 @@
 
 #include "../base/enums.h"
 #include "../reporting/htmldashboardprintout.h"
+#include "../reporting/odpreportprintout.h"
 #include "../reporting/pptxreportprintout.h"
 #include "../reporting/svgreportprintout.h"
 #include <set>
@@ -187,6 +188,23 @@ class AppSettings
         return m_powerPointExportOptions;
         }
 
+    // ODP export options
+    //---------------------
+
+    /// @returns The ODP export options.
+    [[nodiscard]]
+    Wisteria::OdpExportOptions& GetOdpExportOptions() noexcept
+        {
+        return m_odpExportOptions;
+        }
+
+    /// @private
+    [[nodiscard]]
+    const Wisteria::OdpExportOptions& GetOdpExportOptions() const noexcept
+        {
+        return m_odpExportOptions;
+        }
+
     // Object gallery options
     //-------------------------
 
@@ -217,6 +235,7 @@ class AppSettings
     Wisteria::SVGReportOptions m_svgExportOptions{ wxString{} };
     Wisteria::HtmlDashboardOptions m_htmlExportOptions{ wxString{} };
     Wisteria::PowerPointExportOptions m_powerPointExportOptions;
+    Wisteria::OdpExportOptions m_odpExportOptions;
     std::set<Wisteria::GalleryGroup> m_collapsedGalleryGroups;
     };
 

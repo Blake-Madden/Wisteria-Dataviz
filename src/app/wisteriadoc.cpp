@@ -179,6 +179,26 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
         root->Add(L"powerpoint-export", pptxNode);
         }
 
+        // odp-export (per-project)
+        {
+        const auto& odpOpts = view->GetReportBuilder().GetOdpExportOptions();
+        auto odpNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+        odpNode->Add(L"slide-size", static_cast<double>(static_cast<int>(odpOpts.m_slideSize)));
+        odpNode->Add(L"custom-width", odpOpts.m_customWidthInches);
+        odpNode->Add(L"custom-height", odpOpts.m_customHeightInches);
+        odpNode->Add(L"transition", static_cast<double>(static_cast<int>(odpOpts.m_transition)));
+        odpNode->Add(L"transition-speed",
+                     static_cast<double>(static_cast<int>(odpOpts.m_transitionSpeed)));
+        odpNode->Add(L"advance-automatically", odpOpts.m_advanceAutomatically);
+        odpNode->Add(L"advance-seconds", static_cast<double>(odpOpts.m_advanceSeconds));
+        odpNode->Add(L"accessibility-notes", odpOpts.m_includeAccessibilityNotes);
+        odpNode->Add(L"title-slide", odpOpts.m_includeTitleSlide);
+        odpNode->Add(L"title-slide-theme", odpOpts.m_titleSlideTheme);
+        odpNode->Add(L"author", odpOpts.m_author);
+        odpNode->Add(L"publisher", odpOpts.m_publisher);
+        root->Add(L"odp-export", odpNode);
+        }
+
     // datasets
     //---------
     const auto& datasets = view->GetReportBuilder().GetDatasets();

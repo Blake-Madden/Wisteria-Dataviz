@@ -110,6 +110,7 @@ SET(WISTERIA_SRC
     ../../src/import/spreadsheet_extract_text.cpp
     ../../src/import/xlsx_extract_text.cpp
     ../../src/reporting/htmldashboardprintout.cpp
+    ../../src/reporting/odpreportprintout.cpp
     ../../src/reporting/pptxreportprintout.cpp
     ../../src/reporting/report_builder_basic_graphs.cpp
     ../../src/reporting/report_builder_business_graphs.cpp
@@ -121,6 +122,7 @@ SET(WISTERIA_SRC
     ../../src/reporting/reportbuilder.cpp
     ../../src/reporting/reportbuildercolors.cpp
     ../../src/reporting/reportprintout.cpp
+    ../../src/reporting/reportslideexportbase.cpp
     ../../src/reporting/reporttableloader.cpp
     ../../src/reporting/svgreportprintout.cpp
     ../../src/ui/app.cpp
@@ -151,6 +153,7 @@ SET(WISTERIA_SRC
     ../../src/ui/dialogs/listctrlitemviewdlg.cpp
     ../../src/ui/dialogs/listctrlsortdlg.cpp
     ../../src/ui/dialogs/listdlg.cpp
+    ../../src/ui/dialogs/odpexportdlg.cpp
     ../../src/ui/dialogs/odspreviewdlg.cpp
     ../../src/ui/dialogs/opacitydlg.cpp
     ../../src/ui/dialogs/pdfexportdlg.cpp

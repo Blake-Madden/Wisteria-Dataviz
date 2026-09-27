@@ -1,0 +1,299 @@
+///////////////////////////////////////////////////////////////////////////////
+// Name:        odpexportdlg.cpp
+// Author:      Blake Madden
+// Copyright:   (c) 2005-2026 Blake Madden
+// License:     3-Clause BSD license
+// SPDX-License-Identifier: BSD-3-Clause
+///////////////////////////////////////////////////////////////////////////////
+
+#include "odpexportdlg.h"
+#include "../../base/colorschemenames.h"
+#include <utility>
+#include <wx/valgen.h>
+#include <wx/wupdlock.h>
+
+namespace Wisteria::UI
+    {
+    //------------------------------------------------------
+    OdpExportDlg::OdpExportDlg(wxWindow* parent, OdpExportOptions options, const wxString& caption)
+        : DialogWithHelp(parent, wxID_ANY, caption), m_options(std::move(options))
+        {
+        SetExtraStyle(GetExtraStyle() | wxWS_EX_VALIDATE_RECURSIVELY | wxWS_EX_BLOCK_EVENTS);
+
+        CreateControls();
+        GetSizer()->SetSizeHints(this);
+        Centre();
+        }
+
+    //------------------------------------------------------
+    void OdpExportDlg::CreateControls()
+        {
+        auto* mainSizer = new wxBoxSizer(wxVERTICAL);
+
+        // slide size
+        auto* slideSizeBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Slide Size"));
+
+        wxArrayString slideSizeChoices;
+        slideSizeChoices.Add(_(L"Widescreen (16:9)"));
+        slideSizeChoices.Add(_(L"Standard (4:3)"));
+        slideSizeChoices.Add(_(L"Custom"));
+        m_slideSizeRadio =
+            new wxRadioBox(slideSizeBox->GetStaticBox(), wxID_ANY, _(L"Preset"), wxDefaultPosition,
+                           wxDefaultSize, slideSizeChoices, 1, wxRA_SPECIFY_COLS);
+        m_slideSizeRadio->SetSelection(
+            m_options.m_slideSize == OdpExportOptions::SlideSize::Widescreen16x9 ? 0 :
+            m_options.m_slideSize == OdpExportOptions::SlideSize::Standard4x3    ? 1 :
+                                                                                   2);
+        slideSizeBox->Add(m_slideSizeRadio, wxSizerFlags{}.Expand().Border());
+
+        auto* customSizeGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+
+        m_customWidthLabel =
+            new wxStaticText(slideSizeBox->GetStaticBox(), wxID_STATIC, _(L"Width (inches):"));
+        customSizeGrid->Add(m_customWidthLabel, wxSizerFlags{}.CenterVertical());
+        m_customWidthCtrl = new wxSpinCtrlDouble(slideSizeBox->GetStaticBox(), wxID_ANY, wxString{},
+                                                 wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS,
+                                                 1.0, OdpExportOptions::MAX_SLIDE_INCHES,
+                                                 m_options.m_customWidthInches, 0.1);
+        customSizeGrid->Add(m_customWidthCtrl, wxSizerFlags{}.Expand());
+
+        m_customHeightLabel =
+            new wxStaticText(slideSizeBox->GetStaticBox(), wxID_STATIC, _(L"Height (inches):"));
+        customSizeGrid->Add(m_customHeightLabel, wxSizerFlags{}.CenterVertical());
+        m_customHeightCtrl = new wxSpinCtrlDouble(
+            slideSizeBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
+            wxSP_ARROW_KEYS, 1.0, OdpExportOptions::MAX_SLIDE_INCHES,
+            m_options.m_customHeightInches, 0.1);
+        customSizeGrid->Add(m_customHeightCtrl, wxSizerFlags{}.Expand());
+
+        slideSizeBox->Add(customSizeGrid, wxSizerFlags{}.Expand().Border());
+
+        mainSizer->Add(slideSizeBox, wxSizerFlags{}.Expand().Border());
+
+        m_slideSizeRadio->Bind(wxEVT_RADIOBOX,
+                               [this](wxCommandEvent&) { UpdateSlideSizeControls(); });
+
+        // document information
+        auto* docInfoBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Document Information"));
+        auto* docInfoGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        docInfoGrid->AddGrowableCol(1, 1);
+
+        docInfoGrid->Add(new wxStaticText(docInfoBox->GetStaticBox(), wxID_STATIC, _(L"Title:")),
+                         wxSizerFlags{}.CenterVertical());
+        auto* titleCtrl =
+            new wxTextCtrl(docInfoBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+                           FromDIP(wxSize{ 350, -1 }), 0, wxGenericValidator{ &m_options.m_title });
+        docInfoGrid->Add(titleCtrl, wxSizerFlags{}.Expand());
+
+        docInfoGrid->Add(new wxStaticText(docInfoBox->GetStaticBox(), wxID_STATIC, _(L"Author:")),
+                         wxSizerFlags{}.CenterVertical());
+        auto* authorCtrl =
+            new wxTextCtrl(docInfoBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+                           wxDefaultSize, 0, wxGenericValidator{ &m_options.m_author });
+        docInfoGrid->Add(authorCtrl, wxSizerFlags{}.Expand());
+
+        docInfoGrid->Add(new wxStaticText(docInfoBox->GetStaticBox(), wxID_STATIC, _(L"Subject:")),
+                         wxSizerFlags{}.CenterVertical());
+        auto* subjectCtrl =
+            new wxTextCtrl(docInfoBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+                           wxDefaultSize, 0, wxGenericValidator{ &m_options.m_subject });
+        docInfoGrid->Add(subjectCtrl, wxSizerFlags{}.Expand());
+
+        docInfoGrid->Add(new wxStaticText(docInfoBox->GetStaticBox(), wxID_STATIC, _(L"Keywords:")),
+                         wxSizerFlags{}.CenterVertical());
+        auto* keywordsCtrl =
+            new wxTextCtrl(docInfoBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+                           wxDefaultSize, 0, wxGenericValidator{ &m_options.m_keywords });
+        docInfoGrid->Add(keywordsCtrl, wxSizerFlags{}.Expand());
+
+        docInfoGrid->Add(
+            new wxStaticText(docInfoBox->GetStaticBox(), wxID_STATIC, _(L"Publisher:")),
+            wxSizerFlags{}.CenterVertical());
+        auto* publisherCtrl =
+            new wxTextCtrl(docInfoBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
+                           wxDefaultSize, 0, wxGenericValidator{ &m_options.m_publisher });
+        docInfoGrid->Add(publisherCtrl, wxSizerFlags{}.Expand());
+
+        docInfoBox->Add(docInfoGrid, wxSizerFlags{}.Expand().Border());
+
+        m_titleSlideCheck = new wxCheckBox(
+            docInfoBox->GetStaticBox(), wxID_ANY, _(L"Include a title slide"), wxDefaultPosition,
+            wxDefaultSize, 0, wxGenericValidator{ &m_options.m_includeTitleSlide });
+        m_titleSlideCheck->SetValue(m_options.m_includeTitleSlide);
+        docInfoBox->Add(m_titleSlideCheck, wxSizerFlags{}.Border(wxTOP));
+
+        auto* themeSizer = new wxBoxSizer(wxHORIZONTAL);
+        m_titleSlideThemeLabel =
+            new wxStaticText(docInfoBox->GetStaticBox(), wxID_STATIC, _(L"Theme:"));
+        themeSizer->Add(m_titleSlideThemeLabel, wxSizerFlags{}.CenterVertical());
+        wxArrayString themeChoices;
+        themeChoices.Add(_(L"None"));
+        for (const auto& entry : Colors::Schemes::ColorSchemeCatalog::GetEntries())
+            {
+            themeChoices.Add(entry.first);
+            }
+        m_titleSlideThemeChoice = new wxChoice(docInfoBox->GetStaticBox(), wxID_ANY,
+                                               wxDefaultPosition, wxDefaultSize, themeChoices);
+        int themeSelection{ 0 };
+        if (!m_options.m_titleSlideTheme.empty())
+            {
+            const auto& entries = Colors::Schemes::ColorSchemeCatalog::GetEntries();
+            for (size_t i = 0; i < entries.size(); ++i)
+                {
+                if (entries[i].second.CmpNoCase(m_options.m_titleSlideTheme) == 0)
+                    {
+                    themeSelection = static_cast<int>(i) + 1;
+                    break;
+                    }
+                }
+            }
+        m_titleSlideThemeChoice->SetSelection(themeSelection);
+        themeSizer->Add(m_titleSlideThemeChoice, wxSizerFlags{}.CenterVertical().Border(wxLEFT));
+        docInfoBox->Add(themeSizer, wxSizerFlags{}.Border(wxTOP));
+
+        mainSizer->Add(docInfoBox, wxSizerFlags{}.Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM));
+
+        m_titleSlideCheck->Bind(wxEVT_CHECKBOX,
+                                [this](wxCommandEvent&) { UpdateTitleSlideControls(); });
+
+        // transitions
+        auto* transitionsBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Transitions"));
+        auto* transitionsGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+
+        transitionsGrid->Add(
+            new wxStaticText(transitionsBox->GetStaticBox(), wxID_STATIC, _(L"Effect:")),
+            wxSizerFlags{}.CenterVertical());
+        wxArrayString transitionChoices;
+        transitionChoices.Add(_(L"None"));
+        transitionChoices.Add(_(L"Fade"));
+        transitionChoices.Add(_(L"Push"));
+        transitionChoices.Add(_(L"Wipe"));
+        transitionChoices.Add(_(L"Split"));
+        transitionChoices.Add(_(L"Cut"));
+        transitionChoices.Add(_(L"Morph"));
+        m_transitionChoice = new wxChoice(transitionsBox->GetStaticBox(), wxID_ANY,
+                                          wxDefaultPosition, wxDefaultSize, transitionChoices);
+        m_transitionChoice->SetSelection(static_cast<int>(m_options.m_transition));
+        transitionsGrid->Add(m_transitionChoice, wxSizerFlags{}.Expand());
+
+        m_transitionSpeedLabel =
+            new wxStaticText(transitionsBox->GetStaticBox(), wxID_STATIC, _(L"Speed:"));
+        transitionsGrid->Add(m_transitionSpeedLabel, wxSizerFlags{}.CenterVertical());
+        wxArrayString speedChoices;
+        speedChoices.Add(_(L"Slow"));
+        speedChoices.Add(_(L"Medium"));
+        speedChoices.Add(_(L"Fast"));
+        m_transitionSpeedChoice = new wxChoice(transitionsBox->GetStaticBox(), wxID_ANY,
+                                               wxDefaultPosition, wxDefaultSize, speedChoices);
+        m_transitionSpeedChoice->SetSelection(static_cast<int>(m_options.m_transitionSpeed));
+        transitionsGrid->Add(m_transitionSpeedChoice, wxSizerFlags{}.Expand());
+
+        transitionsBox->Add(transitionsGrid, wxSizerFlags{}.Expand().Border());
+
+        m_transitionChoice->Bind(wxEVT_CHOICE,
+                                 [this](wxCommandEvent&) { UpdateTransitionControls(); });
+
+        auto* advanceAutoSizer = new wxBoxSizer(wxHORIZONTAL);
+        m_advanceAutomaticallyCheck =
+            new wxCheckBox(transitionsBox->GetStaticBox(), wxID_ANY,
+                           _(L"Advance automatically after"), wxDefaultPosition, wxDefaultSize, 0,
+                           wxGenericValidator{ &m_options.m_advanceAutomatically });
+        m_advanceAutomaticallyCheck->SetValue(m_options.m_advanceAutomatically);
+        advanceAutoSizer->Add(m_advanceAutomaticallyCheck, wxSizerFlags{}.CenterVertical());
+        m_advanceSecondsCtrl = new wxSpinCtrl(
+            transitionsBox->GetStaticBox(), wxID_ANY, std::to_wstring(m_options.m_advanceSeconds),
+            wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 3600, m_options.m_advanceSeconds);
+        m_advanceSecondsCtrl->SetValidator(wxGenericValidator{ &m_options.m_advanceSeconds });
+        advanceAutoSizer->Add(m_advanceSecondsCtrl, wxSizerFlags{}.CenterVertical().Border(wxLEFT));
+        advanceAutoSizer->Add(
+            new wxStaticText(transitionsBox->GetStaticBox(), wxID_ANY, _(L"seconds")),
+            wxSizerFlags{}.CenterVertical().Border(wxLEFT));
+        transitionsBox->Add(advanceAutoSizer, wxSizerFlags{}.Border());
+
+        m_advanceAutomaticallyCheck->Bind(wxEVT_CHECKBOX,
+                                          [this](wxCommandEvent&) { UpdateTransitionControls(); });
+
+        mainSizer->Add(transitionsBox, wxSizerFlags{}.Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM));
+
+        // notes
+        auto* notesBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Notes"));
+        auto* notesCheck = new wxCheckBox(
+            notesBox->GetStaticBox(), wxID_ANY, _(L"Add chart descriptions as speaker notes"),
+            wxDefaultPosition, wxDefaultSize, 0,
+            wxGenericValidator{ &m_options.m_includeAccessibilityNotes });
+        notesBox->Add(notesCheck, wxSizerFlags{}.Border());
+
+        mainSizer->Add(notesBox, wxSizerFlags{}.Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM));
+
+        mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
+                       wxSizerFlags{}.Expand().Border());
+
+        SetSizer(mainSizer);
+
+        UpdateSlideSizeControls();
+        UpdateTransitionControls();
+        UpdateTitleSlideControls();
+        }
+
+    //------------------------------------------------------
+    void OdpExportDlg::UpdateSlideSizeControls()
+        {
+        const wxWindowUpdateLocker noUpdates{ this };
+
+        const bool isCustom{ m_slideSizeRadio->GetSelection() == 2 };
+        m_customWidthLabel->Enable(isCustom);
+        m_customWidthCtrl->Enable(isCustom);
+        m_customHeightLabel->Enable(isCustom);
+        m_customHeightCtrl->Enable(isCustom);
+        }
+
+    //------------------------------------------------------
+    void OdpExportDlg::UpdateTitleSlideControls()
+        {
+        const wxWindowUpdateLocker noUpdates{ this };
+
+        const bool includeTitleSlide{ m_titleSlideCheck->GetValue() };
+        m_titleSlideThemeLabel->Enable(includeTitleSlide);
+        m_titleSlideThemeChoice->Enable(includeTitleSlide);
+        }
+
+    //------------------------------------------------------
+    void OdpExportDlg::UpdateTransitionControls()
+        {
+        const wxWindowUpdateLocker noUpdates{ this };
+
+        const bool hasTransition{ m_transitionChoice->GetSelection() > 0 };
+        m_transitionSpeedLabel->Enable(hasTransition);
+        m_transitionSpeedChoice->Enable(hasTransition);
+
+        m_advanceSecondsCtrl->Enable(m_advanceAutomaticallyCheck->GetValue());
+        }
+
+    //------------------------------------------------------
+    bool OdpExportDlg::Validate()
+        {
+        m_options.m_slideSize =
+            m_slideSizeRadio->GetSelection() == 0 ? OdpExportOptions::SlideSize::Widescreen16x9 :
+            m_slideSizeRadio->GetSelection() == 1 ? OdpExportOptions::SlideSize::Standard4x3 :
+                                                    OdpExportOptions::SlideSize::Custom;
+        m_options.m_customWidthInches = m_customWidthCtrl->GetValue();
+        m_options.m_customHeightInches = m_customHeightCtrl->GetValue();
+
+        m_options.m_transition =
+            static_cast<OdpExportOptions::Transition>(m_transitionChoice->GetSelection());
+        m_options.m_transitionSpeed =
+            static_cast<OdpExportOptions::TransitionSpeed>(m_transitionSpeedChoice->GetSelection());
+
+        const int themeSelection{ m_titleSlideThemeChoice->GetSelection() };
+        const auto& themeEntries = Colors::Schemes::ColorSchemeCatalog::GetEntries();
+        m_options.m_titleSlideTheme =
+            (themeSelection >= 1 && std::cmp_less_equal(themeSelection, themeEntries.size())) ?
+                themeEntries[static_cast<size_t>(themeSelection) - 1].second :
+                wxString{};
+
+        return wxDialog::Validate();
+        }
+    } // namespace Wisteria::UI

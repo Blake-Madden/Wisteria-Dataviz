@@ -57,6 +57,7 @@
 #include "../ui/dialogs/editors/pivotwiderrdlg.h"
 #include "../ui/dialogs/editors/subsetdlg.h"
 #include "../ui/dialogs/htmldashboarddlg.h"
+#include "../ui/dialogs/odpexportdlg.h"
 #include "../ui/dialogs/pdfexportdlg.h"
 #include "../ui/dialogs/pptxexportdlg.h"
 #include "../ui/dialogs/projectsettingsdlg.h"
@@ -294,6 +295,10 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     // bind PowerPoint export button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPptxExport, this, ID_PPTX_EXPORT);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPptxExport, this, ID_PPTX_EXPORT);
+
+    // bind ODP export button
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnOdpExport, this, ID_ODP_EXPORT);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnOdpExport, this, ID_ODP_EXPORT);
 
     // bind project settings button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnProjectSettings, this,
@@ -573,6 +578,10 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     if (!GetReportBuilder().HasLoadedPowerPointExportOptions())
         {
         GetReportBuilder().GetPowerPointExportOptions() = appSettings->GetPowerPointExportOptions();
+        }
+    if (!GetReportBuilder().HasLoadedOdpExportOptions())
+        {
+        GetReportBuilder().GetOdpExportOptions() = appSettings->GetOdpExportOptions();
         }
 
     if (initialDataset != nullptr)
@@ -1481,6 +1490,72 @@ void WisteriaView::OnPptxExport([[maybe_unused]] wxCommandEvent& event)
     Wisteria::ReportPowerPointExport pptxReport(m_pages, fileDlg.GetPath(), options);
 
     if (docInfoChanged || pptxOptionsChanged)
+        {
+        GetDocument()->Modify(true);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnOdpExport([[maybe_unused]] wxCommandEvent& event)
+    {
+    if (m_pages.empty())
+        {
+        return;
+        }
+
+    Wisteria::OdpExportOptions& savedOptions = GetReportBuilder().GetOdpExportOptions();
+    Wisteria::OdpExportOptions options = savedOptions;
+    options.m_title = GetReportBuilder().GetName().empty() ? GetDocument()->GetUserReadableName() :
+                                                             GetReportBuilder().GetName();
+    options.m_subject = GetReportBuilder().GetSubject();
+    options.m_keywords = GetReportBuilder().GetKeywords();
+
+    Wisteria::UI::OdpExportDlg odpOptionsDlg(m_frame, options);
+    if (odpOptionsDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+    options = odpOptionsDlg.GetOptions();
+
+    wxFileDialog fileDlg(
+        m_frame, _(L"Export to ODP"), wxString{}, GetDocument()->GetUserReadableName(),
+        _(L"OpenDocument Presentation files (*.odp)|*.odp"), wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    if (fileDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    const bool docInfoChanged = (GetReportBuilder().GetName() != options.m_title ||
+                                 GetReportBuilder().GetSubject() != options.m_subject ||
+                                 GetReportBuilder().GetKeywords() != options.m_keywords);
+    if (docInfoChanged)
+        {
+        GetReportBuilder().SetName(options.m_title);
+        GetReportBuilder().SetSubject(options.m_subject);
+        GetReportBuilder().SetKeywords(options.m_keywords);
+        }
+
+    const bool odpOptionsChanged =
+        (savedOptions.m_author != options.m_author) ||
+        (savedOptions.m_publisher != options.m_publisher) ||
+        (savedOptions.m_slideSize != options.m_slideSize) ||
+        (savedOptions.m_customWidthInches != options.m_customWidthInches) ||
+        (savedOptions.m_customHeightInches != options.m_customHeightInches) ||
+        (savedOptions.m_transition != options.m_transition) ||
+        (savedOptions.m_transitionSpeed != options.m_transitionSpeed) ||
+        (savedOptions.m_advanceAutomatically != options.m_advanceAutomatically) ||
+        (savedOptions.m_advanceSeconds != options.m_advanceSeconds) ||
+        (savedOptions.m_includeAccessibilityNotes != options.m_includeAccessibilityNotes) ||
+        (savedOptions.m_includeTitleSlide != options.m_includeTitleSlide) ||
+        (savedOptions.m_titleSlideTheme != options.m_titleSlideTheme);
+    if (odpOptionsChanged)
+        {
+        savedOptions = options;
+        }
+
+    Wisteria::ReportOdpExport odpReport(m_pages, fileDlg.GetPath(), options);
+
+    if (docInfoChanged || odpOptionsChanged)
         {
         GetDocument()->Modify(true);
         }

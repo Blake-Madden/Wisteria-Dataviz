@@ -451,7 +451,7 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
             }
         page.m_pixelWidth = renderSize.GetWidth();
         page.m_pixelHeight = renderSize.GetHeight();
-        RenderCanvas(canvas, renderSize, page.m_svg, page.m_png);
+        RenderCanvas(canvas, renderSize, page.m_svg, &page.m_png);
         rendered.push_back(std::move(page));
         }
 
