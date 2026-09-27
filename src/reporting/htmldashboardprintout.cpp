@@ -790,7 +790,7 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
 
     // user-facing text used by the script
     const std::vector<std::pair<wxString, wxString>> scriptStrings{
-        { L"gallery", _(L"Gallery") },       { L"story", _(L"Story") },
+        { L"gallery", _(L"Gallery") },       { L"story", _(L"Storyline") },
         { L"page", _(L"Page {0}") },         { L"pageOf", _(L"Page {0} of {1}") },
         { L"goTo", _(L"Go to {0}") },        { L"pagesShown", _(L"{0} of {1} pages shown") },
         { L"noPages", _(L"No pages shown") }
