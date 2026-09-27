@@ -14,7 +14,7 @@
 #include <wx/msgdlg.h>
 
 //------------------------------------------------------
-static wxString GetDashboardScriptState()
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptState()
     {
     return LR"JS(
 (function() {
@@ -70,7 +70,7 @@ static wxString GetDashboardScriptState()
     }
 
 //------------------------------------------------------
-static wxString GetDashboardScriptPages()
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptPages()
     {
     return LR"JS(
   function collectPages() {
@@ -222,7 +222,7 @@ static wxString GetDashboardScriptPages()
     }
 
 //------------------------------------------------------
-static wxString GetDashboardScriptInk()
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptInk()
     {
     return LR"JS(
   function paintKind(el) {
@@ -289,7 +289,7 @@ static wxString GetDashboardScriptInk()
     }
 
 //------------------------------------------------------
-static wxString GetDashboardScriptNavigation()
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptNavigation()
     {
     return LR"JS(
   function revealCurrent(behavior) {
@@ -375,7 +375,7 @@ static wxString GetDashboardScriptNavigation()
     }
 
 //------------------------------------------------------
-static wxString GetDashboardScriptCounters()
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptCounters()
     {
     return LR"JS(
   const numberPattern = /^([$€£]?)(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?(%|[kKmMbB])?$/;
@@ -435,7 +435,7 @@ static wxString GetDashboardScriptCounters()
     }
 
 //------------------------------------------------------
-static wxString GetDashboardScriptMotion()
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptMotion()
     {
     return LR"JS(
   const shapeSelector = 'circle, ellipse, rect, path, polygon, polyline, line';
@@ -583,6 +583,7 @@ static wxString GetDashboardScriptMotion()
   function revealPage(page) {
     prepareMarks(page);
     bindSpot(page);
+    bindZoom(page);
     startCounters(page);
     const svg = page.el.querySelector('.page-svg');
     page.el.classList.add('is-revealed', 'is-entering');
@@ -630,7 +631,102 @@ static wxString GetDashboardScriptMotion()
     }
 
 //------------------------------------------------------
-static wxString GetDashboardScriptTooltips()
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptZoom()
+    {
+    return LR"JS(
+  const maxZoomScale = 8;
+  function bindZoom(page) {
+    if (page.zoomBound) return;
+    page.zoomBound = true;
+    const svg = page.el.querySelector('.page-svg');
+    if (!svg) return;
+    const base = svg.viewBox.baseVal;
+    const baseBox = { x: base.x, y: base.y, width: base.width, height: base.height };
+    let scale = 1;
+    let vbx = baseBox.x, vby = baseBox.y, vbw = baseBox.width, vbh = baseBox.height;
+    function apply() {
+      svg.setAttribute('viewBox', vbx + ' ' + vby + ' ' + vbw + ' ' + vbh);
+      svg.classList.toggle('is-zoomed', scale > 1);
+    }
+    function clamp() {
+      vbx = Math.min(Math.max(vbx, baseBox.x), baseBox.x + baseBox.width - vbw);
+      vby = Math.min(Math.max(vby, baseBox.y), baseBox.y + baseBox.height - vbh);
+    }
+    function reset() {
+      scale = 1;
+      vbx = baseBox.x;
+      vby = baseBox.y;
+      vbw = baseBox.width;
+      vbh = baseBox.height;
+      apply();
+    }
+    function pointToSvg(clientX, clientY) {
+      const rect = svg.getBoundingClientRect();
+      return {
+        x: vbx + (clientX - rect.left) / rect.width * vbw,
+        y: vby + (clientY - rect.top) / rect.height * vbh
+      };
+    }
+    function zoomAt(clientX, clientY, factor) {
+      const before = pointToSvg(clientX, clientY);
+      scale = Math.min(maxZoomScale, Math.max(1, scale * factor));
+      if (scale === 1) {
+        reset();
+        return;
+      }
+      vbw = baseBox.width / scale;
+      vbh = baseBox.height / scale;
+      clamp();
+      const after = pointToSvg(clientX, clientY);
+      vbx += before.x - after.x;
+      vby += before.y - after.y;
+      clamp();
+      apply();
+    }
+    svg.addEventListener('wheel', function(e) {
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.2 : 1 / 1.2);
+    }, { passive: false });
+    let dragging = false;
+    let lastX = 0;
+    let lastY = 0;
+    svg.addEventListener('pointerdown', function(e) {
+      if (scale <= 1 || e.button !== 0) return;
+      dragging = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      svg.setPointerCapture(e.pointerId);
+      svg.classList.add('is-panning');
+      e.preventDefault();
+    });
+    svg.addEventListener('pointermove', function(e) {
+      if (!dragging) return;
+      const rect = svg.getBoundingClientRect();
+      vbx -= (e.clientX - lastX) / rect.width * vbw;
+      vby -= (e.clientY - lastY) / rect.height * vbh;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      clamp();
+      apply();
+    });
+    function endDrag() {
+      if (!dragging) return;
+      dragging = false;
+      svg.classList.remove('is-panning');
+    }
+    svg.addEventListener('pointerup', endDrag);
+    svg.addEventListener('pointercancel', endDrag);
+    svg.addEventListener('dblclick', function(e) {
+      e.preventDefault();
+      reset();
+    });
+  }
+)JS";
+    }
+
+//------------------------------------------------------
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptTooltips()
     {
     return LR"JS(
   function bindTooltips() {
@@ -669,7 +765,7 @@ static wxString GetDashboardScriptTooltips()
     }
 
 //------------------------------------------------------
-static wxString GetDashboardScriptEvents()
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
     {
     return LR"JS(
   function onKeyDown(e) {
@@ -833,7 +929,8 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
     wxString script{ GetDashboardScriptState() + GetDashboardScriptPages() +
                      GetDashboardScriptInk() + GetDashboardScriptNavigation() +
                      GetDashboardScriptCounters() + GetDashboardScriptMotion() +
-                     GetDashboardScriptTooltips() + GetDashboardScriptEvents() };
+                     GetDashboardScriptZoom() + GetDashboardScriptTooltips() +
+                     GetDashboardScriptEvents() };
     script.Replace(L"{{TOGGLE}}", options.m_includeColorModeToggle ? L"true" : L"false");
     script.Replace(L"{{COUNTUP}}", options.m_countUpNumbers ? L"true" : L"false");
     script.Replace(L"{{MODE}}", initialMode);

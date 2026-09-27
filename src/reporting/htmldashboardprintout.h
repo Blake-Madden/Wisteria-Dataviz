@@ -212,6 +212,35 @@ namespace Wisteria
         /// @param canvases The canvases (pages) to export.
         /// @param options Export options.
         HtmlDashboardPrintout(const std::vector<Canvas*>& canvases, HtmlDashboardOptions options);
+
+      private:
+        /// @returns The script managing color mode, view, and layer state.
+        [[nodiscard]]
+        static wxString GetDashboardScriptState();
+        /// @returns The script building the page rail and gallery cards.
+        [[nodiscard]]
+        static wxString GetDashboardScriptPages();
+        /// @returns The script tagging shapes so their painted color survives dark mode.
+        [[nodiscard]]
+        static wxString GetDashboardScriptInk();
+        /// @returns The script handling paging, hashes, and chrome measurement.
+        [[nodiscard]]
+        static wxString GetDashboardScriptNavigation();
+        /// @returns The script counting up large numbers when a page is revealed.
+        [[nodiscard]]
+        static wxString GetDashboardScriptCounters();
+        /// @returns The script revealing pages and highlighting shared colors on hover.
+        [[nodiscard]]
+        static wxString GetDashboardScriptMotion();
+        /// @returns The script for zooming and panning a page with ctrl+wheel/pinch and drag.
+        [[nodiscard]]
+        static wxString GetDashboardScriptZoom();
+        /// @returns The script showing a tooltip for a hovered accessible element.
+        [[nodiscard]]
+        static wxString GetDashboardScriptTooltips();
+        /// @returns The script wiring up controls and the initial page load.
+        [[nodiscard]]
+        static wxString GetDashboardScriptEvents();
         };
     } // namespace Wisteria
 

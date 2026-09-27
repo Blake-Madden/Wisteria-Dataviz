@@ -236,6 +236,16 @@ html[data-view="story"] .dash-progress
 .page-svg [stroke="#FFFFFF"]
   { stroke: light-dark(#FFFFFF, #000000); }
 
+/* zoomed in via ctrl+wheel/pinch, pannable by dragging */
+.page-svg.is-zoomed
+  { cursor: grab; }
+
+.page-svg.is-panning
+  {
+  cursor: grabbing;
+  user-select: none;
+  }
+
 /* ---------- Story view --------------------------------------- */
 
 html[data-view="story"]
