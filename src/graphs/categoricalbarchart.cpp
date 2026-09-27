@@ -159,11 +159,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graph
             wxString blockLabelText =
                 (m_useWeightColumn ?
                      wxString::Format(
-                         // TRANSLATORS: the number of items in a bin
-                         wxPLURAL(L"%s item, totaling %s", L"%s items, totaling %s",
-                                  blockTable.second.first),
-                         wxNumberFormatter::ToString(blockTable.second.first, 0,
-                                                     Settings::GetDefaultNumberFormat()),
+                         // TRANSLATORS: the total value in a bin
+                         _(L"%s total"),
                          wxNumberFormatter::ToString(blockTable.second.second, 2,
                                                      Settings::GetDefaultNumberFormat())) :
                      wxString::Format(
