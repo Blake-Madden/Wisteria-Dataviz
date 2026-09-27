@@ -248,6 +248,22 @@ namespace Wisteria::Graphs
         /// @brief Removes all embedded annotation objects from the plot.
         void ClearAnnotations() noexcept { m_embeddedObjects.clear(); }
 
+        /// @private
+        void RegisterCreatedLegend(GraphItems::GraphItemBase* legend)
+            {
+            if (legend != nullptr)
+                {
+                m_createdLegends.push_back(legend);
+                }
+            }
+
+        /// @private
+        [[nodiscard]]
+        const std::vector<GraphItems::GraphItemBase*>& GetCreatedLegends() const noexcept
+            {
+            return m_createdLegends;
+            }
+
         /// @returns The number of render objects (boxes, images, labels, etc.) that the
         ///     most recent layout pass generated into the plot.
         /// @details This is a diagnostics and testing aid for verifying that a layout
@@ -1316,6 +1332,7 @@ namespace Wisteria::Graphs
 
         long m_currentAssignedId{ 0 };
         std::map<long, std::set<long>> m_selectedItemsWithSubitems;
+        std::vector<GraphItems::GraphItemBase*> m_createdLegends;
 
         std::shared_ptr<Colors::Schemes::ColorScheme> m_colorScheme{ nullptr };
         std::shared_ptr<Brushes::Schemes::BrushScheme> m_brushScheme{ nullptr };

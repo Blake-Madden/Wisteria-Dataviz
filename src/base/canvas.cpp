@@ -446,17 +446,25 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     //--------------------------------------------------
     void Canvas::FillChartIds()
         {
+        std::vector<Graphs::Graph2D*> allGraphs;
         std::vector<Graphs::Graph2D*> unassignedGraphs;
         std::set<long> usedIds;
+        std::set<const GraphItems::GraphItemBase*> liveObjects;
         for (auto& row : m_fixedObjects)
             {
             for (auto& obj : row)
                 {
+                if (obj == nullptr)
+                    {
+                    continue;
+                    }
+                liveObjects.insert(obj.get());
                 auto* graph = dynamic_cast<Graphs::Graph2D*>(obj.get());
                 if (graph == nullptr)
                     {
                     continue;
                     }
+                allGraphs.push_back(graph);
                 if (graph->GetId() == wxID_ANY)
                     {
                     unassignedGraphs.push_back(graph);
@@ -478,6 +486,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             graph->SetId(nextId);
             usedIds.insert(nextId);
             ++nextId;
+            }
+
+        // Legends are stamped with their chart's ID when they're created, which may be
+        // before that ID is finalized above, so re-sync them now. A legend that's no
+        // longer actually on the canvas is skipped.
+        for (auto* graph : allGraphs)
+            {
+            for (auto* legend : graph->GetCreatedLegends())
+                {
+                if (legend != nullptr && liveObjects.contains(legend))
+                    {
+                    legend->SetId(graph->GetId());
+                    }
+                }
             }
         }
 

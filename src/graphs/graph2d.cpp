@@ -142,6 +142,8 @@ namespace Wisteria::Graphs
                                        const LegendCanvasPlacementHint hint)
         {
         legend.SetId(GetId());
+        // ID may not be finalized yet, so re-stamp it once it is
+        RegisterCreatedLegend(&legend);
 
         if (GetCanvas() == nullptr)
             {
