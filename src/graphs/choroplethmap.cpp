@@ -1684,6 +1684,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                 }
             }
 
+        legend->SetId(GetId());
         return legend;
         }
 

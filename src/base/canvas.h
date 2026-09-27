@@ -818,6 +818,9 @@ namespace Wisteria
         ///     since they were created.
         void ApplyAutoAccessibilityAttributes();
 
+        /// @brief Ensures that every top-level @c Graph2D on the canvas has a unique ID.
+        void FillChartIds();
+
         /// @brief Saves the canvas as an image.
         /// @param filePath The file path of the image to save to.
         /// @param options The export options for the image.

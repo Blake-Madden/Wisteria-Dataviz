@@ -3791,6 +3791,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 }
             }
 
+        legend->SetId(GetId());
         return legend;
         }
     } // namespace Wisteria::Graphs

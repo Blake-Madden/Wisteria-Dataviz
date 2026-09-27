@@ -141,6 +141,8 @@ namespace Wisteria::Graphs
     void Graph2D::AdjustLegendSettings(GraphItems::Label& legend,
                                        const LegendCanvasPlacementHint hint)
         {
+        legend.SetId(GetId());
+
         if (GetCanvas() == nullptr)
             {
             wxLogWarning(L"Canvas for graph is null; legend will not be sized correctly.");

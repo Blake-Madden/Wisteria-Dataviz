@@ -13,6 +13,7 @@
 #include "axis.h"
 #include "colorbrewer.h"
 #include <memory>
+#include <set>
 #include <utility>
 #include <wx/paper.h>
 #include <wx/pdfdc.h>
@@ -443,6 +444,44 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         }
 
     //--------------------------------------------------
+    void Canvas::FillChartIds()
+        {
+        std::vector<Graphs::Graph2D*> unassignedGraphs;
+        std::set<long> usedIds;
+        for (auto& row : m_fixedObjects)
+            {
+            for (auto& obj : row)
+                {
+                auto* graph = dynamic_cast<Graphs::Graph2D*>(obj.get());
+                if (graph == nullptr)
+                    {
+                    continue;
+                    }
+                if (graph->GetId() == wxID_ANY)
+                    {
+                    unassignedGraphs.push_back(graph);
+                    }
+                else
+                    {
+                    usedIds.insert(graph->GetId());
+                    }
+                }
+            }
+
+        long nextId{ 0 };
+        for (auto* graph : unassignedGraphs)
+            {
+            while (usedIds.contains(nextId))
+                {
+                ++nextId;
+                }
+            graph->SetId(nextId);
+            usedIds.insert(nextId);
+            ++nextId;
+            }
+        }
+
+    //--------------------------------------------------
     bool Canvas::Save(const wxFileName& filePath, const UI::ImageExportOptions& options,
                       const PdfExportOptions& pdfOptions)
         {
@@ -453,6 +492,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         // refresh auto-generated accessibility text so the export reflects the
         // canvas's current state even if no items have been edited recently
         ApplyAutoAccessibilityAttributes();
+        FillChartIds();
 
         // create the folder to the filepath, if necessary
         wxFileName::Mkdir(filePath.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
