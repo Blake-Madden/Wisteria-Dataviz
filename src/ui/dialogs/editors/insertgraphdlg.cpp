@@ -111,6 +111,8 @@ namespace Wisteria::UI
         applyLabel(m_subtitleLabel, graph.GetSubtitle());
         applyLabel(m_captionLabel, graph.GetCaption());
 
+        graph.SetId(m_graphId);
+
         const auto bgColor = GetPlotBackgroundColor();
         if (bgColor.IsOk() && bgColor != *wxWHITE)
             {
@@ -251,6 +253,11 @@ namespace Wisteria::UI
             return false;
             }
 
+        if (!ValidateGraphId())
+            {
+            return false;
+            }
+
         const auto legendPlace = GetLegendPlacement();
         if (GetEditMode() != EditMode::Insert || legendPlace == LegendPlacement::None ||
             GetCanvas() == nullptr)
@@ -317,6 +324,18 @@ namespace Wisteria::UI
         auto* graphSizer = new wxBoxSizer(wxVERTICAL);
         graphPage->SetSizer(graphSizer);
         GetSideBarBook()->AddPage(graphPage, _(L"General"), ID_GRAPH_OPTIONS_SECTION, false);
+
+        // graph ID, used to link legends and reference the graph
+        auto* idSizer = new wxBoxSizer(wxHORIZONTAL);
+        idSizer->Add(new wxStaticText(graphPage, wxID_ANY, _(L"ID:")),
+                     wxSizerFlags{}.CenterVertical());
+            {
+            auto* idSpin = new wxSpinCtrl(graphPage, wxID_ANY, wxString{}, wxDefaultPosition,
+                                          wxDefaultSize, wxSP_ARROW_KEYS, -1, 999999999, -1);
+            idSpin->SetValidator(wxGenericValidator{ &m_graphId });
+            idSizer->Add(idSpin);
+            }
+        graphSizer->Add(idSizer, wxSizerFlags{}.Border());
 
         // title, subtitle, caption — each opens a full Label editor
         auto* textSizer = new wxGridBagSizer(wxSizerFlags::GetDefaultBorder(),
@@ -1957,6 +1976,33 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    bool InsertGraphDlg::ValidateGraphId()
+        {
+        if (m_graphId == wxID_ANY || m_graphId == m_originalGraphId || GetCanvas() == nullptr)
+            {
+            return true;
+            }
+
+        const auto [gridRows, gridCols] = GetCanvas()->GetFixedObjectsGridSize();
+        for (size_t row = 0; row < gridRows; ++row)
+            {
+            for (size_t col = 0; col < gridCols; ++col)
+                {
+                const auto* graph = dynamic_cast<const Graphs::Graph2D*>(
+                    GetCanvas()->GetFixedObject(row, col).get());
+                if (graph != nullptr && graph->GetId() == m_graphId)
+                    {
+                    wxMessageBox(_(L"This ID is already being used by another graph on the "
+                                   "canvas. Please enter a unique ID."),
+                                 _(L"Duplicate Graph ID"), wxOK | wxICON_WARNING, this);
+                    return false;
+                    }
+                }
+            }
+        return true;
+        }
+
+    //-------------------------------------------
     bool InsertGraphDlg::ValidateColorScheme()
         {
         if (!(m_options & GraphDlgIncludeColorScheme))
@@ -1993,6 +2039,9 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertGraphDlg::LoadGraphOptions(const Graphs::Graph2D& graph)
         {
+        m_graphId = static_cast<int>(graph.GetId());
+        m_originalGraphId = graph.GetId();
+
         // copy the full Labels so we can round-trip all styling
         const auto loadLabel =
             [](const GraphItems::Label& src, GraphItems::Label& dest, wxStaticText* preview)

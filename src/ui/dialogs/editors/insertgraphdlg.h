@@ -321,6 +321,12 @@ namespace Wisteria::UI
         [[nodiscard]]
         bool ValidateColorScheme();
 
+        /// @brief Validates the graph ID, ensuring it does not conflict with
+        ///     another graph already on the canvas.
+        /// @returns @c true if valid, @c false if the user needs to fix something.
+        [[nodiscard]]
+        bool ValidateGraphId();
+
         /** @brief Creates and adds the "General" sidebar page.
             @details This page contains controls common to all Graph2D types:
                 title, subtitle, caption, background color, and background image.
@@ -499,6 +505,11 @@ namespace Wisteria::UI
         bool m_useCustomShapeScheme{ false };
         int m_shapeSchemeIndex{ 0 };
         std::vector<Icons::IconShape> m_customShapes;
+        int m_graphId{ wxID_ANY };
+
+        // the graph's ID when editing began, used to tell an unchanged ID
+        // apart from a genuine conflict with another graph in ValidateGraphId()
+        long m_originalGraphId{ wxID_ANY };
 
         std::vector<AnnotationInfo> m_annotations;
         std::vector<GraphItems::ReferenceLine> m_referenceLines;
