@@ -131,8 +131,8 @@ body
 html[data-view="story"] .dash-progress
   { display: block; }
 
-/* the layer toggles sit in a labeled capsule */
-.dash-layers
+/* the layer and theme toggles sit in a labeled capsule */
+.dash-modes, .dash-layers
   {
   align-items: center;
   padding: 3px 4px 3px 12px;

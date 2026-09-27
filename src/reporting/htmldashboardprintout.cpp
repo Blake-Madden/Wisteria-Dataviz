@@ -824,12 +824,13 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
     if (options.m_includeColorModeToggle)
         {
         html += wxString::Format(
-            L"<div class=\"dash-modes\" role=\"group\" aria-label=\"%s\">\n"
+            L"<div class=\"dash-modes\" role=\"group\" aria-labelledby=\"dash-modes-label\">\n"
+            "<span id=\"dash-modes-label\" class=\"dash-group-label\">%s</span>\n"
             "<button type=\"button\" data-mode=\"auto\" aria-pressed=\"false\">%s</button>\n"
             "<button type=\"button\" data-mode=\"light\" aria-pressed=\"false\">%s</button>\n"
             "<button type=\"button\" data-mode=\"dark\" aria-pressed=\"false\">%s</button>\n"
             "</div>\n",
-            escapeAttr(_(L"Color mode")), escapeText(_(L"Auto")), escapeText(_(L"Light")),
+            escapeText(_(L"Theme")), escapeText(_(L"Auto")), escapeText(_(L"Light")),
             escapeText(_(L"Dark")));
         }
     html += L"</div>\n<div class=\"dash-progress\" aria-hidden=\"true\"></div>\n</header>\n";
