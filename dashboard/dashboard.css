@@ -13,7 +13,7 @@
   --border-color: rgba(128, 128, 128, 0.3);    /* general borders */
   --toolbar-bg: color-mix(in srgb, var(--accent) 8%, Canvas);
   --page-gap: 24px;                            /* space between pages */
-  --page-max-width: 1600px;                    /* widest a page is drawn */
+  --page-max-width: none;                      /* widest a page is drawn */
   --page-radius: 6px;                          /* page corner radius */
   --card-width: 140px;                         /* width of a page card in the Gallery view */
   --toolbar-height: 52px;                      /* replaced with the measured height by the script */

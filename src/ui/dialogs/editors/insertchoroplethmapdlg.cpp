@@ -531,23 +531,28 @@ namespace Wisteria::UI
             return false;
             }
 
-        // A region can only be shaded when the map can identify it. The chosen key
-        // field, or each shape's own name when no key field is set, must be filled in
-        // for every shape.
-        const wxString regionKeyField = GetKMLIdField();
-        if (const auto keyStats = Data::GeoDataset::ReadRegionKeyStats(kmlPath, regionKeyField);
-            keyStats.m_regionCount > 0 && keyStats.m_nonEmptyKeyCount < keyStats.m_regionCount)
+        // A region can only be matched to dataset columns when the map can identify it.
+        // The chosen key field, or each shape's own name when no key field is set, must
+        // be filled in for every shape. A map with no mapped dataset column does not
+        // need this.
+        if (IsMappingData() || IsUsingProportionalSymbols())
             {
-            wxMessageBox(regionKeyField.empty() ?
-                             _(L"Some shapes in the region file have no name, so \"(region name)\" "
-                               "cannot identify every region. Choose a region key field that is "
-                               "filled in for every shape.") :
-                             wxString::Format(_(L"The \"%s\" field is empty for some shapes in the "
-                                                "region file, so it cannot identify every region. "
-                                                "Choose a different region key field."),
-                                              regionKeyField),
-                         _(L"Incomplete Region Key"), wxOK | wxICON_WARNING, this);
-            return false;
+            const wxString regionKeyField = GetKMLIdField();
+            if (const auto keyStats = Data::GeoDataset::ReadRegionKeyStats(kmlPath, regionKeyField);
+                keyStats.m_regionCount > 0 && keyStats.m_nonEmptyKeyCount < keyStats.m_regionCount)
+                {
+                wxMessageBox(
+                    regionKeyField.empty() ?
+                        _(L"Some shapes in the region file have no name, so \"(region name)\" "
+                          "cannot identify every region. Choose a region key field that is "
+                          "filled in for every shape.") :
+                        wxString::Format(_(L"The \"%s\" field is empty for some shapes in the "
+                                           "region file, so it cannot identify every region. "
+                                           "Choose a different region key field."),
+                                         regionKeyField),
+                    _(L"Incomplete Region Key"), wxOK | wxICON_WARNING, this);
+                return false;
+                }
             }
 
         if (const wxString backgroundPath = GetBackgroundPath();
@@ -696,13 +701,14 @@ namespace Wisteria::UI
 
         // Reuse the existing GeoDataset when the KML file and shading data are
         // unchanged. Rebuilding re-runs the merge, which can shift the color range and
-        // rescale the whole map. The key column is left out of the check because a
-        // matching dataset and value column mean the merged result already stands.
+        // rescale the whole map. A different key column joins the rows differently, so
+        // it is part of the check.
         const bool sourceUnchanged =
             (oldMap != nullptr && oldMap->GetGeoDataset() != nullptr &&
              oldMap->GetRegionFilePath() == GetKMLPath() &&
              oldMap->GetRegionIdField() == GetKMLIdField() &&
              oldMap->GetDataSourceName() == newDataSource &&
+             oldMap->GetDataSourceKeyColumn() == newKeyColumn &&
              oldMap->GetDataAggregation() == newDataAggregation &&
              oldMap->GetValueColumnName() == newShadingColumn &&
              oldMap->GetProportionalSymbolColumnName() == newSymbolColumn &&

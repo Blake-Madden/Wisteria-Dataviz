@@ -5318,12 +5318,12 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             node->Add(_DT(L"projection"), projectionStr);
             }
 
-        if (choroplethMap->GetNoDataColor() != wxColour(L"#DDDDDD"))
+        if (choroplethMap->GetNoDataColor() != wxColour(L"#D2D2D2"))
             {
             node->Add(L"no-data-color", ColorToStr(choroplethMap->GetNoDataColor()));
             }
 
-        if (choroplethMap->GetNoDataFillStyle() != wxBRUSHSTYLE_SOLID)
+        if (choroplethMap->GetNoDataFillStyle() != wxBRUSHSTYLE_FDIAGONAL_HATCH)
             {
             const auto fillStyleStr = Wisteria::ReportEnumConvert::ConvertBrushStyleToString(
                 choroplethMap->GetNoDataFillStyle());
