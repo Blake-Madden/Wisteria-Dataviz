@@ -21,6 +21,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
         SetBrushScheme(brushes != nullptr ? brushes :
                                             std::make_shared<Brushes::Schemes::BrushScheme>(
                                                 Wisteria::Colors::Schemes::IceCream{}));
+        m_toBrushScheme = std::make_shared<Brushes::Schemes::BrushScheme>(
+            Wisteria::Colors::Schemes::EarthTones{});
 
         GetLeftYAxis().SetRange(0, 100, 0, 1, 10);
         GetLeftYAxis().GetGridlinePen() = wxNullPen;
@@ -35,6 +37,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
         GetBottomXAxis().SetRange(0, 10, 0, 1, 1);
         GetBottomXAxis().Show(false);
         GetTopXAxis().Show(false);
+        }
+
+    //----------------------------------------------------------------
+    void SankeyDiagram::SetToBrushScheme(
+        const std::shared_ptr<Brushes::Schemes::BrushScheme>& brushes)
+        {
+        m_toBrushScheme = (brushes != nullptr) ? brushes :
+                                                 std::make_shared<Brushes::Schemes::BrushScheme>(
+                                                     Wisteria::Colors::Schemes::EarthTones{});
         }
 
     //----------------------------------------------------------------
@@ -340,7 +351,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
         for (size_t colIndex = 0; colIndex < m_sankeyColumns.size(); ++colIndex)
             {
             const auto& col = m_sankeyColumns[colIndex];
-            // each column restarts its color cycle from the beginning of the scheme
+            // each column uses its own scheme, starting from the beginning of it
+            const auto& brushScheme{ (colIndex == 0) ? GetBrushScheme() : m_toBrushScheme };
             colorIndex = 0;
             for (const auto& group : col)
                 {
@@ -353,7 +365,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                     GetPhysicalCoordinates(group.m_xAxisRight, group.m_yAxisTopPosition, pts[3]))
                     {
                     const bool ghostBox{ colIndex > 0 && !IsStreamShowcased(group.m_label) };
-                    wxBrush groupBrush{ GetBrushScheme()->GetBrush(colorIndex) };
+                    wxBrush groupBrush{ brushScheme->GetBrush(colorIndex) };
                     if (ghostBox)
                         {
                         groupBrush.SetColour(Colors::ColorContrast::ChangeOpacity(
@@ -414,7 +426,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
             {
             return;
             }
-        // each column restarts its color cycle from the beginning of the scheme
+        // streams take the color of the block they flow from
         size_t currentColorIndex{ 0 };
         for (auto& group : m_sankeyColumns[colIndex])
             {

@@ -153,6 +153,19 @@ namespace Wisteria::Graphs
         /// @brief Functions relating to how the diagram is displayed.
         /// @{
 
+        /// @returns The brush scheme used for the second (i.e., "to") column's blocks.
+        /// @note The first column uses the graph's main brush scheme (see GetBrushScheme()).
+        [[nodiscard]]
+        const std::shared_ptr<Brushes::Schemes::BrushScheme>& GetToBrushScheme() const noexcept
+            {
+            return m_toBrushScheme;
+            }
+
+        /// @brief Sets the brush scheme used for the second (i.e., "to") column's blocks.
+        /// @param brushes The brush scheme to use.\n
+        ///     Passing @c nullptr restores the default scheme.
+        void SetToBrushScheme(const std::shared_ptr<Brushes::Schemes::BrushScheme>& brushes);
+
         /// @returns The shape of the streams going between the groups.
         [[nodiscard]]
         FlowShape GetFlowShape() const noexcept
@@ -367,6 +380,8 @@ namespace Wisteria::Graphs
         BinLabelDisplay m_initialColumnLabelDisplay{ BinLabelDisplay::NoDisplay };
         GraphColumnHeader m_columnDisplay{ GraphColumnHeader::NoDisplay };
         std::vector<wxString> m_columnHeaders;
+
+        std::shared_ptr<Brushes::Schemes::BrushScheme> m_toBrushScheme;
 
         uint8_t m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY };
         std::vector<wxString> m_showcasedStreams;

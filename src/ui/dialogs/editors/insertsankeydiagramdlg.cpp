@@ -22,7 +22,9 @@ namespace Wisteria::UI
                                                    const wxWindowID id, const wxPoint& pos,
                                                    const wxSize& size, const long style,
                                                    EditMode editMode)
-        : InsertGraphDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode)
+        : InsertGraphDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode,
+                         static_cast<GraphDlgOptions>(GraphDlgIncludeColorScheme |
+                                                      GraphDlgIncludeSecondColorScheme))
         {
         CreateControls();
         FinalizeControls();
@@ -585,6 +587,7 @@ namespace Wisteria::UI
 
         // load graph and page options from the base classes
         LoadGraphOptions(graph);
+        LoadSecondaryColors(sankey->GetToBrushScheme());
 
         // select the dataset by name from the property template
         const auto dsName = sankey->GetPropertyTemplate(L"dataset");
@@ -688,6 +691,7 @@ namespace Wisteria::UI
             }
         ApplyGraphOptions(*plot);
         ApplyPageOptions(*plot);
+        plot->SetToBrushScheme(GetSecondaryBrushScheme());
         plot->SetFlowShape(GetFlowShape());
         plot->SetGroupLabelDisplay(GetGroupLabelDisplay());
         plot->SetColumnHeaderDisplay(GetColumnHeaderDisplay());

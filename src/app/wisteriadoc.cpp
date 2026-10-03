@@ -4868,6 +4868,36 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             {
             node->Add(L"ghost-opacity", static_cast<double>(sankey->GetGhostOpacity()));
             }
+        // to-brush-scheme (second column; the first column uses the graph's brush-scheme)
+        if (sankey->GetToBrushScheme() != nullptr &&
+            !sankey->GetToBrushScheme()->GetBrushes().empty())
+            {
+            const auto& toBrushes = sankey->GetToBrushScheme()->GetBrushes();
+            wxString toColorsArr{ L"[" };
+            wxString toStylesArr{ L"[" };
+            bool toAllSolid{ true };
+            for (size_t i = 0; i < toBrushes.size(); ++i)
+                {
+                if (i > 0)
+                    {
+                    toColorsArr += L", ";
+                    toStylesArr += L", ";
+                    }
+                toColorsArr += L"\"" + ColorToStr(toBrushes[i].GetColour()) + L"\"";
+                const auto bsStr =
+                    Wisteria::ReportEnumConvert::ConvertBrushStyleToString(toBrushes[i].GetStyle());
+                toStylesArr +=
+                    L"\"" + (bsStr.has_value() ? bsStr.value() : wxString(L"solid")) + L"\"";
+                toAllSolid = toAllSolid && (toBrushes[i].GetStyle() == wxBRUSHSTYLE_SOLID);
+                }
+            toColorsArr += L"]";
+            toStylesArr += L"]";
+            node->Add(L"to-brush-scheme",
+                      wxSimpleJSON::Create(toAllSolid ?
+                                               L"{\"color-scheme\": " + toColorsArr + L"}" :
+                                               L"{\"brush-styles\": " + toStylesArr +
+                                                   L", \"color-scheme\": " + toColorsArr + L"}"));
+            }
         // showcase-streams (indexed templates)
         wxString showcaseStreamArr;
         for (size_t i = 0;; ++i)

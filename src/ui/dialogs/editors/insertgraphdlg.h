@@ -49,6 +49,8 @@ namespace Wisteria::UI
         GraphDlgIncludeNone = 0,             ///< No options enabled.
         GraphDlgIncludeColorScheme = 1 << 0, ///< Show the color scheme controls.
         GraphDlgIncludeShapeScheme = 1 << 1, ///< Show the shape scheme controls.
+        /// @brief Show a second color scheme editor (requires GraphDlgIncludeColorScheme).
+        GraphDlgIncludeSecondColorScheme = 1 << 2,
         /// @brief All options enabled (the default).
         GraphDlgIncludeMost = GraphDlgIncludeColorScheme,
         /// @brief Color and shape scheme options enabled.
@@ -234,7 +236,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         bool IsUsingCustomColors() const noexcept
             {
-            return m_useCustomColors;
+            return m_primaryColors.m_useCustom;
             }
 
         /// @returns The selected named color scheme, or @c nullptr for default.
@@ -242,7 +244,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         std::shared_ptr<Colors::Schemes::ColorScheme> GetColorScheme() const
             {
-            return ColorSchemeFromIndex(m_colorSchemeIndex);
+            return ColorSchemeFromIndex(m_primaryColors.m_schemeIndex);
             }
 
         /// @returns The user-defined custom color list.
@@ -250,7 +252,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         const std::vector<wxColour>& GetCustomColors() const noexcept
             {
-            return m_customColors;
+            return m_primaryColors.m_customColors;
             }
 
         /// @returns @c true if the user chose a custom shape scheme
@@ -315,6 +317,16 @@ namespace Wisteria::UI
             {
             return m_legendPage;
             }
+
+        /// @brief Fills the second color scheme editor from an existing brush scheme.
+        /// @param brushScheme The brush scheme to load.
+        /// @note Does nothing unless GraphDlgIncludeSecondColorScheme is set.
+        void LoadSecondaryColors(const std::shared_ptr<Brushes::Schemes::BrushScheme>& brushScheme);
+
+        /// @returns The brush scheme chosen in the second color scheme editor,
+        ///     or @c nullptr if the default was chosen (or there is no second editor).
+        [[nodiscard]]
+        std::shared_ptr<Brushes::Schemes::BrushScheme> GetSecondaryBrushScheme() const;
 
         /// @brief Validates the color scheme selection.
         /// @returns @c true if valid, @c false if the user needs to fix something.
@@ -452,6 +464,18 @@ namespace Wisteria::UI
         bool ConfirmOverwrite() final;
 
       private:
+        /// @brief The controls and state for editing one color scheme.
+        struct ColorSchemeEditor
+            {
+            wxRadioButton* m_namedRadio{ nullptr };
+            wxRadioButton* m_customRadio{ nullptr };
+            wxChoice* m_choice{ nullptr };
+            wxEditableListBox* m_listBox{ nullptr };
+            bool m_useCustom{ false };
+            int m_schemeIndex{ 0 };
+            std::vector<wxColour> m_customColors;
+            };
+
         wxChoice* CreateLegendPlacementChoice(wxWindow* parent, int defaultSelection = 1);
         [[nodiscard]]
         static LegendPlacement SelectionToLegendPlacement(int selection);
@@ -462,11 +486,18 @@ namespace Wisteria::UI
         void EditLabelHelper(GraphItems::Label& label, wxStaticText* preview,
                              const wxString& caption);
         void OnEditBackgroundImage();
-        void OnAddCustomColor();
-        void OnEditCustomColor();
-        void OnRemoveCustomColor();
-        void RefreshCustomColorList();
-        void OnColorModeChanged();
+        void
+        LoadColorSchemeEditor(ColorSchemeEditor& editor,
+                              const std::shared_ptr<Brushes::Schemes::BrushScheme>& brushScheme,
+                              const std::shared_ptr<Colors::Schemes::ColorScheme>& colorScheme);
+        [[nodiscard]]
+        wxStaticBoxSizer* CreateColorSchemeBox(wxWindow* parent, ColorSchemeEditor& editor,
+                                               const wxString& caption);
+        void OnAddCustomColor(ColorSchemeEditor& editor);
+        void OnEditCustomColor(ColorSchemeEditor& editor);
+        void OnRemoveCustomColor(ColorSchemeEditor& editor);
+        void RefreshCustomColorList(ColorSchemeEditor& editor);
+        void OnColorModeChanged(ColorSchemeEditor& editor);
         void OnAddCustomShape();
         void OnEditCustomShape();
         void OnRemoveCustomShape();
@@ -499,9 +530,8 @@ namespace Wisteria::UI
         bool m_mirrorYAxis{ false };
         int m_plotBgImageOpacity{ 255 };
         int m_plotBgImageFit{ 1 }; // Shrink
-        bool m_useCustomColors{ false };
-        int m_colorSchemeIndex{ 0 };
-        std::vector<wxColour> m_customColors;
+        ColorSchemeEditor m_primaryColors;
+        ColorSchemeEditor m_secondaryColors;
         bool m_useCustomShapeScheme{ false };
         int m_shapeSchemeIndex{ 0 };
         std::vector<Icons::IconShape> m_customShapes;
@@ -537,10 +567,6 @@ namespace Wisteria::UI
 
         // controls without DDX validator support
         wxColourPickerCtrl* m_plotBgColorPicker{ nullptr };
-        wxRadioButton* m_namedSchemeRadio{ nullptr };
-        wxRadioButton* m_customColorsRadio{ nullptr };
-        wxChoice* m_colorSchemeChoice{ nullptr };
-        wxEditableListBox* m_customColorListBox{ nullptr };
         wxRadioButton* m_namedShapeRadio{ nullptr };
         wxRadioButton* m_customShapeRadio{ nullptr };
         wxChoice* m_shapeSchemeChoice{ nullptr };

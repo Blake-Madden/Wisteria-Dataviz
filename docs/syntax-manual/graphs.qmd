@@ -933,11 +933,15 @@ Properties for `"sankey-diagram"` nodes:
   - `"from-weight"`: The (optional) column containing the multiplier value for the "from" column.
   - `"to-weight"`: The (optional) column containing the multiplier value for the "to" column.
   - `"from-group"`: The (optional) column used to categorize the groups in the "from" column.
-- `"brush-scheme"`: For graphs that support brush schemes only. \
+- `"brush-scheme"`: The brush scheme used for the "from" (i.e., left-side) groups. \
      Contains the following properties:
      - `"brush-styles"`: An array of strings specifying the [brush styles](#brush-properties).
      - `"color-scheme"`: A color scheme that is mapped to the brush styles. \
        This can also be a string specifying a named color scheme (e.g., `"icecream"`).
+- `"to-brush-scheme"`: The brush scheme used for the "to" (i.e., right-side) groups. \
+     This accepts the same properties as `"brush-scheme"`.
+     Using a different scheme for each column avoids the same color appearing on both sides with unrelated meanings.
+     The default is the `"earthtones"` color scheme.
 - `"group-label-display"`: A string specifying how to display labels on the groups/nodes. \
   Available options are:
   - `"value"`: The number of items in (or aggregated value of) each group.

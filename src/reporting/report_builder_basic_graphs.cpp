@@ -2399,6 +2399,10 @@ namespace Wisteria
 
             auto sankey = std::make_shared<Graphs::SankeyDiagram>(
                 canvas, LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")));
+            if (const auto toScheme = LoadBrushScheme(graphNode->GetProperty(L"to-brush-scheme")))
+                {
+                sankey->SetToBrushScheme(toScheme);
+                }
             if (!fromVarNameRaw.empty())
                 {
                 sankey->SetPropertyTemplate(L"variables.from", fromVarNameRaw);
