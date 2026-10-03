@@ -110,8 +110,8 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptPages()
       if (page.card) page.card.classList.toggle('is-filtered', hidden);
       if (page.dot) page.dot.classList.toggle('is-filtered', hidden);
     });
-    document.querySelectorAll('.dash-layers button').forEach(function(btn) {
-      btn.setAttribute('aria-pressed', activeLayers.has(btn.dataset.layer) ? 'true' : 'false');
+    document.querySelectorAll('.dash-layers input[data-layer]').forEach(function(box) {
+      box.checked = activeLayers.has(box.dataset.layer);
     });
   }
   function toggleLayer(layer) {
@@ -999,9 +999,27 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
     document.querySelectorAll('.dash-modes button').forEach(function(btn) {
       btn.addEventListener('click', function() { setColorMode(btn.dataset.mode); });
     });
-    document.querySelectorAll('.dash-layers button').forEach(function(btn) {
-      btn.addEventListener('click', function() { toggleLayer(btn.dataset.layer); });
+    document.querySelectorAll('.dash-layers input[data-layer]').forEach(function(box) {
+      box.addEventListener('change', function() { toggleLayer(box.dataset.layer); });
     });
+    const layersBtn = document.querySelector('.dash-layers-btn');
+    const layersMenu = document.getElementById('dash-layers-menu');
+    if (layersBtn && layersMenu) {
+      const setLayersMenu = function(open) {
+        layersMenu.hidden = !open;
+        layersBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      };
+      layersBtn.addEventListener('click', function() { setLayersMenu(layersMenu.hidden); });
+      document.addEventListener('click', function(ev) {
+        if (!layersMenu.hidden && !ev.target.closest('.dash-layers')) setLayersMenu(false);
+      });
+      document.addEventListener('keydown', function(ev) {
+        if (ev.key === 'Escape' && !layersMenu.hidden) {
+          setLayersMenu(false);
+          layersBtn.focus();
+        }
+      });
+    }
     [['dash-prev', -1], ['dash-next', 1]].forEach(function(pair) {
       const btn = document.getElementById(pair[0]);
       btn.addEventListener('click', function() {
@@ -1187,17 +1205,19 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
     if (!distinctLayers.empty())
         {
         html += wxString::Format(
-            L"<div class=\"dash-layers\" role=\"group\" "
-            "aria-labelledby=\"dash-layers-label\">\n"
-            "<span id=\"dash-layers-label\" class=\"dash-group-label\">%s</span>\n",
-            escapeText(_(L"Layers")));
+            L"<div class=\"dash-layers\">\n"
+            "<button type=\"button\" class=\"dash-layers-btn\" aria-haspopup=\"true\" "
+            "aria-expanded=\"false\" aria-controls=\"dash-layers-menu\">%s</button>\n"
+            "<div id=\"dash-layers-menu\" class=\"dash-layers-menu\" role=\"group\" "
+            "aria-label=\"%s\" hidden>\n",
+            escapeText(_(L"Layers")), escapeAttr(_(L"Layers")));
         for (const auto& layer : distinctLayers)
             {
             html += wxString::Format(
-                L"<button type=\"button\" data-layer=\"%s\" aria-pressed=\"true\">%s</button>\n",
+                L"<label><input type=\"checkbox\" data-layer=\"%s\" checked>%s</label>\n",
                 escapeAttr(layer), escapeText(layer));
             }
-        html += L"</div>\n";
+        html += L"</div>\n</div>\n";
         }
     if (options.m_includeColorModeToggle)
         {

@@ -78,11 +78,14 @@ body
   gap: 8px 16px;
   }
 
-.dash-views, .dash-modes, .dash-layers
+.dash-views, .dash-modes
   {
   display: flex;
   gap: 4px;
   }
+
+.dash-layers
+  { position: relative; }
 
 .dash-pager
   {
@@ -131,13 +134,57 @@ body
 html[data-view="story"] .dash-progress
   { display: block; }
 
-/* the layer and theme toggles sit in a labeled capsule */
-.dash-modes, .dash-layers
+/* the theme toggles sit in a labeled capsule */
+.dash-modes
   {
   align-items: center;
   padding: 3px 4px 3px 12px;
   border: 1px solid var(--border-color);
   border-radius: 999px;
+  }
+
+/* the layer checklist drops down from its button */
+.dash-layers-menu
+  {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 160px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: Canvas;
+  color: CanvasText;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  }
+
+.dash-layers-menu[hidden]
+  { display: none; }
+
+.dash-layers-menu label
+  {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  }
+
+.dash-layers-menu label:hover
+  { background-color: var(--toolbar-bg); }
+
+.dash-layers-menu input
+  {
+  accent-color: var(--accent);
+  cursor: pointer;
   }
 
 .dash-group-label
@@ -150,7 +197,7 @@ html[data-view="story"] .dash-progress
   opacity: 0.7;
   }
 
-.dash-views button, .dash-modes button, .dash-layers button, .dash-pager button,
+.dash-views button, .dash-modes button, .dash-layers-btn, .dash-pager button,
 .dash-help-btn, .dash-save-btn
   {
   padding: 4px 12px;
@@ -163,13 +210,13 @@ html[data-view="story"] .dash-progress
   transition: background-color 0.2s ease, border-color 0.2s ease;
   }
 
-.dash-views button:hover, .dash-modes button:hover, .dash-layers button:hover,
+.dash-views button:hover, .dash-modes button:hover, .dash-layers-btn:hover,
 .dash-pager button:hover:not([aria-disabled="true"]), .dash-help-btn:hover,
 .dash-save-btn:hover
   { border-color: var(--accent); }
 
 .dash-views button[aria-pressed="true"], .dash-modes button[aria-pressed="true"],
-.dash-layers button[aria-pressed="true"], .dash-help-btn[aria-expanded="true"],
+.dash-layers-btn[aria-expanded="true"], .dash-help-btn[aria-expanded="true"],
 .dash-save-btn[aria-expanded="true"]
   {
   background-color: var(--accent);
@@ -178,7 +225,7 @@ html[data-view="story"] .dash-progress
   }
 
 .dash-views button:focus-visible, .dash-modes button:focus-visible,
-.dash-layers button:focus-visible, .dash-pager button:focus-visible,
+.dash-layers-btn:focus-visible, .dash-pager button:focus-visible,
 .dash-rail button:focus-visible, .dash-card:focus-visible, .dash-help-btn:focus-visible,
 .dash-save-btn:focus-visible
   {
