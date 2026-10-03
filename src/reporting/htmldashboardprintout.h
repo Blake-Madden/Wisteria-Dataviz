@@ -242,6 +242,9 @@ namespace Wisteria
         /// @returns The script building the page rail and gallery cards.
         [[nodiscard]]
         static wxString GetDashboardScriptPages();
+        /// @returns The script building the Filters menu and showing/hiding tagged graph items.
+        [[nodiscard]]
+        static wxString GetDashboardScriptFilters();
         /// @returns The script tagging shapes so their painted color survives dark mode.
         [[nodiscard]]
         static wxString GetDashboardScriptInk();

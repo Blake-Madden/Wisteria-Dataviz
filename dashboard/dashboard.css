@@ -111,38 +111,8 @@ body
   gap: 4px;
   }
 
-.dash-layers
+.dash-layers, .dash-filters
   { position: relative; }
-
-.dash-pager
-  {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  }
-
-.dash-pager button
-  {
-  width: 30px;
-  padding: 2px 0;
-  line-height: 1.2;
-  }
-
-.dash-pager button[aria-disabled="true"]
-  {
-  opacity: 0.4;
-  cursor: default;
-  }
-
-.dash-pager-label
-  {
-  max-width: 28ch;
-  overflow: hidden;
-  font-size: 0.9em;
-  font-variant-numeric: tabular-nums;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  }
 
 /* reading progress through the Story view */
 .dash-progress
@@ -161,8 +131,8 @@ body
 html[data-view="story"] .dash-progress
   { display: block; }
 
-/* the theme toggles sit in a labeled capsule */
-.dash-modes
+/* the view and theme toggles sit in a labeled capsule */
+.dash-views, .dash-modes
   {
   align-items: center;
   padding: 3px 4px 3px 12px;
@@ -170,8 +140,8 @@ html[data-view="story"] .dash-progress
   border-radius: 999px;
   }
 
-/* the layer checklist drops down from its button */
-.dash-layers-menu
+/* the layer and filter menus drop down from their buttons */
+.dash-layers-menu, .dash-filters-menu
   {
   position: absolute;
   top: calc(100% + 4px);
@@ -191,10 +161,10 @@ html[data-view="story"] .dash-progress
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   }
 
-.dash-layers-menu[hidden]
+.dash-layers-menu[hidden], .dash-filters-menu[hidden]
   { display: none; }
 
-.dash-layers-menu label
+.dash-layers-menu label, .dash-filters-menu label
   {
   display: flex;
   align-items: center;
@@ -205,10 +175,10 @@ html[data-view="story"] .dash-progress
   white-space: nowrap;
   }
 
-.dash-layers-menu label:hover
+.dash-layers-menu label:hover, .dash-filters-menu label:hover
   { background-color: var(--toolbar-bg); }
 
-.dash-layers-menu input
+.dash-layers-menu input, .dash-filters-menu input
   {
   accent-color: var(--accent);
   cursor: pointer;
@@ -217,7 +187,7 @@ html[data-view="story"] .dash-progress
 /* on narrow windows, the checklist spans the window just beneath the toolbar */
 @media (max-width: 700px)
   {
-  .dash-layers-menu
+  .dash-layers-menu, .dash-filters-menu
     {
     position: fixed;
     top: calc(var(--toolbar-height) + 4px);
@@ -225,8 +195,25 @@ html[data-view="story"] .dash-progress
     left: 8px;
     max-height: calc(var(--full-height) - var(--toolbar-height) - 16px);
     }
-  .dash-layers-menu label
+  .dash-layers-menu label, .dash-filters-menu label
     { white-space: normal; }
+  }
+
+.dash-filters-heading
+  {
+  padding: 4px 8px 2px;
+  font-size: 0.8em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  }
+
+.dash-filters-group:not([hidden]) ~ .dash-filters-group:not([hidden])
+  {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border-color);
   }
 
 .dash-group-label
@@ -239,7 +226,7 @@ html[data-view="story"] .dash-progress
   opacity: 0.7;
   }
 
-.dash-views button, .dash-modes button, .dash-layers-btn, .dash-pager button,
+.dash-views button, .dash-modes button, .dash-layers-btn, .dash-filters-btn,
 .dash-help-btn, .dash-save-btn
   {
   padding: 4px 12px;
@@ -253,13 +240,12 @@ html[data-view="story"] .dash-progress
   }
 
 .dash-views button:hover, .dash-modes button:hover, .dash-layers-btn:hover,
-.dash-pager button:hover:not([aria-disabled="true"]), .dash-help-btn:hover,
-.dash-save-btn:hover
+.dash-filters-btn:hover, .dash-help-btn:hover, .dash-save-btn:hover
   { border-color: var(--accent); }
 
 .dash-views button[aria-pressed="true"], .dash-modes button[aria-pressed="true"],
-.dash-layers-btn[aria-expanded="true"], .dash-help-btn[aria-expanded="true"],
-.dash-save-btn[aria-expanded="true"]
+.dash-layers-btn[aria-expanded="true"], .dash-filters-btn[aria-expanded="true"],
+.dash-help-btn[aria-expanded="true"], .dash-save-btn[aria-expanded="true"]
   {
   background-color: var(--accent);
   border-color: var(--accent);
@@ -267,7 +253,7 @@ html[data-view="story"] .dash-progress
   }
 
 .dash-views button:focus-visible, .dash-modes button:focus-visible,
-.dash-layers-btn:focus-visible, .dash-pager button:focus-visible,
+.dash-layers-btn:focus-visible, .dash-filters-btn:focus-visible,
 .dash-rail button:focus-visible, .dash-card:focus-visible, .dash-help-btn:focus-visible,
 .dash-save-btn:focus-visible
   {
@@ -547,6 +533,11 @@ html[data-view="gallery"] .page:not(.is-current)
 /* pages on a hidden layer */
 
 html[data-view] .page.is-filtered, .dash-card.is-filtered, .dash-rail button.is-filtered
+  { display: none; }
+
+/* graph items hidden by the Filters menu */
+
+.page-svg .is-filtered-out
   { display: none; }
 
 /* ---------- Loading ------------------------------------------ */

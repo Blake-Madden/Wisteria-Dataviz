@@ -308,6 +308,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
             points->SetDPIScaleFactor(GetDPIScaleFactor());
             points->SetLineStyle(line.GetStyle());
             points->Reserve(GetDataset()->GetRowCount());
+            if (IsUsingGrouping())
+                {
+                MakeFilterable(*points, line.GetText());
+                }
             const bool isLineGhosted = (IsUsingGrouping() && !GetShowcasedLines().empty() &&
                                         std::ranges::find(GetShowcasedLines(), line.GetText()) ==
                                             GetShowcasedLines().cend());

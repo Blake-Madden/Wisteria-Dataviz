@@ -344,6 +344,11 @@ namespace Wisteria::Graphs
             return axis.GetReadableAxisValue(pos);
             }
 
+        /** @brief Tags a graph item so that a HTML dashboard export can show or hide it.
+            @param item The item to tag (e.g., a line, bar, or slice).
+            @param label The label shown for the item in the dashboard's Filters menu.*/
+        void MakeFilterable(Wisteria::GraphItems::GraphItemBase& item, const wxString& label) const;
+
         /// @}
 
         /** @name Title Functions

@@ -167,6 +167,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
             points->SetDPIScaleFactor(GetDPIScaleFactor());
             points->SetLineStyle(GetLines()[colCounter].GetStyle());
             points->Reserve(GetDataset()->GetRowCount());
+            MakeFilterable(*points, GetLines()[colCounter].GetText());
             const bool isLineGhosted =
                 (!GetShowcasedLines().empty() &&
                  std::ranges::find(GetShowcasedLines(), GetLines()[colCounter].GetText()) ==

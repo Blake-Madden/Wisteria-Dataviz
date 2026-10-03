@@ -352,6 +352,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
                             .Scaling(GetScaling()),
                         bandPolygon);
                     confidenceBand->SetDPIScaleFactor(GetDPIScaleFactor());
+                    if (IsUsingGrouping())
+                        {
+                        MakeFilterable(*confidenceBand, series.GetText());
+                        }
                     AddObject(std::move(confidenceBand));
                     }
                 }
@@ -399,6 +403,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
             regressionLine->SetDPIScaleFactor(GetDPIScaleFactor());
             regressionLine->SetLineStyle(series.GetRegressionLineStyle());
             regressionLine->AddLine(startPt, endPt);
+            if (IsUsingGrouping())
+                {
+                MakeFilterable(*regressionLine, series.GetText());
+                }
             AddObject(std::move(regressionLine));
             }
         }
@@ -414,6 +422,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
         points->SetScaling(GetScaling());
         points->SetDPIScaleFactor(GetDPIScaleFactor());
         points->Reserve(GetDataset()->GetRowCount());
+        if (IsUsingGrouping())
+            {
+            MakeFilterable(*points, series.GetText());
+            }
 
         wxPoint pt;
         for (size_t i = 0; i < GetDataset()->GetRowCount(); ++i)

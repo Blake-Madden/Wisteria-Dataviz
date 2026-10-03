@@ -188,20 +188,6 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptPages()
       page.card = card;
     });
   }
-  function updatePager() {
-    const label = document.getElementById('dash-pager-label');
-    const prev = document.getElementById('dash-prev');
-    const next = document.getElementById('dash-next');
-    if (!label || !pages.length) return;
-    const visible = visibleIndexes();
-    const pos = visible.indexOf(current);
-    const text = pos < 0 ? strings.noPages :
-                 (pos + 1) + ' / ' + visible.length + ' · ' + pages[current].title;
-    label.textContent = text;
-    label.title = text;
-    prev.setAttribute('aria-disabled', pos <= 0 ? 'true' : 'false');
-    next.setAttribute('aria-disabled', pos < 0 || pos >= visible.length - 1 ? 'true' : 'false');
-  }
   function updateProgress() {
     if (view !== 'story') return;
     const span = document.documentElement.scrollHeight - window.innerHeight;
@@ -233,10 +219,98 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptPages()
       if (i === current) btn.setAttribute('aria-current', 'true');
       else btn.removeAttribute('aria-current');
     });
-    updatePager();
+    updateFilters();
     updateProgress();
     measureChrome();
     writeHash();
+  }
+)JS";
+    }
+
+//------------------------------------------------------
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptFilters()
+    {
+    return LR"JS(
+  const hiddenFilters = new Set();
+  function applyFilters() {
+    document.querySelectorAll('.page-svg [data-filter]').forEach(function(el) {
+      const key = scopeIdFor(el) + '|' + el.getAttribute('data-filter');
+      el.classList.toggle('is-filtered-out', hiddenFilters.has(key));
+    });
+    document.querySelectorAll('.dash-filters input[data-filter-key]').forEach(function(box) {
+      box.checked = !hiddenFilters.has(box.dataset.filterKey);
+    });
+  }
+  function toggleFilter(key) {
+    if (hiddenFilters.has(key)) hiddenFilters.delete(key);
+    else hiddenFilters.add(key);
+    applyFilters();
+  }
+  function buildFilters() {
+    const menu = document.getElementById('dash-filters-menu');
+    if (!menu) return;
+    pages.forEach(function(page, pageIndex) {
+      if (!page.svg) return;
+      const sections = new Map();
+      page.svg.querySelectorAll('[data-filter]').forEach(function(el) {
+        const chartId = scopeIdFor(el);
+        if (!sections.has(chartId)) {
+          sections.set(chartId, {
+            title: el.getAttribute('data-filter-title') || '',
+            labels: []
+          });
+        }
+        const labels = sections.get(chartId).labels;
+        const label = el.getAttribute('data-filter');
+        if (labels.indexOf(label) < 0) labels.push(label);
+      });
+      let chartNumber = 0;
+      sections.forEach(function(section, chartId) {
+        ++chartNumber;
+        if (!section.title) {
+          section.title = sections.size === 1 ? page.title : format(strings.chart, chartNumber);
+        }
+        const group = document.createElement('div');
+        group.className = 'dash-filters-group';
+        group.dataset.page = String(pageIndex);
+        group.setAttribute('role', 'group');
+        group.setAttribute('aria-label', section.title);
+        const heading = document.createElement('div');
+        heading.className = 'dash-filters-heading';
+        heading.textContent = section.title;
+        group.appendChild(heading);
+        section.labels.forEach(function(label) {
+          const row = document.createElement('label');
+          const box = document.createElement('input');
+          box.type = 'checkbox';
+          box.checked = true;
+          box.dataset.filterKey = chartId + '|' + label;
+          box.addEventListener('change', function() { toggleFilter(box.dataset.filterKey); });
+          row.appendChild(box);
+          row.appendChild(document.createTextNode(label));
+          group.appendChild(row);
+        });
+        menu.appendChild(group);
+      });
+    });
+    updateFilters();
+  }
+  function updateFilters() {
+    const menu = document.getElementById('dash-filters-menu');
+    const wrapper = document.querySelector('.dash-filters');
+    if (!menu || !wrapper) return;
+    let shown = 0;
+    menu.querySelectorAll('.dash-filters-group').forEach(function(group) {
+      const isCurrent = group.dataset.page === String(current);
+      group.hidden = !isCurrent;
+      if (isCurrent) ++shown;
+    });
+    wrapper.hidden = shown === 0;
+    if (shown === 0) {
+      menu.hidden = true;
+      const btn = wrapper.querySelector('.dash-filters-btn');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    }
   }
 )JS";
     }
@@ -894,6 +968,8 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSave()
       if (el.hasAttribute('fill')) target.setAttribute('fill', computed.fill);
       if (el.hasAttribute('stroke')) target.setAttribute('stroke', computed.stroke);
     });
+    // the stylesheet that hides filtered items isn't part of the exported copy
+    clone.querySelectorAll('.is-filtered-out').forEach(function(el) { el.remove(); });
     const background = getComputedStyle(svg).backgroundColor;
     if (background) {
       const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -1002,7 +1078,10 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
       return;
     }
     const tag = e.target && e.target.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) return;
+    if ((tag === 'INPUT' && e.target.type !== 'checkbox') || tag === 'TEXTAREA' ||
+        (e.target && e.target.isContentEditable)) {
+      return;
+    }
     if (e.key === 'ArrowRight' || e.key === 'PageDown') {
       e.preventDefault();
       stepPage(1);
@@ -1027,30 +1106,27 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
     document.querySelectorAll('.dash-layers input[data-layer]').forEach(function(box) {
       box.addEventListener('change', function() { toggleLayer(box.dataset.layer); });
     });
-    const layersBtn = document.querySelector('.dash-layers-btn');
-    const layersMenu = document.getElementById('dash-layers-menu');
-    if (layersBtn && layersMenu) {
-      const setLayersMenu = function(open) {
-        layersMenu.hidden = !open;
-        layersBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    const bindMenu = function(btnSelector, menuId, wrapperSelector) {
+      const btn = document.querySelector(btnSelector);
+      const menu = document.getElementById(menuId);
+      if (!btn || !menu) return;
+      const setMenu = function(open) {
+        menu.hidden = !open;
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
       };
-      layersBtn.addEventListener('click', function() { setLayersMenu(layersMenu.hidden); });
+      btn.addEventListener('click', function() { setMenu(menu.hidden); });
       document.addEventListener('click', function(ev) {
-        if (!layersMenu.hidden && !ev.target.closest('.dash-layers')) setLayersMenu(false);
+        if (!menu.hidden && !ev.target.closest(wrapperSelector)) setMenu(false);
       });
       document.addEventListener('keydown', function(ev) {
-        if (ev.key === 'Escape' && !layersMenu.hidden) {
-          setLayersMenu(false);
-          layersBtn.focus();
+        if (ev.key === 'Escape' && !menu.hidden) {
+          setMenu(false);
+          btn.focus();
         }
       });
-    }
-    [['dash-prev', -1], ['dash-next', 1]].forEach(function(pair) {
-      const btn = document.getElementById(pair[0]);
-      btn.addEventListener('click', function() {
-        if (btn.getAttribute('aria-disabled') !== 'true') stepPage(pair[1]);
-      });
-    });
+    };
+    bindMenu('.dash-layers-btn', 'dash-layers-menu', '.dash-layers');
+    bindMenu('.dash-filters-btn', 'dash-filters-menu', '.dash-filters');
     document.addEventListener('keydown', onKeyDown);
     window.addEventListener('scroll', updateProgress, { passive: true });
     window.addEventListener('resize', measureChrome);
@@ -1066,6 +1142,8 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
     buildGallery();
     bindControls();
     applyLayers();
+    buildFilters();
+    applyFilters();
     renderView();
     revealCurrent('auto');
     observeStory();
@@ -1150,10 +1228,10 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
 
     // user-facing text used by the script
     const std::vector<std::pair<wxString, wxString>> scriptStrings{
-        { L"gallery", _(L"Gallery") },       { L"story", _(L"Storyline") },
-        { L"page", _(L"Page {0}") },         { L"pageOf", _(L"Page {0} of {1}") },
-        { L"goTo", _(L"Go to {0}") },        { L"pagesShown", _(L"{0} of {1} pages shown") },
-        { L"noPages", _(L"No pages shown") }
+        { L"gallery", _(L"Gallery") },        { L"story", _(L"Storyline") },
+        { L"page", _(L"Page {0}") },          { L"pageOf", _(L"Page {0} of {1}") },
+        { L"goTo", _(L"Go to {0}") },         { L"pagesShown", _(L"{0} of {1} pages shown") },
+        { L"noPages", _(L"No pages shown") }, { L"chart", _(L"Chart {0}") }
     };
     wxString stringsObject{ L"{" };
     for (const auto& [key, value] : scriptStrings)
@@ -1182,11 +1260,11 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
     layersArray += L"]";
 
     wxString script{ GetDashboardScriptState() + GetDashboardScriptPages() +
-                     GetDashboardScriptInk() + GetDashboardScriptNavigation() +
-                     GetDashboardScriptCounters() + GetDashboardScriptMotion() +
-                     GetDashboardScriptZoom() + GetDashboardScriptTooltips() +
-                     GetDashboardScriptHelp() + GetDashboardScriptSave() +
-                     GetDashboardScriptEvents() };
+                     GetDashboardScriptFilters() + GetDashboardScriptInk() +
+                     GetDashboardScriptNavigation() + GetDashboardScriptCounters() +
+                     GetDashboardScriptMotion() + GetDashboardScriptZoom() +
+                     GetDashboardScriptTooltips() + GetDashboardScriptHelp() +
+                     GetDashboardScriptSave() + GetDashboardScriptEvents() };
     script.Replace(L"{{TOGGLE}}", options.m_includeColorModeToggle ? L"true" : L"false");
     script.Replace(L"{{COUNTUP}}", options.m_countUpNumbers ? L"true" : L"false");
     script.Replace(L"{{MODE}}", initialMode);
@@ -1291,18 +1369,12 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
     html += wxString::Format(L"<h1 class=\"dash-title\">%s</h1>\n</div>\n", escapeText(title));
     html += L"<div class=\"dash-controls\">\n";
     html += wxString::Format(
-        L"<div class=\"dash-pager\" role=\"group\" aria-label=\"%s\">\n"
-        "<button type=\"button\" id=\"dash-prev\" aria-label=\"%s\">&lsaquo;</button>\n"
-        "<span id=\"dash-pager-label\" class=\"dash-pager-label\"></span>\n"
-        "<button type=\"button\" id=\"dash-next\" aria-label=\"%s\">&rsaquo;</button>\n"
-        "</div>\n",
-        escapeAttr(_(L"Pages")), escapeAttr(_(L"Previous page")), escapeAttr(_(L"Next page")));
-    html += wxString::Format(
-        L"<div class=\"dash-views\" role=\"group\" aria-label=\"%s\">\n"
+        L"<div class=\"dash-views\" role=\"group\" aria-labelledby=\"dash-views-label\">\n"
+        "<span id=\"dash-views-label\" class=\"dash-group-label\">%s</span>\n"
         "<button type=\"button\" data-view=\"gallery\" aria-pressed=\"false\">%s</button>\n"
         "<button type=\"button\" data-view=\"story\" aria-pressed=\"false\">%s</button>\n"
         "</div>\n",
-        escapeAttr(_(L"Views")), escapeText(_(L"Gallery")), escapeText(_(L"Storyline")));
+        escapeText(_(L"View")), escapeText(_(L"Gallery")), escapeText(_(L"Storyline")));
     if (!distinctLayers.empty())
         {
         html += wxString::Format(
@@ -1320,6 +1392,14 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
             }
         html += L"</div>\n</div>\n";
         }
+    html += wxString::Format(
+        L"<div class=\"dash-filters\" hidden>\n"
+        "<button type=\"button\" class=\"dash-filters-btn\" aria-haspopup=\"true\" "
+        "aria-expanded=\"false\" aria-controls=\"dash-filters-menu\">%s</button>\n"
+        "<div id=\"dash-filters-menu\" class=\"dash-filters-menu\" role=\"group\" "
+        "aria-label=\"%s\" hidden></div>\n"
+        "</div>\n",
+        escapeText(_(L"Filters")), escapeAttr(_(L"Filters")));
     if (options.m_includeColorModeToggle)
         {
         html += wxString::Format(
