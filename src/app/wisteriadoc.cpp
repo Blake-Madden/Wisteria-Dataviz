@@ -5219,7 +5219,15 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                 {
                 dataSourceNode->Add(L"aggregation", aggregationStr.value());
                 }
-            if (choroplethMap->IsCategoricalShading())
+            if (choroplethMap->IsGroupedShading())
+                {
+                dataSourceNode->Add(L"category-column", choroplethMap->GetValueColumnName());
+                if (!choroplethMap->GetGroupValueColumnName().empty())
+                    {
+                    dataSourceNode->Add(L"value-column", choroplethMap->GetGroupValueColumnName());
+                    }
+                }
+            else if (choroplethMap->IsCategoricalShading())
                 {
                 dataSourceNode->Add(L"category-column", choroplethMap->GetValueColumnName());
                 }
@@ -5278,13 +5286,6 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
         if (!projectionStr.empty())
             {
             node->Add(_DT(L"projection"), projectionStr);
-            }
-
-        if (choroplethMap->GetClassificationMethod() ==
-            Wisteria::Graphs::ChoroplethMap::ClassificationMethod::JenksNaturalBreaks)
-            {
-            node->Add(L"classification-method", wxString(L"jenks-natural-breaks"));
-            node->Add(L"classification-count", static_cast<double>(choroplethMap->GetClassCount()));
             }
 
         if (choroplethMap->GetNoDataColor() != wxColour(L"#DDDDDD"))

@@ -236,6 +236,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptInk()
     if (fill === 'NONE') return 'none';
     const opacity = parseFloat(holder.getAttribute('fill-opacity'));
     if (!isNaN(opacity) && opacity < 0.5) return 'none';
+    if (el.closest('.ink-keep')) return 'color';
     return (fill === '#FFFFFF' || fill === '#000000' || fill === 'WHITE' || fill === 'BLACK') ?
            'page' : 'color';
   }

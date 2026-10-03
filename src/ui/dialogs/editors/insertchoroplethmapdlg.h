@@ -16,7 +16,6 @@
 #include <vector>
 #include <wx/clrpicker.h>
 #include <wx/filepicker.h>
-#include <wx/spinctrl.h>
 #include <wx/wx.h>
 
 namespace Wisteria::Graphs
@@ -30,11 +29,13 @@ namespace Wisteria::UI
         @details Extends InsertGraphDlg with a "Choropleth Map" page containing:
             - A picker for the KML or GeoJSON file that supplies the region shapes.
             - An optional @c ExtendedData field name to use as the region key.
-            - An optional background-layer file (drawn a shade lighter than the
+            - An optional background-layer file (drawn as an unfilled outline in the
               no-data color).
             - An optional project dataset, plus a variable selector for the key
-              column (matched against the region key) and either a value column
-              (a color gradient) or a category column (a color per category).
+              column (matched against the region key), a value column (opacity),
+              and a group column (a color per group). With a group column, the
+              value column sets each group's opacity, or groups are drawn at 50%
+              if there is no value column.
             - A "Show region labels" toggle.*/
     class InsertChoroplethMapDlg final : public InsertGraphDlg
         {
@@ -107,7 +108,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         wxString GetValueColumn() const;
 
-        /// @returns The categorical column used to shade the regions, or empty if none.
+        /// @returns The categorical column that gives each row's group, or empty if none.
         [[nodiscard]]
         wxString GetCategoryColumn() const;
 
@@ -119,21 +120,6 @@ namespace Wisteria::UI
         /// @returns @c true if a proportional shape size column was chosen.
         [[nodiscard]]
         bool IsUsingProportionalSymbols() const;
-
-        /// @returns The classification method for the value column, as a
-        ///     ChoroplethMap::ClassificationMethod cast to @c int (0 is unclassed).
-        [[nodiscard]]
-        int GetClassificationMethod() const noexcept
-            {
-            return m_classificationMethod;
-            }
-
-        /// @returns The number of classes to split the value column into.
-        [[nodiscard]]
-        int GetClassCount() const noexcept
-            {
-            return m_classCount;
-            }
 
         /// @returns How rows sharing a region key are combined into one value,
         ///     as a Data::GeoColumnAggregation cast to @c int
@@ -227,8 +213,6 @@ namespace Wisteria::UI
 
         void UpdateVariableLabels();
 
-        void UpdateClassificationControls();
-
         /// @brief Builds column preview info (name + type) for a project dataset,
         ///     so it can drive a VariableSelectDlg.
         /// @param dataset The dataset to describe.
@@ -264,9 +248,6 @@ namespace Wisteria::UI
         wxStaticText* m_symbolColumnLabel{ nullptr };
         wxStaticText* m_symbolColorLabel{ nullptr };
         wxColourPickerCtrl* m_symbolColorPicker{ nullptr };
-        wxChoice* m_classificationChoice{ nullptr };
-        wxStaticText* m_classCountLabel{ nullptr };
-        wxSpinCtrl* m_classCountSpin{ nullptr };
         wxChoice* m_aggregationChoice{ nullptr };
 
         wxString m_kmlIdField{ GetRegionNamePlaceholder() };
@@ -277,9 +258,6 @@ namespace Wisteria::UI
         int m_labelDisplay{ 4 };
         // 0 is a solid fill.
         int m_noDataFillStyle{ 0 };
-        // 0 is unclassed
-        int m_classificationMethod{ 0 };
-        int m_classCount{ 5 };
         // 0 is a sum, matching Data::GeoColumnAggregation
         int m_dataAggregation{ 0 };
 

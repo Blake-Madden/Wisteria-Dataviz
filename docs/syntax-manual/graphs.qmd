@@ -216,32 +216,28 @@ Properties for `"choropleth-map"` nodes:
 - `"region-id-field"`: The attribute field in the region file to use as each region's key. \
   If omitted, each region's own name is used.
 - `"background-file"`: The path to an optional KML or GeoJSON file drawn beneath the data regions as a backdrop (e.g., a state outline behind a set of counties). \
-  It is filled a shade lighter than `"no-data-color"`, clipped to the plot area, and does not take part in fitting the view.
+  It is drawn as an unfilled outline in `"no-data-color"`, clipped to the plot area, and does not take part in fitting the view.
 - `"data-source"`: An (optional) item that merges a project dataset onto the regions for shading, matched on the region key.
   It contains the following properties:
   - `"dataset"`: The name of the project dataset to pull the shading column from.
   - `"key-column"`: The dataset column matched against the region key.
-  - `"value-column"`: A continuous column mapped onto the color scheme as a gradient. \
-    Use this or `"category-column"`, not both.
-  - `"category-column"`: A categorical column drawn with one color per category.
+  - `"value-column"`: A continuous column mapped to opacity (from half opacity at the lowest value to full opacity at the highest). \
+    On its own, the value sets the opacity of the region's fill. \
+    With `"category-column"`, the value sets the opacity of each group within a region (i.e., a weight).
+  - `"category-column"`: A categorical column that gives each row's group. \
+    The dataset can have any number of rows per region key, so a region can contain several groups. \
+    Each group is drawn in its own color, and a region draws one translucent layer per group so that overlapping groups blend. \
+    Without a `"value-column"`, every group is drawn at 50% opacity.
   - `"symbol-column"`: A continuous column drawn as a proportional circle at each region's center (its area proportional to the value). \
     This can run alongside a shading column or on its own.
-  - `"aggregation"`: How multiple dataset rows that share one region key are combined into that region's value. \
+  - `"aggregation"`: How multiple dataset rows that share one region key (and group, if `"category-column"` is used) are combined into one value. \
     One of `sum` (the default), `mean`, `min`, `max`, or `count`. \
     Applies to `"value-column"` and `"symbol-column"`.
     Non-finite values are skipped.
 - `"color-scheme"`: A [color scheme](#color-scheme-properties) specification. \
-  The first color is the low end of the gradient and the last color is the high end.
+  A continuous value column is drawn in the scheme's last color, with the value mapped to opacity (half to full) over a white base.
   With no shading column, the last color fills every region. \
-  A categorical column instead needs a scheme with at least three colors (otherwise a qualitative scheme is used).
-- `"classification-method"`: A string specifying how a continuous value column is split into classes. \
-  Available options are:
-  - `"jenks-natural-breaks"`: Split the values into classes with Jenks natural breaks. \
-    Each class gets one color and the legend shows the class ranges.
-
-  (If omitted, the value is mapped onto a continuous color ramp.)
-- `"classification-count"`: The number of classes to split the value column into, between `2` and `12` (default is `5`). \
-  Only used when `"classification-method"` is set.
+  Groups need a scheme with at least three colors (otherwise a qualitative scheme is used).
 - `"projection"`: A string specifying how longitude and latitude are mapped to the plot area. \
   Available options are:
   - `"equirectangular"`: Longitude scaled by the cosine of the center latitude.

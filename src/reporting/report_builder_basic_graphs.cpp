@@ -1641,6 +1641,7 @@ namespace Wisteria
         wxString valueColumn;
         wxString categoryColumn;
         wxString symbolColumn;
+        const Data::Dataset* groupSource{ nullptr };
         auto dataAggregation = Data::GeoColumnAggregation::Sum;
         if (const auto dataSourceNode = graphNode->GetProperty(_DT(L"data-source"));
             dataSourceNode->IsOk())
@@ -1665,18 +1666,15 @@ namespace Wisteria
                                      dataSourceName)
                         .ToUTF8());
                 }
-            if (!categoryColumn.empty())
-                {
-                geoData->CopyCategoricalColumnFrom(*foundSource->second, dataSourceKeyColumn,
-                                                   categoryColumn, categoryColumn);
-                }
-            else if (!valueColumn.empty())
+            // a group column is read straight from the dataset by SetGroupData(), with
+            // the value column (if any) setting each group's opacity
+            groupSource = foundSource->second.get();
+            if (categoryColumn.empty() && !valueColumn.empty())
                 {
                 geoData->CopyContinuousColumnFrom(*foundSource->second, dataSourceKeyColumn,
                                                   valueColumn, valueColumn, dataAggregation);
                 }
-            if (!symbolColumn.empty() && symbolColumn != valueColumn &&
-                symbolColumn != categoryColumn)
+            if (!symbolColumn.empty() && (!categoryColumn.empty() || symbolColumn != valueColumn))
                 {
                 geoData->CopyContinuousColumnFrom(*foundSource->second, dataSourceKeyColumn,
                                                   symbolColumn, symbolColumn, dataAggregation);
@@ -1688,30 +1686,25 @@ namespace Wisteria
         auto choroplethMap =
             std::make_shared<Graphs::ChoroplethMap>(canvas, LoadGraphColorScheme(graphNode));
 
-        // classification of the value column, applied before SetData() computes the class colors
-        if (const auto classMethodNode = graphNode->GetProperty(_DT(L"classification-method"));
-            classMethodNode->IsOk() &&
-            classMethodNode->AsString().CmpNoCase(L"jenks-natural-breaks") == 0)
+        // the aggregation must be set before SetGroupData(), which combines the rows
+        choroplethMap->SetDataAggregation(dataAggregation);
+        if (!categoryColumn.empty() && groupSource != nullptr)
             {
-            choroplethMap->SetClassificationMethod(
-                Graphs::ChoroplethMap::ClassificationMethod::JenksNaturalBreaks);
+            choroplethMap->SetGroupData(
+                geoData, *groupSource,
+                dataSourceKeyColumn.empty() ? groupSource->GetIdColumn().GetName() :
+                                              dataSourceKeyColumn,
+                categoryColumn,
+                valueColumn.empty() ? std::nullopt : std::optional<wxString>(valueColumn));
             }
-        if (const auto classCountNode = graphNode->GetProperty(_DT(L"classification-count"));
-            classCountNode->IsOk())
+        else
             {
-            // screen the JSON value first to avoid a wild or non-finite number
-            if (const double rawClassCount = classCountNode->AsDouble(5);
-                std::isfinite(rawClassCount) && rawClassCount >= 2.0 && rawClassCount <= 12.0)
-                {
-                choroplethMap->SetClassCount(static_cast<size_t>(rawClassCount));
-                }
+            choroplethMap->SetData(geoData, shadingColumn.empty() ?
+                                                std::nullopt :
+                                                std::optional<wxString>(shadingColumn));
             }
-
-        choroplethMap->SetData(
-            geoData, shadingColumn.empty() ? std::nullopt : std::optional<wxString>(shadingColumn));
         choroplethMap->SetSourceInfo(regionFile, regionIdField, dataSourceName,
                                      dataSourceKeyColumn);
-        choroplethMap->SetDataAggregation(dataAggregation);
 
         // optional backdrop layer drawn under the data regions
         if (wxString backgroundFileRaw =

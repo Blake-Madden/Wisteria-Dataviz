@@ -320,6 +320,14 @@ html[data-view="story"] .dash-progress
 .page-svg [fill="#000000"]:not(.ink-keep), .page-svg [fill="black"]:not(.ink-keep)
   { fill: light-dark(#000000, #E8E8E8); }
 
+/* shapes inside a kept group (e.g., the white base under translucent map layers)
+   stay as painted */
+.page-svg .ink-keep [fill="#FFFFFF"]
+  { fill: #FFFFFF; }
+
+.page-svg .ink-keep [fill="#000000"], .page-svg .ink-keep [fill="black"]
+  { fill: #000000; }
+
 /* lays a page out invisibly so the script can measure it */
 .page.ink-measure
   {

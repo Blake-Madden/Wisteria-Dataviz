@@ -16,6 +16,7 @@
 #include <cmath>
 #include <limits>
 #include <map>
+#include <numeric>
 #include <set>
 #include <utility>
 #include <wx/dc.h>
@@ -375,9 +376,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
         m_categoryLegend.clear();
         m_categoryRowCounts.clear();
         m_categorizedRegionCount = 0;
-        m_isClassified = false;
-        m_classBreaks.clear();
-        m_classColors.clear();
+        m_isGrouped = false;
+        m_groupValueColumnName.clear();
+        m_regionLayers.clear();
+        m_regionBreakdown.clear();
         m_valueColumnName = valueColumnName.value_or(wxString{});
         m_symbolColumnName.clear();
 
@@ -428,40 +430,34 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                         }
                     }
 
-                // A classification splits the values into discrete classes, each with
-                // one color; otherwise, the value is mapped onto an opacity scale (0-255)
-                // of the color scheme's last color.
-                if (m_classificationMethod == ClassificationMethod::Unclassed ||
-                    !BuildClassifiedColors(continuousColumn->GetValues()))
+                // the value is mapped onto an opacity scale (half to full) of the color
+                // scheme's last color
+                const auto& values = continuousColumn->GetValues();
+                double minValue{ std::numeric_limits<double>::max() };
+                double maxValue{ std::numeric_limits<double>::lowest() };
+                for (const auto value : values)
                     {
-                    const auto& values = continuousColumn->GetValues();
-                    double minValue{ std::numeric_limits<double>::max() };
-                    double maxValue{ std::numeric_limits<double>::lowest() };
-                    for (const auto value : values)
+                    if (std::isfinite(value))
                         {
-                        if (std::isfinite(value))
-                            {
-                            minValue = std::min(minValue, value);
-                            maxValue = std::max(maxValue, value);
-                            }
+                        minValue = std::min(minValue, value);
+                        maxValue = std::max(maxValue, value);
                         }
-                    m_valueRange = { minValue, maxValue };
+                    }
+                m_valueRange = { minValue, maxValue };
 
-                    const wxColour baseColor = m_colorSpectrum.back();
-                    m_regionColors.assign(values.size(), wxColour{});
-                    for (size_t row = 0; row < values.size(); ++row)
+                const wxColour baseColor = m_colorSpectrum.back();
+                m_regionColors.assign(values.size(), wxColour{});
+                for (size_t row = 0; row < values.size(); ++row)
+                    {
+                    if (!std::isfinite(values[row]))
                         {
-                        if (!std::isfinite(values[row]))
-                            {
-                            continue;
-                            }
-                        const double valueSpan = maxValue - minValue;
-                        const double fraction =
-                            valueSpan > 0 ? safe_divide(values[row] - minValue, valueSpan) : 1.0;
-                        m_regionColors[row] = Colors::ColorContrast::ChangeOpacity(
-                            baseColor, static_cast<wxColour::ChannelType>(
-                                           std::clamp(std::round(fraction * 255.0), 0.0, 255.0)));
+                        continue;
                         }
+                    const double valueSpan = maxValue - minValue;
+                    const double fraction =
+                        valueSpan > 0 ? safe_divide(values[row] - minValue, valueSpan) : 1.0;
+                    m_regionColors[row] = Colors::ColorContrast::ChangeOpacity(
+                        baseColor, OpacityForFraction(fraction));
                     }
                 m_hasValues = true;
                 }
@@ -481,22 +477,32 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
         }
 
     //----------------------------------------------------------------
+    wxColour::ChannelType ChoroplethMap::OpacityForFraction(const double fraction)
+        {
+        constexpr double FULL_OPACITY{ 255.0 };
+        const double opacity =
+            HALF_OPACITY + (std::clamp(fraction, 0.0, 1.0) * (FULL_OPACITY - HALF_OPACITY));
+        return static_cast<wxColour::ChannelType>(std::round(opacity));
+        }
+
+    //----------------------------------------------------------------
+    std::vector<wxColour> ChoroplethMap::GetCategoryPalette() const
+        {
+        // The default scheme is a two-color ramp meant for continuous shading,
+        // so fall back to a qualitative scheme for categories.
+        if (GetColorScheme() != nullptr && GetColorScheme()->GetColors().size() >= 3)
+            {
+            return GetColorScheme()->GetColors();
+            }
+        return Colors::Schemes::Decade1980s{}.GetColors();
+        }
+
+    //----------------------------------------------------------------
     void ChoroplethMap::BuildCategoricalColors(const Data::ColumnWithStringTable& column)
         {
         const auto& stringTable = column.GetStringTable();
 
-        // The palette is the graph's color scheme when it carries enough distinct
-        // colors. The default scheme is a two-color ramp meant for continuous
-        // shading, so fall back to a qualitative scheme for categories.
-        std::vector<wxColour> palette;
-        if (GetColorScheme() != nullptr && GetColorScheme()->GetColors().size() >= 3)
-            {
-            palette = GetColorScheme()->GetColors();
-            }
-        else
-            {
-            palette = Colors::Schemes::Decade1980s{}.GetColors();
-            }
+        const std::vector<wxColour> palette = GetCategoryPalette();
         if (palette.empty())
             {
             return;
@@ -542,7 +548,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             const auto foundColor = codeColors.find(column.GetValue(row));
             if (foundColor != codeColors.cend())
                 {
-                m_regionColors[row] = foundColor->second;
+                m_regionColors[row] =
+                    Colors::ColorContrast::ChangeOpacity(foundColor->second, HALF_OPACITY);
                 }
             }
         m_isCategorical = true;
@@ -550,175 +557,237 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
         }
 
     //----------------------------------------------------------------
-    std::vector<double> ChoroplethMap::JenksNaturalBreaks(std::vector<double> values,
-                                                          const size_t classCount)
+    void ChoroplethMap::SetGroupData(const std::shared_ptr<const Data::GeoDataset>& data,
+                                     const Data::Dataset& source, const wxString& keyColumnName,
+                                     const wxString& groupColumnName,
+                                     const std::optional<wxString>& valueColumnName /*= nullopt*/)
         {
-        if (classCount < 2 || values.size() < classCount)
+        // clears all shading state
+        SetData(data, std::nullopt);
+        if (m_geoData == nullptr)
             {
-            return {};
-            }
-        std::ranges::sort(values);
-        const size_t valueCount = values.size();
-
-        // For the best split of the first endIndex values into classIndex classes,
-        // lowerClassLimits holds the 1-based index where the last class starts and
-        // varianceCombinations holds that split's total within-class variance.
-        std::vector<std::vector<size_t>> lowerClassLimits(valueCount + 1,
-                                                          std::vector<size_t>(classCount + 1, 0));
-        std::vector<std::vector<double>> varianceCombinations(
-            valueCount + 1,
-            std::vector<double>(classCount + 1, std::numeric_limits<double>::max()));
-
-        for (size_t classIndex = 1; classIndex <= classCount; ++classIndex)
-            {
-            lowerClassLimits[1][classIndex] = 1;
-            varianceCombinations[1][classIndex] = 0.0;
+            return;
             }
 
-        for (size_t endIndex = 2; endIndex <= valueCount; ++endIndex)
+        const auto groupColumn = source.GetCategoricalColumn(groupColumnName);
+        if (groupColumn == source.GetCategoricalColumns().cend())
             {
-            double sum = 0.0;
-            double sumOfSquares = 0.0;
-            double count = 0.0;
-            double variance = 0.0;
-            for (size_t offset = 1; offset <= endIndex; ++offset)
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': column not found for choropleth map."), groupColumnName)
+                    .ToUTF8());
+            }
+
+        const bool keyIsIdColumn = (source.GetIdColumn().GetName().CmpNoCase(keyColumnName) == 0);
+        auto keyColumn = source.GetCategoricalColumns().cend();
+        if (!keyIsIdColumn)
+            {
+            keyColumn = source.GetCategoricalColumn(keyColumnName);
+            if (keyColumn == source.GetCategoricalColumns().cend())
                 {
-                const size_t startIndex = endIndex - offset + 1;
-                const double value = values[startIndex - 1];
-                count += 1.0;
-                sum += value;
-                sumOfSquares += value * value;
-                variance = sumOfSquares - ((sum * sum) / count);
-                const size_t priorIndex = startIndex - 1;
-                if (priorIndex != 0)
+                throw std::runtime_error(
+                    wxString::Format(_(L"'%s': column not found for choropleth map."),
+                                     keyColumnName)
+                        .ToUTF8());
+                }
+            }
+
+        auto valueColumn = source.GetContinuousColumns().cend();
+        if (valueColumnName.has_value() && !valueColumnName->empty())
+            {
+            valueColumn = source.GetContinuousColumn(*valueColumnName);
+            if (valueColumn == source.GetContinuousColumns().cend())
+                {
+                throw std::runtime_error(
+                    wxString::Format(_(L"'%s': column not found for choropleth map."),
+                                     *valueColumnName)
+                        .ToUTF8());
+                }
+            }
+        const bool hasValueColumn = (valueColumn != source.GetContinuousColumns().cend());
+
+        // a region key can repeat, and every region row that carries it gets the data
+        std::map<wxString, std::vector<size_t>> keyToRows;
+        for (size_t row = 0; row < m_geoData->GetRowCount(); ++row)
+            {
+            keyToRows[m_geoData->GetIdColumn().GetValue(row)].push_back(row);
+            }
+
+        // the source values for each (region row, group code) pair
+        std::map<std::pair<size_t, Data::GroupIdType>, std::vector<double>> cellValues;
+        std::set<Data::GroupIdType> usedCodes;
+        for (size_t sourceRow = 0; sourceRow < source.GetRowCount(); ++sourceRow)
+            {
+            const wxString keyValue = keyIsIdColumn ?
+                                          source.GetIdColumn().GetValue(sourceRow) :
+                                          keyColumn->GetLabelFromID(keyColumn->GetValue(sourceRow));
+            const auto foundRows = keyToRows.find(keyValue);
+            const Data::GroupIdType code = groupColumn->GetValue(sourceRow);
+            if (foundRows == keyToRows.cend() || groupColumn->GetLabelFromID(code).empty())
+                {
+                continue;
+                }
+            if (hasValueColumn)
+                {
+                const double sourceValue = valueColumn->GetValue(sourceRow);
+                if (!std::isfinite(sourceValue))
                     {
-                    for (size_t classIndex = 2; classIndex <= classCount; ++classIndex)
-                        {
-                        const double candidate =
-                            variance + varianceCombinations[priorIndex][classIndex - 1];
-                        if (varianceCombinations[endIndex][classIndex] >= candidate)
-                            {
-                            lowerClassLimits[endIndex][classIndex] = startIndex;
-                            varianceCombinations[endIndex][classIndex] = candidate;
-                            }
-                        }
+                    continue;
+                    }
+                for (const auto regionRow : foundRows->second)
+                    {
+                    cellValues[{ regionRow, code }].push_back(sourceValue);
                     }
                 }
-            lowerClassLimits[endIndex][1] = 1;
-            varianceCombinations[endIndex][1] = variance;
-            }
-
-        // walk the class limits back from the top class to recover the boundaries
-        std::vector<double> breaks(classCount + 1, 0.0);
-        breaks[classCount] = values[valueCount - 1];
-        breaks[0] = values[0];
-        size_t index = valueCount;
-        for (size_t classIndex = classCount; classIndex >= 2; --classIndex)
-            {
-            const size_t limit = lowerClassLimits[index][classIndex];
-            if (limit < 2)
+            else
                 {
-                return {};
+                for (const auto regionRow : foundRows->second)
+                    {
+                    cellValues[{ regionRow, code }];
+                    }
                 }
-            breaks[classIndex - 1] = values[limit - 2];
-            index = limit - 1;
+            usedCodes.insert(code);
+            }
+        if (cellValues.empty())
+            {
+            return;
             }
 
-        return breaks;
+        // one color per group, walking the string table in code order so the colors
+        // and the legend are stable
+        const std::vector<wxColour> palette = GetCategoryPalette();
+        if (palette.empty())
+            {
+            return;
+            }
+        std::map<Data::GroupIdType, wxColour> codeColors;
+        size_t nextColor{ 0 };
+        for (const auto& [code, label] : groupColumn->GetStringTable())
+            {
+            if (label.empty() || !usedCodes.contains(code))
+                {
+                continue;
+                }
+            const wxColour groupColor = palette[nextColor % palette.size()];
+            ++nextColor;
+            codeColors.emplace(code, groupColor);
+            m_categoryLegend.emplace_back(label, groupColor);
+            }
+
+        const auto reduceValues = [this](const std::vector<double>& values)
+        {
+            // values is non-empty and every entry is finite
+            const double total = std::accumulate(values.cbegin(), values.cend(), 0.0);
+            switch (m_dataAggregation)
+                {
+            case Data::GeoColumnAggregation::Mean:
+                return total / static_cast<double>(values.size());
+            case Data::GeoColumnAggregation::Min:
+                return *std::ranges::min_element(values);
+            case Data::GeoColumnAggregation::Max:
+                return *std::ranges::max_element(values);
+            case Data::GeoColumnAggregation::Count:
+                return static_cast<double>(values.size());
+            case Data::GeoColumnAggregation::Sum:
+                break;
+                }
+            return total;
+        };
+
+        // each group's opacity comes from its value, scaled across every region and
+        // group; without a value column, the layers are drawn at 50%
+        std::map<std::pair<size_t, Data::GroupIdType>, double> cellTotals;
+        double minValue{ std::numeric_limits<double>::max() };
+        double maxValue{ std::numeric_limits<double>::lowest() };
+        if (hasValueColumn)
+            {
+            for (const auto& [cell, values] : cellValues)
+                {
+                const double reduced = reduceValues(values);
+                cellTotals.emplace(cell, reduced);
+                minValue = std::min(minValue, reduced);
+                maxValue = std::max(maxValue, reduced);
+                }
+            m_valueRange = { minValue, maxValue };
+            }
+
+        m_regionLayers.assign(m_geoData->GetRowCount(), std::vector<wxColour>{});
+        m_regionBreakdown.assign(m_geoData->GetRowCount(), std::vector<GroupShare>{});
+        m_regionColors.assign(m_geoData->GetRowCount(), wxColour{});
+        for (const auto& [cell, values] : cellValues)
+            {
+            wxColour::ChannelType opacity{ HALF_OPACITY };
+            if (hasValueColumn)
+                {
+                const double valueSpan = maxValue - minValue;
+                const double fraction =
+                    valueSpan > 0 ? safe_divide(cellTotals.at(cell) - minValue, valueSpan) : 1.0;
+                opacity = OpacityForFraction(fraction);
+                }
+            const wxColour layerColor =
+                Colors::ColorContrast::ChangeOpacity(codeColors.at(cell.second), opacity);
+            m_regionLayers[cell.first].push_back(layerColor);
+            m_regionBreakdown[cell.first].push_back(GroupShare{
+                groupColumn->GetLabelFromID(cell.second),
+                hasValueColumn ? cellTotals.at(cell) : std::numeric_limits<double>::quiet_NaN() });
+            if (!m_regionColors[cell.first].IsOk())
+                {
+                m_regionColors[cell.first] = layerColor;
+                }
+            }
+
+        m_valueColumnName = groupColumnName;
+        m_groupValueColumnName = hasValueColumn ? *valueColumnName : wxString{};
+        m_isGrouped = true;
+        m_hasValues = true;
         }
 
     //----------------------------------------------------------------
-    bool ChoroplethMap::BuildClassifiedColors(const std::vector<double>& values)
+    wxString ChoroplethMap::BuildGroupBreakdownText(const size_t row) const
         {
-        if (m_colorSpectrum.size() < 2)
+        if (row >= m_regionBreakdown.size())
             {
-            return false;
+            return wxString{};
             }
+        const auto& groups = m_regionBreakdown[row];
 
-        std::vector<double> finiteValues;
-        finiteValues.reserve(values.size());
-        for (const auto value : values)
+        // the region's total is what each group's share is measured against
+        double regionTotal{ 0.0 };
+        for (const auto& group : groups)
             {
-            if (std::isfinite(value))
+            if (std::isfinite(group.m_value))
                 {
-                finiteValues.push_back(value);
+                regionTotal += group.m_value;
                 }
             }
-        if (finiteValues.size() < 3)
-            {
-            return false;
-            }
-        if (m_classificationMethod == ClassificationMethod::JenksNaturalBreaks &&
-            finiteValues.size() > MAX_JENKS_VALUE_COUNT)
-            {
-            wxLogWarning(_(L"Choropleth value column has %zu values; natural-breaks "
-                           L"classification is skipped above %zu."),
-                         finiteValues.size(), MAX_JENKS_VALUE_COUNT);
-            return false;
-            }
 
-        const size_t requestedClasses =
-            std::clamp<size_t>(m_classCount, 2, std::min<size_t>(finiteValues.size(), 12));
-
-        std::vector<double> breaks;
-        if (m_classificationMethod == ClassificationMethod::JenksNaturalBreaks)
+        wxString text;
+        for (const auto& group : groups)
             {
-            breaks = JenksNaturalBreaks(finiteValues, requestedClasses);
-            }
-        if (breaks.size() < 2)
-            {
-            return false;
-            }
-
-        // drop boundaries the data does not actually separate; a run of equal
-        // values cannot be split into two classes
-        breaks.erase(std::unique(breaks.begin(), breaks.end()), breaks.end());
-        if (breaks.size() < 3)
-            {
-            return false;
-            }
-        const size_t classCount = breaks.size() - 1;
-
-        // one color per class, sampled evenly across the color scheme
-        Colors::ColorBrewer classBrewer;
-        classBrewer.SetColorScale(m_colorSpectrum.cbegin(), m_colorSpectrum.cend());
-        std::vector<double> classIndices(classCount, 0.0);
-        for (size_t classIndex = 0; classIndex < classCount; ++classIndex)
-            {
-            classIndices[classIndex] = static_cast<double>(classIndex);
-            }
-        std::vector<wxColour> classColors = classBrewer.BrewColors(classIndices);
-        if (classColors.size() != classCount)
-            {
-            return false;
-            }
-
-        m_classBreaks = std::move(breaks);
-        m_classColors = std::move(classColors);
-        m_valueRange = { m_classBreaks.front(), m_classBreaks.back() };
-
-        const auto classForValue = [this, classCount](const double value) -> size_t
-        {
-            for (size_t classIndex = 1; classIndex < classCount; ++classIndex)
+            if (!text.empty())
                 {
-                if (value <= m_classBreaks[classIndex])
-                    {
-                    return classIndex - 1;
-                    }
+                text += L"\n";
                 }
-            return classCount - 1;
-        };
-
-        m_regionColors.assign(values.size(), wxColour{});
-        for (size_t row = 0; row < values.size(); ++row)
-            {
-            if (std::isfinite(values[row]))
+            if (!std::isfinite(group.m_value))
                 {
-                m_regionColors[row] = m_classColors[classForValue(values[row])];
+                text += group.m_label;
+                continue;
+                }
+            const wxString valueStr =
+                wxNumberFormatter::ToString(group.m_value, 6, Settings::GetDefaultNumberFormat());
+            if (regionTotal > 0.0)
+                {
+                const wxString percentStr = wxNumberFormatter::ToString(
+                    safe_divide<double>(group.m_value, regionTotal) * 100.0, 1,
+                    Settings::GetDefaultNumberFormat());
+                /* TRANSLATORS: group name, value, and percentage share of the region. */
+                text += wxString::Format(_(L"%s: %s (%s%%)"), group.m_label, valueStr, percentStr);
+                }
+            else
+                {
+                text += wxString::Format(L"%s: %s", group.m_label, valueStr);
                 }
             }
-        m_isClassified = true;
-        return true;
+        return text;
         }
 
     //----------------------------------------------------------------
@@ -735,7 +804,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             {
             return wxString{};
             }
-        if (m_labelDisplay == BinLabelDisplay::BinName || !m_hasValues)
+        if (m_labelDisplay == BinLabelDisplay::BinName || !m_hasValues || m_isGrouped)
             {
             return regionName;
             }
@@ -1082,6 +1151,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                 regionHasNoData = true;
                 }
 
+            // a grouped region shows its last group on top and the rest underneath
+            const bool regionHasLayers = m_isGrouped && !regionHasNoData &&
+                                         row < m_regionLayers.size() &&
+                                         !m_regionLayers[row].empty();
+            if (regionHasLayers)
+                {
+                fillColor = m_regionLayers[row].back();
+                }
+
             // a no-data region uses the chosen fill style, so it can be hatched
             // rather than filled flat
             wxBrush regionBrush{ fillColor };
@@ -1093,26 +1171,64 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             // every ring of the region goes into one selectable object, so a click
             // anywhere on the region selects it and anchors a single name label on
             // the region's own bounding box
-            auto regionObject =
-                std::make_unique<ChoroplethRegion>(GraphItems::GraphItemInfo{}
+            // a grouped region lists its groups under the name when selected
+            wxString selectionText{ regionLabelText };
+            if (regionHasLayers && m_labelDisplay != BinLabelDisplay::NoDisplay)
+                {
+                if (const wxString breakdownText = BuildGroupBreakdownText(row);
+                    !breakdownText.empty())
+                    {
+                    selectionText = regionLabelText.empty() ?
+                                        breakdownText :
+                                        regionLabelText + L"\n" + breakdownText;
+                    }
+                }
+
+            // The same text is the region's tooltip in an HTML dashboard.
+            wxString tooltipText{ selectionText };
+            tooltipText.Replace(L"\n", wxString{ wxUniChar(0x2028) });
+
+            GraphItems::GraphItemInfo regionInfo = GraphItems::GraphItemInfo{}
                                                        .Pen(GetPen())
                                                        .Brush(regionBrush)
                                                        .Selectable(true)
-                                                       .Text(regionLabelText)
+                                                       .Text(selectionText)
                                                        .Scaling(GetScaling())
-                                                       .DPIScaling(GetDPIScaleFactor()));
+                                                       .DPIScaling(GetDPIScaleFactor());
+            if (!tooltipText.empty())
+                {
+                regionInfo.Accessibility(
+                    wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(tooltipText));
+                }
+            auto regionObject = std::make_unique<ChoroplethRegion>(regionInfo);
 
             // a region shaded by opacity gets a white base underneath, so the
-            // background does not bleed through low values
-            std::unique_ptr<ChoroplethRegion> baseObject;
-            if (m_hasValues && !m_isCategorical && !m_isClassified && !regionHasNoData)
-                {
-                baseObject = std::make_unique<ChoroplethRegion>(
+            // background does not bleed through low values. A grouped region then
+            // stacks every group but the last on top of that base.
+            std::vector<std::unique_ptr<ChoroplethRegion>> underlays;
+            // the class tells an HTML dashboard to keep these colors as painted in dark
+            // mode, so the base stays white beneath the translucent layers
+            const auto addUnderlay = [this, &underlays](const wxColour& color)
+            {
+                underlays.push_back(std::make_unique<ChoroplethRegion>(
                     GraphItems::GraphItemInfo{}
                         .Pen(wxNullPen)
-                        .Brush(Colors::ColorBrewer::GetColor(Colors::Color::White))
+                        .Brush(color)
+                        .Selectable(false)
                         .Scaling(GetScaling())
-                        .DPIScaling(GetDPIScaleFactor()));
+                        .DPIScaling(GetDPIScaleFactor())
+                        .Accessibility(wxSVGAttributes{}.Class(_DT(L"ink-keep")))));
+            };
+            if (m_hasValues && !regionHasNoData)
+                {
+                addUnderlay(Colors::ColorBrewer::GetColor(Colors::Color::White));
+                }
+            if (regionHasLayers)
+                {
+                for (size_t layer = 0; layer + 1 < m_regionLayers[row].size(); ++layer)
+                    {
+                    addUnderlay(m_regionLayers[row][layer]);
+                    }
                 }
 
             for (const auto& geoPolygon : region.m_polygons)
@@ -1125,9 +1241,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                         {
                         outerScreen.push_back(GeoToScreen(coord));
                         }
-                    if (baseObject != nullptr)
+                    for (const auto& underlay : underlays)
                         {
-                        baseObject->AddOuterRing(outerScreen);
+                        underlay->AddOuterRing(outerScreen);
                         }
                     regionObject->AddOuterRing(std::move(outerScreen));
                     }
@@ -1143,9 +1259,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                         {
                         holeScreen.push_back(GeoToScreen(coord));
                         }
-                    if (baseObject != nullptr)
+                    for (const auto& underlay : underlays)
                         {
-                        baseObject->AddHoleRing(holeScreen);
+                        underlay->AddHoleRing(holeScreen);
                         }
                     regionObject->AddHoleRing(std::move(holeScreen));
                     }
@@ -1153,9 +1269,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
 
             if (regionObject->HasRings())
                 {
-                if (baseObject != nullptr)
+                for (auto& underlay : underlays)
                     {
-                    AddObject(std::move(baseObject));
+                    AddObject(std::move(underlay));
                     }
                 AddObject(std::move(regionObject));
                 }
@@ -1456,14 +1572,80 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             return;
             }
 
-        // The backdrop is a lighter neutral than the no-data regions, so land outside
-        // the dataset and open water read as "no coverage" without competing with the
-        // shading. The outline is the no-data color, a step darker than the fill.
+        // The backdrop is outline only, so land outside the dataset and open water show
+        // the page background without competing with the shading. The outline is the
+        // no-data color.
         const wxColour noDataBase = m_noDataColor.IsOk() ? m_noDataColor : wxColour{ L"#D2D2D2" };
-        const wxBrush backgroundBrush{ Colors::ColorContrast::Tint(noDataBase) };
+        const wxBrush backgroundBrush{ *wxTRANSPARENT_BRUSH };
         const wxPen backgroundPen{ noDataBase };
 
         const wxRect clipRect = GetPlotAreaBoundingBox();
+
+        // The backdrop is not part of the fitted extent, so a ring can land far outside the
+        // plot area. Each ring is cut (Sutherland-Hodgman) to the plot area grown by more
+        // than the outline width, so the output carries no off-page geometry and the edges
+        // the cut creates fall outside the visible clip rather than being stroked.
+        const int cutMargin =
+            static_cast<int>(std::ceil(ScaleToScreenAndCanvas(backgroundPen.GetWidth()))) + 2;
+        const wxRect cutRect{ clipRect.GetX() - cutMargin, clipRect.GetY() - cutMargin,
+                              clipRect.GetWidth() + (2 * cutMargin),
+                              clipRect.GetHeight() + (2 * cutMargin) };
+        const auto pointAtX = [](const wxPoint& from, const wxPoint& to, const int edgeX)
+        {
+            const double ratio = safe_divide<double>(edgeX - from.x, to.x - from.x);
+            const int edgeY = from.y + static_cast<int>(std::lround(ratio * (to.y - from.y)));
+            return wxPoint{ edgeX, edgeY };
+        };
+        const auto pointAtY = [](const wxPoint& from, const wxPoint& to, const int edgeY)
+        {
+            const double ratio = safe_divide<double>(edgeY - from.y, to.y - from.y);
+            const int edgeX = from.x + static_cast<int>(std::lround(ratio * (to.x - from.x)));
+            return wxPoint{ edgeX, edgeY };
+        };
+        const auto clipEdge =
+            [](const std::vector<wxPoint>& input, const auto& isInside, const auto& intersect)
+        {
+            std::vector<wxPoint> output;
+            output.reserve(input.size());
+            for (size_t index = 0; index < input.size(); ++index)
+                {
+                const wxPoint& current = input[index];
+                const wxPoint& previous = input[index == 0 ? input.size() - 1 : index - 1];
+                if (isInside(current))
+                    {
+                    if (!isInside(previous))
+                        {
+                        output.push_back(intersect(previous, current));
+                        }
+                    output.push_back(current);
+                    }
+                else if (isInside(previous))
+                    {
+                    output.push_back(intersect(previous, current));
+                    }
+                }
+            return output;
+        };
+        const auto clipRing = [&](const std::vector<wxPoint>& ring)
+        {
+            auto clipped = clipEdge(
+                ring, [&](const wxPoint& pt) { return pt.x >= cutRect.GetLeft(); },
+                [&](const wxPoint& from, const wxPoint& to)
+                { return pointAtX(from, to, cutRect.GetLeft()); });
+            clipped = clipEdge(
+                clipped, [&](const wxPoint& pt) { return pt.x <= cutRect.GetRight(); },
+                [&](const wxPoint& from, const wxPoint& to)
+                { return pointAtX(from, to, cutRect.GetRight()); });
+            clipped = clipEdge(
+                clipped, [&](const wxPoint& pt) { return pt.y >= cutRect.GetTop(); },
+                [&](const wxPoint& from, const wxPoint& to)
+                { return pointAtY(from, to, cutRect.GetTop()); });
+            return clipEdge(
+                clipped, [&](const wxPoint& pt) { return pt.y <= cutRect.GetBottom(); },
+                [&](const wxPoint& from, const wxPoint& to)
+                { return pointAtY(from, to, cutRect.GetBottom()); });
+        };
+
         for (const auto& region : m_backgroundData->GetGeometries())
             {
             auto backgroundObject =
@@ -1486,7 +1668,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                     {
                     outerScreen.push_back(GeoToScreen(coord));
                     }
-                backgroundObject->AddOuterRing(std::move(outerScreen));
+                backgroundObject->AddOuterRing(clipRing(outerScreen));
                 }
 
             if (backgroundObject->HasRings())
@@ -1505,13 +1687,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             {
             return nullptr;
             }
-        if (m_isCategorical)
+        if (m_isCategorical || m_isGrouped)
             {
             return CreateCategoricalLegend(options);
-            }
-        if (m_isClassified)
-            {
-            return CreateClassifiedLegend(options);
             }
         if (m_colorSpectrum.empty())
             {
@@ -1585,58 +1763,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                 Icons::IconShape::Square,
                 wxPen{ Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()) },
                 wxBrush{ category.second });
-            }
-
-        if (options.IsIncludingHeader())
-            {
-            const wxString headerText =
-                options.GetTitle().empty() ? m_valueColumnName : options.GetTitle();
-            legend->SetText(headerText + L"\n" + legend->GetText());
-            legend->GetHeaderInfo()
-                .Enable(true)
-                .LabelAlignment(TextAlignment::FlushLeft)
-                .FontColor(GetLeftYAxis().GetFontColor());
-            }
-
-        AddReferenceLinesAndAreasToLegend(*legend);
-        AdjustLegendSettings(*legend, options.GetPlacementHint());
-        return legend;
-        }
-
-    //----------------------------------------------------------------
-    std::unique_ptr<GraphItems::Label> ChoroplethMap::CreateClassifiedLegend(
-        const LegendOptions& options)
-        {
-        if (m_classBreaks.size() < 2 || m_classColors.empty())
-            {
-            return nullptr;
-            }
-
-        const auto formatValue = [](const double value)
-        { return wxNumberFormatter::ToString(value, 6, Settings::GetDefaultNumberFormat()); };
-
-        wxString legendText;
-        for (size_t classIndex = 0; classIndex < m_classColors.size(); ++classIndex)
-            {
-            legendText += formatValue(m_classBreaks[classIndex]) + L" – " +
-                          formatValue(m_classBreaks[classIndex + 1]) + L"\n";
-            }
-        legendText.Trim();
-
-        auto legend = std::make_unique<GraphItems::Label>(
-            GraphItems::GraphItemInfo{ legendText }
-                .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs())
-                .DPIScaling(GetDPIScaleFactor())
-                .Anchoring(Anchoring::TopLeftCorner)
-                .LabelAlignment(TextAlignment::FlushLeft)
-                .FontColor(GetLeftYAxis().GetFontColor()));
-
-        for (const auto& classColor : m_classColors)
-            {
-            legend->GetLegendIcons().emplace_back(
-                Icons::IconShape::Square,
-                wxPen{ Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()) },
-                wxBrush{ classColor });
             }
 
         if (options.IsIncludingHeader())
@@ -1754,23 +1880,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
 
         description +=
             L". " + wxString::Format(_(L"%zu regions"), m_geoData->GetGeometries().size());
-        if (m_isCategorical)
+        if (m_isGrouped)
+            {
+            description += L". " + wxString::Format(_(L"Shaded by %s, in %zu groups"),
+                                                    m_valueColumnName, m_categoryLegend.size());
+            }
+        else if (m_isCategorical)
             {
             description += L". " + wxString::Format(_(L"Shaded by %s, in %zu categories"),
                                                     m_valueColumnName, m_categoryLegend.size());
-            }
-        else if (m_isClassified)
-            {
-            description +=
-                L". " +
-                wxString::Format(
-                    /* TRANSLATORS: variable and then values. */
-                    _(L"Shaded by %s, in %zu classes from %s to %s"), m_valueColumnName,
-                    m_classColors.size(),
-                    wxNumberFormatter::ToString(m_valueRange.first, 6,
-                                                wxNumberFormatter::Style::Style_NoTrailingZeroes),
-                    wxNumberFormatter::ToString(m_valueRange.second, 6,
-                                                wxNumberFormatter::Style::Style_NoTrailingZeroes));
             }
         else if (m_hasValues)
             {

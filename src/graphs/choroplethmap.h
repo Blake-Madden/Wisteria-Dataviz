@@ -14,6 +14,7 @@
 
 #include "../data/geodataset.h"
 #include "graph2d.h"
+#include <limits>
 #include <map>
 #include <utility>
 #include <vector>
@@ -242,10 +243,10 @@ namespace Wisteria::Graphs
         @par Background Layer:
          A second set of regions can be drawn beneath the data regions as a backdrop,
          so a map whose regions have gaps does not float on the page. The backdrop is
-         filled with a light neutral, a shade lighter than GetNoDataColor(), so land
-         outside the dataset reads as "no coverage" and stays clear of the shading. It
-         is projected with the same transform as the data and clipped to the plot
-         area, and does not take part in fitting the view.*/
+         drawn as an outline in GetNoDataColor() with no fill, so land outside the
+         dataset stays clear of the shading. It is projected with the same transform
+         as the data and clipped to the plot area, and does not take part in fitting
+         the view.*/
     class ChoroplethMap final : public Graph2D
         {
         wxDECLARE_DYNAMIC_CLASS(ChoroplethMap);
@@ -268,16 +269,6 @@ namespace Wisteria::Graphs
             ///     equal-area pseudocylindrical projection suited to hemispheric or
             ///     world maps.
             EqualEarth
-            };
-
-        /// @brief How a continuous shading column is divided into classes.
-        enum class ClassificationMethod
-            {
-            /// @brief No classification. The value is mapped onto a continuous color ramp.
-            Unclassed,
-            /// @brief Jenks natural breaks. The class boundaries are chosen to keep the
-            ///     values within each class close together and the classes well separated.
-            JenksNaturalBreaks
             };
 
         /** @brief Constructor.
@@ -314,53 +305,40 @@ namespace Wisteria::Graphs
             return m_isCategorical;
             }
 
-        /** @brief Sets how a continuous shading column is split into classes.
-            @param method The classification method, or ClassificationMethod::Unclassed
-                for a continuous color ramp.
-            @details When a method is set, each class gets one color from the scheme
-                and the legend shows the class ranges instead of a ramp. This has no
-                effect on a categorical shading column. Call SetData() again for a
-                change to take effect.*/
-        void SetClassificationMethod(const ClassificationMethod method) noexcept
+        /** @brief Sets the data for a map where a region can hold several groups.
+            @param data The GeoDataset holding the regions and their geometry.
+            @param source A dataset with any number of rows per region.
+            @param keyColumnName The column in @c source matched against the ID column of
+                @c data. May be @c source's ID column or one of its categorical columns.
+            @param groupColumnName The categorical column in @c source naming the group
+                of each row.
+            @param valueColumnName An optional continuous column in @c source. Rows that
+                share a region and group are combined with GetDataAggregation(), and the
+                result sets the opacity (half to full) of that group's layer in that region.
+                If not provided, every layer is drawn at 50% opacity.
+            @details Each group gets one color. A region draws one translucent layer per
+                group it contains, over a white base, so overlapping groups blend.
+                Call SetDataAggregation() before this.
+            @note Call the parent canvas's @c CalcAllSizes() after setting new data to re-plot.
+            @throws std::runtime_error If a named column is not found. The @c what()
+                message is UTF-8 encoded.*/
+        void SetGroupData(const std::shared_ptr<const Data::GeoDataset>& data,
+                          const Data::Dataset& source, const wxString& keyColumnName,
+                          const wxString& groupColumnName,
+                          const std::optional<wxString>& valueColumnName = std::nullopt);
+
+        /// @returns @c true if the map was set with SetGroupData().
+        [[nodiscard]]
+        bool IsGroupedShading() const noexcept
             {
-            m_classificationMethod = method;
+            return m_isGrouped;
             }
 
-        /// @returns The classification method for a continuous shading column.
+        /// @returns The value column given to SetGroupData(), or empty if none.
         [[nodiscard]]
-        ClassificationMethod GetClassificationMethod() const noexcept
+        const wxString& GetGroupValueColumnName() const noexcept
             {
-            return m_classificationMethod;
-            }
-
-        /** @brief Sets the number of classes to split a continuous shading column into.
-            @param count The class count. Values outside the 2 to 12 range are clamped
-                when the classification is computed.
-            @details Only used when GetClassificationMethod() is not
-                ClassificationMethod::Unclassed. Call SetData() again for a change to
-                take effect.*/
-        void SetClassCount(const size_t count) noexcept { m_classCount = count; }
-
-        /// @returns The requested number of classes for a continuous shading column.
-        [[nodiscard]]
-        size_t GetClassCount() const noexcept
-            {
-            return m_classCount;
-            }
-
-        /// @returns @c true if the continuous shading column was split into classes.
-        [[nodiscard]]
-        bool IsClassified() const noexcept
-            {
-            return m_isClassified;
-            }
-
-        /// @returns The class boundaries, lowest first, when IsClassified() is @c true.
-        ///     There is one more boundary than there are classes.
-        [[nodiscard]]
-        const std::vector<double>& GetClassBreaks() const noexcept
-            {
-            return m_classBreaks;
+            return m_groupValueColumnName;
             }
 
         /** @brief Records where the map's regions came from, for serialization and editing.
@@ -443,11 +421,10 @@ namespace Wisteria::Graphs
                 backdrop, so a map with gaps does not float on the page.
             @param backgroundData A GeoDataset holding the backdrop geometry (a state
                 outline, a land polygon, the neighboring regions), or @c nullptr for none.
-            @details The backdrop is filled with a light neutral (a shade lighter than
-                GetNoDataColor()), projected with the same transform as the data
-                regions, and clipped to the plot area. It does not take part in fitting
-                the view, so a backdrop wider than the data extent is cropped at the
-                edges.*/
+            @details The backdrop is an unfilled outline in GetNoDataColor(), projected
+                with the same transform as the data regions, and clipped to the plot
+                area. It does not take part in fitting the view, so a backdrop wider
+                than the data extent is cropped at the edges.*/
         void SetBackgroundLayer(const std::shared_ptr<const Data::GeoDataset>& backgroundData)
             {
             m_backgroundData = backgroundData;
@@ -645,23 +622,22 @@ namespace Wisteria::Graphs
         /// @param column The categorical column to shade by.
         void BuildCategoricalColors(const Data::ColumnWithStringTable& column);
 
-        /// @brief Splits a continuous shading column into classes and fills
-        ///     m_classBreaks, m_classColors, and m_regionColors from it.
-        /// @param values The column's values.
-        /// @returns @c true if a usable classification was produced, @c false to fall
-        ///     back to the continuous color ramp.
+        /// @brief Converts a value's position in the value range to an opacity.
+        /// @param fraction The position, from 0 (the lowest value) to 1 (the highest).
+        /// @returns An opacity from half (the lowest value) to full (the highest value).
         [[nodiscard]]
-        bool BuildClassifiedColors(const std::vector<double>& values);
+        static wxColour::ChannelType OpacityForFraction(double fraction);
+
+        /// @returns The colors assigned to categories or groups, one per entry in turn.
+        ///     This is the graph's color scheme when it carries at least three colors,
+        ///     otherwise a qualitative scheme.
+        [[nodiscard]]
+        std::vector<wxColour> GetCategoryPalette() const;
 
         /// @brief Builds the swatch legend for a categorical shading column.
         /// @param options The legend options.
         /// @returns The legend, or @c nullptr if there are no categories.
         std::unique_ptr<GraphItems::Label> CreateCategoricalLegend(const LegendOptions& options);
-
-        /// @brief Builds the labeled-range legend for a classified shading column.
-        /// @param options The legend options.
-        /// @returns The legend, or @c nullptr if there are no classes.
-        std::unique_ptr<GraphItems::Label> CreateClassifiedLegend(const LegendOptions& options);
 
         /// @brief Formats a degree value with a hemisphere suffix (e.g., "84.5°W").
         /// @param degrees The signed degree value.
@@ -680,21 +656,18 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         static double NiceNumberFloor(double value);
 
-        /// @brief Partitions @c values into @c classCount classes so that the squared
-        ///     deviation from the class means is as small as possible.
-        /// @param values The values to classify.
-        /// @param classCount The number of classes to produce.
-        /// @returns @c classCount + 1 boundaries, lowest first, or an empty vector
-        ///     when the data cannot be partitioned.
-        [[nodiscard]]
-        static std::vector<double> JenksNaturalBreaks(std::vector<double> values,
-                                                      size_t classCount);
-
         /// @brief Composes the label text for a region, honoring GetLabelDisplay().
         /// @param row The region's row.
         /// @returns The label text, empty for BinLabelDisplay::NoDisplay.
         [[nodiscard]]
         wxString BuildRegionLabel(size_t row) const;
+
+        /// @brief Composes the lines listing each group in a grouped region, with its
+        ///     value and its percentage share of the region where there is a value column.
+        /// @param row The region's row.
+        /// @returns One line per group, separated by newlines. Empty if the region has none.
+        [[nodiscard]]
+        wxString BuildGroupBreakdownText(size_t row) const;
 
         /// @brief Whether a region's row carries a color from the shading column
         ///     (as opposed to missing data) on a data-shaded map.
@@ -741,9 +714,8 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         wxPoint GeoToScreen(const Data::GeoCoordinate& coord) const;
 
-        // Fisher-Jenks runs in quadratic time, so it is only attempted for inputs at
-        // or below this size. Larger value columns fall back to the continuous color ramp.
-        constexpr static size_t MAX_JENKS_VALUE_COUNT{ 8'000 };
+        // opacity of a group or category layer when no value column sets it
+        constexpr static wxColour::ChannelType HALF_OPACITY{ 128 };
 
         std::shared_ptr<const Data::GeoDataset> m_geoData;
         wxString m_valueColumnName;
@@ -759,6 +731,24 @@ namespace Wisteria::Graphs
         std::shared_ptr<const Data::GeoDataset> m_backgroundData;
         wxString m_backgroundFilePath;
 
+        // grouped map: one translucent layer color per group present in each region row,
+        // in group order. m_regionColors holds the first layer, so a row with any layer
+        // counts as having a mapped value.
+        bool m_isGrouped{ false };
+        wxString m_groupValueColumnName;
+        std::vector<std::vector<wxColour>> m_regionLayers;
+
+        /// @brief One group's entry in a region, for the region's selection label.
+        struct GroupShare
+            {
+            wxString m_label;
+            // the group's combined value in the region, or NaN without a value column
+            double m_value{ std::numeric_limits<double>::quiet_NaN() };
+            };
+
+        // parallel to m_regionLayers
+        std::vector<std::vector<GroupShare>> m_regionBreakdown;
+
         // one entry per region row; only valid when m_hasValues is true
         std::vector<wxColour> m_regionColors;
         std::vector<wxColour> m_colorSpectrum;
@@ -772,13 +762,6 @@ namespace Wisteria::Graphs
         // ordered (category label, swatch color) pairs for the categorical legend
         std::vector<std::pair<wxString, wxColour>> m_categoryLegend;
 
-        // classification of a continuous shading column; the method and count are
-        // user settings, the rest is recomputed by SetData()
-        ClassificationMethod m_classificationMethod{ ClassificationMethod::Unclassed };
-        size_t m_classCount{ 5 };
-        bool m_isClassified{ false };
-        std::vector<double> m_classBreaks;
-        std::vector<wxColour> m_classColors;
         // region count per category code, and the number of regions that have a
         // category, for percentage labels on a categorical map
         std::map<Data::GroupIdType, size_t> m_categoryRowCounts;

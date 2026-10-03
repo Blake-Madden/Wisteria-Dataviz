@@ -99,7 +99,7 @@ namespace Wisteria::UI
 
         optionsSizer->Add(kmlBox, wxSizerFlags{}.Expand().Border());
 
-        // optional backdrop drawn under the regions, filled a shade lighter than the
+        // optional backdrop drawn under the regions, as an unfilled outline in the
         // no-data color
         auto* backgroundBox =
             new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Background layer (optional)"));
@@ -149,7 +149,7 @@ namespace Wisteria::UI
         };
         m_keyColumnLabel = addVarRow(_(L"Key column:"));
         m_valueColumnLabel = addVarRow(_(L"Value column:"));
-        m_categoryColumnLabel = addVarRow(_(L"Category column:"));
+        m_categoryColumnLabel = addVarRow(_(L"Group column:"));
         m_symbolColumnLabel = addVarRow(_(L"Symbol size column:"));
 
         dataGrid->Add(
@@ -169,31 +169,6 @@ namespace Wisteria::UI
 
         dataBox->Add(dataGrid, wxSizerFlags{}.Expand().Border());
         optionsSizer->Add(dataBox, wxSizerFlags{}.Expand().Border());
-
-        // how a value column is split into classes
-        auto* classBox =
-            new wxStaticBoxSizer(wxHORIZONTAL, optionsPage, _(L"Value classification"));
-            {
-            // the order of these entries is the numeric order of
-            // ChoroplethMap::ClassificationMethod
-            m_classificationChoice =
-                new wxChoice(classBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                             0, nullptr, 0, wxGenericValidator{ &m_classificationMethod });
-            m_classificationChoice->Append(_(L"None (continuous ramp)"));
-            m_classificationChoice->Append(_(L"Jenks natural breaks"));
-            m_classificationChoice->SetSelection(m_classificationMethod);
-            classBox->Add(m_classificationChoice, wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
-            m_classificationChoice->Bind(wxEVT_CHOICE, [this]([[maybe_unused]] wxCommandEvent&)
-                                         { UpdateClassificationControls(); });
-            }
-        m_classCountLabel =
-            new wxStaticText(classBox->GetStaticBox(), wxID_ANY, _(L"Number of classes:"));
-        classBox->Add(m_classCountLabel, wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
-        m_classCountSpin = new wxSpinCtrl(classBox->GetStaticBox(), wxID_ANY);
-        m_classCountSpin->SetRange(2, 12);
-        m_classCountSpin->SetValidator(wxGenericValidator{ &m_classCount });
-        classBox->Add(m_classCountSpin, wxSizerFlags{}.CenterVertical());
-        optionsSizer->Add(classBox, wxSizerFlags{}.Expand().Border());
 
         auto* symbolBox =
             new wxStaticBoxSizer(wxHORIZONTAL, optionsPage, _(L"Proportional symbols"));
@@ -318,13 +293,13 @@ namespace Wisteria::UI
                   .DefaultVariables(asDefault(m_keyColumn))
                   .AcceptedTypes(textTypes),
               VLI{}
-                  .Label(_(L"Value column (color gradient)"))
+                  .Label(_(L"Value column (opacity)"))
                   .SingleSelection(true)
                   .Required(false)
                   .DefaultVariables(asDefault(m_valueColumn))
                   .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
               VLI{}
-                  .Label(_(L"Category column (color per category)"))
+                  .Label(_(L"Group column (color per group)"))
                   .SingleSelection(true)
                   .Required(false)
                   .DefaultVariables(asDefault(m_categoryColumn))
@@ -349,13 +324,6 @@ namespace Wisteria::UI
         m_categoryColumn = categoryVars.empty() ? wxString{} : categoryVars.front();
         const auto symbolVars = selectDlg.GetSelectedVariables(3);
         m_symbolColumn = symbolVars.empty() ? wxString{} : symbolVars.front();
-
-        if (!m_valueColumn.empty() && !m_categoryColumn.empty())
-            {
-            wxMessageBox(_(L"A value column and a category column were both chosen. "
-                           "Clear one of them before continuing."),
-                         _(L"Two Shading Columns Chosen"), wxOK | wxICON_INFORMATION, this);
-            }
 
         UpdateVariableLabels();
         }
@@ -404,35 +372,10 @@ namespace Wisteria::UI
             m_aggregationChoice->Enable(!m_valueColumn.empty() || hasSymbolColumn);
             }
 
-        UpdateClassificationControls();
-
         if (GetSideBarBook() != nullptr && GetSideBarBook()->GetCurrentPage() != nullptr)
             {
             GetSideBarBook()->GetCurrentPage()->Layout();
             GetSideBarBook()->GetCurrentPage()->Refresh();
-            }
-        }
-
-    //-------------------------------------------
-    void InsertChoroplethMapDlg::UpdateClassificationControls()
-        {
-        // classification only applies to a continuous value column
-        const bool hasValueColumn = !m_valueColumn.empty();
-        if (m_classificationChoice != nullptr)
-            {
-            m_classificationChoice->Enable(hasValueColumn);
-            }
-
-        const bool countEnabled = hasValueColumn && m_classificationChoice != nullptr &&
-                                  m_classificationChoice->GetSelection() > 0;
-        if (m_classCountLabel != nullptr)
-            {
-            m_classCountLabel->Enable(countEnabled);
-            m_classCountLabel->Refresh();
-            }
-        if (m_classCountSpin != nullptr)
-            {
-            m_classCountSpin->Enable(countEnabled);
             }
         }
 
@@ -615,13 +558,6 @@ namespace Wisteria::UI
             return false;
             }
 
-        if (!GetValueColumn().empty() && !GetCategoryColumn().empty())
-            {
-            wxMessageBox(_(L"Please choose either a value column or a category column, not both."),
-                         _(L"Two Shading Columns Chosen"), wxOK | wxICON_WARNING, this);
-            return false;
-            }
-
         if (GetSelectedDataset() != nullptr &&
             (!GetValueColumn().empty() || !GetCategoryColumn().empty() ||
              !GetSymbolColumn().empty()) &&
@@ -673,8 +609,6 @@ namespace Wisteria::UI
         m_showOnlyValuedRegions = choroplethMap->IsShowingOnlyRegionsWithValues();
         m_labelDisplay = static_cast<int>(choroplethMap->GetLabelDisplay());
         m_noDataFillStyle = NoDataFillStyleToChoiceIndex(choroplethMap->GetNoDataFillStyle());
-        m_classificationMethod = static_cast<int>(choroplethMap->GetClassificationMethod());
-        m_classCount = static_cast<int>(choroplethMap->GetClassCount());
         m_dataAggregation = static_cast<int>(choroplethMap->GetDataAggregation());
 
         // pick the source dataset, then restore the column selections
@@ -689,7 +623,12 @@ namespace Wisteria::UI
             }
 
         m_keyColumn = choroplethMap->GetDataSourceKeyColumn();
-        if (choroplethMap->IsCategoricalShading())
+        if (choroplethMap->IsGroupedShading())
+            {
+            m_categoryColumn = choroplethMap->GetValueColumnName();
+            m_valueColumn = choroplethMap->GetGroupValueColumnName();
+            }
+        else if (choroplethMap->IsCategoricalShading())
             {
             m_categoryColumn = choroplethMap->GetValueColumnName();
             }
@@ -706,7 +645,6 @@ namespace Wisteria::UI
         UpdateVariableLabels();
 
         TransferDataToWindow();
-        UpdateClassificationControls();
         }
 
     //-------------------------------------------
@@ -720,16 +658,16 @@ namespace Wisteria::UI
         const bool hasSourceColumns = IsMappingData() || IsUsingProportionalSymbols();
         const wxString newDataSource = hasSourceColumns ? GetSelectedDatasetName() : wxString{};
         const wxString newKeyColumn = hasSourceColumns ? GetKeyColumn() : wxString{};
-        const bool newShadingIsCategorical = !GetCategoryColumn().empty();
-        const wxString newShadingColumn =
-            newShadingIsCategorical ? GetCategoryColumn() : GetValueColumn();
+        const bool newIsGrouped = !GetCategoryColumn().empty();
+        const wxString newShadingColumn = newIsGrouped ? GetCategoryColumn() : GetValueColumn();
         const auto newDataAggregation =
             static_cast<Data::GeoColumnAggregation>(GetDataAggregation());
 
         // imports the KML/GeoJSON region file and copies over any mapped
-        // dataset columns from scratch
+        // dataset columns from scratch. A group column is read straight from the
+        // dataset by SetGroupData(), so only a value or symbol column is merged here.
         const auto buildGeoData = [this, hasSourceColumns, &newKeyColumn, &newShadingColumn,
-                                   newShadingIsCategorical, &newSymbolColumn, newDataAggregation]()
+                                   newIsGrouped, &newSymbolColumn, newDataAggregation]()
         {
             auto builtGeoData = std::make_shared<Data::GeoDataset>();
             if (!builtGeoData->ImportRegionFile(GetKMLPath(),
@@ -739,19 +677,14 @@ namespace Wisteria::UI
                 }
             if (hasSourceColumns)
                 {
-                if (newShadingIsCategorical)
-                    {
-                    builtGeoData->CopyCategoricalColumnFrom(*GetSelectedDataset(), newKeyColumn,
-                                                            newShadingColumn, newShadingColumn);
-                    }
-                else if (!newShadingColumn.empty())
+                if (!newIsGrouped && !newShadingColumn.empty())
                     {
                     builtGeoData->CopyContinuousColumnFrom(*GetSelectedDataset(), newKeyColumn,
                                                            newShadingColumn, newShadingColumn,
                                                            newDataAggregation);
                     }
-                if (!newSymbolColumn.empty() && newSymbolColumn != GetValueColumn() &&
-                    newSymbolColumn != GetCategoryColumn())
+                if (!newSymbolColumn.empty() &&
+                    (newIsGrouped || newSymbolColumn != newShadingColumn))
                     {
                     builtGeoData->CopyContinuousColumnFrom(*GetSelectedDataset(), newKeyColumn,
                                                            newSymbolColumn, newSymbolColumn,
@@ -773,7 +706,7 @@ namespace Wisteria::UI
              oldMap->GetDataAggregation() == newDataAggregation &&
              oldMap->GetValueColumnName() == newShadingColumn &&
              oldMap->GetProportionalSymbolColumnName() == newSymbolColumn &&
-             oldMap->IsCategoricalShading() == newShadingIsCategorical);
+             !oldMap->IsCategoricalShading() && oldMap->IsGroupedShading() == newIsGrouped);
 
         std::shared_ptr<const Data::GeoDataset> geoData =
             sourceUnchanged ? oldMap->GetGeoDataset() : buildGeoData();
@@ -788,15 +721,26 @@ namespace Wisteria::UI
 
         const std::optional<wxString> valueCol =
             newShadingColumn.empty() ? std::nullopt : std::optional<wxString>(newShadingColumn);
-        // classification must be set before SetData(), which computes the class colors
-        plot->SetClassificationMethod(
-            static_cast<Graphs::ChoroplethMap::ClassificationMethod>(GetClassificationMethod()));
-        plot->SetClassCount(static_cast<size_t>(GetClassCount()));
-        plot->SetData(geoData, valueCol);
+        // the aggregation must be set before SetGroupData(), which combines the rows
+        plot->SetDataAggregation(newDataAggregation);
+        if (newIsGrouped)
+            {
+            const auto& sourceData = *GetSelectedDataset();
+            const wxString groupKeyColumn =
+                newKeyColumn.empty() ? sourceData.GetIdColumn().GetName() : newKeyColumn;
+            const wxString groupValueColumn = GetValueColumn();
+            plot->SetGroupData(geoData, sourceData, groupKeyColumn, newShadingColumn,
+                               groupValueColumn.empty() ?
+                                   std::nullopt :
+                                   std::optional<wxString>(groupValueColumn));
+            }
+        else
+            {
+            plot->SetData(geoData, valueCol);
+            }
         plot->ShowRegionLabels(IsShowingRegionLabels());
         plot->ShowGraticule(IsShowingGraticule());
         plot->ShowOnlyRegionsWithValues(IsShowingOnlyRegionsWithValues());
-        plot->SetDataAggregation(newDataAggregation);
         plot->SetLabelDisplay(static_cast<BinLabelDisplay>(GetRegionLabelDisplay()));
         plot->SetNoDataFillStyle(GetNoDataFillStyle());
         plot->SetProportionalSymbolColumn(
