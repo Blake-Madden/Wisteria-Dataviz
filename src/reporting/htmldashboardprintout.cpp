@@ -79,12 +79,25 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptPages()
     return LR"JS(
   function collectPages() {
     pages = Array.from(document.querySelectorAll('.page')).map(function(el, i) {
-      return {
+      const svgs = el.querySelectorAll('.page-svg');
+      const page = {
         el: el,
+        svg: svgs[0] || null,
         layer: el.getAttribute('data-layer') || '',
         title: el.getAttribute('aria-label') || format(strings.page, i + 1)
       };
+      // a second SVG is the same page in the other orientation
+      if (svgs.length > 1) {
+        page.alt = { el: el, svg: svgs[1], layer: page.layer, title: page.title };
+      }
+      return page;
     });
+  }
+  function visibleSvg(page) {
+    if (page.alt && page.svg && getComputedStyle(page.svg).visibility === 'hidden') {
+      return page.alt.svg;
+    }
+    return page.svg;
   }
   function clampIndex(index) {
     return Math.max(0, Math.min(pages.length - 1, index));
@@ -197,7 +210,10 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptPages()
   function replayShown() {
     pages.forEach(function(page) {
       const shown = page.el.getClientRects().length > 0;
-      if (shown && page.shown === false && page.revealed) startCounters(page);
+      if (shown && page.shown === false && page.revealed) {
+        startCounters(page);
+        if (page.alt) startCounters(page.alt);
+      }
       page.shown = shown;
     });
   }
@@ -254,7 +270,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptInk()
   function tagInk(page) {
     const shapes = [];
     const keep = [];
-    const nodes = page.el.querySelectorAll('rect, path, polygon, ellipse, circle, text');
+    const nodes = page.svg.querySelectorAll('rect, path, polygon, ellipse, circle, text');
     nodes.forEach(function(el) {
       if (el.tagName !== 'text') {
         if (el.closest('defs, clipPath, pattern, marker, mask')) return;
@@ -287,6 +303,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptInk()
     hidden.forEach(function(page) { page.el.classList.add('ink-measure'); });
     pages.forEach(function(page) {
       try { tagInk(page); } catch (e) {}
+      try { if (page.alt) tagInk(page.alt); } catch (e) {}
     });
     hidden.forEach(function(page) { page.el.classList.remove('ink-measure'); });
   }
@@ -494,7 +511,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptMotion()
   function prepareMarks(page) {
     if (page.prepared) return;
     page.prepared = true;
-    const svg = page.el.querySelector('.page-svg');
+    const svg = page.svg;
     if (!svg) return;
     let fadeIndex = 0;
     const shapes = svg.querySelectorAll(shapeSelector);
@@ -539,7 +556,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptMotion()
   function bindSpot(page) {
     if (page.spotBound || !page.scopes || !page.scopes.size) return;
     page.spotBound = true;
-    const svg = page.el.querySelector('.page-svg');
+    const svg = page.svg;
     let currentScope = null;
     let currentKey = '';
     function clear() {
@@ -569,7 +586,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptMotion()
   let pendingSlow = 0;
 
   function scheduleReveal(page) {
-    const svg = page.el.querySelector('.page-svg');
+    const svg = page.svg;
     const size = svg ? svg.querySelectorAll(shapeSelector + ', text').length : 0;
     if (size <= slowPageElements) {
       revealPage(page);
@@ -586,11 +603,12 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptMotion()
     });
   }
   function revealPage(page) {
+    if (page.alt) revealPage(page.alt);
     prepareMarks(page);
     bindSpot(page);
     bindZoom(page);
     startCounters(page);
-    const svg = page.el.querySelector('.page-svg');
+    const svg = page.svg;
     page.el.classList.add('is-revealed', 'is-entering');
     if (!svg) return;
     svg.addEventListener('animationend', function done(e) {
@@ -601,7 +619,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptMotion()
   }
   function arrive(page) {
     if (reduceMotion.matches || !page) return;
-    const svg = page.el.querySelector('.page-svg');
+    const svg = page.svg;
     if (!svg) return;
     window.setTimeout(function() {
       page.el.classList.remove('is-arriving');
@@ -643,7 +661,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptZoom()
   function bindZoom(page) {
     if (page.zoomBound) return;
     page.zoomBound = true;
-    const svg = page.el.querySelector('.page-svg');
+    const svg = page.svg;
     if (!svg) return;
     const base = svg.viewBox.baseVal;
     const baseBox = { x: base.x, y: base.y, width: base.width, height: base.height };
@@ -834,11 +852,12 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSave()
     {
     return LR"JS(
   let saveOpen = false;
-  function pageContentSize() {
-    const main = document.querySelector('.dash-pages');
-    const style = main ? getComputedStyle(main) : null;
-    const width = style ? parseFloat(style.getPropertyValue('--page-w')) : 0;
-    const height = style ? parseFloat(style.getPropertyValue('--page-h')) : 0;
+  function pageContentSize(svg) {
+    const style = svg ? getComputedStyle(svg) : null;
+    const width = style ?
+      parseFloat(style.getPropertyValue('--svg-w') || style.getPropertyValue('--page-w')) : 0;
+    const height = style ?
+      parseFloat(style.getPropertyValue('--svg-h') || style.getPropertyValue('--page-h')) : 0;
     return { width: width || 0, height: height || 0 };
   }
   function slugify(text) {
@@ -858,7 +877,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSave()
   // colors painted into pages are remapped by the stylesheet for light/dark mode, so the
   // resolved colors are baked into the exported copy to keep it correct outside the dashboard
   function clonePageSvg(page, size) {
-    const svg = page.el.querySelector('.page-svg');
+    const svg = visibleSvg(page);
     if (!svg) return null;
     const clone = svg.cloneNode(true);
     clone.removeAttribute('class');
@@ -888,14 +907,14 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSave()
     return clone;
   }
   function savePageAsSvg(page) {
-    const clone = clonePageSvg(page, pageContentSize());
+    const clone = clonePageSvg(page, pageContentSize(visibleSvg(page)));
     if (!clone) return;
     const xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
       new XMLSerializer().serializeToString(clone);
     downloadBlob(new Blob([xml], { type: 'image/svg+xml' }), slugify(page.title) + '.svg');
   }
   function savePageAsPng(page) {
-    const size = pageContentSize();
+    const size = pageContentSize(visibleSvg(page));
     const clone = clonePageSvg(page, size);
     if (!clone) return;
     const xml = new XMLSerializer().serializeToString(clone);
@@ -1105,6 +1124,10 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         {
         pageSize = wxSize{ 1280, 720 };
         }
+    // a square page has no distinct second orientation
+    const bool dualOrientations{ options.m_dualOrientations &&
+                                 pageSize.GetWidth() != pageSize.GetHeight() };
+    const wxSize swappedSize{ pageSize.GetHeight(), pageSize.GetWidth() };
 
     wxString css{ options.m_css };
     // keep the CSS from ending the <style> element
@@ -1388,17 +1411,36 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
             {
             pageTitle = wxString::Format(_(L"Page %zu"), pageIndex + 1);
             }
-        const wxString pageSvg{ SVGReportPrintout::RenderCanvasToSvg(canvas, pageSize) };
+        const auto renderPageSvg =
+            [canvas, dualOrientations, pageIndex](const wxSize& size, const bool isSwapped)
+        {
+            const wxString content{ SVGReportPrintout::RenderCanvasToSvg(canvas, size) };
+            wxString orientAttrs;
+            if (dualOrientations)
+                {
+                orientAttrs = wxString::Format(
+                    L" data-orient=\"%s\" style=\"--svg-w:%d;--svg-h:%d\"",
+                    (size.GetWidth() < size.GetHeight()) ? L"portrait" : L"landscape",
+                    size.GetWidth(), size.GetHeight());
+                }
+            return wxString::Format(
+                L"<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"page-svg\"%s "
+                "viewBox=\"0 0 %d %d\" preserveAspectRatio=\"xMidYMid meet\">\n"
+                "<g id=\"page-content-%s%zu\">\n%s\n</g>\n</svg>\n",
+                orientAttrs, size.GetWidth(), size.GetHeight(), isSwapped ? L"alt-" : L"",
+                pageIndex, content);
+        };
+
         html += wxString::Format(
             L"<section class=\"page\" id=\"page-%zu\" data-index=\"%zu\" data-layer=\"%s\" "
-            "aria-label=\"%s\" tabindex=\"-1\">\n"
-            "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"page-svg\" "
-            "viewBox=\"0 0 %d %d\" preserveAspectRatio=\"xMidYMid meet\">\n"
-            "<g id=\"page-content-%zu\">\n",
-            pageIndex, pageIndex, escapeAttr(canvas->GetLayer()), escapeAttr(pageTitle),
-            pageSize.GetWidth(), pageSize.GetHeight(), pageIndex);
-        html += pageSvg;
-        html += wxString::Format(L"\n</g>\n</svg>\n<h2 class=\"page-title\">%s</h2>\n</section>\n",
+            "aria-label=\"%s\" tabindex=\"-1\">\n",
+            pageIndex, pageIndex, escapeAttr(canvas->GetLayer()), escapeAttr(pageTitle));
+        html += renderPageSvg(pageSize, false);
+        if (dualOrientations)
+            {
+            html += renderPageSvg(swappedSize, true);
+            }
+        html += wxString::Format(L"<h2 class=\"page-title\">%s</h2>\n</section>\n",
                                  escapeText(pageTitle));
         ++pageIndex;
         }

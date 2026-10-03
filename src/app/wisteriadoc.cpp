@@ -141,6 +141,7 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
                       Wisteria::HtmlDashboardOptions::ColorModeToString(htmlOpts.m_colorMode));
         htmlNode->Add(L"color-mode-toggle", htmlOpts.m_includeColorModeToggle);
         htmlNode->Add(L"count-up", htmlOpts.m_countUpNumbers);
+        htmlNode->Add(L"dual-orientations", htmlOpts.m_dualOrientations);
         htmlNode->Add(L"page-width",
                       static_cast<double>(std::max(0, htmlOpts.m_pageSize.GetWidth())));
         htmlNode->Add(L"page-height",

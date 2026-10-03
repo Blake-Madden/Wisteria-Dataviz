@@ -205,6 +205,12 @@ namespace Wisteria
                 m_htmlExportOptions.m_countUpNumbers =
                     countUpNode->AsBool(m_htmlExportOptions.m_countUpNumbers);
                 }
+            if (const auto dualNode = htmlExportNode->GetProperty(L"dual-orientations");
+                dualNode->IsOk())
+                {
+                m_htmlExportOptions.m_dualOrientations =
+                    dualNode->AsBool(m_htmlExportOptions.m_dualOrientations);
+                }
             if (const auto widthNode = htmlExportNode->GetProperty(L"page-width");
                 widthNode->IsOk() && widthNode->AsDouble(-1) > 0)
                 {

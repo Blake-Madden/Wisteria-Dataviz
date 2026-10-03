@@ -90,6 +90,13 @@ namespace Wisteria::UI
             return m_countUpNumbers;
             }
 
+        /// @returns Whether each page is also rendered with its width and height swapped.
+        [[nodiscard]]
+        bool DualOrientations() const noexcept
+            {
+            return m_dualOrientations;
+            }
+
         /// @returns The page size (in DIPs/pixels).
         [[nodiscard]]
         wxSize GetPageSize() const noexcept
@@ -125,6 +132,7 @@ namespace Wisteria::UI
         bool m_countUpNumbers{ true };
         int m_pageWidth{ 1280 };
         int m_pageHeight{ 720 };
+        bool m_dualOrientations{ true };
         };
     } // namespace Wisteria::UI
 

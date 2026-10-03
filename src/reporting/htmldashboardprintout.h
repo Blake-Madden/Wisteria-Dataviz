@@ -63,6 +63,9 @@ namespace Wisteria
         bool m_countUpNumbers{ true };
         /// @brief The size (in DIPs) that every page is rendered at.
         wxSize m_pageSize{ 1280, 720 };
+        /// @brief Whether each page is also rendered with its width and height swapped.
+        /// @details The browser shows whichever orientation best fits its window.
+        bool m_dualOrientations{ true };
         /// @brief The name of the theme that @c m_css was built from.
         /// @note This is only stored by the caller. The exporter uses @c m_css.
         wxString m_theme;
@@ -211,6 +214,15 @@ namespace Wisteria
         HtmlDashboardOptions& PageSize(const wxSize& size)
             {
             m_pageSize = size;
+            return *this;
+            }
+
+        /// @brief Enables/disables rendering each page in both orientations.
+        /// @param dual @c true to also render each page with its width and height swapped.
+        /// @returns A reference to this object.
+        HtmlDashboardOptions& DualOrientations(const bool dual) noexcept
+            {
+            m_dualOrientations = dual;
             return *this;
             }
         };

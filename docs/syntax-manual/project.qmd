@@ -8,6 +8,29 @@ The following properties are available:
   Available options:
   - `"label"`: The text to display across pages.
   - `"color"`: The watermark color (name or hex value).
+- `"html-export"`: Defines the options used when exporting the project as an HTML dashboard. \
+  Available options:
+  - `"theme"`: The name of the dashboard theme.
+  - `"logo"`: The path to an image shown at the left of the title bar.
+  - `"view"`: How the pages are initially presented. \
+    Available options:
+    - `"gallery"` (default): Small page cards across the top, with the selected page shown below.
+    - `"story"`: All pages stacked in a scrolling storyline.
+  - `"color-mode"`: The initial light/dark mode. \
+    Available options:
+    - `"auto"` (default): Follows the browser's setting.
+    - `"light"`
+    - `"dark"`
+  - `"color-mode-toggle"`: Whether to include the Auto/Light/Dark toggle. \
+    The default is `true`.
+  - `"count-up"`: Whether large numbers count up when a page is revealed. \
+    The default is `true`.
+  - `"page-width"`: The width (in DIPs) that each page is rendered at. The default is `1280`.
+  - `"page-height"`: The height (in DIPs) that each page is rendered at. The default is `720`.
+  - `"dual-orientations"`: Whether to also render each page with its width and height swapped. \
+    The browser then shows whichever orientation best fits its window. \
+    For example, with a page size of 1280 x 720, a portrait (720 x 1280) copy of each page is included. \
+    If the width is less than the height, the swapped copy is the landscape one.
 
 ### Examples {-}
 

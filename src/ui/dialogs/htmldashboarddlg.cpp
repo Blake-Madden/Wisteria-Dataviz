@@ -24,7 +24,8 @@ namespace Wisteria::UI
           m_theme(theme), m_logoPath(options.m_logoPath),
           m_includeColorModeToggle(options.m_includeColorModeToggle),
           m_countUpNumbers(options.m_countUpNumbers), m_pageWidth(options.m_pageSize.GetWidth()),
-          m_pageHeight(options.m_pageSize.GetHeight())
+          m_pageHeight(options.m_pageSize.GetHeight()),
+          m_dualOrientations(options.m_dualOrientations)
         {
         m_view = (options.m_view == Wisteria::HtmlDashboardOptions::DashboardView::Gallery) ? 0 : 1;
         m_colorMode = (options.m_colorMode == Wisteria::HtmlDashboardOptions::ColorMode::Auto) ? 0 :
@@ -122,6 +123,10 @@ namespace Wisteria::UI
         auto* countUpCheck = new wxCheckBox(this, wxID_ANY, _(L"Count up large numbers"));
         countUpCheck->SetValidator(wxGenericValidator{ &m_countUpNumbers });
         mainSizer->Add(countUpCheck, wxSizerFlags{}.Border());
+
+        auto* dualCheck = new wxCheckBox(this, wxID_ANY, _(L"Include dual layout orientations"));
+        dualCheck->SetValidator(wxGenericValidator{ &m_dualOrientations });
+        mainSizer->Add(dualCheck, wxSizerFlags{}.Border());
 
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
                        wxSizerFlags{}.Expand().Border());

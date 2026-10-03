@@ -296,6 +296,7 @@ html[data-view="story"] .dash-progress
 
 .page
   {
+  position: relative;
   width: 100%;
   max-width: var(--page-max-width);
   }
@@ -305,12 +306,43 @@ html[data-view="story"] .dash-progress
   {
   display: block;
   width: min(100%, calc((var(--full-height) - var(--toolbar-height) - var(--strip-height)
-    - 2 * var(--page-gap)) * var(--page-w) / var(--page-h)));
+    - 2 * var(--page-gap)) * var(--svg-w, var(--page-w)) / var(--svg-h, var(--page-h))));
   height: auto;
   margin: 0 auto;
   background-color: light-dark(#FFFFFF, #000000);
   border: 1px solid var(--border-color);
   border-radius: var(--page-radius);
+  }
+
+/* pages exported in both orientations show the one matching the browser window */
+@media (orientation: landscape)
+  {
+  .page-svg[data-orient="portrait"]
+    {
+    position: absolute;
+    inset: 0;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    visibility: hidden;
+    pointer-events: none;
+    }
+  }
+
+@media (orientation: portrait)
+  {
+  .page-svg[data-orient="landscape"]
+    {
+    position: absolute;
+    inset: 0;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    visibility: hidden;
+    pointer-events: none;
+    }
   }
 
 /* structural colors painted into the pages follow light/dark mode, not the theme */

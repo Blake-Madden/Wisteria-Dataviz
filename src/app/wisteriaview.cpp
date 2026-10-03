@@ -1315,7 +1315,8 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
         (savedOptions.m_colorMode != optionsDlg.GetInitialColorMode()) ||
         (savedOptions.m_includeColorModeToggle != optionsDlg.IncludeColorModeToggle()) ||
         (savedOptions.m_countUpNumbers != optionsDlg.CountUpNumbers()) ||
-        (savedOptions.m_pageSize != optionsDlg.GetPageSize());
+        (savedOptions.m_pageSize != optionsDlg.GetPageSize()) ||
+        (savedOptions.m_dualOrientations != optionsDlg.DualOrientations());
     savedOptions.m_theme = optionsDlg.GetTheme();
     savedOptions.m_logoPath = optionsDlg.GetLogoPath();
     savedOptions.m_view = optionsDlg.GetInitialView();
@@ -1323,6 +1324,7 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
     savedOptions.m_includeColorModeToggle = optionsDlg.IncludeColorModeToggle();
     savedOptions.m_countUpNumbers = optionsDlg.CountUpNumbers();
     savedOptions.m_pageSize = optionsDlg.GetPageSize();
+    savedOptions.m_dualOrientations = optionsDlg.DualOrientations();
     if (changed)
         {
         GetDocument()->Modify(true);
@@ -1361,6 +1363,7 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
                      .ColorModeToggle(optionsDlg.IncludeColorModeToggle())
                      .CountUpNumbers(optionsDlg.CountUpNumbers())
                      .PageSize(optionsDlg.GetPageSize())
+                     .DualOrientations(optionsDlg.DualOrientations())
                      .PageTitles(std::move(pageTitles)));
     }
 
