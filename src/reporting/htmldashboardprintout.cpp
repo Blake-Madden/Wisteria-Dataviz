@@ -1225,11 +1225,13 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
             L"<div class=\"dash-modes\" role=\"group\" aria-labelledby=\"dash-modes-label\">\n"
             "<span id=\"dash-modes-label\" class=\"dash-group-label\">%s</span>\n"
             "<button type=\"button\" data-mode=\"auto\" aria-pressed=\"false\">%s</button>\n"
-            "<button type=\"button\" data-mode=\"light\" aria-pressed=\"false\">%s</button>\n"
-            "<button type=\"button\" data-mode=\"dark\" aria-pressed=\"false\">%s</button>\n"
+            "<button type=\"button\" data-mode=\"light\" aria-pressed=\"false\" "
+            "aria-label=\"%s\">☀️</button>\n"
+            "<button type=\"button\" data-mode=\"dark\" aria-pressed=\"false\" "
+            "aria-label=\"%s\">\U0001F319</button>\n"
             "</div>\n",
-            escapeText(_(L"Theme")), escapeText(_(L"Auto")), escapeText(_(L"Light")),
-            escapeText(_(L"Dark")));
+            escapeText(_(L"Theme")), escapeText(_(L"Auto")), escapeAttr(_(L"Light")),
+            escapeAttr(_(L"Dark")));
         }
     html += wxString::Format(
         L"<button type=\"button\" id=\"dash-save\" class=\"dash-save-btn\" "

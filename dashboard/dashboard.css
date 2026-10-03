@@ -18,6 +18,14 @@
   --card-width: 140px;                         /* width of a page card in the Gallery view */
   --toolbar-height: 52px;                      /* replaced with the measured height by the script */
   --strip-height: 0px;                         /* replaced with the measured card strip height */
+  --full-height: 100vh;                        /* the visible viewport height */
+  }
+
+/* mobile browsers exclude their collapsing toolbars from the dynamic viewport height */
+@supports (height: 100dvh)
+  {
+  :root
+    { --full-height: 100dvh; }
   }
 
 /* ---------- Base --------------------------------------------- */
@@ -187,6 +195,21 @@ html[data-view="story"] .dash-progress
   cursor: pointer;
   }
 
+/* on narrow windows, the checklist spans the window just beneath the toolbar */
+@media (max-width: 700px)
+  {
+  .dash-layers-menu
+    {
+    position: fixed;
+    top: calc(var(--toolbar-height) + 4px);
+    right: 8px;
+    left: 8px;
+    max-height: calc(var(--full-height) - var(--toolbar-height) - 16px);
+    }
+  .dash-layers-menu label
+    { white-space: normal; }
+  }
+
 .dash-group-label
   {
   margin-right: 4px;
@@ -262,7 +285,7 @@ html[data-view="story"] .dash-progress
 .page-svg
   {
   display: block;
-  width: min(100%, calc((100vh - var(--toolbar-height) - var(--strip-height)
+  width: min(100%, calc((var(--full-height) - var(--toolbar-height) - var(--strip-height)
     - 2 * var(--page-gap)) * var(--page-w) / var(--page-h)));
   height: auto;
   margin: 0 auto;
@@ -318,13 +341,23 @@ html[data-view="story"] .dash-pages
 
 html[data-view="story"] .page
   {
-  min-height: calc(100vh - var(--toolbar-height));
+  min-height: calc(var(--full-height) - var(--toolbar-height));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   scroll-snap-align: start;
   scroll-margin-top: var(--toolbar-height);
+  }
+
+/* in a tall, narrow window, pages are sized by their content instead of the viewport height */
+@media (max-aspect-ratio: 1/1)
+  {
+  html[data-view="story"] .page
+    {
+    min-height: 0;
+    padding: calc(var(--page-gap) / 2) 0;
+    }
   }
 
 /* progress rail */
@@ -375,6 +408,17 @@ html[data-view="story"] .dash-rail
   {
   background-color: var(--accent);
   transform: scale(1.3);
+  }
+
+/* on narrow windows, the rail gets its own gutter so it doesn't cover the pages */
+@media (max-width: 700px)
+  {
+  .dash-rail
+    { right: 2px; }
+  .dash-rail button
+    { width: 20px; }
+  html[data-view="story"] .dash-pages
+    { padding: 0 24px; }
   }
 
 /* ---------- Gallery view ------------------------------------- */
