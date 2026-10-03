@@ -367,7 +367,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                     if (!group.m_label.empty())
                         {
                         blockInfo.Accessibility(
-                            wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(group.m_label));
+                            wxSVGAttributes{}
+                                .Role(_DT(L"img"))
+                                .AriaLabel(wxString::Format(
+                                    L"%s (%s)", group.m_label,
+                                    wxString::Format(
+                                        // TRANSLATORS: the number of items in a block
+                                        wxPLURAL(
+                                            L"%s item", L"%s items",
+                                            static_cast<unsigned int>(wxRound(group.m_frequency))),
+                                        wxNumberFormatter::ToString(
+                                            group.m_frequency, 0,
+                                            wxNumberFormatter::Style::Style_None)))));
                         }
                     AddObject(std::make_unique<GraphItems::Polygon>(blockInfo, pts));
                     }
@@ -490,7 +501,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                             .Scaling(GetScaling())
                             .Accessibility(wxSVGAttributes{}
                                                .Role(_DT(L"img"))
-                                               .AriaLabel(streamInfo.GetText()));
+                                               .AriaLabel(wxString::Format(
+                                                   // TRANSLATORS: Number of observations, "from"
+                                                   // group label, and "to" group label
+                                                   _(L"%s went from '%s' to '%s'"),
+                                                   wxNumberFormatter::ToString(
+                                                       downstreamGroup.second.second, 0,
+                                                       wxNumberFormatter::Style::Style_None),
+                                                   group.m_label, downstreamGroup.first)));
                         auto streamRibbon{ std::make_unique<GraphItems::Polygon>(streamInfo, pts) };
                         streamRibbon->SetShape(
                             GetFlowShape() == FlowShape::Curvy ?
