@@ -429,15 +429,39 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                     }
 
                 // A classification splits the values into discrete classes, each with
-                // one color; otherwise, the value is mapped onto the continuous ramp.
+                // one color; otherwise, the value is mapped onto an opacity scale (0-255)
+                // of the color scheme's last color.
                 if (m_classificationMethod == ClassificationMethod::Unclassed ||
                     !BuildClassifiedColors(continuousColumn->GetValues()))
                     {
-                    Colors::ColorBrewer colorBrewer;
-                    colorBrewer.SetColorScale(m_colorSpectrum.cbegin(), m_colorSpectrum.cend());
-                    m_regionColors = colorBrewer.BrewColors(continuousColumn->GetValues().cbegin(),
-                                                            continuousColumn->GetValues().cend());
-                    m_valueRange = colorBrewer.GetRange();
+                    const auto& values = continuousColumn->GetValues();
+                    double minValue{ std::numeric_limits<double>::max() };
+                    double maxValue{ std::numeric_limits<double>::lowest() };
+                    for (const auto value : values)
+                        {
+                        if (std::isfinite(value))
+                            {
+                            minValue = std::min(minValue, value);
+                            maxValue = std::max(maxValue, value);
+                            }
+                        }
+                    m_valueRange = { minValue, maxValue };
+
+                    const wxColour baseColor = m_colorSpectrum.back();
+                    m_regionColors.assign(values.size(), wxColour{});
+                    for (size_t row = 0; row < values.size(); ++row)
+                        {
+                        if (!std::isfinite(values[row]))
+                            {
+                            continue;
+                            }
+                        const double valueSpan = maxValue - minValue;
+                        const double fraction =
+                            valueSpan > 0 ? safe_divide(values[row] - minValue, valueSpan) : 1.0;
+                        m_regionColors[row] = Colors::ColorContrast::ChangeOpacity(
+                            baseColor, static_cast<wxColour::ChannelType>(
+                                           std::clamp(std::round(fraction * 255.0), 0.0, 255.0)));
+                        }
                     }
                 m_hasValues = true;
                 }
@@ -1078,6 +1102,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                                                        .Scaling(GetScaling())
                                                        .DPIScaling(GetDPIScaleFactor()));
 
+            // a region shaded by opacity gets a white base underneath, so the
+            // background does not bleed through low values
+            std::unique_ptr<ChoroplethRegion> baseObject;
+            if (m_hasValues && !m_isCategorical && !m_isClassified && !regionHasNoData)
+                {
+                baseObject = std::make_unique<ChoroplethRegion>(
+                    GraphItems::GraphItemInfo{}
+                        .Pen(wxNullPen)
+                        .Brush(Colors::ColorBrewer::GetColor(Colors::Color::White))
+                        .Scaling(GetScaling())
+                        .DPIScaling(GetDPIScaleFactor()));
+                }
+
             for (const auto& geoPolygon : region.m_polygons)
                 {
                 if (geoPolygon.m_outerBoundary.size() >= 3)
@@ -1087,6 +1124,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                     for (const auto& coord : geoPolygon.m_outerBoundary)
                         {
                         outerScreen.push_back(GeoToScreen(coord));
+                        }
+                    if (baseObject != nullptr)
+                        {
+                        baseObject->AddOuterRing(outerScreen);
                         }
                     regionObject->AddOuterRing(std::move(outerScreen));
                     }
@@ -1102,12 +1143,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                         {
                         holeScreen.push_back(GeoToScreen(coord));
                         }
+                    if (baseObject != nullptr)
+                        {
+                        baseObject->AddHoleRing(holeScreen);
+                        }
                     regionObject->AddHoleRing(std::move(holeScreen));
                     }
                 }
 
             if (regionObject->HasRings())
                 {
+                if (baseObject != nullptr)
+                    {
+                    AddObject(std::move(baseObject));
+                    }
                 AddObject(std::move(regionObject));
                 }
 
@@ -1494,9 +1543,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                 .FontColor(GetLeftYAxis().GetFontColor());
             }
 
-        // the gradient icon runs top-to-bottom, so hand it the colors high-to-low
-        std::vector<wxColour> legendSpectrum{ m_colorSpectrum };
-        std::ranges::reverse(legendSpectrum);
+        // the gradient icon runs top-to-bottom, so hand it the base color (full opacity)
+        // first and white (zero opacity) last
+        const std::vector<wxColour> legendSpectrum{
+            m_colorSpectrum.back(), Colors::ColorBrewer::GetColor(Colors::Color::White)
+        };
         legend->GetLegendIcons().emplace_back(legendSpectrum);
 
         AddReferenceLinesAndAreasToLegend(*legend);
