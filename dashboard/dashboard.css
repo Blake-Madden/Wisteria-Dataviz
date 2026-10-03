@@ -72,6 +72,25 @@ body
   border-bottom: 1px solid var(--border-color);
   }
 
+.dash-brand
+  {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  }
+
+.dash-logo
+  {
+  display: block;
+  flex: none;
+  width: auto;
+  height: auto;
+  max-width: 160px;
+  max-height: 32px;
+  object-fit: contain;
+  }
+
 .dash-title
   {
   margin: 0;

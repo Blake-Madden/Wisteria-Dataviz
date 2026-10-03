@@ -21,7 +21,8 @@ namespace Wisteria::UI
                                        const wxSize& size /*= wxDefaultSize*/,
                                        long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN*/)
         : DialogWithHelp(parent, id, caption, pos, size, style), m_dashboardTitle(options.m_title),
-          m_theme(theme), m_includeColorModeToggle(options.m_includeColorModeToggle),
+          m_theme(theme), m_logoPath(options.m_logoPath),
+          m_includeColorModeToggle(options.m_includeColorModeToggle),
           m_countUpNumbers(options.m_countUpNumbers), m_pageWidth(options.m_pageSize.GetWidth()),
           m_pageHeight(options.m_pageSize.GetHeight())
         {
@@ -56,6 +57,18 @@ namespace Wisteria::UI
                                          FromDIP(wxSize{ 300, -1 }));
         titleCtrl->SetValidator(wxGenericValidator{ &m_dashboardTitle });
         gridSizer->Add(titleCtrl, wxSizerFlags{}.Expand());
+
+        // logo
+        gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Logo:")),
+                       wxSizerFlags{}.CenterVertical());
+        m_logoPicker = new wxFilePickerCtrl(
+            this, wxID_ANY, m_logoPath, _(L"Select a Logo"),
+            // TRANSLATORS: Only translate the word "Images", don't move anything.
+            _(L"Images (*.svg;*.png;*.jpg;*.jpeg;*.gif;*.webp)|"
+              "*.svg;*.png;*.jpg;*.jpeg;*.gif;*.webp"),
+            wxDefaultPosition, wxDefaultSize,
+            wxFLP_USE_TEXTCTRL | wxFLP_OPEN | wxFLP_FILE_MUST_EXIST);
+        gridSizer->Add(m_logoPicker, wxSizerFlags{}.Expand());
 
         // theme
         gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Theme:")),

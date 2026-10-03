@@ -135,6 +135,7 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
         const auto& htmlOpts = view->GetReportBuilder().GetHtmlExportOptions();
         auto htmlNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
         htmlNode->Add(L"theme", htmlOpts.m_theme);
+        htmlNode->Add(L"logo", htmlOpts.m_logoPath);
         htmlNode->Add(L"view", Wisteria::HtmlDashboardOptions::ViewToString(htmlOpts.m_view));
         htmlNode->Add(L"color-mode",
                       Wisteria::HtmlDashboardOptions::ColorModeToString(htmlOpts.m_colorMode));

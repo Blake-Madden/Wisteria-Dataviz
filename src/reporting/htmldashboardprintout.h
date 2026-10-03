@@ -49,6 +49,8 @@ namespace Wisteria
         wxString m_filePath;
         /// @brief The dashboard title. If empty, the first canvas label is used.
         wxString m_title;
+        /// @brief Path to an optional logo shown in the title bar.
+        wxString m_logoPath;
         /// @brief The CSS to inline (core stylesheet followed by the theme).
         wxString m_css;
         /// @brief The initial light/dark mode.
@@ -128,6 +130,15 @@ namespace Wisteria
         HtmlDashboardOptions& Title(const wxString& title)
             {
             m_title = title;
+            return *this;
+            }
+
+        /// @brief Sets the logo shown at the left of the title bar.
+        /// @param logoPath The path to the image file. Empty for no logo.
+        /// @returns A reference to this object.
+        HtmlDashboardOptions& Logo(const wxString& logoPath)
+            {
+            m_logoPath = logoPath;
             return *this;
             }
 

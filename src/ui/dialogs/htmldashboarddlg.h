@@ -14,6 +14,7 @@
 
 #include "../../reporting/htmldashboardprintout.h"
 #include "dialogwithhelp.h"
+#include <wx/filepicker.h>
 #include <wx/spinctrl.h>
 #include <wx/wx.h>
 
@@ -60,6 +61,13 @@ namespace Wisteria::UI
             return m_theme;
             }
 
+        /// @returns The path to the logo image, or empty for no logo.
+        [[nodiscard]]
+        const wxString& GetLogoPath() const noexcept
+            {
+            return m_logoPath;
+            }
+
         /// @returns The initial view.
         [[nodiscard]]
         Wisteria::HtmlDashboardOptions::DashboardView GetInitialView() const noexcept;
@@ -95,6 +103,7 @@ namespace Wisteria::UI
         void OnOK([[maybe_unused]] wxCommandEvent& event)
             {
             TransferDataFromWindow();
+            m_logoPath = m_logoPicker->GetPath();
             if (IsModal())
                 {
                 EndModal(wxID_OK);
@@ -107,6 +116,8 @@ namespace Wisteria::UI
 
         wxString m_dashboardTitle;
         wxString m_theme;
+        wxString m_logoPath;
+        wxFilePickerCtrl* m_logoPicker{ nullptr };
         // indices into the radio boxes (Gallery, Story and Auto, Light, Dark)
         int m_view{ 1 };
         int m_colorMode{ 0 };

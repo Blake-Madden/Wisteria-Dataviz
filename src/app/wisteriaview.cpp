@@ -1310,12 +1310,14 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
     // persist the choices to the project, and to the app settings for new projects
     const bool changed =
         (savedOptions.m_theme != optionsDlg.GetTheme()) ||
+        (savedOptions.m_logoPath != optionsDlg.GetLogoPath()) ||
         (savedOptions.m_view != optionsDlg.GetInitialView()) ||
         (savedOptions.m_colorMode != optionsDlg.GetInitialColorMode()) ||
         (savedOptions.m_includeColorModeToggle != optionsDlg.IncludeColorModeToggle()) ||
         (savedOptions.m_countUpNumbers != optionsDlg.CountUpNumbers()) ||
         (savedOptions.m_pageSize != optionsDlg.GetPageSize());
     savedOptions.m_theme = optionsDlg.GetTheme();
+    savedOptions.m_logoPath = optionsDlg.GetLogoPath();
     savedOptions.m_view = optionsDlg.GetInitialView();
     savedOptions.m_colorMode = optionsDlg.GetInitialColorMode();
     savedOptions.m_includeColorModeToggle = optionsDlg.IncludeColorModeToggle();
@@ -1353,6 +1355,7 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
         m_pages, Wisteria::HtmlDashboardOptions(fileDlg.GetPath())
                      .Title(GetReportBuilder().ExpandConstants(optionsDlg.GetDashboardTitle()))
                      .Css(coreCss + L"\n" + themeCss)
+                     .Logo(optionsDlg.GetLogoPath())
                      .InitialView(optionsDlg.GetInitialView())
                      .InitialColorMode(optionsDlg.GetInitialColorMode())
                      .ColorModeToggle(optionsDlg.IncludeColorModeToggle())

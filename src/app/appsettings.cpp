@@ -141,6 +141,8 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
             {
             m_htmlExportOptions.m_theme =
                 child->GetAttribute(L"theme", m_htmlExportOptions.m_theme);
+            m_htmlExportOptions.m_logoPath =
+                child->GetAttribute(L"logo", m_htmlExportOptions.m_logoPath);
             m_htmlExportOptions.m_view = Wisteria::HtmlDashboardOptions::ParseView(
                 child->GetAttribute(L"view"), m_htmlExportOptions.m_view);
             m_htmlExportOptions.m_colorMode = Wisteria::HtmlDashboardOptions::ParseColorMode(
@@ -394,6 +396,7 @@ bool AppSettings::SaveSettingsFile(const wxString& filePath)
 
     auto* htmlNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"html-export");
     htmlNode->AddAttribute(L"theme", m_htmlExportOptions.m_theme);
+    htmlNode->AddAttribute(L"logo", m_htmlExportOptions.m_logoPath);
     htmlNode->AddAttribute(
         L"view", Wisteria::HtmlDashboardOptions::ViewToString(m_htmlExportOptions.m_view));
     htmlNode->AddAttribute(L"color-mode", Wisteria::HtmlDashboardOptions::ColorModeToString(

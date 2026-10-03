@@ -10,8 +10,12 @@
 #include "svgreportprintout.h"
 #include <algorithm>
 #include <wx/app.h>
+#include <wx/base64.h>
 #include <wx/file.h>
+#include <wx/filename.h>
+#include <wx/image.h>
 #include <wx/msgdlg.h>
+#include <wx/mstream.h>
 
 //------------------------------------------------------
 wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptState()
@@ -1186,8 +1190,80 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
     html += L"<script>" + script + L"</script>\n";
     html += L"</head>\n<body>\n";
 
+    // optional logo, embedded as a data URI
+    wxString logoUri;
+    if (!options.m_logoPath.empty() && wxFileName::FileExists(options.m_logoPath))
+        {
+        const wxString logoExt{ wxFileName{ options.m_logoPath }.GetExt().Lower() };
+        wxString mimeType;
+        if (logoExt == L"svg")
+            {
+            mimeType = L"image/svg+xml";
+            }
+        else if (logoExt == L"png")
+            {
+            mimeType = L"image/png";
+            }
+        else if (logoExt == L"jpg" || logoExt == L"jpeg")
+            {
+            mimeType = L"image/jpeg";
+            }
+        else if (logoExt == L"gif")
+            {
+            mimeType = L"image/gif";
+            }
+        else if (logoExt == L"webp")
+            {
+            mimeType = L"image/webp";
+            }
+
+        wxFile logoFile{ options.m_logoPath };
+        if (!mimeType.empty() && logoFile.IsOpened() && logoFile.Length() > 0)
+            {
+            std::vector<char> logoBytes(static_cast<size_t>(logoFile.Length()));
+            if (logoFile.Read(logoBytes.data(), logoBytes.size()) ==
+                static_cast<ssize_t>(logoBytes.size()))
+                {
+                // downscale raster image that are larger than the logo's display size (at 2x)
+                if (logoExt != L"svg")
+                    {
+                    constexpr int MAX_LOGO_WIDTH{ 320 };
+                    constexpr int MAX_LOGO_HEIGHT{ 64 };
+                    wxMemoryInputStream logoStream(logoBytes.data(), logoBytes.size());
+                    wxImage logoImage;
+                    if (logoImage.LoadFile(logoStream) && logoImage.IsOk() &&
+                        (logoImage.GetWidth() > MAX_LOGO_WIDTH ||
+                         logoImage.GetHeight() > MAX_LOGO_HEIGHT))
+                        {
+                        const double logoScale{ std::min(
+                            safe_divide<double>(MAX_LOGO_WIDTH, logoImage.GetWidth()),
+                            safe_divide<double>(MAX_LOGO_HEIGHT, logoImage.GetHeight())) };
+                        logoImage.Rescale(std::max(1, wxRound(logoImage.GetWidth() * logoScale)),
+                                          std::max(1, wxRound(logoImage.GetHeight() * logoScale)),
+                                          wxIMAGE_QUALITY_HIGH);
+                        wxMemoryOutputStream scaledStream;
+                        if (logoImage.SaveFile(scaledStream, wxBITMAP_TYPE_PNG))
+                            {
+                            logoBytes.resize(scaledStream.GetSize());
+                            scaledStream.CopyTo(logoBytes.data(), logoBytes.size());
+                            // PNG keeps transparency, regardless of the original format
+                            mimeType = L"image/png";
+                            }
+                        }
+                    }
+                logoUri = L"data:" + mimeType + L";base64," +
+                          wxBase64Encode(logoBytes.data(), logoBytes.size());
+                }
+            }
+        }
+
     html += L"<header class=\"dash-toolbar no-print\">\n";
-    html += wxString::Format(L"<h1 class=\"dash-title\">%s</h1>\n", escapeText(title));
+    html += L"<div class=\"dash-brand\">\n";
+    if (!logoUri.empty())
+        {
+        html += wxString::Format(L"<img class=\"dash-logo\" src=\"%s\" alt=\"\">\n", logoUri);
+        }
+    html += wxString::Format(L"<h1 class=\"dash-title\">%s</h1>\n</div>\n", escapeText(title));
     html += L"<div class=\"dash-controls\">\n";
     html += wxString::Format(
         L"<div class=\"dash-pager\" role=\"group\" aria-label=\"%s\">\n"

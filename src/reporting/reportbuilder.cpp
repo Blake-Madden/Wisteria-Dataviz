@@ -179,6 +179,10 @@ namespace Wisteria
                 {
                 m_htmlExportOptions.m_theme = themeNode->AsString();
                 }
+            if (const auto logoNode = htmlExportNode->GetProperty(L"logo"); logoNode->IsOk())
+                {
+                m_htmlExportOptions.m_logoPath = logoNode->AsString();
+                }
             if (const auto viewNode = htmlExportNode->GetProperty(L"view"); viewNode->IsOk())
                 {
                 m_htmlExportOptions.m_view = HtmlDashboardOptions::ParseView(
