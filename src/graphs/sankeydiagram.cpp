@@ -360,12 +360,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
                             groupBrush.GetColour(), GetGhostOpacity()));
                         }
 
-                    AddObject(std::make_unique<GraphItems::Polygon>(
-                        GraphItems::GraphItemInfo{ group.m_label }
-                            .Pen(wxNullPen)
-                            .Brush(groupBrush)
-                            .Scaling(GetScaling()),
-                        pts));
+                    GraphItems::GraphItemInfo blockInfo = GraphItems::GraphItemInfo{ group.m_label }
+                                                              .Pen(wxNullPen)
+                                                              .Brush(groupBrush)
+                                                              .Scaling(GetScaling());
+                    if (!group.m_label.empty())
+                        {
+                        blockInfo.Accessibility(
+                            wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(group.m_label));
+                        }
+                    AddObject(std::make_unique<GraphItems::Polygon>(blockInfo, pts));
                     }
                 ++colorIndex;
                 }
@@ -477,15 +481,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
 
                         const bool isShowcased{ IsStreamShowcased(downstreamGroup.first) };
 
-                        auto streamRibbon{ std::make_unique<GraphItems::Polygon>(
-                            GraphItems::GraphItemInfo{
-                                wxString::Format(L"%s → %s", group.m_label, downstreamGroup.first) }
-                                .Pen(wxNullPen)
-                                .Brush(Colors::ColorContrast::ChangeOpacity(
-                                    currentColor,
-                                    isShowcased ? 100 : std::min<uint8_t>(100, GetGhostOpacity())))
-                                .Scaling(GetScaling()),
-                            pts) };
+                        GraphItems::GraphItemInfo streamInfo{ wxString::Format(
+                            L"%s → %s", group.m_label, downstreamGroup.first) };
+                        streamInfo.Pen(wxNullPen)
+                            .Brush(Colors::ColorContrast::ChangeOpacity(
+                                currentColor,
+                                isShowcased ? 100 : std::min<uint8_t>(100, GetGhostOpacity())))
+                            .Scaling(GetScaling())
+                            .Accessibility(wxSVGAttributes{}
+                                               .Role(_DT(L"img"))
+                                               .AriaLabel(streamInfo.GetText()));
+                        auto streamRibbon{ std::make_unique<GraphItems::Polygon>(streamInfo, pts) };
                         streamRibbon->SetShape(
                             GetFlowShape() == FlowShape::Curvy ?
                                 GraphItems::Polygon::PolygonShape::CurvyRectangle :

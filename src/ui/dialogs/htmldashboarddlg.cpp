@@ -25,13 +25,11 @@ namespace Wisteria::UI
           m_countUpNumbers(options.m_countUpNumbers), m_pageWidth(options.m_pageSize.GetWidth()),
           m_pageHeight(options.m_pageSize.GetHeight())
         {
-        using View = Wisteria::HtmlDashboardOptions::View;
-        using ColorMode = Wisteria::HtmlDashboardOptions::ColorMode;
-
-        m_view = (options.m_view == View::Gallery) ? 0 : 1;
-        m_colorMode = (options.m_colorMode == ColorMode::Auto)  ? 0 :
-                      (options.m_colorMode == ColorMode::Light) ? 1 :
-                                                                  2;
+        m_view = (options.m_view == Wisteria::HtmlDashboardOptions::DashboardView::Gallery) ? 0 : 1;
+        m_colorMode = (options.m_colorMode == Wisteria::HtmlDashboardOptions::ColorMode::Auto) ? 0 :
+                      (options.m_colorMode == Wisteria::HtmlDashboardOptions::ColorMode::Light) ?
+                                                                                                 1 :
+                                                                                                 2;
 
         SetExtraStyle(GetExtraStyle() | wxWS_EX_VALIDATE_RECURSIVELY | wxWS_EX_BLOCK_EVENTS);
 
@@ -86,11 +84,9 @@ namespace Wisteria::UI
         mainSizer->Add(gridSizer, wxSizerFlags{}.Expand().Border());
 
         // initial view
-        wxArrayString viewChoices;
-        viewChoices.Add(_(L"Gallery"));
-        viewChoices.Add(_(L"Storyline"));
-        auto* viewRadio = new wxRadioBox(this, wxID_ANY, _(L"Initial View"), wxDefaultPosition,
-                                         wxDefaultSize, viewChoices, 1, wxRA_SPECIFY_ROWS);
+        auto* viewRadio =
+            new wxRadioBox(this, wxID_ANY, _(L"Initial View"), wxDefaultPosition, wxDefaultSize,
+                           wxArrayString{ _(L"Gallery"), _(L"Storyline") }, 1, wxRA_SPECIFY_ROWS);
         viewRadio->SetValidator(wxGenericValidator{ &m_view });
         mainSizer->Add(viewRadio, wxSizerFlags{}.Expand().Border());
 
@@ -100,13 +96,9 @@ namespace Wisteria::UI
         mainSizer->Add(toggleCheck, wxSizerFlags{}.Border());
 
         // initial color mode
-        wxArrayString colorChoices;
-        colorChoices.Add(_(L"Auto"));
-        colorChoices.Add(_(L"Light"));
-        colorChoices.Add(_(L"Dark"));
-        auto* colorRadio =
-            new wxRadioBox(this, wxID_ANY, _(L"Initial Color Mode"), wxDefaultPosition,
-                           wxDefaultSize, colorChoices, 1, wxRA_SPECIFY_ROWS);
+        auto* colorRadio = new wxRadioBox(
+            this, wxID_ANY, _(L"Initial Color Mode"), wxDefaultPosition, wxDefaultSize,
+            wxArrayString{ _(L"Auto"), _(L"Light"), _(L"Dark") }, 1, wxRA_SPECIFY_ROWS);
         colorRadio->SetValidator(wxGenericValidator{ &m_colorMode });
         colorRadio->Enable(m_includeColorModeToggle);
         mainSizer->Add(colorRadio, wxSizerFlags{}.Expand().Border());
@@ -125,18 +117,17 @@ namespace Wisteria::UI
         }
 
     //------------------------------------------------------
-    Wisteria::HtmlDashboardOptions::View HtmlDashboardDlg::GetInitialView() const noexcept
+    Wisteria::HtmlDashboardOptions::DashboardView HtmlDashboardDlg::GetInitialView() const noexcept
         {
-        using View = Wisteria::HtmlDashboardOptions::View;
-        return (m_view == 0) ? View::Gallery : View::Story;
+        return (m_view == 0) ? Wisteria::HtmlDashboardOptions::DashboardView::Gallery :
+                               Wisteria::HtmlDashboardOptions::DashboardView::Storyline;
         }
 
     //------------------------------------------------------
     Wisteria::HtmlDashboardOptions::ColorMode HtmlDashboardDlg::GetInitialColorMode() const noexcept
         {
-        using ColorMode = Wisteria::HtmlDashboardOptions::ColorMode;
-        return (m_colorMode == 0) ? ColorMode::Auto :
-               (m_colorMode == 1) ? ColorMode::Light :
-                                    ColorMode::Dark;
+        return (m_colorMode == 0) ? Wisteria::HtmlDashboardOptions::ColorMode::Auto :
+               (m_colorMode == 1) ? Wisteria::HtmlDashboardOptions::ColorMode::Light :
+                                    Wisteria::HtmlDashboardOptions::ColorMode::Dark;
         }
     } // namespace Wisteria::UI

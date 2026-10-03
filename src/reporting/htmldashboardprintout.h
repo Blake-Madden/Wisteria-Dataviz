@@ -33,10 +33,10 @@ namespace Wisteria
             };
 
         /// @brief How the pages are initially presented.
-        enum class View
+        enum class DashboardView
             {
             /// @brief Full-height pages in a scrolling column.
-            Story,
+            Storyline,
             /// @brief Small page cards across the top, with the selected page shown below.
             Gallery
             };
@@ -54,7 +54,7 @@ namespace Wisteria
         /// @brief The initial light/dark mode.
         ColorMode m_colorMode{ ColorMode::Auto };
         /// @brief How the pages are initially presented.
-        View m_view{ View::Story };
+        DashboardView m_view{ DashboardView::Gallery };
         /// @brief Whether to include the Auto/Light/Dark toggle.
         bool m_includeColorModeToggle{ true };
         /// @brief Whether large numbers count up when a page is revealed.
@@ -71,24 +71,24 @@ namespace Wisteria
         /// @param view The view.
         /// @returns The view as a string (for saving).
         [[nodiscard]]
-        static wxString ViewToString(const View view)
+        static wxString ViewToString(const DashboardView view)
             {
-            return (view == View::Gallery) ? L"gallery" : L"story";
+            return (view == DashboardView::Gallery) ? L"gallery" : L"story";
             }
 
         /// @param str The string to parse.
-        /// @param fallback The view to return if @c str is not recognized.
+        /// @param fallback The view to return if @p str is not recognized.
         /// @returns The view for the string.
         [[nodiscard]]
-        static View ParseView(const wxString& str, const View fallback)
+        static DashboardView ParseView(const wxString& str, const DashboardView fallback)
             {
             if (str == L"gallery")
                 {
-                return View::Gallery;
+                return DashboardView::Gallery;
                 }
             if (str == L"story")
                 {
-                return View::Story;
+                return DashboardView::Storyline;
                 }
             return fallback;
             }
@@ -106,7 +106,7 @@ namespace Wisteria
             }
 
         /// @param str The string to parse.
-        /// @param fallback The color mode to return if @c str is not recognized.
+        /// @param fallback The color mode to return if @p str is not recognized.
         /// @returns The color mode for the string.
         [[nodiscard]]
         static ColorMode ParseColorMode(const wxString& str, const ColorMode fallback)
@@ -152,7 +152,7 @@ namespace Wisteria
         /// @brief Sets how the pages are initially presented.
         /// @param view The view.
         /// @returns A reference to this object.
-        HtmlDashboardOptions& InitialView(const View view) noexcept
+        HtmlDashboardOptions& InitialView(const DashboardView view) noexcept
             {
             m_view = view;
             return *this;
@@ -213,7 +213,6 @@ namespace Wisteria
         /// @param options Export options.
         HtmlDashboardPrintout(const std::vector<Canvas*>& canvases, HtmlDashboardOptions options);
 
-      private:
         /// @returns The script managing color mode, view, and layer state.
         [[nodiscard]]
         static wxString GetDashboardScriptState();

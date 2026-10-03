@@ -62,7 +62,7 @@ namespace Wisteria::UI
 
         /// @returns The initial view.
         [[nodiscard]]
-        Wisteria::HtmlDashboardOptions::View GetInitialView() const noexcept;
+        Wisteria::HtmlDashboardOptions::DashboardView GetInitialView() const noexcept;
 
         /// @returns The initial light/dark mode.
         [[nodiscard]]
