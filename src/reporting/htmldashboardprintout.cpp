@@ -751,7 +751,8 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptTooltips()
       const hit = e.target.closest('.page-svg [role="img"][aria-label]');
       if (!hit || hit === target) return;
       target = hit;
-      tip.textContent = hit.getAttribute('aria-label');
+      tip.textContent = hit.getAttribute('aria-label')
+        .split(String.fromCharCode(0x2028)).join('\n');
       tip.classList.add('is-visible');
       place(e);
     });
