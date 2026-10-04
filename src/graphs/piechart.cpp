@@ -3790,8 +3790,10 @@ namespace Wisteria::Graphs
 
             if (innerPie.m_showText)
                 {
-                CreateLabelAndConnectionLine(dc, gutterLabels, drawAreas, pSlice,
-                                             smallestOuterLabelFontSize, true);
+                CreateLabelAndConnectionLine(
+                    dc, gutterLabels, drawAreas, pSlice, smallestOuterLabelFontSize, true,
+                    innerPie.GetGroupLabel(),
+                    GetOuterPie().at(innerPie.m_parentSliceIndex).GetGroupLabel());
                 }
 
             const auto labelDisplay =
@@ -3815,10 +3817,15 @@ namespace Wisteria::Graphs
                         middleLabel->SetFontColor(Colors::ColorContrast::ChangeOpacity(
                             middleLabel->GetFontColor(), GetGhostOpacity()));
                         }
+                    MakeSliceFilterable(
+                        *middleLabel, true, innerPie.GetGroupLabel(),
+                        GetOuterPie().at(innerPie.m_parentSliceIndex).GetGroupLabel());
                     middleLabels.push_back(std::move(middleLabel));
                     }
                 }
 
+            MakeSliceFilterable(*pSlice, true, innerPie.GetGroupLabel(),
+                                GetOuterPie().at(innerPie.m_parentSliceIndex).GetGroupLabel());
             queueObjectForOffsetting(std::move(pSlice));
             startAngle += innerPie.m_percent * 360;
             ++sliceCounter;
@@ -4009,7 +4016,8 @@ namespace Wisteria::Graphs
             if (GetOuterPie().at(i).m_showText)
                 {
                 CreateLabelAndConnectionLine(dc, gutterLabels, drawAreas, pSlice,
-                                             smallestOuterLabelFontSize, false);
+                                             smallestOuterLabelFontSize, false,
+                                             GetOuterPie().at(i).GetGroupLabel(), wxString{});
                 }
 
             double sliceProportion = 1 - (IsIncludingDonutHole() ? GetDonutHoleProportion() : 0);
@@ -4038,10 +4046,12 @@ namespace Wisteria::Graphs
                         middleLabel->SetFontColor(Colors::ColorContrast::ChangeOpacity(
                             middleLabel->GetFontColor(), GetGhostOpacity()));
                         }
+                    MakeSliceFilterable(*middleLabel, false, GetOuterPie().at(i).GetGroupLabel());
                     middleLabels.push_back(std::move(middleLabel));
                     }
                 }
 
+            MakeSliceFilterable(*pSlice, false, GetOuterPie().at(i).GetGroupLabel());
             queueObjectForOffsetting(std::move(pSlice));
             startAngle += GetOuterPie().at(i).m_percent * 360;
             }
@@ -4060,7 +4070,8 @@ namespace Wisteria::Graphs
     void PieChart::CreateLabelAndConnectionLine(wxDC& dc, GutterLabels& gutterLabels,
                                                 const DrawAreas drawAreas, auto& pSlice,
                                                 double& smallestOuterLabelFontSize,
-                                                bool isInnerSlice)
+                                                bool isInnerSlice, const wxString& sliceLabel,
+                                                const wxString& parentLabel)
 
         {
         auto outerLabel = pSlice->CreateOuterLabel(
@@ -4202,6 +4213,11 @@ namespace Wisteria::Graphs
                     connectionLine->SetLineStyle(LineStyle::Lines);
                     }
                 }
+            MakeSliceFilterable(*outerLabel, isInnerSlice, sliceLabel, parentLabel);
+            if (connectionLine != nullptr)
+                {
+                MakeSliceFilterable(*connectionLine, isInnerSlice, sliceLabel, parentLabel);
+                }
             if (isTopLeft)
                 {
                 gutterLabels.m_outerTopLeftLabelAndLines.push_back(
@@ -4222,6 +4238,39 @@ namespace Wisteria::Graphs
                 gutterLabels.m_outerBottomRightLabelAndLines.push_back(
                     std::make_pair(std::move(outerLabel), std::move(connectionLine)));
                 }
+            }
+        }
+
+    //----------------------------------------------------------------
+    wxString PieChart::GetSliceFilterKey(const bool isInnerRing, const wxString& label) const
+        {
+        // decorated styles draw whole-pie extras that can't be hidden with a slice
+        if (GetPieStyle() != PieStyle::None || label.empty())
+            {
+            return {};
+            }
+        if (GetInnerPie().empty())
+            {
+            return label;
+            }
+        return (isInnerRing ? _(L"Inner ring") : _(L"Outer ring")) +
+               wxUniChar(Settings::SVG_FIELD_SEPARATOR) + label;
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::MakeSliceFilterable(GraphItems::GraphItemBase& item, const bool isInnerRing,
+                                       const wxString& label, const wxString& parentLabel) const
+        {
+        const auto key = GetSliceFilterKey(isInnerRing, label);
+        if (key.empty())
+            {
+            return;
+            }
+        MakeFilterable(item, key);
+        if (!parentLabel.empty())
+            {
+            item.GetAccessibilityAttributes().Add(L"data-filter-parent",
+                                                  GetSliceFilterKey(false, parentLabel));
             }
         }
 
@@ -4766,6 +4815,18 @@ namespace Wisteria::Graphs
 
         size_t currentLine{ 0 };
 
+        // ties the last rows added to a slice's filter, so that they hide with it
+        const auto tagLastIcons =
+            [&legend](const size_t count, const wxString& key, const wxString& parentKey)
+        {
+            auto& icons = legend->GetLegendIcons();
+            for (size_t iconIndex = icons.size() - count; iconIndex < icons.size(); ++iconIndex)
+                {
+                icons[iconIndex].m_filterLabel = key;
+                icons[iconIndex].m_filterParent = parentKey;
+                }
+        };
+
         // space in line is needed for SVG exporting; otherwise, the blank line gets removed
         wxString legendText{ GetOuterPie().at(0).GetGroupLabel() + L"\n \n" };
         legend->GetLinesIgnoringLeftMargin().insert(currentLine);
@@ -4780,6 +4841,7 @@ namespace Wisteria::Graphs
             Icons::IconShape::HorizontalSeparator,
             Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
             Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
+        tagLastIcons(2, GetSliceFilterKey(false, GetOuterPie().at(0).GetGroupLabel()), wxString{});
 
         size_t currentParentSliceIndex{ 0 };
         std::optional<wxColour> sliceColor{
@@ -4843,6 +4905,10 @@ namespace Wisteria::Graphs
                     Icons::IconShape::HorizontalSeparator,
                     Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()),
                     Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
+                tagLastIcons(2,
+                             GetSliceFilterKey(
+                                 false, GetOuterPie().at(currentParentSliceIndex).GetGroupLabel()),
+                             wxString{});
                 }
 
             // add icon and text (after group separator, if needed)
@@ -4852,6 +4918,11 @@ namespace Wisteria::Graphs
                 Icons::IconShape::TriangleRight,
                 Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()), sliceBrush,
                 sliceColor);
+            tagLastIcons(
+                1, GetSliceFilterKey(true, GetInnerPie().at(i).GetGroupLabel()),
+                GetSliceFilterKey(
+                    false,
+                    GetOuterPie().at(GetInnerPie().at(i).m_parentSliceIndex).GetGroupLabel()));
             }
         legend->SetText(legendText.Trim());
         // show lines to make sure text is aligned as expected
@@ -4900,6 +4971,8 @@ namespace Wisteria::Graphs
                 GetBrushScheme()->GetBrush(i),
                 GetColorScheme() ? std::optional<wxColour>(GetColorScheme()->GetColor(i)) :
                                    std::nullopt);
+            legend->GetLegendIcons().back().m_filterLabel =
+                GetSliceFilterKey(false, GetOuterPie().at(i).GetGroupLabel());
             }
         legend->SetText(legendText.Trim());
 

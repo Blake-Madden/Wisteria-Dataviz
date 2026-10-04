@@ -179,6 +179,9 @@ namespace Wisteria::Icons
         /// @brief The filter label this legend row belongs to (empty if the row isn't filterable).
         /// @details Used by SVG output so that dashboards can hide the row along with its data.
         wxString m_filterLabel;
+        /// @brief The filter label of the row that this row is nested under (empty if none).
+        /// @details A row is hidden along with its parent.
+        wxString m_filterParent;
 
         /// @returns The minimum width that should be used for legend icons.
         /// @note This is usually used by Label::SetLeftPadding() or Label::GetMinLegendWidth(),

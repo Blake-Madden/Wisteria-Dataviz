@@ -717,6 +717,10 @@ namespace Wisteria::GraphItems
         /** @brief Draws the icons for the legend.
             @param dc The dc to draw on.*/
         void DrawLegendIcons(wxDC& dc) const;
+        /// @returns The SVG attributes that tie a legend row to the data it describes.
+        /// @param icon The legend row's icon, which holds its filter labels.
+        [[nodiscard]]
+        static wxSVGAttributes GetLegendFilterAttributes(const Icons::LegendIcon& icon);
         /// @returns The size that the left image will be if the provided height is given.
         /// @note This will maintain the image's aspect ratio and the calculated height
         ///     may be smaller than @p textHeight.

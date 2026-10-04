@@ -1216,13 +1216,30 @@ namespace Wisteria::Graphs
         void RecalcSizes(wxDC& dc) final;
         void CreateLabelAndConnectionLine(wxDC& dc, GutterLabels& gutterLabels, DrawAreas drawAreas,
                                           auto& pSlice, double& smallestOuterLabelFontSize,
-                                          bool isInnerSlice);
+                                          bool isInnerSlice, const wxString& sliceLabel,
+                                          const wxString& parentLabel);
         void DrawOuterPie(wxDC& dc, GutterLabels& gutterLabels, DrawAreas drawAreas,
                           double& smallestOuterLabelFontSize,
                           std::vector<std::unique_ptr<GraphItemBase>>& addedObjects);
         void DrawInnerPie(wxDC& dc, GutterLabels& gutterLabels, DrawAreas drawAreas,
                           double& smallestOuterLabelFontSize,
                           std::vector<std::unique_ptr<GraphItemBase>>& addedObjects);
+
+        /// @brief Builds the key that ties a slice's drawn items and legend rows to its filter.
+        /// @param isInnerRing @c true if the slice is in the inner ring.
+        /// @param label The slice's group label.
+        /// @returns The key, or empty if the slice can't be filtered (e.g., a decorated style).
+        /// @note With two rings, the key is prefixed with the ring so that the rings don't collide.
+        [[nodiscard]]
+        wxString GetSliceFilterKey(bool isInnerRing, const wxString& label) const;
+        /// @brief Tags an item so that dashboards can hide it along with its slice.
+        /// @param item The item to tag.
+        /// @param isInnerRing @c true if the slice is in the inner ring.
+        /// @param label The slice's group label.
+        /// @param parentLabel The label of the outer slice that an inner slice is nested under.
+        void MakeSliceFilterable(GraphItems::GraphItemBase& item, bool isInnerRing,
+                                 const wxString& label,
+                                 const wxString& parentLabel = wxString{}) const;
 
         // clockface styling
         void AddClockTicks(const DrawAreas& drawAreas);

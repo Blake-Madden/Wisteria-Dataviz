@@ -567,6 +567,17 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
+    wxSVGAttributes Label::GetLegendFilterAttributes(const Icons::LegendIcon& icon)
+        {
+        auto attrs = wxSVGAttributes{}.Add(L"data-legend-filter", icon.m_filterLabel);
+        if (!icon.m_filterParent.empty())
+            {
+            attrs.Add(L"data-legend-parent", icon.m_filterParent);
+            }
+        return attrs.AriaHidden(true);
+        }
+
+    //-------------------------------------------
     void Label::DrawLegendIcons(wxDC& dc) const
         {
         const wxRect contentBoundingBox = GetCachedContentBoundingBox();
@@ -663,10 +674,7 @@ namespace Wisteria::GraphItems
                     iconPos->m_filterLabel.empty() ? nullptr : dynamic_cast<wxSVGFileDC*>(&dc);
                 if (svgDc != nullptr)
                     {
-                    filterGroup.emplace(*svgDc,
-                                        wxSVGAttributes{}
-                                            .Add(L"data-legend-filter", iconPos->m_filterLabel)
-                                            .AriaHidden(true));
+                    filterGroup.emplace(*svgDc, GetLegendFilterAttributes(*iconPos));
                     }
                 // icons only relevant to legends that shape renderer doesn't handle
                 if (iconPos->m_shape == Icons::IconShape::HorizontalSeparator ||
@@ -2275,14 +2283,12 @@ namespace Wisteria::GraphItems
             if (currentLineNumber >= headerLineCount &&
                 currentLineNumber - headerLineCount < GetLegendIcons().size())
                 {
-                const auto& rowLabel =
-                    GetLegendIcons()[currentLineNumber - headerLineCount].m_filterLabel;
-                auto* svgDc = rowLabel.empty() ? nullptr : dynamic_cast<wxSVGFileDC*>(&dc);
+                const auto& rowIcon = GetLegendIcons()[currentLineNumber - headerLineCount];
+                auto* svgDc =
+                    rowIcon.m_filterLabel.empty() ? nullptr : dynamic_cast<wxSVGFileDC*>(&dc);
                 if (svgDc != nullptr)
                     {
-                    filterGroup.emplace(
-                        *svgDc,
-                        wxSVGAttributes{}.Add(L"data-legend-filter", rowLabel).AriaHidden(true));
+                    filterGroup.emplace(*svgDc, GetLegendFilterAttributes(rowIcon));
                     }
                 }
 

@@ -242,6 +242,13 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptFilters()
       const key = scopeIdFor(el) + '|' + el.getAttribute('data-legend-filter');
       el.classList.toggle('is-filtered-out', hiddenFilters.has(key));
     });
+    // nested items (e.g., an inner pie ring) also go away with their parent
+    document.querySelectorAll('.page-svg [data-filter-parent], .page-svg [data-legend-parent]')
+      .forEach(function(el) {
+        const parent = el.getAttribute('data-filter-parent') ||
+                       el.getAttribute('data-legend-parent');
+        if (hiddenFilters.has(scopeIdFor(el) + '|' + parent)) el.classList.add('is-filtered-out');
+      });
     // a base layer goes away once every group in its region is filtered out
     document.querySelectorAll('.page-svg [data-filter-all]').forEach(function(el) {
       const scope = scopeIdFor(el);
@@ -265,43 +272,56 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptFilters()
     if (!menu) return;
     pages.forEach(function(page, pageIndex) {
       if (!page.svg) return;
+      // a key is either a plain label or "ring", U+2029, and "label" (e.g., for a two-ring pie)
+      const fieldSeparator = String.fromCharCode(0x2029);
       const sections = new Map();
+      const chartIds = [];
       page.svg.querySelectorAll('[data-filter]').forEach(function(el) {
         const chartId = scopeIdFor(el);
-        if (!sections.has(chartId)) {
-          sections.set(chartId, {
+        const key = el.getAttribute('data-filter');
+        const splitAt = key.indexOf(fieldSeparator);
+        const ring = splitAt < 0 ? '' : key.substring(0, splitAt);
+        const text = splitAt < 0 ? key : key.substring(splitAt + 1);
+        const sectionKey = chartId + fieldSeparator + ring;
+        if (chartIds.indexOf(chartId) < 0) chartIds.push(chartId);
+        if (!sections.has(sectionKey)) {
+          sections.set(sectionKey, {
+            chartId: chartId,
+            ring: ring,
             title: el.getAttribute('data-filter-title') || '',
             labels: []
           });
         }
-        const labels = sections.get(chartId).labels;
-        const label = el.getAttribute('data-filter');
-        if (labels.indexOf(label) < 0) labels.push(label);
-      });
-      let chartNumber = 0;
-      sections.forEach(function(section, chartId) {
-        ++chartNumber;
-        if (!section.title) {
-          section.title = sections.size === 1 ? page.title : format(strings.chart, chartNumber);
+        const labels = sections.get(sectionKey).labels;
+        if (!labels.some(function(entry) { return entry.key === key; })) {
+          labels.push({ key: key, text: text });
         }
+      });
+      sections.forEach(function(section) {
+        let title = section.title;
+        if (!title) {
+          title = chartIds.length === 1 ? page.title :
+            format(strings.chart, chartIds.indexOf(section.chartId) + 1);
+        }
+        if (section.ring) title += ': ' + section.ring;
         const group = document.createElement('div');
         group.className = 'dash-filters-group';
         group.dataset.page = String(pageIndex);
         group.setAttribute('role', 'group');
-        group.setAttribute('aria-label', section.title);
+        group.setAttribute('aria-label', title);
         const heading = document.createElement('div');
         heading.className = 'dash-filters-heading';
-        heading.textContent = section.title;
+        heading.textContent = title;
         group.appendChild(heading);
-        section.labels.forEach(function(label) {
+        section.labels.forEach(function(entry) {
           const row = document.createElement('label');
           const box = document.createElement('input');
           box.type = 'checkbox';
           box.checked = true;
-          box.dataset.filterKey = chartId + '|' + label;
+          box.dataset.filterKey = section.chartId + '|' + entry.key;
           box.addEventListener('change', function() { toggleFilter(box.dataset.filterKey); });
           row.appendChild(box);
-          row.appendChild(document.createTextNode(label));
+          row.appendChild(document.createTextNode(entry.text));
           group.appendChild(row);
         });
         menu.appendChild(group);
