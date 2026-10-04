@@ -542,10 +542,10 @@ html[data-view] .page.is-filtered, .dash-card.is-filtered, .dash-rail button.is-
 
 /* an item with a tooltip keeps its outline and hit area, so only its fill goes away */
 
-.page-svg .is-filtered-out[aria-label]
+.page-svg .is-filtered-out[role="img"]
   { display: inline; }
 
-.page-svg .is-filtered-out[aria-label] *
+.page-svg .is-filtered-out[role="img"] *
   { fill: transparent !important; }
 
 /* ---------- Loading ------------------------------------------ */

@@ -477,6 +477,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
 
         for (const auto& series : m_series)
             {
+            const size_t firstSeriesIcon{ legend->GetLegendIcons().size() };
             // add group name if grouping is used
             if (IsUsingGrouping())
                 {
@@ -612,6 +613,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
                         GetPlotOrCanvasColor()) },
                     Wisteria::Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()));
                 legendText.append(L'\n');
+                }
+            // every row of this series (name, regression stats, separator) hides with it
+            if (IsUsingGrouping())
+                {
+                for (size_t iconIndex = firstSeriesIcon;
+                     iconIndex < legend->GetLegendIcons().size(); ++iconIndex)
+                    {
+                    legend->GetLegendIcons()[iconIndex].m_filterLabel = series.GetText();
+                    }
                 }
             ++seriesIndex;
             }

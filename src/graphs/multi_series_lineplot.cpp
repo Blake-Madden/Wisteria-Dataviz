@@ -265,6 +265,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
                 legend->GetLegendIcons().emplace_back(Icons::IconShape::HorizontalLine,
                                                       line.GetPen(), line.GetPen().GetColour());
                 }
+            legend->GetLegendIcons().back().m_filterLabel = line.GetText();
             ++lineCount;
             }
         legend->SetText(legendText.Trim());

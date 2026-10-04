@@ -10,6 +10,7 @@
 #include "../reporting/reportbuilder.h"
 #include "polygon.h"
 #include <algorithm>
+#include <optional>
 #include <wx/fontenum.h>
 #include <wx/regex.h>
 #include <wx/tokenzr.h>
@@ -656,6 +657,17 @@ namespace Wisteria::GraphItems
                                                  wxPoint(iconMiddleX, middleOfCurrentRow),
                                              wxSize{ 1, 1 })
                                           .Inflate(iconRadius) };
+                // tag the icon so that SVG viewers can hide it along with its data
+                std::optional<wxSVGAccessibleGroup> filterGroup;
+                auto* svgDc =
+                    iconPos->m_filterLabel.empty() ? nullptr : dynamic_cast<wxSVGFileDC*>(&dc);
+                if (svgDc != nullptr)
+                    {
+                    filterGroup.emplace(*svgDc,
+                                        wxSVGAttributes{}
+                                            .Add(L"data-legend-filter", iconPos->m_filterLabel)
+                                            .AriaHidden(true));
+                    }
                 // icons only relevant to legends that shape renderer doesn't handle
                 if (iconPos->m_shape == Icons::IconShape::HorizontalSeparator ||
                     iconPos->m_shape == Icons::IconShape::HorizontalArrowRightSeparator ||
@@ -2256,6 +2268,23 @@ namespace Wisteria::GraphItems
                       GetTextAlignment() == TextAlignment::JustifiedAtWord));
             const bool useMarkupRendering =
                 IsMarkupEnabled() && !isTilted && !isJustified && (originalToken != token);
+
+            // tag a legend row's text so that SVG viewers can hide it along with its data
+            std::optional<wxSVGAccessibleGroup> filterGroup;
+            const size_t headerLineCount{ GetHeaderInfo().IsEnabled() ? 1U : 0U };
+            if (currentLineNumber >= headerLineCount &&
+                currentLineNumber - headerLineCount < GetLegendIcons().size())
+                {
+                const auto& rowLabel =
+                    GetLegendIcons()[currentLineNumber - headerLineCount].m_filterLabel;
+                auto* svgDc = rowLabel.empty() ? nullptr : dynamic_cast<wxSVGFileDC*>(&dc);
+                if (svgDc != nullptr)
+                    {
+                    filterGroup.emplace(
+                        *svgDc,
+                        wxSVGAttributes{}.Add(L"data-legend-filter", rowLabel).AriaHidden(true));
+                    }
+                }
 
             if (isTilted)
                 {

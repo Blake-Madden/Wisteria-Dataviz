@@ -237,6 +237,11 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptFilters()
       const key = scopeIdFor(el) + '|' + el.getAttribute('data-filter');
       el.classList.toggle('is-filtered-out', hiddenFilters.has(key));
     });
+    // legend rows go away with their data, leaving a gap
+    document.querySelectorAll('.page-svg [data-legend-filter]').forEach(function(el) {
+      const key = scopeIdFor(el) + '|' + el.getAttribute('data-legend-filter');
+      el.classList.toggle('is-filtered-out', hiddenFilters.has(key));
+    });
     // a base layer goes away once every group in its region is filtered out
     document.querySelectorAll('.page-svg [data-filter-all]').forEach(function(el) {
       const scope = scopeIdFor(el);

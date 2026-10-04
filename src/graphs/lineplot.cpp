@@ -413,6 +413,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
                 legend->GetLegendIcons().emplace_back(Icons::IconShape::HorizontalLine,
                                                       line.GetPen(), line.GetPen().GetColour());
                 }
+            legend->GetLegendIcons().back().m_filterLabel = line.GetText();
             ++lineCount;
             }
         if (options.IsIncludingHeader())

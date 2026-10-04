@@ -176,6 +176,9 @@ namespace Wisteria::Icons
         wxImage m_img;
         /// @brief The color gradient to draw (if shape is set to @c ColorGradient).
         std::vector<wxColour> m_colors;
+        /// @brief The filter label this legend row belongs to (empty if the row isn't filterable).
+        /// @details Used by SVG output so that dashboards can hide the row along with its data.
+        wxString m_filterLabel;
 
         /// @returns The minimum width that should be used for legend icons.
         /// @note This is usually used by Label::SetLeftPadding() or Label::GetMinLegendWidth(),

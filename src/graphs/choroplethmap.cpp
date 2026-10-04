@@ -1764,6 +1764,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                 Icons::IconShape::Square,
                 wxPen{ Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()) },
                 wxBrush{ category.second });
+            // grouped maps can filter their groups, so tie the row to its group
+            if (m_isGrouped)
+                {
+                legend->GetLegendIcons().back().m_filterLabel = category.first;
+                }
             }
 
         if (options.IsIncludingHeader())
