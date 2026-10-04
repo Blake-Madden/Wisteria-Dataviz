@@ -54,7 +54,10 @@ namespace Wisteria::UI
         /// @brief All options enabled (the default).
         GraphDlgIncludeMost = GraphDlgIncludeColorScheme,
         /// @brief Color and shape scheme options enabled.
-        GraphDlgIncludeAll = GraphDlgIncludeColorScheme | GraphDlgIncludeShapeScheme
+        GraphDlgIncludeAll = GraphDlgIncludeColorScheme | GraphDlgIncludeShapeScheme,
+        /// @brief Color scheme and second color scheme options enabled.
+        GraphDlgIncludeTwoColorSchemes =
+        GraphDlgIncludeColorScheme | GraphDlgIncludeSecondColorScheme
         };
 
     /** @brief Stores annotation data for the dialog before it is applied to a graph.
