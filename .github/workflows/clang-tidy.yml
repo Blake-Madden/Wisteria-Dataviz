@@ -122,6 +122,19 @@ jobs:
               > "logs/${base}.txt" 2>&1 || true
           done <<< "${{ steps.files.outputs.files }}"
 
+      - name: Print clang-tidy diagnostics
+        if: ${{ steps.files.outputs.files != '' }}
+        shell: bash
+        run: |
+          diagnostics="$(grep -hE '^[^ ]+:[0-9]+:[0-9]+: (warning|error):' logs/*.txt | sort -u || true)"
+          if [[ -z "$diagnostics" ]]; then
+            echo "No clang-tidy warnings or errors."
+          else
+            echo "$diagnostics"
+            echo
+            echo "Total unique diagnostics: $(printf '%s\n' "$diagnostics" | wc -l)"
+          fi
+
       - name: Generate HTML report
         if: ${{ steps.files.outputs.files != '' }}
         run: |

@@ -25,8 +25,10 @@ The following properties are available:
     The default is `true`.
   - `"count-up"`: Whether large numbers count up when a page is revealed. \
     The default is `true`.
-  - `"page-width"`: The width (in DIPs) that each page is rendered at. The default is `1280`.
-  - `"page-height"`: The height (in DIPs) that each page is rendered at. The default is `720`.
+  - `"page-width"`: The width (in DIPs) that each page is rendered at.
+    The default is `1280`.
+  - `"page-height"`: The height (in DIPs) that each page is rendered at.
+    The default is `720`.
   - `"dual-orientations"`: Whether to also render each page with its width and height swapped. \
     The browser then shows whichever orientation best fits its window. \
     For example, with a page size of 1280 x 720, a portrait (720 x 1280) copy of each page is included. \
