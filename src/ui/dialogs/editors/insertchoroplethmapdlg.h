@@ -130,6 +130,23 @@ namespace Wisteria::UI
             return m_dataAggregation;
             }
 
+        /// @returns How the shaded values are displayed.
+        [[nodiscard]]
+        NumberDisplay GetValueDisplay() const noexcept
+            {
+            switch (m_valueFormatIndex)
+                {
+            case 1:
+                return NumberDisplay::Currency;
+            case 2:
+                return NumberDisplay::ValueSimple;
+            case 0:
+                [[fallthrough]];
+            default:
+                return NumberDisplay::Value;
+                }
+            }
+
         /// @returns The fill color chosen for the proportional shapes.
         [[nodiscard]]
         const wxColour& GetProportionalSymbolColor() const noexcept
@@ -140,10 +157,6 @@ namespace Wisteria::UI
         /// @returns @c true if a dataset and a value or category column were chosen.
         [[nodiscard]]
         bool IsMappingData() const;
-
-        /// @returns @c true if region labels should be drawn.
-        [[nodiscard]]
-        bool IsShowingRegionLabels() const;
 
         /// @returns @c true if the latitude/longitude graticule should be drawn.
         [[nodiscard]]
@@ -158,13 +171,6 @@ namespace Wisteria::UI
         bool IsShowingOnlyRegionsWithValues() const noexcept
             {
             return m_showOnlyValuedRegions;
-            }
-
-        /// @returns What a region's label shows.
-        [[nodiscard]]
-        int GetRegionLabelDisplay() const noexcept
-            {
-            return m_labelDisplay;
             }
 
         /// @returns The fill style chosen for regions with no mapped value.
@@ -249,17 +255,17 @@ namespace Wisteria::UI
         wxStaticText* m_symbolColorLabel{ nullptr };
         wxColourPickerCtrl* m_symbolColorPicker{ nullptr };
         wxChoice* m_aggregationChoice{ nullptr };
+        wxChoice* m_valueFormatChoice{ nullptr };
 
         wxString m_kmlIdField{ GetRegionNamePlaceholder() };
-        bool m_showLabels{ false };
         bool m_showGraticule{ false };
         bool m_showOnlyValuedRegions{ false };
-        // 4 is BinLabelDisplay::BinName.
-        int m_labelDisplay{ 4 };
         // 0 is a solid fill.
         int m_noDataFillStyle{ 0 };
         // 0 is a sum, matching Data::GeoColumnAggregation
         int m_dataAggregation{ 0 };
+        // 0 is Value, 1 is Currency, and 2 is Simple value
+        int m_valueFormatIndex{ 0 };
 
         wxString m_keyColumn;
         wxString m_valueColumn;

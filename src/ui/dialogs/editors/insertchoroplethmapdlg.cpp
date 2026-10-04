@@ -169,6 +169,14 @@ namespace Wisteria::UI
         m_aggregationChoice->SetSelection(m_dataAggregation);
         dataGrid->Add(m_aggregationChoice, wxSizerFlags{}.Expand());
 
+        dataGrid->Add(new wxStaticText(dataBox->GetStaticBox(), wxID_ANY, _(L"Value format:")),
+                      wxSizerFlags{}.CenterVertical());
+        m_valueFormatChoice =
+            new wxChoice(dataBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                         wxArrayString{ _(L"Value"), _(L"Currency"), _(L"Simple value") }, 0,
+                         wxGenericValidator{ &m_valueFormatIndex });
+        dataGrid->Add(m_valueFormatChoice, wxSizerFlags{}.Expand());
+
         dataBox->Add(dataGrid, wxSizerFlags{}.Expand().Border());
         optionsSizer->Add(dataBox, wxSizerFlags{}.Expand().Border());
 
@@ -183,34 +191,6 @@ namespace Wisteria::UI
                                   { m_symbolColor = evt.GetColour(); });
         symbolBox->Add(m_symbolColorPicker, wxSizerFlags{}.CenterVertical());
         optionsSizer->Add(symbolBox, wxSizerFlags{}.Expand().Border());
-
-        auto* labelsBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Labels"));
-        labelsBox->Add(new wxCheckBox(labelsBox->GetStaticBox(), wxID_ANY,
-                                      _(L"Show region labels on the map"), wxDefaultPosition,
-                                      wxDefaultSize, 0, wxGenericValidator{ &m_showLabels }),
-                       wxSizerFlags{}.Border());
-
-        auto* labelContentSizer = new wxBoxSizer(wxHORIZONTAL);
-        labelContentSizer->Add(
-            new wxStaticText(labelsBox->GetStaticBox(), wxID_ANY, _(L"Label content:")),
-            wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
-            {
-            // the order of these entries is the numeric order of BinLabelDisplay
-            auto* labelContentChoice =
-                new wxChoice(labelsBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                             0, nullptr, 0, wxGenericValidator{ &m_labelDisplay });
-            labelContentChoice->Append(_(L"Value"));
-            labelContentChoice->Append(_(L"Percentage"));
-            labelContentChoice->Append(_(L"Value and percentage"));
-            labelContentChoice->Append(_(L"No label"));
-            labelContentChoice->Append(_(L"Region name"));
-            labelContentChoice->Append(_(L"Region name and value"));
-            labelContentChoice->Append(_(L"Region name and percentage"));
-            labelContentSizer->Add(labelContentChoice, wxSizerFlags{}.CenterVertical());
-            }
-        labelsBox->Add(labelContentSizer, wxSizerFlags{}.Border());
-
-        optionsSizer->Add(labelsBox, wxSizerFlags{}.Expand().Border());
 
         auto* noDataBox =
             new wxStaticBoxSizer(wxHORIZONTAL, optionsPage, _(L"Regions with no data"));
@@ -373,6 +353,10 @@ namespace Wisteria::UI
             {
             m_aggregationChoice->Enable(!m_valueColumn.empty() || hasSymbolColumn);
             }
+        if (m_valueFormatChoice != nullptr)
+            {
+            m_valueFormatChoice->Enable(!m_valueColumn.empty());
+            }
 
         if (GetSideBarBook() != nullptr && GetSideBarBook()->GetCurrentPage() != nullptr)
             {
@@ -520,9 +504,6 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    bool InsertChoroplethMapDlg::IsShowingRegionLabels() const { return m_showLabels; }
-
-    //-------------------------------------------
     bool InsertChoroplethMapDlg::Validate()
         {
         const wxString kmlPath = GetKMLPath();
@@ -611,12 +592,25 @@ namespace Wisteria::UI
             m_backgroundPicker->SetPath(choroplethMap->GetBackgroundFilePath());
             }
 
-        m_showLabels = choroplethMap->IsShowingRegionLabels();
         m_showGraticule = choroplethMap->IsShowingGraticule();
         m_showOnlyValuedRegions = choroplethMap->IsShowingOnlyRegionsWithValues();
-        m_labelDisplay = static_cast<int>(choroplethMap->GetLabelDisplay());
         m_noDataFillStyle = NoDataFillStyleToChoiceIndex(choroplethMap->GetNoDataFillStyle());
         m_dataAggregation = static_cast<int>(choroplethMap->GetDataAggregation());
+        switch (choroplethMap->GetValueDisplay())
+            {
+        case NumberDisplay::Currency:
+            m_valueFormatIndex = 1;
+            break;
+        case NumberDisplay::ValueSimple:
+            m_valueFormatIndex = 2;
+            break;
+        case NumberDisplay::Percentage:
+            [[fallthrough]];
+        case NumberDisplay::Value:
+            [[fallthrough]];
+        default:
+            m_valueFormatIndex = 0;
+            }
 
         // pick the source dataset, then restore the column selections
         if (m_datasetChoice != nullptr && !choroplethMap->GetDataSourceName().empty())
@@ -731,6 +725,7 @@ namespace Wisteria::UI
             newShadingColumn.empty() ? std::nullopt : std::optional<wxString>(newShadingColumn);
         // the aggregation must be set before SetGroupData(), which combines the rows
         plot->SetDataAggregation(newDataAggregation);
+        plot->SetValueDisplay(GetValueDisplay());
         if (newIsGrouped)
             {
             const auto& sourceData = *GetSelectedDataset();
@@ -746,10 +741,8 @@ namespace Wisteria::UI
             {
             plot->SetData(geoData, valueCol);
             }
-        plot->ShowRegionLabels(IsShowingRegionLabels());
         plot->ShowGraticule(IsShowingGraticule());
         plot->ShowOnlyRegionsWithValues(IsShowingOnlyRegionsWithValues());
-        plot->SetLabelDisplay(static_cast<BinLabelDisplay>(GetRegionLabelDisplay()));
         plot->SetNoDataFillStyle(GetNoDataFillStyle());
         plot->SetProportionalSymbolColumn(
             newSymbolColumn.empty() ? std::nullopt : std::optional<wxString>(newSymbolColumn));

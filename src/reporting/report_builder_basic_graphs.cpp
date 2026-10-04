@@ -1688,6 +1688,12 @@ namespace Wisteria
 
         // the aggregation must be set before SetGroupData(), which combines the rows
         choroplethMap->SetDataAggregation(dataAggregation);
+        if (const auto valueDisplay = ReportEnumConvert::ConvertNumberDisplay(
+                graphNode->GetProperty(_DT(L"value-display-format"))->AsString());
+            valueDisplay.has_value())
+            {
+            choroplethMap->SetValueDisplay(valueDisplay.value());
+            }
         if (!categoryColumn.empty() && groupSource != nullptr)
             {
             choroplethMap->SetGroupData(
@@ -1736,12 +1742,6 @@ namespace Wisteria
             choroplethMap->SetProportionalSymbolColumn(symbolColumn);
             }
 
-        if (const auto labelsNode = graphNode->GetProperty(_DT(L"show-region-labels"));
-            labelsNode->IsOk())
-            {
-            choroplethMap->ShowRegionLabels(labelsNode->AsBool());
-            }
-
         if (const auto graticuleNode = graphNode->GetProperty(_DT(L"show-graticule"));
             graticuleNode->IsOk())
             {
@@ -1753,18 +1753,6 @@ namespace Wisteria
             valuesOnlyNode->IsOk())
             {
             choroplethMap->ShowOnlyRegionsWithValues(valuesOnlyNode->AsBool());
-            }
-
-        if (const auto regionLabelDisplayNode =
-                graphNode->GetProperty(_DT(L"region-label-display"));
-            regionLabelDisplayNode->IsOk())
-            {
-            if (const auto labelDisplay =
-                    ReportEnumConvert::ConvertBinLabelDisplay(regionLabelDisplayNode->AsString());
-                labelDisplay.has_value())
-                {
-                choroplethMap->SetLabelDisplay(labelDisplay.value());
-                }
             }
 
         const wxString projectionStr = graphNode->GetProperty(_DT(L"projection"))->AsString();

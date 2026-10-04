@@ -247,16 +247,11 @@ Properties for `"choropleth-map"` nodes:
   - `"equal-earth"`: An equal-area pseudocylindrical projection suited to hemispheric or world maps.
 
   (If omitted, a projection is chosen from the extent of the data.)
-- `"show-region-labels"`: `true` to draw each region's label at its center.
-- `"region-label-display"`: A string specifying what a region's label shows. \
+- `"value-display-format"`: A string specifying how the shaded values are displayed in the labels, tooltips, and legend. \
   Available options are:
-  - `"value"`: The region's mapped value.
-  - `"percentage"`: The region's share of the value column's total (or, for a category column, the share of regions in that category).
-  - `"value-and-percentage"`: Both.
-  - `"no-display"`: Draw no label.
-  - `"bin-name"`: The region's name (the default).
-  - `"bin-name-and-value"`: The region's name and value.
-  - `"bin-name-and-percentage"`: The region's name and percentage.
+  - `"value"`: Display the raw value (the default).
+  - `"currency"`: Display using the current locale's currency formatting.
+  - `"value-simple"`: Display the raw value without thousands separators.
 - `"show-graticule"`: `true` to draw a faint latitude and longitude grid over the map, each line labeled with its coordinate at the north or west edge.
 - `"show-only-regions-with-values"`: `true` to draw only the regions that carry a mapped value. \
   Has an effect only when a `"data-source"` shading column is in use. \

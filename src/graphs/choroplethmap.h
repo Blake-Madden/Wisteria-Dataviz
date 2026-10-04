@@ -409,6 +409,20 @@ namespace Wisteria::Graphs
             return m_dataAggregation;
             }
 
+        /// @returns How the shaded values are displayed in labels, tooltips, and the legend.
+        [[nodiscard]]
+        NumberDisplay GetValueDisplay() const noexcept
+            {
+            return m_valueDisplay;
+            }
+
+        /** @brief Sets how the shaded values are displayed in labels, tooltips, and the legend.
+            @param display How to display the values (@c Value by default).\n
+                @c Currency uses the current locale's currency formatting and
+                @c ValueSimple shows the number without thousands separators.
+                Any other value is displayed as @c Value.*/
+        void SetValueDisplay(const NumberDisplay display) noexcept { m_valueDisplay = display; }
+
         /// @returns The GeoDataset the map was built from (regions, geometry, and any
         ///     merged-in shading column), or @c nullptr if SetData() was never called.
         [[nodiscard]]
@@ -450,33 +464,6 @@ namespace Wisteria::Graphs
         const wxString& GetBackgroundFilePath() const noexcept
             {
             return m_backgroundFilePath;
-            }
-
-        /// @brief Sets whether each region's label is drawn at its center.
-        /// @param show @c true to draw region labels.
-        void ShowRegionLabels(const bool show) noexcept { m_showLabels = show; }
-
-        /// @returns @c true if region labels are drawn.
-        [[nodiscard]]
-        bool IsShowingRegionLabels() const noexcept
-            {
-            return m_showLabels;
-            }
-
-        /** @brief Sets what a region's label shows: its name, its mapped value, or both.
-            @param display The label content.
-            @details This applies both to the labels drawn on the map (see
-                ShowRegionLabels()) and to the label shown when a region is selected.
-                A region with no mapped value falls back to its name. The percentage
-                forms use each region's share of the value column's total (or, for a
-                categorical column, the share of regions in that category).*/
-        void SetLabelDisplay(const BinLabelDisplay display) noexcept { m_labelDisplay = display; }
-
-        /// @returns What a region's label shows.
-        [[nodiscard]]
-        BinLabelDisplay GetLabelDisplay() const noexcept
-            {
-            return m_labelDisplay;
             }
 
         /// @brief Sets whether a faint latitude/longitude grid is drawn over the map.
@@ -656,11 +643,17 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         static double NiceNumberFloor(double value);
 
-        /// @brief Builds the label text for a region, honoring GetLabelDisplay().
+        /// @brief Builds the label text for a region.
         /// @param row The region's row.
-        /// @returns The label text, empty for BinLabelDisplay::NoDisplay.
+        /// @returns The region's name, followed on its own line by its mapped value
+        ///     (or category) if it has one and the map is not grouped.
         [[nodiscard]]
         wxString BuildRegionLabel(size_t row) const;
+
+        /// @param value The shaded value to format.
+        /// @returns The value, formatted by GetValueDisplay().
+        [[nodiscard]]
+        wxString FormatValue(double value) const;
 
         /// @brief Builds the line explaining the values listed for each group,
         ///     such as "(Sum of 'Enrollment')".
@@ -745,6 +738,7 @@ namespace Wisteria::Graphs
         wxString m_dataSourceName;
         wxString m_dataSourceKeyColumn;
         Data::GeoColumnAggregation m_dataAggregation{ Data::GeoColumnAggregation::Sum };
+        NumberDisplay m_valueDisplay{ NumberDisplay::Value };
 
         // optional backdrop drawn under the data regions, filled with a tint of the color scheme
         std::shared_ptr<const Data::GeoDataset> m_backgroundData;
@@ -773,23 +767,14 @@ namespace Wisteria::Graphs
         std::vector<wxColour> m_colorSpectrum;
         std::pair<double, double> m_valueRange{ 0.0, 0.0 };
         bool m_hasValues{ false };
-        // sum of the finite values in a continuous shading column, for percentage labels
-        double m_valueTotal{ 0.0 };
 
         // set when the shading column is categorical rather than a value ramp
         bool m_isCategorical{ false };
         // ordered (category label, swatch color) pairs for the categorical legend
         std::vector<std::pair<wxString, wxColour>> m_categoryLegend;
 
-        // region count per category code, and the number of regions that have a
-        // category, for percentage labels on a categorical map
-        std::map<Data::GroupIdType, size_t> m_categoryRowCounts;
-        size_t m_categorizedRegionCount{ 0 };
-
-        bool m_showLabels{ false };
         bool m_showGraticule{ false };
         bool m_showOnlyValuedRegions{ false };
-        BinLabelDisplay m_labelDisplay{ BinLabelDisplay::BinName };
         wxColour m_noDataColor{ L"#D2D2D2" };
         wxBrushStyle m_noDataFillStyle{ wxBRUSHSTYLE_FDIAGONAL_HATCH };
 

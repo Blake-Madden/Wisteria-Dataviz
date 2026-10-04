@@ -371,11 +371,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
         m_colorSpectrum.clear();
         m_valueRange = { 0.0, 0.0 };
         m_hasValues = false;
-        m_valueTotal = 0.0;
         m_isCategorical = false;
         m_categoryLegend.clear();
-        m_categoryRowCounts.clear();
-        m_categorizedRegionCount = 0;
         m_isGrouped = false;
         m_groupValueColumnName.clear();
         m_regionLayers.clear();
@@ -419,14 +416,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                         {
                         m_colorSpectrum.insert(m_colorSpectrum.cbegin(),
                                                Colors::ColorContrast::Tint(singleColor, 0.85));
-                        }
-                    }
-
-                for (const auto value : continuousColumn->GetValues())
-                    {
-                    if (std::isfinite(value))
-                        {
-                        m_valueTotal += value;
                         }
                     }
 
@@ -508,18 +497,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             return;
             }
 
-        // which category codes actually occur on a region, and how many regions
-        // carry each one (missing data does not count as a category)
+        // which category codes actually occur on a region
         std::set<Data::GroupIdType> usedCodes;
         for (size_t row = 0; row < column.GetRowCount(); ++row)
             {
-            const auto code = column.GetValue(row);
-            usedCodes.insert(code);
-            ++m_categoryRowCounts[code];
-            if (!column.IsMissingData(row))
-                {
-                ++m_categorizedRegionCount;
-                }
+            usedCodes.insert(column.GetValue(row));
             }
 
         // walk the string table in code order so the legend and colors are stable
@@ -749,9 +731,27 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             {
             return group.m_label;
             }
-        return wxString::Format(
-            L"%s: %s", group.m_label,
-            wxNumberFormatter::ToString(group.m_value, 6, Settings::GetDefaultNumberFormat()));
+        return wxString::Format(L"%s: %s", group.m_label, FormatValue(group.m_value));
+        }
+
+    //----------------------------------------------------------------
+    wxString ChoroplethMap::FormatValue(const double value) const
+        {
+        switch (m_valueDisplay)
+            {
+        case NumberDisplay::Currency:
+            return wxNumberFormatter::ToString(value, has_fractional_part(value) ? 2 : 0,
+                                               wxNumberFormatter::Style::Style_WithThousandsSep |
+                                                   wxNumberFormatter::Style::Style_Currency |
+                                                   wxNumberFormatter::Style::Style_CurrencySymbol);
+        case NumberDisplay::ValueSimple:
+            return wxNumberFormatter::ToString(value, 6,
+                                               wxNumberFormatter::Style::Style_NoTrailingZeroes);
+        case NumberDisplay::Value:
+            [[fallthrough]];
+        default:
+            return wxNumberFormatter::ToString(value, 6, Settings::GetDefaultNumberFormat());
+            }
         }
 
     //----------------------------------------------------------------
@@ -818,52 +818,28 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             }
 
         const wxString regionName = m_geoData->GetRegionGeometry(row).m_name;
-
-        if (m_labelDisplay == BinLabelDisplay::NoDisplay)
-            {
-            return wxString{};
-            }
-        if (m_labelDisplay == BinLabelDisplay::BinName || !m_hasValues || m_isGrouped)
+        if (!m_hasValues || m_isGrouped)
             {
             return regionName;
             }
 
-        // the region's mapped value as text, plus a percentage where one applies
+        // the region's mapped value, on its own line under the name
         wxString valueStr;
-        wxString percentStr;
         if (m_isCategorical)
             {
             const auto categoricalColumn = m_geoData->GetCategoricalColumn(m_valueColumnName);
             if (categoricalColumn != m_geoData->GetCategoricalColumns().cend())
                 {
-                const auto code = categoricalColumn->GetValue(row);
-                valueStr = categoricalColumn->GetLabelFromID(code);
-                if (const auto foundCount = m_categoryRowCounts.find(code);
-                    foundCount != m_categoryRowCounts.cend() && m_categorizedRegionCount > 0)
-                    {
-                    percentStr = wxNumberFormatter::ToString(
-                        safe_divide<double>(foundCount->second, m_categorizedRegionCount) * 100.0,
-                        1, Settings::GetDefaultNumberFormat());
-                    }
+                valueStr = categoricalColumn->GetLabelFromID(categoricalColumn->GetValue(row));
                 }
             }
         else
             {
             const auto continuousColumn = m_geoData->GetContinuousColumn(m_valueColumnName);
-            if (continuousColumn != m_geoData->GetContinuousColumns().cend())
+            if (continuousColumn != m_geoData->GetContinuousColumns().cend() &&
+                std::isfinite(continuousColumn->GetValue(row)))
                 {
-                const auto value = continuousColumn->GetValue(row);
-                if (std::isfinite(value))
-                    {
-                    valueStr =
-                        wxNumberFormatter::ToString(value, 6, Settings::GetDefaultNumberFormat());
-                    if (m_valueTotal != 0.0)
-                        {
-                        percentStr = wxNumberFormatter::ToString(
-                            safe_divide<double>(value, m_valueTotal) * 100.0, 1,
-                            Settings::GetDefaultNumberFormat());
-                        }
-                    }
+                valueStr = FormatValue(continuousColumn->GetValue(row));
                 }
             }
 
@@ -871,28 +847,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             {
             return regionName;
             }
-
-        switch (m_labelDisplay)
-            {
-        case BinLabelDisplay::BinValue:
-            return valueStr;
-        case BinLabelDisplay::BinNameAndValue:
-            return wxString::Format(L"%s (%s)", regionName, valueStr);
-        case BinLabelDisplay::BinPercentage:
-            /* TRANSLATORS: value and percentage. */
-            return percentStr.empty() ? valueStr : wxString::Format(_(L"%s%%"), percentStr);
-        case BinLabelDisplay::BinNameAndPercentage:
-            return percentStr.empty() ?
-                       wxString::Format(L"%s (%s)", regionName, valueStr) :
-                       /* TRANSLATORS: only %% (percentage) should be translated). */
-                       wxString::Format(_(L"%s (%s%%)"), regionName, percentStr);
-        case BinLabelDisplay::BinValueAndPercentage:
-            return percentStr.empty() ?
-                       valueStr : /* TRANSLATORS: only %% (percentage) should be translated). */
-                       wxString::Format(_(L"%s (%s%%)"), valueStr, percentStr);
-        default:
-            return regionName;
-            }
+        return regionName.empty() ? valueStr : regionName + L"\n" + valueStr;
         }
 
     //----------------------------------------------------------------
@@ -1188,12 +1143,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                 }
 
             // every ring of the region goes into one selectable object, so a click
-            // anywhere on the region selects it and anchors a single name label on
-            // the region's own bounding box
+            // anywhere on the region selects it
             // a grouped region lists its groups under the name when selected
             wxString selectionText{ regionLabelText };
             bool hasGroupBreakdown{ false };
-            if (regionHasLayers && m_labelDisplay != BinLabelDisplay::NoDisplay)
+            if (regionHasLayers)
                 {
                 if (const wxString breakdownText = BuildGroupBreakdownText(row);
                     !breakdownText.empty())
@@ -1337,19 +1291,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                     AddObject(std::move(underlay));
                     }
                 AddObject(std::move(regionObject));
-                }
-
-            if (m_showLabels && !regionLabelText.empty() && region.m_boundingBox.IsOk())
-                {
-                auto regionLabel = std::make_unique<GraphItems::Label>(
-                    GraphItems::GraphItemInfo{ regionLabelText }
-                        .Pen(wxNullPen)
-                        .Scaling(GetScaling())
-                        .DPIScaling(GetDPIScaleFactor())
-                        .Anchoring(Anchoring::Center)
-                        .AnchorPoint(GeoToScreen(region.m_boundingBox.GetCenter()))
-                        .FontColor(GetLeftYAxis().GetFontColor()));
-                AddObject(std::move(regionLabel));
                 }
             }
 
@@ -1762,11 +1703,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
         auto legend = std::make_unique<GraphItems::Label>(
             GraphItems::GraphItemInfo{
                 // spaces on the blank lines keep the SVG exporter from dropping them
-                wxString::Format(L"%s\n \n \n%s",
-                                 wxNumberFormatter::ToString(m_valueRange.second, 6,
-                                                             Settings::GetDefaultNumberFormat()),
-                                 wxNumberFormatter::ToString(m_valueRange.first, 6,
-                                                             Settings::GetDefaultNumberFormat())) }
+                wxString::Format(L"%s\n \n \n%s", FormatValue(m_valueRange.second),
+                                 FormatValue(m_valueRange.first)) }
                 .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs() * 1.5)
                 .DPIScaling(GetDPIScaleFactor())
                 .Anchoring(Anchoring::TopLeftCorner)

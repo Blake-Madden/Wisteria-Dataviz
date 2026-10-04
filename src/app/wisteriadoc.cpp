@@ -5274,9 +5274,14 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             node->Add(L"data-source", dataSourceNode);
             }
 
-        if (choroplethMap->IsShowingRegionLabels())
+        if (choroplethMap->GetValueDisplay() != Wisteria::NumberDisplay::Value)
             {
-            node->Add(L"show-region-labels", true);
+            const auto vdStr = Wisteria::ReportEnumConvert::ConvertNumberDisplayToString(
+                choroplethMap->GetValueDisplay());
+            if (vdStr.has_value())
+                {
+                node->Add(L"value-display-format", vdStr.value());
+                }
             }
 
         if (choroplethMap->IsShowingGraticule())
@@ -5287,16 +5292,6 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
         if (choroplethMap->IsShowingOnlyRegionsWithValues())
             {
             node->Add(L"show-only-regions-with-values", true);
-            }
-
-        if (choroplethMap->GetLabelDisplay() != Wisteria::BinLabelDisplay::BinName)
-            {
-            const auto blStr = Wisteria::ReportEnumConvert::ConvertBinLabelDisplayToString(
-                choroplethMap->GetLabelDisplay());
-            if (blStr.has_value())
-                {
-                node->Add(L"region-label-display", blStr.value());
-                }
             }
 
         wxString projectionStr;
