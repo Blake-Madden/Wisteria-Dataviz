@@ -1098,6 +1098,13 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSave()
       if (e.key === 'Escape') {
         e.preventDefault();
         closeMenu(true);
+      } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        const items = Array.prototype.slice.call(menu.querySelectorAll('button'));
+        if (!items.length) return;
+        const at = items.indexOf(document.activeElement);
+        const step = e.key === 'ArrowDown' ? 1 : items.length - 1;
+        e.preventDefault();
+        items[at < 0 ? (step === 1 ? 0 : items.length - 1) : (at + step) % items.length].focus();
       }
     }
     function openMenu() {
@@ -1184,6 +1191,33 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
         btn.setAttribute('aria-expanded', open ? 'true' : 'false');
       };
       btn.addEventListener('click', function() { setMenu(menu.hidden); });
+      const menuBoxes = function() {
+        return Array.prototype.filter.call(menu.querySelectorAll('input[type="checkbox"]'),
+          function(box) { return box.offsetParent !== null; });
+      };
+      // up and down arrows move through the checkboxes and Enter toggles the focused one
+      const onMenuArrow = function(ev) {
+        if (menu.hidden || (ev.key !== 'ArrowDown' && ev.key !== 'ArrowUp')) return;
+        const boxes = menuBoxes();
+        if (!boxes.length) return;
+        const at = boxes.indexOf(document.activeElement);
+        let next;
+        if (at < 0) {
+          next = ev.key === 'ArrowDown' ? 0 : boxes.length - 1;
+        } else {
+          next = (at + (ev.key === 'ArrowDown' ? 1 : boxes.length - 1)) % boxes.length;
+        }
+        ev.preventDefault();
+        boxes[next].focus();
+      };
+      btn.addEventListener('keydown', onMenuArrow);
+      menu.addEventListener('keydown', function(ev) {
+        onMenuArrow(ev);
+        if (ev.key === 'Enter' && ev.target.matches('input[type="checkbox"]')) {
+          ev.preventDefault();
+          ev.target.click();
+        }
+      });
       document.addEventListener('click', function(ev) {
         if (!menu.hidden && !ev.target.closest(wrapperSelector)) setMenu(false);
       });
@@ -1521,6 +1555,9 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         "<dl class=\"dash-help-list\">\n"
         "<dt><kbd>&larr;</kbd> <kbd>&rarr;</kbd></dt><dd>%s</dd>\n"
         "<dt><kbd>Home</kbd> <kbd>End</kbd></dt><dd>%s</dd>\n"
+        "<dt><kbd>&uarr;</kbd> <kbd>&darr;</kbd></dt><dd>%s</dd>\n"
+        "<dt><kbd>Space</kbd> <kbd>Enter</kbd></dt><dd>%s</dd>\n"
+        "<dt><kbd>Esc</kbd></dt><dd>%s</dd>\n"
         "<dt>%s</dt><dd>%s</dd>\n"
         "<dt>%s</dt><dd>%s</dd>\n"
         "<dt>%s</dt><dd>%s</dd>\n"
@@ -1529,6 +1566,9 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         escapeText(_(L"Keyboard & mouse shortcuts")), escapeAttr(_(L"Close")),
         escapeText(_(L"Go to the previous or next page")),
         escapeText(_(L"Jump to the first or last page")),
+        escapeText(_(L"Move through the items of a menu (Tab also works)")),
+        escapeText(_(L"Check or uncheck the selected item in a menu")),
+        escapeText(_(L"Close the open menu")),
         escapeText(_(L"Ctrl") + L"+" + _(L"scroll") + L" / " + _(L"pinch")),
         escapeText(_(L"Zoom in or out, centered on the cursor")), escapeText(_(L"Drag")),
         escapeText(_(L"Pan around a zoomed-in page")), escapeText(_(L"Double-click")),
