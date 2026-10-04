@@ -237,6 +237,15 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptFilters()
       const key = scopeIdFor(el) + '|' + el.getAttribute('data-filter');
       el.classList.toggle('is-filtered-out', hiddenFilters.has(key));
     });
+    // a base layer goes away once every group in its region is filtered out
+    document.querySelectorAll('.page-svg [data-filter-all]').forEach(function(el) {
+      const scope = scopeIdFor(el);
+      const allHidden = el.getAttribute('data-filter-all')
+        .split(String.fromCharCode(0x2028)).every(function(label) {
+          return hiddenFilters.has(scope + '|' + label);
+        });
+      el.classList.toggle('is-filtered-out', allHidden);
+    });
     document.querySelectorAll('.dash-filters input[data-filter-key]').forEach(function(box) {
       box.checked = !hiddenFilters.has(box.dataset.filterKey);
     });
@@ -840,12 +849,47 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptTooltips()
       tip.style.left = Math.max(0, x) + 'px';
       tip.style.top = Math.max(0, y) + 'px';
     }
+    // a grouped region lists only its shown groups once any of them is filtered out
+    function tipText(hit) {
+      const lineBreak = String.fromCharCode(0x2028);
+      const groups = hit.getAttribute('data-tip-groups');
+      if (groups) {
+        const scope = scopeIdFor(hit);
+        const entries = groups.split(lineBreak).map(function(entry) {
+          return entry.split(String.fromCharCode(0x2029));
+        });
+        const shown = entries.filter(function(entry) {
+          return !hiddenFilters.has(scope + '|' + entry[0]);
+        });
+        if (shown.length !== entries.length) {
+          const head = hit.getAttribute('data-tip-head');
+          const note = hit.getAttribute('data-tip-note');
+          return (head ? [head] : []).concat(note ? [note] : [], shown.map(function(entry) {
+            return entry[1];
+          })).join('\n');
+        }
+      }
+      return hit.getAttribute('aria-label').split(lineBreak).join('\n');
+    }
     document.addEventListener('mouseover', function(e) {
       const hit = e.target.closest('.page-svg [role="img"][aria-label]');
       if (!hit || hit === target) return;
+      const text = tipText(hit);
+      if (!text) return;
       target = hit;
-      tip.textContent = hit.getAttribute('aria-label')
-        .split(String.fromCharCode(0x2028)).join('\n');
+      const head = hit.getAttribute('data-tip-head');
+      tip.textContent = '';
+      if (head && text.startsWith(head)) {
+        const rest = text.slice(head.length);
+        const hasLines = rest.charAt(0) === '\n';
+        const title = document.createElement(hasLines ? 'div' : 'strong');
+        title.textContent = head;
+        if (hasLines) title.className = 'dash-tooltip-head';
+        tip.appendChild(title);
+        tip.appendChild(document.createTextNode(hasLines ? rest.replace(/^\n+/, '') : rest));
+      } else {
+        tip.textContent = text;
+      }
       tip.classList.add('is-visible');
       place(e);
     });

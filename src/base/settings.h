@@ -256,6 +256,12 @@ namespace Wisteria
         /// @brief Number of rows shown in data preview windows.
         constexpr static int PREVIEW_MAX_ROWS{ 300 };
 
+        /// @brief Separates lines (or list entries) in text stored in an SVG attribute.
+        constexpr static wchar_t SVG_LINE_SEPARATOR{ 0x2028 };
+
+        /// @brief Separates the fields of a list entry in text stored in an SVG attribute.
+        constexpr static wchar_t SVG_FIELD_SEPARATOR{ 0x2029 };
+
       private:
         inline static bool m_enableReportEditing{ false };
         inline static wxSize m_imageResolutionDPI{ 300, 300 };

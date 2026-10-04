@@ -36,6 +36,11 @@ namespace Wisteria::Data
         Count /*!< How many source rows matched the region key. */
         };
 
+    /// @param aggregation The aggregation method.
+    /// @returns The translated name of the method (e.g., "Sum").
+    [[nodiscard]]
+    wxString GetGeoColumnAggregationName(GeoColumnAggregation aggregation);
+
     /// @brief Options controlling how a KML file is turned into a GeoDataset.
     /// @sa GeoDataset::ImportKML().
     class GeoImportInfo

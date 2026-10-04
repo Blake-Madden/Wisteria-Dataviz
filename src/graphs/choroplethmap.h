@@ -656,18 +656,37 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         static double NiceNumberFloor(double value);
 
-        /// @brief Composes the label text for a region, honoring GetLabelDisplay().
+        /// @brief Builds the label text for a region, honoring GetLabelDisplay().
         /// @param row The region's row.
         /// @returns The label text, empty for BinLabelDisplay::NoDisplay.
         [[nodiscard]]
         wxString BuildRegionLabel(size_t row) const;
 
-        /// @brief Composes the lines listing each group in a grouped region, with its
-        ///     value and its percentage share of the region where there is a value column.
+        /// @brief Builds the line explaining the values listed for each group,
+        ///     such as "(Sum of 'Enrollment')".
+        /// @returns The line, or an empty string if the map has no group value column.
+        [[nodiscard]]
+        wxString BuildGroupNote() const;
+
+        /// @brief Builds the line for one group in a grouped region.
+        /// @param row The region's row, which must have a breakdown.
+        /// @param groupIndex The group's index within the region.
+        /// @returns The group's label, followed by its value.
+        [[nodiscard]]
+        wxString BuildGroupLine(size_t row, size_t groupIndex) const;
+
+        /// @brief Builds the lines listing each group in a grouped region, with its value.
         /// @param row The region's row.
         /// @returns One line per group, separated by newlines. Empty if the region has none.
         [[nodiscard]]
         wxString BuildGroupBreakdownText(size_t row) const;
+
+        /// @brief Builds each group of a grouped region as a label and a line with its value.
+        /// @param row The region's row.
+        /// @returns The groups separated by `U+2028`, each a label and its line separated
+        ///     by `U+2029`. (Empty if the region has none.)
+        [[nodiscard]]
+        wxString BuildGroupFilterText(size_t row) const;
 
         /// @brief Whether a region's row carries a color from the shading column
         ///     (as opposed to missing data) on a data-shaded map.

@@ -1570,14 +1570,19 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    wxSVGAttributes Graph2D::GetFilterAttributes(const wxString& label) const
+        {
+        return wxSVGAttributes{}
+            .Class(L"wisteria-filterable")
+            .Add(L"data-filter", label)
+            .Add(L"data-filter-title", GetTitle().GetText());
+        }
+
+    //----------------------------------------------------------------
     void Graph2D::MakeFilterable(GraphItems::GraphItemBase& item, const wxString& label) const
         {
         item.SetAutoAccessibility(false);
-        item.GetAccessibilityAttributes() = wxSVGAttributes{}
-                                                .Class(L"wisteria-filterable")
-                                                .Add(L"data-filter", label)
-                                                .Add(L"data-filter-title", GetTitle().GetText())
-                                                .AriaHidden(true);
+        item.GetAccessibilityAttributes() = GetFilterAttributes(label).AriaHidden(true);
         }
 
     //----------------------------------------------------------------

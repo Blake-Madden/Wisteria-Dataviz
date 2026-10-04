@@ -344,6 +344,12 @@ namespace Wisteria::Graphs
             return axis.GetReadableAxisValue(pos);
             }
 
+        /** @brief Builds the SVG attributes that make an item filterable in a HTML dashboard.
+            @param label The label shown for the item in the dashboard's Filters menu.
+            @returns The attributes, which a caller can extend before assigning to an item.*/
+        [[nodiscard]]
+        wxSVGAttributes GetFilterAttributes(const wxString& label) const;
+
         /** @brief Tags a graph item so that a HTML dashboard export can show or hide it.
             @param item The item to tag (e.g., a line, bar, or slice).
             @param label The label shown for the item in the dashboard's Filters menu.*/

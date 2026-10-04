@@ -159,11 +159,13 @@ namespace Wisteria::UI
         m_aggregationChoice =
             new wxChoice(dataBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize, 0,
                          nullptr, 0, wxGenericValidator{ &m_dataAggregation });
-        m_aggregationChoice->Append(_(L"Sum"));
-        m_aggregationChoice->Append(_(L"Mean"));
-        m_aggregationChoice->Append(_(L"Minimum"));
-        m_aggregationChoice->Append(_(L"Maximum"));
-        m_aggregationChoice->Append(_(L"Count"));
+        for (const auto aggregation :
+             { Data::GeoColumnAggregation::Sum, Data::GeoColumnAggregation::Mean,
+               Data::GeoColumnAggregation::Min, Data::GeoColumnAggregation::Max,
+               Data::GeoColumnAggregation::Count })
+            {
+            m_aggregationChoice->Append(Data::GetGeoColumnAggregationName(aggregation));
+            }
         m_aggregationChoice->SetSelection(m_dataAggregation);
         dataGrid->Add(m_aggregationChoice, wxSizerFlags{}.Expand());
 

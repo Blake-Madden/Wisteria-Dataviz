@@ -19,6 +19,25 @@
 namespace Wisteria::Data
     {
     //---------------------------------------------------
+    wxString GetGeoColumnAggregationName(const GeoColumnAggregation aggregation)
+        {
+        switch (aggregation)
+            {
+        case GeoColumnAggregation::Mean:
+            return _(L"Mean");
+        case GeoColumnAggregation::Min:
+            return _(L"Minimum");
+        case GeoColumnAggregation::Max:
+            return _(L"Maximum");
+        case GeoColumnAggregation::Count:
+            return _(L"Count");
+        case GeoColumnAggregation::Sum:
+            break;
+            }
+        return _(L"Sum");
+        }
+
+    //---------------------------------------------------
     bool GeoDataset::IsGeoJsonFile(const wxString& filePath)
         {
         const wxString extension = wxFileName{ filePath }.GetExt();

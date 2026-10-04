@@ -742,50 +742,69 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
         }
 
     //----------------------------------------------------------------
+    wxString ChoroplethMap::BuildGroupLine(const size_t row, const size_t groupIndex) const
+        {
+        const auto& group = m_regionBreakdown[row][groupIndex];
+        if (!std::isfinite(group.m_value))
+            {
+            return group.m_label;
+            }
+        return wxString::Format(
+            L"%s: %s", group.m_label,
+            wxNumberFormatter::ToString(group.m_value, 6, Settings::GetDefaultNumberFormat()));
+        }
+
+    //----------------------------------------------------------------
+    wxString ChoroplethMap::BuildGroupNote() const
+        {
+        if (!m_isGrouped || m_groupValueColumnName.empty())
+            {
+            return {};
+            }
+
+        /* TRANSLATORS: aggregation (e.g., Sum) and the name of the column it is applied to. */
+        return wxString::Format(_(L"(%s of '%s')"),
+                                Data::GetGeoColumnAggregationName(m_dataAggregation),
+                                m_groupValueColumnName);
+        }
+
+    //----------------------------------------------------------------
     wxString ChoroplethMap::BuildGroupBreakdownText(const size_t row) const
         {
         if (row >= m_regionBreakdown.size())
             {
-            return wxString{};
-            }
-        const auto& groups = m_regionBreakdown[row];
-
-        // the region's total is what each group's share is measured against
-        double regionTotal{ 0.0 };
-        for (const auto& group : groups)
-            {
-            if (std::isfinite(group.m_value))
-                {
-                regionTotal += group.m_value;
-                }
+            return {};
             }
 
-        wxString text;
-        for (const auto& group : groups)
+        wxString text{ BuildGroupNote() };
+        for (size_t groupIndex = 0; groupIndex < m_regionBreakdown[row].size(); ++groupIndex)
             {
             if (!text.empty())
                 {
                 text += L"\n";
                 }
-            if (!std::isfinite(group.m_value))
+            text += BuildGroupLine(row, groupIndex);
+            }
+        return text;
+        }
+
+    //----------------------------------------------------------------
+    wxString ChoroplethMap::BuildGroupFilterText(const size_t row) const
+        {
+        if (row >= m_regionBreakdown.size())
+            {
+            return wxString{};
+            }
+
+        wxString text;
+        for (size_t groupIndex = 0; groupIndex < m_regionBreakdown[row].size(); ++groupIndex)
+            {
+            if (!text.empty())
                 {
-                text += group.m_label;
-                continue;
+                text += wxUniChar{ Settings::SVG_LINE_SEPARATOR };
                 }
-            const wxString valueStr =
-                wxNumberFormatter::ToString(group.m_value, 6, Settings::GetDefaultNumberFormat());
-            if (regionTotal > 0.0)
-                {
-                const wxString percentStr = wxNumberFormatter::ToString(
-                    safe_divide<double>(group.m_value, regionTotal) * 100.0, 1,
-                    Settings::GetDefaultNumberFormat());
-                /* TRANSLATORS: group name, value, and percentage share of the region. */
-                text += wxString::Format(_(L"%s: %s (%s%%)"), group.m_label, valueStr, percentStr);
-                }
-            else
-                {
-                text += wxString::Format(L"%s: %s", group.m_label, valueStr);
-                }
+            text += m_regionBreakdown[row][groupIndex].m_label +
+                    wxUniChar{ Settings::SVG_FIELD_SEPARATOR } + BuildGroupLine(row, groupIndex);
             }
         return text;
         }
@@ -1173,6 +1192,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             // the region's own bounding box
             // a grouped region lists its groups under the name when selected
             wxString selectionText{ regionLabelText };
+            bool hasGroupBreakdown{ false };
             if (regionHasLayers && m_labelDisplay != BinLabelDisplay::NoDisplay)
                 {
                 if (const wxString breakdownText = BuildGroupBreakdownText(row);
@@ -1181,12 +1201,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                     selectionText = regionLabelText.empty() ?
                                         breakdownText :
                                         regionLabelText + L"\n" + breakdownText;
+                    hasGroupBreakdown = true;
                     }
                 }
 
             // The same text is the region's tooltip in an HTML dashboard.
             wxString tooltipText{ selectionText };
-            tooltipText.Replace(L"\n", wxString{ wxUniChar(0x2028) });
+            tooltipText.Replace(L"\n", wxString{ wxUniChar{ Settings::SVG_LINE_SEPARATOR } });
 
             GraphItems::GraphItemInfo regionInfo = GraphItems::GraphItemInfo{}
                                                        .Pen(GetPen())
@@ -1195,39 +1216,81 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                                                        .Text(selectionText)
                                                        .Scaling(GetScaling())
                                                        .DPIScaling(GetDPIScaleFactor());
+            // the last group is the region itself, so it is tagged here rather than as an underlay
+            wxSVGAttributes regionAttrs;
+            if (regionHasLayers)
+                {
+                regionAttrs = GetFilterAttributes(m_regionBreakdown[row].back().m_label);
+                }
             if (!tooltipText.empty())
                 {
-                regionInfo.Accessibility(
-                    wxSVGAttributes{}.Role(_DT(L"img")).AriaLabel(tooltipText));
+                // the name is shown in bold where the tooltip starts with it
+                regionAttrs.Role(_DT(L"img"))
+                    .AriaLabel(tooltipText)
+                    .Add(_DT(L"data-tip-head"), region.m_name);
+                }
+            if (hasGroupBreakdown)
+                {
+                regionAttrs.Add(_DT(L"data-tip-note"), BuildGroupNote())
+                    .Add(_DT(L"data-tip-groups"), BuildGroupFilterText(row));
+                }
+            if (regionHasLayers || !tooltipText.empty())
+                {
+                regionInfo.Accessibility(regionAttrs);
                 }
             auto regionObject = std::make_unique<ChoroplethRegion>(regionInfo);
 
-            // a region shaded by opacity gets a white base underneath, so the
+            // A region shaded by opacity gets a white base underneath, so the
             // background does not bleed through low values. A grouped region then
             // stacks every group but the last on top of that base.
             std::vector<std::unique_ptr<ChoroplethRegion>> underlays;
-            // the class tells an HTML dashboard to keep these colors as painted in dark
-            // mode, so the base stays white beneath the translucent layers
-            const auto addUnderlay = [this, &underlays](const wxColour& color)
+            // The class tells an HTML dashboard to keep these colors as painted in dark
+            // mode, so the base stays white beneath the translucent layers.
+            const auto addUnderlay =
+                [this, &underlays](const wxBrush& brush, const wxSVGAttributes& underlayAttrs)
             {
-                underlays.push_back(std::make_unique<ChoroplethRegion>(
-                    GraphItems::GraphItemInfo{}
-                        .Pen(wxNullPen)
-                        .Brush(color)
-                        .Selectable(false)
-                        .Scaling(GetScaling())
-                        .DPIScaling(GetDPIScaleFactor())
-                        .Accessibility(wxSVGAttributes{}.Class(_DT(L"ink-keep")))));
+                underlays.push_back(
+                    std::make_unique<ChoroplethRegion>(GraphItems::GraphItemInfo{}
+                                                           .Pen(wxNullPen)
+                                                           .Brush(brush)
+                                                           .Selectable(false)
+                                                           .Scaling(GetScaling())
+                                                           .DPIScaling(GetDPIScaleFactor())
+                                                           .Accessibility(underlayAttrs)));
             };
             if (m_hasValues && !regionHasNoData)
                 {
-                addUnderlay(Colors::ColorBrewer::GetColor(Colors::Color::White));
+                wxSVGAttributes baseAttrs = wxSVGAttributes{}.Class(_DT(L"ink-keep"));
+                if (regionHasLayers)
+                    {
+                    // a no-data hatch sits under the white base, so a HTML dashboard can
+                    // reveal it by hiding the base once every group is filtered out
+                    wxBrush hatchBrush{ m_noDataColor };
+                    hatchBrush.SetStyle(m_noDataFillStyle);
+                    addUnderlay(hatchBrush, wxSVGAttributes{}.AriaHidden(true));
+
+                    wxString groupLabels;
+                    for (const auto& group : m_regionBreakdown[row])
+                        {
+                        if (!groupLabels.empty())
+                            {
+                            groupLabels += wxUniChar(Settings::SVG_LINE_SEPARATOR);
+                            }
+                        groupLabels += group.m_label;
+                        }
+                    baseAttrs.Add(_DT(L"data-filter-all"), groupLabels);
+                    }
+                addUnderlay(Colors::ColorBrewer::GetColor(Colors::Color::White), baseAttrs);
                 }
+            // a group layer is also tagged so that a HTML dashboard can filter it by group
             if (regionHasLayers)
                 {
                 for (size_t layer = 0; layer + 1 < m_regionLayers[row].size(); ++layer)
                     {
-                    addUnderlay(m_regionLayers[row][layer]);
+                    addUnderlay(m_regionLayers[row][layer],
+                                GetFilterAttributes(m_regionBreakdown[row][layer].m_label)
+                                    .Class(_DT(L"wisteria-filterable ink-keep"))
+                                    .AriaHidden(true));
                     }
                 }
 
