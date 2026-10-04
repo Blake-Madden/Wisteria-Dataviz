@@ -490,6 +490,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
             {
             size_t seasonGames{ 0 };
             bool inWinningStreak{ false };
+            // everything in a row is tied to its season, so it can be filtered out together
+            const auto addRowObject = [this, &row](auto item)
+            {
+                MakeFilterable(*item, row.first.m_seasonLabel);
+                AddObject(std::move(item));
+            };
             for (size_t gameCounter = 0; gameCounter < row.second.size(); ++gameCounter)
                 {
                 const auto& game = row.second[gameCounter];
@@ -541,11 +547,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                                 .DPIScaling(GetDPIScaleFactor()),
                             Icons::IconShape::CrossedOut, smallerBox.GetSize());
                         shp->SetBoundingBox(smallerBox, dc, GetScaling());
-                        AddObject(std::move(shp));
+                        addRowObject(std::move(shp));
                         }
                     else
                         {
-                        AddObject(std::make_unique<GraphItems::Polygon>(
+                        addRowObject(std::make_unique<GraphItems::Polygon>(
                             GraphItems::GraphItemInfo{}.Pen(wxNullPen).Brush(wxNullBrush), pts));
                         }
                     ++currentColumn;
@@ -556,7 +562,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
 
                 if (game.m_postseason)
                     {
-                    AddObject(std::make_unique<GraphItems::Polygon>(
+                    addRowObject(std::make_unique<GraphItems::Polygon>(
                         GraphItems::GraphItemInfo{}.Pen(wxNullPen).Brush(m_postseasonColor), pts));
                     }
 
@@ -610,7 +616,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
 
                     if (inWinningStreak)
                         {
-                        AddObject(std::make_unique<GraphItems::Polygon>(
+                        addRowObject(std::make_unique<GraphItems::Polygon>(
                             GraphItems::GraphItemInfo{}.Pen(wxNullPen).Brush(m_highlightColor),
                             pts));
                         }
@@ -643,10 +649,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                         { boxRect.GetLeft() + (boxRect.GetWidth() / 2), boxRect.GetBottom() });
                     }
 
-                AddObject(std::move(lossLine));
-                AddObject(std::move(winLine));
-                AddObject(std::move(homeGameLine));
-                AddObject(std::move(tieLine));
+                addRowObject(std::move(lossLine));
+                addRowObject(std::move(winLine));
+                addRowObject(std::move(homeGameLine));
+                addRowObject(std::move(tieLine));
 
                 ++currentColumn;
                 }
@@ -670,6 +676,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                                                        seasonLabelWidth,
                                                        static_cast<wxCoord>(boxHeight) },
                                                dc, GetScaling());
+                MakeFilterable(*seasonRowLabel, row.first.m_seasonLabel);
                 labels.push_back(std::move(seasonRowLabel));
                 }
 
@@ -694,6 +701,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                     wxRect{ labelAnchorPoint.x, labelAnchorPoint.y, overallRecordLabelWidth,
                             static_cast<wxCoord>(boxHeight) },
                     dc, GetScaling());
+                MakeFilterable(*overallRecordRowLabel, row.first.m_seasonLabel);
                 labels.push_back(std::move(overallRecordRowLabel));
                 }
 
@@ -718,6 +726,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                                                            homeRecordLabelWidth,
                                                            static_cast<wxCoord>(boxHeight) },
                                                    dc, GetScaling());
+                MakeFilterable(*homeRecordRowLabel, row.first.m_seasonLabel);
                 labels.push_back(std::move(homeRecordRowLabel));
                 }
 
@@ -741,6 +750,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                                                            roadRecordLabelWidth,
                                                            static_cast<wxCoord>(boxHeight) },
                                                    dc, GetScaling());
+                MakeFilterable(*roadRecordRowLabel, row.first.m_seasonLabel);
                 labels.push_back(std::move(roadRecordRowLabel));
                 }
 
@@ -765,6 +775,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                                                           pctRecordLabelWidth,
                                                           static_cast<wxCoord>(boxHeight) },
                                                   dc, GetScaling());
+                MakeFilterable(*pctRecordRowLabel, row.first.m_seasonLabel);
                 labels.push_back(std::move(pctRecordRowLabel));
                 }
 
