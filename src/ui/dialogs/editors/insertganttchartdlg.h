@@ -203,7 +203,6 @@ namespace Wisteria::UI
         void SyncBarShapesToList();
         void SyncBarBlockDecalsToList();
         void RefreshTaskLabels();
-        Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         [[nodiscard]]
         static Graphs::BarChart::BarShape BarShapeFromIndex(int index) noexcept;

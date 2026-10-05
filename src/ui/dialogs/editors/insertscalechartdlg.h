@@ -170,7 +170,6 @@ namespace Wisteria::UI
         void OnSelectVariables();
         void OnDatasetChanged();
         void UpdateVariableLabels();
-        Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         // scales page helpers
         void CreateScalesPage();

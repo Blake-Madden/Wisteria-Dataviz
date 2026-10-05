@@ -152,8 +152,6 @@ namespace Wisteria::UI
         /// @param[in,out] categoryLabel The slice label (empty for every slice).
         /// @returns @c true if the user accepted the entry.
         bool EditGhostOptions(wxString& groupLabel, wxString& categoryLabel);
-        static Data::Dataset::ColumnPreviewInfo
-        BuildColumnPreviewInfo(const Data::Dataset& dataset);
 
         // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
         constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };

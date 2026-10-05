@@ -163,8 +163,6 @@ namespace Wisteria::UI
         void OnSelectVariables();
         void OnDatasetChanged();
         void UpdateVariableLabels();
-        static Data::Dataset::ColumnPreviewInfo
-        BuildColumnPreviewInfo(const Data::Dataset& dataset);
 
         // ranges page helpers
         void CreateRangesPage();

@@ -288,7 +288,6 @@ namespace Wisteria::UI
         void RefreshAnnotationList();
         [[nodiscard]]
         wxArrayString GetColumnNames() const;
-        Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         // static helpers shared across the formatting page
         static bool ShowAnnotationDlg(wxWindow* parent, const wxString& title,

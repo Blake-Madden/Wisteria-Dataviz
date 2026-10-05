@@ -201,7 +201,6 @@ namespace Wisteria::UI
         void OnSelectImages();
         void OnBoxEffectChanged();
         void UpdateVariableLabels();
-        Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         [[nodiscard]]
         static BoxEffect BoxEffectFromIndex(int index) noexcept;

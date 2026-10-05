@@ -105,7 +105,6 @@ namespace Wisteria::UI
         void OnSelectVariables();
         void OnDatasetChanged();
         void UpdateVariableLabels();
-        Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
         constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };

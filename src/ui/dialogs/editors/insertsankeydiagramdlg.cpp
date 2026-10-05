@@ -504,28 +504,6 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    Data::Dataset::ColumnPreviewInfo
-    InsertSankeyDiagramDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset) const
-        {
-        Data::Dataset::ColumnPreviewInfo info;
-
-        for (const auto& col : dataset.GetContinuousColumns())
-            {
-            info.emplace_back(col.GetName(), Data::Dataset::ColumnImportType::Numeric, wxString{});
-            }
-        for (const auto& col : dataset.GetCategoricalColumns())
-            {
-            info.emplace_back(col.GetName(), Data::Dataset::ColumnImportType::String, wxString{});
-            }
-        for (const auto& col : dataset.GetDateColumns())
-            {
-            info.emplace_back(col.GetName(), Data::Dataset::ColumnImportType::Date, wxString{});
-            }
-
-        return info;
-        }
-
-    //-------------------------------------------
     std::shared_ptr<Data::Dataset> InsertSankeyDiagramDlg::GetSelectedDataset() const
         {
         if (GetReportBuilder() == nullptr || m_datasetChoice == nullptr)

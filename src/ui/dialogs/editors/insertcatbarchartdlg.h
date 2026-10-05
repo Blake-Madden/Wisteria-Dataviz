@@ -351,7 +351,6 @@ namespace Wisteria::UI
         void SyncBarGroupsToList();
         void SyncBarShapesToList();
         void SyncBarBlockDecalsToList();
-        Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         [[nodiscard]]
         static BoxEffect BoxEffectFromIndex(int index) noexcept;

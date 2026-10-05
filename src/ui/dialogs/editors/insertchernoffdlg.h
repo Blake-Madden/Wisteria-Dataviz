@@ -163,7 +163,6 @@ namespace Wisteria::UI
         /// @brief Clears and repopulates the hair-style combobox with the labels matching
         ///     the currently selected gender. Preserves the current selection index.
         void PopulateHairStyleChoice();
-        Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         /// @brief The number of facial features available for variable mapping.
         constexpr static size_t FEATURE_COUNT{ 13 };

@@ -188,7 +188,6 @@ namespace Wisteria::UI
         void OnRemoveQuestionsBracket([[maybe_unused]] wxCommandEvent& event);
         void UpdateVariableLabels();
         void SyncBracketsToList();
-        Data::Dataset::ColumnPreviewInfo BuildColumnPreviewInfo(const Data::Dataset& dataset) const;
 
         [[nodiscard]]
         static int
