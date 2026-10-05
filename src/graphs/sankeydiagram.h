@@ -20,6 +20,7 @@ namespace Wisteria::Graphs
     // clang-format off
     /** @brief Flow diagram, showing the flow of one series of groups into another series of groups.
         @details This implementation supports a two-level flow (one column of groups flowing into another column).
+        @image html grouped-sankey.png width=90%
 
         @par %Data:
          This plot accepts a Data::Dataset where two categorical columns represent the start and end

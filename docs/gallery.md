@@ -66,7 +66,7 @@ Basic
 | :-------------- |
 | ![](docs/images/racetrack.svg) |
 
-| Dubois Spiral Chart (Wisteria::Graphs::DuboisSpiralChart) |
+| Dubois Spiral Chart (Wisteria::Graphs::DuBoisSpiralChart) |
 | :-------------- |
 | ![](docs/images/dubois-spiral-chart.svg) |
 

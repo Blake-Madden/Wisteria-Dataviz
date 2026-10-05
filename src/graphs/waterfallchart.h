@@ -28,6 +28,7 @@ namespace Wisteria::Graphs
             Totals only appear when explicitly flagged through the optional
             total-flag column (@c 0 means a change, @c 1 means a total).
             Without that column, every row is treated as a change.
+        @image html waterfall.svg width=90%
 
         @par %Data:
          This plot accepts a Data::Dataset where one column holds the step labels

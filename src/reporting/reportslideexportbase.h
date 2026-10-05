@@ -114,33 +114,48 @@ namespace Wisteria
         /// @brief One rendered page, ready to be written into a package.
         struct RenderedPage
             {
+            /// @brief The page rendered as SVG.
             wxString m_svg;
+            /// @brief The page rendered as PNG.
             wxMemoryBuffer m_png;
+            /// @brief The width of the rendered page, in pixels.
             int m_pixelWidth{ 0 };
+            /// @brief The height of the rendered page, in pixels.
             int m_pixelHeight{ 0 };
+            /// @brief The speaker notes for the page.
             wxString m_notes;
             };
 
         /// @brief Escapes text for XML element content or attribute values and drops the
         ///     control characters that are illegal in XML 1.0.
+        /// @param str The text to escape.
+        /// @returns The escaped text.
         [[nodiscard]]
         static wxString EscapeXml(const wxString& str);
         /// @brief Escapes text for a single-line XML attribute value. Collapses embedded
         ///     newlines/tabs down to single spaces before escaping.
+        /// @param str The text to escape.
+        /// @returns The escaped text.
         [[nodiscard]]
         static wxString EscapeXmlAttribute(const wxString& str);
         /// @brief Gathers a slide's speaker-notes text from the canvas titles and from every
         ///     fixed object's accessibility label (user override first, then the
         ///     auto-generated description). Paragraphs are separated by blank lines.
+        /// @param canvas The canvas to gather text from.
+        /// @returns The combined speaker-notes text.
         [[nodiscard]]
         static wxString CollectAccessibilityText(Canvas* canvas);
         /// @brief Renders one canvas to an in-memory SVG document and, optionally, in-memory
         ///     PNG bytes, laid out at renderSize (DIPs). The canvas is temporarily resized for
         ///     the render and restored afterward.
+        /// @param canvas The canvas to render.
+        /// @param renderSize The size to lay out the canvas at, in DIPs.
+        /// @param[out] svgOut Receives the rendered SVG document.
         /// @param[out] pngOut Receives the rendered PNG bytes, or @c nullptr to skip the
         ///     raster render entirely.
         static void RenderCanvas(Canvas* canvas, wxSize renderSize, wxString& svgOut,
                                  wxMemoryBuffer* pngOut = nullptr);
+        /// @param color The color to convert.
         /// @returns @p color as an uppercase @c "RRGGBB" hex string (no leading @c '#').
         [[nodiscard]]
         static wxString ColorToHex(const wxColour& color);

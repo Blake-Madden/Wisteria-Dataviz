@@ -209,6 +209,7 @@ namespace Wisteria::Graphs
         @details The regions and their labels come from a Data::GeoDataset (built from a
             KML or GeoJSON file). An optional continuous column supplies the value each
             region is shaded by; without one, every region is filled with a single color.
+        @image html choropleth.svg width=90%
 
         @par %Data:
          This graph accepts a Data::GeoDataset. One row per region, with the polygon

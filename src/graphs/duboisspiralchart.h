@@ -23,6 +23,7 @@ namespace Wisteria::Graphs
     ///     diagonally downward, and the last row winds inward as a spiral.
     ///     This suits data where the final value dwarfs the others, as the spiral
     ///     can absorb a very long length in a compact area.
+    /// @image html dubois-spiral-chart.svg width=90%
     /// @par Citation:
     ///     The layout follows W. E. B. Du Bois's <i>City and Rural Population. 1890</i>,
     ///     one of the hand-drawn plates that he and his students at Atlanta University

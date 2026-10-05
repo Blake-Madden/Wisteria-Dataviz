@@ -36,6 +36,8 @@ namespace Wisteria::Graphs
             | :------------------------------------ | :------------------------------------ |
             | All wedges start at the center, largest drawn first. (Nightingale's 1858 layout.) | Series stack as annular bands. The outer edge is the slice total. |
 
+        @image html nightingale_rose_chart.svg width=90%
+
         @note Slices sweep clockwise from the start angle, which defaults to 6 o'clock
             (see SetStartAngle()). They follow category code order (not alphabetical) so
             months stay chronological.

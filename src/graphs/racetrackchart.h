@@ -22,6 +22,7 @@ namespace Wisteria::Graphs
     ///     and extend clockwise proportionally to their value. The longest track lane
     ///     goes almost all the way around (360 degrees minus gap).
     ///     Labels are placed at the outer edge at the start position.
+    /// @image html racetrack.svg width=90%
     /// @par Citation:
     ///     The spiraling layout follows W. E. B. Du Bois's <i>City and Rural Population. 1890</i>,
     ///     one of the hand-drawn plates that he and his students at Atlanta University prepared

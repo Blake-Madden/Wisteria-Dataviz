@@ -24,6 +24,7 @@ namespace Wisteria::Graphs
 
             The categories share the same colors in both fans. The legend is always shown, split
             in two and placed in the empty wedges to the left and right of the center point.
+        @image html dueling-pie-chart.svg width=90%
 
         @par Citation:
             The layout follows one of the hand-drawn plates that W. E. B. Du Bois and his
