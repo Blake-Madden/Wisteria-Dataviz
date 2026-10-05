@@ -55,20 +55,6 @@ namespace Wisteria::UI
         /// @private
         InsertDuBoisSpiralChartDlg& operator=(const InsertDuBoisSpiralChartDlg&) = delete;
 
-        /// @returns The selected dataset, or @c nullptr if none.
-        [[nodiscard]]
-        std::shared_ptr<Data::Dataset> GetSelectedDataset() const;
-
-        /// @returns The name of the selected dataset, or empty if none.
-        [[nodiscard]]
-        wxString GetSelectedDatasetName() const
-            {
-            const int sel = m_datasetChoice->GetSelection();
-            return (sel != wxNOT_FOUND && std::cmp_less(sel, m_datasetNames.size())) ?
-                       m_datasetNames[sel] :
-                       wxString{};
-            }
-
         /// @returns The label variable name (one segment per row, in dataset order).
         [[nodiscard]]
         const wxString& GetLabelVariable() const noexcept
@@ -133,7 +119,6 @@ namespace Wisteria::UI
         constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };
         constexpr static wxWindowID ID_SELECT_VARS_BUTTON{ wxID_HIGHEST + 4 };
 
-        wxChoice* m_datasetChoice{ nullptr };
         wxStaticText* m_labelVarLabel{ nullptr };
         wxStaticText* m_valueVarLabel{ nullptr };
 
@@ -148,7 +133,6 @@ namespace Wisteria::UI
         bool m_showLabels{ true };
         int m_zigZagAngle{ static_cast<int>(Graphs::DuBoisSpiralChart::DEFAULT_ZIGZAG_ANGLE) };
 
-        std::vector<wxString> m_datasetNames;
         };
     } // namespace Wisteria::UI
 

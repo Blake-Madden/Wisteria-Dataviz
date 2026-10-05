@@ -76,20 +76,6 @@ namespace Wisteria::UI
         /// @private
         InsertScaleChartDlg& operator=(const InsertScaleChartDlg&) = delete;
 
-        /// @returns The selected dataset, or @c nullptr if none.
-        [[nodiscard]]
-        std::shared_ptr<Data::Dataset> GetSelectedDataset() const;
-
-        /// @returns The name of the selected dataset, or empty if none.
-        [[nodiscard]]
-        wxString GetSelectedDatasetName() const
-            {
-            const int sel = m_datasetChoice->GetSelection();
-            return (sel != wxNOT_FOUND && std::cmp_less(sel, m_datasetNames.size())) ?
-                       m_datasetNames[sel] :
-                       wxString{};
-            }
-
         /// @returns The score variable name.
         [[nodiscard]]
         const wxString& GetScoreVariable() const noexcept
@@ -192,11 +178,9 @@ namespace Wisteria::UI
 
         // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
         constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };
-        constexpr static wxWindowID ID_DATASET_CHOICE{ wxID_HIGHEST + 3 };
         constexpr static wxWindowID ID_SELECT_VARS_BUTTON{ wxID_HIGHEST + 4 };
         constexpr static wxWindowID ID_SCALES_SECTION{ wxID_HIGHEST + 5 };
 
-        wxChoice* m_datasetChoice{ nullptr };
         wxStaticText* m_scoreVarLabel{ nullptr };
         wxStaticText* m_groupVarLabel{ nullptr };
 
@@ -215,7 +199,6 @@ namespace Wisteria::UI
         wxString m_scoreVariable;
         wxString m_groupVariable;
 
-        std::vector<wxString> m_datasetNames;
         std::vector<ScaleInfo> m_scales;
         };
     } // namespace Wisteria::UI

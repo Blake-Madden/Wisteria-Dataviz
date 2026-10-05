@@ -55,20 +55,6 @@ namespace Wisteria::UI
         /// @private
         InsertPictographDlg& operator=(const InsertPictographDlg&) = delete;
 
-        /// @returns The selected dataset, or @c nullptr if none.
-        [[nodiscard]]
-        std::shared_ptr<Data::Dataset> GetSelectedDataset() const;
-
-        /// @returns The name of the selected dataset, or empty if none.
-        [[nodiscard]]
-        wxString GetSelectedDatasetName() const
-            {
-            const int sel = m_datasetChoice->GetSelection();
-            return (sel != wxNOT_FOUND && std::cmp_less(sel, m_datasetNames.size())) ?
-                       m_datasetNames[sel] :
-                       wxString{};
-            }
-
         /// @returns The label variable name (drawn beside each icon).
         [[nodiscard]]
         const wxString& GetLabelVariable() const noexcept
@@ -133,7 +119,6 @@ namespace Wisteria::UI
         constexpr static wxWindowID ID_SELECT_VARS_BUTTON{ wxID_HIGHEST + 4 };
         constexpr static wxWindowID ID_SELECT_SHAPE_BUTTON{ wxID_HIGHEST + 5 };
 
-        wxChoice* m_datasetChoice{ nullptr };
         wxStaticText* m_labelVarLabel{ nullptr };
         wxStaticText* m_valueVarLabel{ nullptr };
         wxStaticText* m_shapeLabel{ nullptr };
@@ -150,7 +135,6 @@ namespace Wisteria::UI
 
         Icons::IconShape m_iconShape{ Icons::IconShape::Square };
 
-        std::vector<wxString> m_datasetNames;
         };
     } // namespace Wisteria::UI
 

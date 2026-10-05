@@ -66,20 +66,6 @@ namespace Wisteria::UI
         /// @private
         InsertProConRoadmapDlg& operator=(const InsertProConRoadmapDlg&) = delete;
 
-        /// @returns The selected dataset, or @c nullptr if none.
-        [[nodiscard]]
-        std::shared_ptr<Data::Dataset> GetSelectedDataset() const;
-
-        /// @returns The name of the selected dataset, or empty if none.
-        [[nodiscard]]
-        wxString GetSelectedDatasetName() const
-            {
-            const int sel = m_datasetChoice->GetSelection();
-            return (sel != wxNOT_FOUND && std::cmp_less(sel, m_datasetNames.size())) ?
-                       m_datasetNames[sel] :
-                       wxString{};
-            }
-
         /// @returns The positive (pros) column name.
         [[nodiscard]]
         const wxString& GetPositiveVariable() const noexcept
@@ -184,10 +170,8 @@ namespace Wisteria::UI
 
         // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
         constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };
-        constexpr static wxWindowID ID_DATASET_CHOICE{ wxID_HIGHEST + 3 };
         constexpr static wxWindowID ID_SELECT_VARS_BUTTON{ wxID_HIGHEST + 4 };
 
-        wxChoice* m_datasetChoice{ nullptr };
         wxStaticText* m_positiveVarLabel{ nullptr };
         wxStaticText* m_positiveValueVarLabel{ nullptr };
         wxStaticText* m_negativeVarLabel{ nullptr };
@@ -211,7 +195,6 @@ namespace Wisteria::UI
         wxSpinCtrl* m_minCountSpin{ nullptr };
         wxColourPickerCtrl* m_roadColorPicker{ nullptr };
 
-        std::vector<wxString> m_datasetNames;
         };
     } // namespace Wisteria::UI
 

@@ -65,20 +65,6 @@ namespace Wisteria::UI
         /// @private
         InsertTableDlg& operator=(const InsertTableDlg&) = delete;
 
-        /// @returns The selected dataset, or @c nullptr if none.
-        [[nodiscard]]
-        std::shared_ptr<Data::Dataset> GetSelectedDataset() const;
-
-        /// @returns The name of the selected dataset, or empty if none.
-        [[nodiscard]]
-        wxString GetSelectedDatasetName() const
-            {
-            const int sel = m_datasetChoice->GetSelection();
-            return (sel != wxNOT_FOUND && std::cmp_less(sel, m_datasetNames.size())) ?
-                       m_datasetNames[sel] :
-                       wxString{};
-            }
-
         /// @returns The variable selection mode.
         [[nodiscard]]
         VarMode GetVarMode() const noexcept
@@ -296,12 +282,10 @@ namespace Wisteria::UI
         // starts at +2 to avoid collision with
         // InsertItemDlg::ID_PAGE_SECTION (+1)
         constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };
-        constexpr static wxWindowID ID_DATASET_CHOICE{ wxID_HIGHEST + 3 };
         constexpr static wxWindowID ID_SELECT_VARS_BUTTON{ wxID_HIGHEST + 4 };
         constexpr static wxWindowID ID_VAR_MODE_RADIO{ wxID_HIGHEST + 5 };
         constexpr static wxWindowID ID_ANNOTATIONS_SECTION{ wxID_HIGHEST + 6 };
 
-        wxChoice* m_datasetChoice{ nullptr };
         wxRadioBox* m_varModeRadio{ nullptr };
         wxEditableListBox* m_variablesListBox{ nullptr };
         wxButton* m_varButton{ nullptr };
@@ -332,7 +316,6 @@ namespace Wisteria::UI
         int m_minHeightPct{ 100 };
 
         std::vector<wxString> m_variableNames;
-        std::vector<wxString> m_datasetNames;
         std::vector<std::pair<wxString, wxString>> m_footnotes;
         std::vector<AggregateEntry> m_aggregates;
         std::vector<AnnotationEntry> m_annotationEntries;

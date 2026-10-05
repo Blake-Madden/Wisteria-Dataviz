@@ -48,22 +48,8 @@ namespace Wisteria::UI
 
         datasetSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Dataset:")),
                           wxSizerFlags{}.CenterVertical());
-        m_datasetChoice = new wxChoice(optionsPage, ID_DATASET_CHOICE);
-        datasetSizer->Add(m_datasetChoice);
-
-        // populate dataset names from the report builder
-        if (GetReportBuilder() != nullptr)
-            {
-            for (const auto& [name, dataset] : GetReportBuilder()->GetDatasets())
-                {
-                m_datasetNames.push_back(name);
-                m_datasetChoice->Append(name);
-                }
-            }
-        if (!m_datasetNames.empty())
-            {
-            m_datasetChoice->SetSelection(0);
-            }
+        auto* datasetChoice = CreateDatasetChoice(optionsPage);
+        datasetSizer->Add(datasetChoice);
 
         optionsSizer->Add(datasetSizer, wxSizerFlags{}.Border());
 
@@ -214,8 +200,8 @@ namespace Wisteria::UI
         optionsSizer->Add(ghostBox, wxSizerFlags{ 1 }.Expand().Border());
 
         // bind events
-        m_datasetChoice->Bind(wxEVT_CHOICE,
-                              [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
+        datasetChoice->Bind(wxEVT_CHOICE,
+                            [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
 
         varButton->Bind(wxEVT_BUTTON,
                         [this]([[maybe_unused]] wxCommandEvent&) { OnSelectVariables(); });
@@ -251,14 +237,10 @@ namespace Wisteria::UI
         if (GetReportBuilder() != nullptr)
             {
             const auto& importOpts = GetReportBuilder()->GetDatasetImportOptions();
-            const int sel = m_datasetChoice->GetSelection();
-            if (sel != wxNOT_FOUND && std::cmp_less(sel, m_datasetNames.size()))
+            const auto foundPos = importOpts.find(GetSelectedDatasetName());
+            if (foundPos != importOpts.cend())
                 {
-                const auto foundPos = importOpts.find(m_datasetNames[sel]);
-                if (foundPos != importOpts.cend())
-                    {
-                    columnInfo = foundPos->second.m_columnPreviewInfo;
-                    }
+                columnInfo = foundPos->second.m_columnPreviewInfo;
                 }
             }
         if (columnInfo.empty())
@@ -417,25 +399,6 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    std::shared_ptr<Data::Dataset> InsertNightingaleRoseChartDlg::GetSelectedDataset() const
-        {
-        if (GetReportBuilder() == nullptr || m_datasetChoice == nullptr)
-            {
-            return nullptr;
-            }
-
-        const int sel = m_datasetChoice->GetSelection();
-        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_datasetNames.size()))
-            {
-            return nullptr;
-            }
-
-        const auto& datasets = GetReportBuilder()->GetDatasets();
-        const auto foundPos = datasets.find(m_datasetNames[sel]);
-        return (foundPos != datasets.cend()) ? foundPos->second : nullptr;
-        }
-
-    //-------------------------------------------
     Graphs::NightingaleRoseChart::RadialScaling
     InsertNightingaleRoseChartDlg::GetRadialScaling() const noexcept
         {
@@ -498,18 +461,7 @@ namespace Wisteria::UI
         LoadGraphOptions(graph);
 
         // select the dataset by name from the property template
-        const auto dsName = roseChart->GetPropertyTemplate(L"dataset");
-        if (!dsName.empty() && m_datasetChoice != nullptr)
-            {
-            for (size_t i = 0; i < m_datasetNames.size(); ++i)
-                {
-                if (m_datasetNames[i] == dsName)
-                    {
-                    m_datasetChoice->SetSelection(static_cast<int>(i));
-                    break;
-                    }
-                }
-            }
+        SelectDataset(roseChart->GetPropertyTemplate(L"dataset"));
 
         // load column names from the graph
         m_categoryVariable = roseChart->GetCategoryColumnName();

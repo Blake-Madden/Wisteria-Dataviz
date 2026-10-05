@@ -58,20 +58,6 @@ namespace Wisteria::UI
         /// @private
         InsertSankeyDiagramDlg& operator=(const InsertSankeyDiagramDlg&) = delete;
 
-        /// @returns The selected dataset, or @c nullptr if none.
-        [[nodiscard]]
-        std::shared_ptr<Data::Dataset> GetSelectedDataset() const;
-
-        /// @returns The name of the selected dataset, or empty if none.
-        [[nodiscard]]
-        wxString GetSelectedDatasetName() const
-            {
-            const int sel = m_datasetChoice->GetSelection();
-            return (sel != wxNOT_FOUND && std::cmp_less(sel, m_datasetNames.size())) ?
-                       m_datasetNames[sel] :
-                       wxString{};
-            }
-
         /// @returns The "from" variable name (with any constant placeholders expanded).
         [[nodiscard]]
         wxString GetFromVariable() const
@@ -229,13 +215,11 @@ namespace Wisteria::UI
 
         // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
         constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };
-        constexpr static wxWindowID ID_DATASET_CHOICE{ wxID_HIGHEST + 3 };
         constexpr static wxWindowID ID_SELECT_VARS_BUTTON{ wxID_HIGHEST + 4 };
         constexpr static wxWindowID ID_FROM_COL_LABEL{ wxID_HIGHEST + 5 };
         constexpr static wxWindowID ID_TO_COL_LABEL{ wxID_HIGHEST + 6 };
         constexpr static wxWindowID ID_COLUMN_HEADER_CHOICE{ wxID_HIGHEST + 7 };
 
-        wxChoice* m_datasetChoice{ nullptr };
         wxChoice* m_columnHeaderChoice{ nullptr };
         wxStaticText* m_fromVarLabel{ nullptr };
         wxStaticText* m_toVarLabel{ nullptr };
@@ -265,7 +249,6 @@ namespace Wisteria::UI
         wxString m_fromColumnLabel{ L"@COLUMNNAME@" };
         wxString m_toColumnLabel{ L"@COLUMNNAME@" };
 
-        std::vector<wxString> m_datasetNames;
         std::vector<wxString> m_showcaseStreams;
         };
     } // namespace Wisteria::UI

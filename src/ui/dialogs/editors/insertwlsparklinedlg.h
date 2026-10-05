@@ -58,20 +58,6 @@ namespace Wisteria::UI
         /// @private
         InsertWLSparklineDlg& operator=(const InsertWLSparklineDlg&) = delete;
 
-        /// @returns The selected dataset, or @c nullptr if none.
-        [[nodiscard]]
-        std::shared_ptr<Data::Dataset> GetSelectedDataset() const;
-
-        /// @returns The name of the selected dataset, or empty if none.
-        [[nodiscard]]
-        wxString GetSelectedDatasetName() const
-            {
-            const int sel = m_datasetChoice->GetSelection();
-            return (sel != wxNOT_FOUND && std::cmp_less(sel, m_datasetNames.size())) ?
-                       m_datasetNames[sel] :
-                       wxString{};
-            }
-
         /// @returns The season variable name.
         [[nodiscard]]
         const wxString& GetSeasonVariable() const noexcept
@@ -138,10 +124,8 @@ namespace Wisteria::UI
 
         // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
         constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };
-        constexpr static wxWindowID ID_DATASET_CHOICE{ wxID_HIGHEST + 3 };
         constexpr static wxWindowID ID_SELECT_VARS_BUTTON{ wxID_HIGHEST + 4 };
 
-        wxChoice* m_datasetChoice{ nullptr };
         wxStaticText* m_seasonVarLabel{ nullptr };
         wxStaticText* m_wonVarLabel{ nullptr };
         wxStaticText* m_shutoutVarLabel{ nullptr };
@@ -157,7 +141,6 @@ namespace Wisteria::UI
         wxString m_homeGameVariable;
         wxString m_postseasonVariable;
 
-        std::vector<wxString> m_datasetNames;
         };
     } // namespace Wisteria::UI
 

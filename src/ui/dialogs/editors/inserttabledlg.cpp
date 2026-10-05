@@ -54,21 +54,8 @@ namespace Wisteria::UI
 
         datasetSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Dataset:")),
                           wxSizerFlags{}.CenterVertical());
-        m_datasetChoice = new wxChoice(optionsPage, ID_DATASET_CHOICE);
-        datasetSizer->Add(m_datasetChoice);
-
-        if (GetReportBuilder() != nullptr)
-            {
-            for (const auto& [name, dataset] : GetReportBuilder()->GetDatasets())
-                {
-                m_datasetNames.push_back(name);
-                m_datasetChoice->Append(name);
-                }
-            }
-        if (!m_datasetNames.empty())
-            {
-            m_datasetChoice->SetSelection(0);
-            }
+        auto* datasetChoice = CreateDatasetChoice(optionsPage);
+        datasetSizer->Add(datasetChoice);
 
         optionsSizer->Add(datasetSizer, wxSizerFlags{}.Border());
 
@@ -259,8 +246,8 @@ namespace Wisteria::UI
                                    [this](wxListEvent&) { OnEditAnnotation(); });
 
         // bind events
-        m_datasetChoice->Bind(wxEVT_CHOICE,
-                              [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
+        datasetChoice->Bind(wxEVT_CHOICE,
+                            [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
 
         m_varModeRadio->Bind(wxEVT_RADIOBOX,
                              [this]([[maybe_unused]] wxCommandEvent&) { OnVarModeChanged(); });
@@ -322,14 +309,10 @@ namespace Wisteria::UI
         if (GetReportBuilder() != nullptr)
             {
             const auto& importOpts = GetReportBuilder()->GetDatasetImportOptions();
-            const int sel = m_datasetChoice->GetSelection();
-            if (sel != wxNOT_FOUND && std::cmp_less(sel, m_datasetNames.size()))
+            const auto it = importOpts.find(GetSelectedDatasetName());
+            if (it != importOpts.cend())
                 {
-                const auto it = importOpts.find(m_datasetNames[sel]);
-                if (it != importOpts.cend())
-                    {
-                    columnInfo = it->second.m_columnPreviewInfo;
-                    }
+                columnInfo = it->second.m_columnPreviewInfo;
                 }
             }
         if (columnInfo.empty())
@@ -370,25 +353,6 @@ namespace Wisteria::UI
             strings.Add(name);
             }
         m_variablesListBox->SetStrings(strings);
-        }
-
-    //-------------------------------------------
-    std::shared_ptr<Data::Dataset> InsertTableDlg::GetSelectedDataset() const
-        {
-        if (GetReportBuilder() == nullptr || m_datasetChoice == nullptr)
-            {
-            return nullptr;
-            }
-
-        const int sel = m_datasetChoice->GetSelection();
-        if (sel == wxNOT_FOUND || std::cmp_greater_equal(sel, m_datasetNames.size()))
-            {
-            return nullptr;
-            }
-
-        const auto& datasets = GetReportBuilder()->GetDatasets();
-        const auto it = datasets.find(m_datasetNames[sel]);
-        return (it != datasets.cend()) ? it->second : nullptr;
         }
 
     //-------------------------------------------
@@ -485,18 +449,7 @@ namespace Wisteria::UI
         LoadGraphOptions(graph);
 
         // select the dataset by name from the property template
-        const auto dsName = table->GetPropertyTemplate(L"dataset");
-        if (!dsName.empty() && m_datasetChoice != nullptr)
-            {
-            for (size_t i = 0; i < m_datasetNames.size(); ++i)
-                {
-                if (m_datasetNames[i] == dsName)
-                    {
-                    m_datasetChoice->SetSelection(static_cast<int>(i));
-                    break;
-                    }
-                }
-            }
+        SelectDataset(table->GetPropertyTemplate(L"dataset"));
 
         // restore variable selection mode from property template. the template
         // may be a raw string formula ("{{Everything()}}"), a JSON array of
