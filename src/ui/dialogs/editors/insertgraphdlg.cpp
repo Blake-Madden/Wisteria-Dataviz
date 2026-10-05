@@ -2091,6 +2091,98 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    Data::Dataset::ColumnPreviewInfo
+    InsertGraphDlg::BuildColumnPreviewInfo(const Data::Dataset& dataset)
+        {
+        Data::Dataset::ColumnPreviewInfo info;
+
+        for (const auto& col : dataset.GetContinuousColumns())
+            {
+            info.emplace_back(col.GetName(), Data::Dataset::ColumnImportType::Numeric, wxString{});
+            }
+        for (const auto& col : dataset.GetCategoricalColumns())
+            {
+            info.emplace_back(col.GetName(), Data::Dataset::ColumnImportType::String, wxString{});
+            }
+        for (const auto& col : dataset.GetDateColumns())
+            {
+            info.emplace_back(col.GetName(), Data::Dataset::ColumnImportType::Date, wxString{});
+            }
+
+        return info;
+        }
+
+    //-------------------------------------------
+    wxChoice* InsertGraphDlg::CreateDatasetChoice(wxWindow* parent)
+        {
+        m_datasetChoice = new wxChoice(parent, ID_DATASET_CHOICE);
+
+        if (GetReportBuilder() != nullptr)
+            {
+            for (const auto& [name, dataset] : GetReportBuilder()->GetDatasets())
+                {
+                m_datasetNames.push_back(name);
+                m_datasetChoice->Append(name);
+                }
+            }
+        if (!m_datasetNames.empty())
+            {
+            m_datasetChoice->SetSelection(0);
+            }
+
+        return m_datasetChoice;
+        }
+
+    //-------------------------------------------
+    wxString InsertGraphDlg::GetSelectedDatasetName() const
+        {
+        if (m_datasetChoice == nullptr)
+            {
+            return {};
+            }
+
+        const int sel = m_datasetChoice->GetSelection();
+        return (sel != wxNOT_FOUND && std::cmp_less(sel, m_datasetNames.size())) ?
+                   m_datasetNames[sel] :
+                   wxString{};
+        }
+
+    //-------------------------------------------
+    std::shared_ptr<Data::Dataset> InsertGraphDlg::GetSelectedDataset() const
+        {
+        if (GetReportBuilder() == nullptr)
+            {
+            return nullptr;
+            }
+
+        const auto name = GetSelectedDatasetName();
+        if (name.empty())
+            {
+            return nullptr;
+            }
+
+        const auto& datasets = GetReportBuilder()->GetDatasets();
+        const auto foundPos = datasets.find(name);
+        return (foundPos != datasets.cend()) ? foundPos->second : nullptr;
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::SelectDataset(const wxString& name)
+        {
+        if (m_datasetChoice == nullptr)
+            {
+            return;
+            }
+
+        const auto foundPos = std::ranges::find(m_datasetNames, name);
+        if (foundPos != m_datasetNames.end())
+            {
+            m_datasetChoice->SetSelection(
+                static_cast<int>(std::distance(m_datasetNames.begin(), foundPos)));
+            }
+        }
+
+    //-------------------------------------------
     bool InsertGraphDlg::ValidateColorScheme()
         {
         if (!(m_options & GraphDlgIncludeColorScheme))

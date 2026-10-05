@@ -24,6 +24,7 @@
 #include "../ui/dialogs/editors/insertchoroplethmapdlg.h"
 #include "../ui/dialogs/editors/insertcommonaxisdlg.h"
 #include "../ui/dialogs/editors/insertduboisspiralchartdlg.h"
+#include "../ui/dialogs/editors/insertduelingpiechartdlg.h"
 #include "../ui/dialogs/editors/insertfunnelchartdlg.h"
 #include "../ui/dialogs/editors/insertganttchartdlg.h"
 #include "../ui/dialogs/editors/insertheatmapdlg.h"
@@ -426,6 +427,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
                   ID_NEW_NIGHTINGALE_ROSE_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertDuBoisSpiralChart, this,
                   ID_NEW_DUBOIS_SPIRAL_CHART);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertDuelingPieChart, this,
+                  ID_NEW_DUELING_PIE_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertPictograph, this, ID_NEW_PICTOGRAPH);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertBulletChart, this, ID_NEW_BULLET_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWaterfallChart, this, ID_NEW_WATERFALL_CHART);
@@ -2289,6 +2292,8 @@ void WisteriaView::BuildGraphMenus()
                L"images/rose.svg");
     appendItem(m_basicGraphMenu, ID_NEW_DUBOIS_SPIRAL_CHART, _(L"Du Bois Spiral Chart..."),
                L"images/dubois-spiral.svg");
+    appendItem(m_basicGraphMenu, ID_NEW_DUELING_PIE_CHART, _(L"Dueling Pie Chart..."),
+               L"images/dueling-pie.svg");
     appendItem(m_basicGraphMenu, ID_NEW_PICTOGRAPH, _(L"Pictograph..."), L"images/pictograph.svg");
     m_basicGraphMenu.AppendSeparator();
     appendItem(m_basicGraphMenu, ID_NEW_CHOROPLETH_MAP, _(L"Choropleth Map..."),
@@ -2985,6 +2990,10 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::DuBoisSpiralChart)))
         {
         EditDuBoisSpiralChart(*graph, canvas, itemRow, itemCol);
+        }
+    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::DuelingPieChart)))
+        {
+        EditDuelingPieChart(*graph, canvas, itemRow, itemCol);
         }
     else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Pictograph)))
         {
@@ -5056,6 +5065,71 @@ void WisteriaView::EditDuBoisSpiralChart(const Wisteria::Graphs::Graph2D& graph,
     try
         {
         auto plot = dlg.BuildDuBoisSpiralChart(&graph);
+        canvas->SetFixedObject(graphRow, graphCol, plot);
+
+        UpdateCanvas(canvas);
+
+        GetDocument()->Modify(true);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertDuelingPieChart([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = EnsureActivePage();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertDuelingPieChartDlg dlg(canvas, &m_reportBuilder, m_frame);
+    SetDialogIcon(dlg, L"images/dueling-pie.svg");
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = dlg.BuildDuelingPieChart();
+        canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+
+        UpdateCanvas(canvas);
+
+        GetDocument()->Modify(true);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::EditDuelingPieChart(const Wisteria::Graphs::Graph2D& graph,
+                                       Wisteria::Canvas* canvas, const size_t graphRow,
+                                       const size_t graphCol) const
+    {
+    Wisteria::UI::InsertDuelingPieChartDlg dlg(
+        canvas, &m_reportBuilder, m_frame, _(L"Edit Dueling Pie Chart"), wxID_ANY,
+        wxDefaultPosition, wxDefaultSize,
+        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    SetDialogIcon(dlg, L"images/dueling-pie.svg");
+    dlg.SetSelectedCell(graphRow, graphCol);
+    dlg.LoadFromGraph(graph);
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = dlg.BuildDuelingPieChart(&graph);
         canvas->SetFixedObject(graphRow, graphCol, plot);
 
         UpdateCanvas(canvas);

@@ -263,6 +263,18 @@ namespace Wisteria::UI
             return (m_reportBuilder != nullptr) ? m_reportBuilder->ExpandConstants(value) : value;
             }
 
+        /// @brief Looks up the numeric value of a constant placeholder
+        ///     (e.g., @c "{{PercentFemale}}") using the attached report builder.
+        /// @param value The placeholder to look up.
+        /// @returns The value, or @c std::nullopt if no report builder is available
+        ///     or the constant isn't a defined number.
+        [[nodiscard]]
+        std::optional<double> ExpandNumber(const wxString& value) const
+            {
+            return (m_reportBuilder != nullptr) ? m_reportBuilder->ExpandNumericConstant(value) :
+                                                  std::nullopt;
+            }
+
         /// @returns The canvas.
         [[nodiscard]]
         Canvas* GetCanvas() noexcept

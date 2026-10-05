@@ -1130,6 +1130,10 @@ wxString WisteriaApp::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph)
         {
         return _DT(L"dubois-spiral-chart");
         }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::DuelingPieChart)))
+        {
+        return _DT(L"dueling-pie-chart");
+        }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Pictograph)))
         {
         return _DT(L"pictograph");
@@ -1265,6 +1269,10 @@ wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase*
         {
         return L"images/dubois-spiral.svg";
         }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::DuelingPieChart)))
+        {
+        return L"images/dueling-pie.svg";
+        }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Pictograph)))
         {
         return L"images/pictograph.svg";
@@ -1385,6 +1393,8 @@ const std::vector<Wisteria::GalleryItemInfo>& WisteriaApp::GetGalleryItemCatalog
           GalleryGroup::Basic },
         { GalleryItemType::DuBoisSpiralChart, _(L"Du Bois Spiral Chart"),
           L"images/dubois-spiral.svg", GalleryGroup::Basic },
+        { GalleryItemType::DuelingPieChart, _(L"Dueling Pie Chart"), L"images/dueling-pie.svg",
+          GalleryGroup::Basic },
         { GalleryItemType::Pictograph, _(L"Pictograph"), L"images/pictograph.svg",
           GalleryGroup::Basic },
         { GalleryItemType::ChoroplethMap, _(L"Choropleth Map"), L"images/choropleth.svg",

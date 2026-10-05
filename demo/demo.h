@@ -26,6 +26,7 @@
 #include "../src/graphs/categoricalbarchart.h"
 #include "../src/graphs/chernoffplot.h"
 #include "../src/graphs/duboisspiralchart.h"
+#include "../src/graphs/duelingpiechart.h"
 #include "../src/graphs/funnelchart.h"
 #include "../src/graphs/ganttchart.h"
 #include "../src/graphs/heatmap.h"
@@ -138,6 +139,7 @@ class MyApp final : public wxApp
         ID_NEW_WATERFALL_CHART,
         ID_NEW_FUNNEL_CHART,
         ID_NEW_DUBOIS_SPIRAL,
+        ID_NEW_DUELING_PIE,
         ID_NEW_PICTOGRAPH
         };
 

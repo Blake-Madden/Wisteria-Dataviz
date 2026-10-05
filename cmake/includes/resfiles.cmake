@@ -41,6 +41,7 @@ images/divider-vertical-single.svg
 images/donut-subgrouped.svg
 images/donut.svg
 images/dubois-spiral.svg
+images/dueling-pie.svg
 images/edit.svg
 images/equals.svg
 images/file-open.svg

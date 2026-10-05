@@ -861,6 +861,48 @@ This suits data where the final value dwarfs the others.
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}
+## Dueling Pie Chart {#dueling-pie-chart-properties .unnumbered}
+
+Properties for `"dueling-pie-chart"` nodes:
+
+- `"variables"`: An item containing the following properties:
+  - `"value"`: The continuous column containing the values. \
+    Rows with a missing, zero, or negative value are skipped.
+  - `"category"`: The categorical column containing the categories (the slices).
+  - `"group"`: The categorical column containing the two groups (the fans). \
+    This column must contain exactly two distinct values; otherwise, an error is thrown.
+- `"midpoint-label-display"`: A string specifying what is shown inside the slices. \
+  Available options are:
+  - `"percentage"`: The slice's percentage of its group's total (the default).
+  - `"value"`: The slice's value.
+  - `"value-and-percentage"`: The percentage and value.
+- Some base properties available to [graphs](#graph-properties), including `"brush-scheme"` and `"color-scheme"` for coloring the categories. \
+  Each category is colored according to its position in the dataset, and has the same color in both fans.
+
+The first group found in the dataset is drawn as a fan along the top, and the second group is drawn as a fan along the bottom.
+Each fan spans 90 degrees, and its slices are sized by each category's share of that group's own total.
+Categories are drawn in the order that they first appear in the dataset.
+
+The legend is always included.
+It is split in two and placed in the empty areas to the left and right of the point where the fans meet.
+Category names are shown only in the legend.
+
+```json
+{
+  "type": "dueling-pie-chart",
+  "dataset": "Daily Hours",
+  "variables": {
+    "value": "Hours",
+    "category": "Activity",
+    "group": "Day"
+  },
+  "color-scheme": ["#ee1c25", "#ffc400", "#0a5bd3"],
+  "title": "How Time Is Spent"
+}
+```
+:::
+
+::: {.minipage data-latex="{\textwidth}"}
 ## Pictograph {#pictograph-properties .unnumbered}
 
 Properties for `"pictograph"` nodes:

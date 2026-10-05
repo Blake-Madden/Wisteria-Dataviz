@@ -1988,6 +1988,63 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::shared_ptr<Graphs::Graph2D>
+    ReportBuilder::LoadDuelingPieChart(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                                       size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->AsString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for dueling pie chart."), dsName)
+                    .ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(L"variables");
+        if (!variablesNode->IsOk())
+            {
+            throw std::runtime_error(_(L"Variables not defined for dueling pie chart.").ToUTF8());
+            }
+
+        const auto valueVarNameRaw = variablesNode->GetProperty(L"value")->AsString();
+        const auto categoryVarNameRaw = variablesNode->GetProperty(L"category")->AsString();
+        const auto groupVarNameRaw = variablesNode->GetProperty(L"group")->AsString();
+
+        if (valueVarNameRaw.empty() || categoryVarNameRaw.empty() || groupVarNameRaw.empty())
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: value, category, and group variables must be specified "
+                                   "for dueling pie chart."),
+                                 dsName)
+                    .ToUTF8());
+            }
+
+        auto duelingChart = std::make_shared<Graphs::DuelingPieChart>(
+            canvas, LoadBrushScheme(graphNode->GetProperty(L"brush-scheme")),
+            LoadGraphColorScheme(graphNode));
+        duelingChart->SetPropertyTemplate(L"dataset", dsName);
+        const auto valueVarName =
+            ExpandAndCache(duelingChart.get(), L"variables.value", valueVarNameRaw);
+        const auto categoryVarName =
+            ExpandAndCache(duelingChart.get(), L"variables.category", categoryVarNameRaw);
+        const auto groupVarName =
+            ExpandAndCache(duelingChart.get(), L"variables.group", groupVarNameRaw);
+
+        if (const auto binLabel = ReportEnumConvert::ConvertBinLabelDisplay(
+                graphNode->GetProperty(L"midpoint-label-display")->AsString());
+            binLabel.has_value())
+            {
+            duelingChart->SetMidPointLabelDisplay(binLabel.value());
+            }
+
+        duelingChart->SetData(foundPos->second, valueVarName, categoryVarName, groupVarName);
+
+        LoadGraph(graphNode, canvas, currentRow, currentColumn, duelingChart);
+        return duelingChart;
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D>
     ReportBuilder::LoadPictograph(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
                                   size_t& currentRow, size_t& currentColumn)
         {

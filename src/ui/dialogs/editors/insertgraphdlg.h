@@ -342,6 +342,13 @@ namespace Wisteria::UI
         [[nodiscard]]
         bool ValidateGraphId();
 
+        /// @brief Builds column information for the variable selection dialog from a dataset.
+        /// @param dataset The dataset to read the columns from.
+        /// @returns The name and (generic) import type of every column in @p dataset.
+        [[nodiscard]]
+        static Data::Dataset::ColumnPreviewInfo
+        BuildColumnPreviewInfo(const Data::Dataset& dataset);
+
         /** @brief Creates and adds the "General" sidebar page.
             @details This page contains controls common to all Graph2D types:
                 title, subtitle, caption, background color, and background image.
@@ -448,6 +455,26 @@ namespace Wisteria::UI
         ///     (the dataset cannot be changed once a graph exists).
         constexpr static wxWindowID ID_DATASET_CHOICE{ wxID_HIGHEST + 3 };
 
+        /// @brief Creates the dataset-selection @c wxChoice, listing the project's datasets.
+        /// @param parent The parent window of the choice.
+        /// @returns The choice, with the first dataset selected (if there are any).
+        /// @note The choice is owned by @p parent. Bind to @c wxEVT_CHOICE on it to react
+        ///     to the selection changing.
+        [[nodiscard]]
+        wxChoice* CreateDatasetChoice(wxWindow* parent);
+
+        /// @returns The selected dataset, or @c nullptr if none.
+        [[nodiscard]]
+        std::shared_ptr<Data::Dataset> GetSelectedDataset() const;
+
+        /// @returns The name of the selected dataset, or empty if none.
+        [[nodiscard]]
+        wxString GetSelectedDatasetName() const;
+
+        /// @brief Selects a dataset in the dataset choice.
+        /// @param name The name of the dataset to select. (Nothing changes if not found.)
+        void SelectDataset(const wxString& name);
+
         /// @brief Adds OK/Cancel buttons, then disables the dataset selector when editing.
         /// @details Changing the dataset of an existing graph would invalidate its
         ///     saved variables and axis state, so the selector is locked in edit mode.
@@ -478,6 +505,10 @@ namespace Wisteria::UI
             int m_schemeIndex{ 0 };
             std::vector<wxColour> m_customColors;
             };
+
+        // dataset selector
+        wxChoice* m_datasetChoice{ nullptr };
+        std::vector<wxString> m_datasetNames;
 
         wxChoice* CreateLegendPlacementChoice(wxWindow* parent, int defaultSelection = 1);
         [[nodiscard]]

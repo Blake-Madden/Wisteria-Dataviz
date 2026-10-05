@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="35.45cm" height="21.48cm" viewBox="0 0 1005 609">
+<title>panel</title>
+<desc>Created with wxWidgets 3.3.4</desc>
+
+<g fill="black" stroke="black" stroke-width="1">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="0" y="0" width="1005" height="609" rx="0.00"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#C4C0B2" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <rect x="0" y="0" width="1005" height="609" rx="0.00"/>
+</g>
+<g data-chart-id="0">
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="7.00" y="26.00" textLength="491" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.92pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 7.00 26.00)">HOW TIME IS SPENT ON WEEKDAYS AND WEEKENDS. (SAMPLE)</text>
+  <text x="186.00" y="51.00" textLength="132" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.92pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 186.00 51.00)">HOURS PER DAY.</text>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#0095B6" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M432.91 131.49 A216.50 216.50 0 0 0 349.41 183.41 L502.50 336.50 z"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M432.91 131.49 A216.50 216.50 0 0 0 349.41 183.41"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L432 131"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L349 183"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#C4121C" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M544.74 124.16 A216.50 216.50 0 0 0 432.91 131.49 L502.50 336.50 z"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M544.74 124.16 A216.50 216.50 0 0 0 432.91 131.49"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L544 124"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L432 131"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#7EBC89" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M598.26 142.33 A216.50 216.50 0 0 0 544.74 124.16 L502.50 336.50 z"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M598.26 142.33 A216.50 216.50 0 0 0 544.74 124.16"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L598 142"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L544 124"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#E26E0E" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M634.30 164.74 A216.50 216.50 0 0 0 598.26 142.33 L502.50 336.50 z"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M634.30 164.74 A216.50 216.50 0 0 0 598.26 142.33"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L634 164"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L598 142"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#B8960C" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M655.59 183.41 A216.50 216.50 0 0 0 634.30 164.74 L502.50 336.50 z"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M655.59 183.41 A216.50 216.50 0 0 0 634.30 164.74"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L655 183"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L634 164"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#0095B6" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M544.74 548.84 A216.50 216.50 0 0 0 655.59 489.59 L502.50 336.50 z"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M544.74 548.84 A216.50 216.50 0 0 0 655.59 489.59"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L544 548"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L655 489"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#C4121C" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M530.76 551.15 A216.50 216.50 0 0 0 544.74 548.84 L502.50 336.50 z"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M530.76 551.15 A216.50 216.50 0 0 0 544.74 548.84"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L530 551"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L544 548"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#7EBC89" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M419.65 536.52 A216.50 216.50 0 0 0 530.76 551.15 L502.50 336.50 z"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M419.65 536.52 A216.50 216.50 0 0 0 530.76 551.15"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L419 536"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L530 551"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#E26E0E" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M370.70 508.26 A216.50 216.50 0 0 0 419.65 536.52 L502.50 336.50 z"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M370.70 508.26 A216.50 216.50 0 0 0 419.65 536.52"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L370 508"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L419 536"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#B8960C" fill-opacity="1.00" stroke="#000000" stroke-opacity="0.0"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M349.41 489.59 A216.50 216.50 0 0 0 370.70 508.26 L502.50 336.50 z"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#000000" fill-opacity="0.0" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M349.41 489.59 A216.50 216.50 0 0 0 370.70 508.26"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L349 489"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <path d="M502 336 L370 508"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <text x="424.00" y="231.00" textLength="21" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.14pt" text-decoration=" none" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 424.00 231.00)">29%</text>
+  <text x="484.00" y="212.00" textLength="21" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.14pt" text-decoration=" none" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 484.00 212.00)">33%</text>
+  <text x="534.00" y="218.00" textLength="21" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.14pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 534.00 218.00)">17%</text>
+  <text x="560.00" y="231.00" textLength="21" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.14pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 560.00 231.00)">12%</text>
+  <text x="553.00" y="455.00" textLength="21" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.14pt" text-decoration=" none" fill="#FFFFFF" fill-opacity="1.00" stroke="#FFFFFF" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 553.00 455.00)">38%</text>
+  <text x="475.00" y="469.00" textLength="21" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.14pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 475.00 469.00)">33%</text>
+  <text x="427.00" y="453.00" textLength="21" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="8.14pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 427.00 453.00)">17%</text>
+  <text x="465.00" y="109.00" textLength="75" font-family="Segoe UI" font-weight="700" font-style="normal" font-size="12.92pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 465.00 109.00)">Weekday</text>
+  <text x="464.00" y="577.00" textLength="76" font-family="Segoe UI" font-weight="700" font-style="normal" font-size="12.92pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 464.00 577.00)">Weekend</text>
+  <text x="357.00" y="310.00" textLength="42" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.92pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 357.00 310.00)">Sleep</text>
+  <text x="357.00" y="343.00" textLength="41" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.92pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 357.00 343.00)">Work</text>
+  <text x="357.00" y="375.00" textLength="54" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.92pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 357.00 375.00)">Leisure</text>
+  <text x="594.00" y="326.00" textLength="53" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.92pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 594.00 326.00)">Chores</text>
+  <text x="556.00" y="359.00" textLength="91" font-family="Segoe UI" font-weight="400" font-style="normal" font-size="12.92pt" text-decoration=" none" fill="#000000" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00" stroke-width="0" xml:space="preserve" style="white-space: pre;"  transform="rotate(0.00 556.00 359.00)">Commuting</text>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#0095B6" fill-opacity="1.00" stroke="#0095B6" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <ellipse cx="345.00" cy="304.00" rx="6.00" ry="6.00"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#C4121C" fill-opacity="1.00" stroke="#C4121C" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <ellipse cx="345.00" cy="336.00" rx="6.00" ry="6.00"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#7EBC89" fill-opacity="1.00" stroke="#7EBC89" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <ellipse cx="345.00" cy="368.00" rx="6.00" ry="6.00"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#E26E0E" fill-opacity="1.00" stroke="#E26E0E" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <ellipse cx="659.00" cy="320.00" rx="6.00" ry="6.00"/>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#B8960C" fill-opacity="1.00" stroke="#B8960C" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+  <ellipse cx="659.00" cy="352.00" rx="6.00" ry="6.00"/>
+</g>
+</g>
+<g stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="#FFFFFF" fill-opacity="1.00" stroke="#000000" stroke-opacity="1.00"  transform="translate(0 0) scale(1.00 1.00)">
+</g>
+</svg>

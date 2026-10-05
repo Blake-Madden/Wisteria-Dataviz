@@ -878,6 +878,7 @@ namespace Wisteria
         WaterfallChart,
         FunnelChart,
         DuBoisSpiralChart,
+        DuelingPieChart,
         Pictograph
         };
     } // namespace Wisteria

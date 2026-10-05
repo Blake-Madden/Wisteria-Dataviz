@@ -156,6 +156,9 @@ class WisteriaView final : public wxView
     void OnInsertDuBoisSpiralChart(wxCommandEvent& event);
     void EditDuBoisSpiralChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                                size_t graphRow, size_t graphCol) const;
+    void OnInsertDuelingPieChart(wxCommandEvent& event);
+    void EditDuelingPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                             size_t graphRow, size_t graphCol) const;
     void OnInsertPictograph(wxCommandEvent& event);
     void EditPictograph(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                         size_t graphRow, size_t graphCol) const;

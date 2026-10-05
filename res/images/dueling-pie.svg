@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns="http://www.w3.org/2000/svg"
+   viewBox="0 0 24 24"
+   width="24"
+   height="24">
+  <!-- top fan, 90 degrees wide, slices running clockwise from the left edge -->
+  <path
+     d="M 12,12 L 4.929,4.929 A 10,10 0 0,1 12,2 Z"
+     fill="#ee1c25" />
+  <path
+     d="M 12,12 L 12,2 A 10,10 0 0,1 16.540,3.090 Z"
+     fill="#ffc400" />
+  <path
+     d="M 12,12 L 16.540,3.090 A 10,10 0 0,1 19.071,4.929 Z"
+     fill="#0a5bd3" />
+  <!-- bottom fan, the same layout rotated 180 degrees about the center point -->
+  <g transform="rotate(180 12 12)">
+    <path
+       d="M 12,12 L 4.929,4.929 A 10,10 0 0,1 8.173,2.761 Z"
+       fill="#ee1c25" />
+    <path
+       d="M 12,12 L 8.173,2.761 A 10,10 0 0,1 14.334,2.276 Z"
+       fill="#ffc400" />
+    <path
+       d="M 12,12 L 14.334,2.276 A 10,10 0 0,1 19.071,4.929 Z"
+       fill="#0a5bd3" />
+  </g>
+</svg>

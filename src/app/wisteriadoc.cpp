@@ -3723,6 +3723,19 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
         // the label and value variables round-trip through the
         // generic "variables." property templates in SaveGraph()
         }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::DuelingPieChart)))
+        {
+        const auto* duelingChart = dynamic_cast<const Wisteria::Graphs::DuelingPieChart*>(graph);
+        if (duelingChart->GetMidPointLabelDisplay() != Wisteria::BinLabelDisplay::BinPercentage)
+            {
+            const auto blStr = Wisteria::ReportEnumConvert::ConvertBinLabelDisplayToString(
+                duelingChart->GetMidPointLabelDisplay());
+            if (blStr.has_value())
+                {
+                node->Add(L"midpoint-label-display", blStr.value());
+                }
+            }
+        }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Pictograph)))
         {
         const auto* pictograph = dynamic_cast<const Wisteria::Graphs::Pictograph*>(graph);

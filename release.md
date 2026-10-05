@@ -2,6 +2,7 @@
 
 ## 1.2.2
 
+- Added Dueling Pie Chart.
 - Added Pictograph.
 - Added Du Bois Spiral Chart.
 - Added Funnel Chart.

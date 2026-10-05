@@ -211,6 +211,7 @@ MyFrame::MyFrame()
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_STEMANDLEAF);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_RACETRACK);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_DUBOIS_SPIRAL);
+    Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_DUELING_PIE);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_PICTOGRAPH);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_FUNNEL_CHART);
     Bind(wxEVT_MENU, &MyFrame::OnNewWindow, this, MyApp::ControlIDs::ID_NEW_WILMARTH_BRIDGE);
@@ -287,6 +288,7 @@ wxMenuBar* MyFrame::CreateMainMenubar()
     fileMenu->Append(MyApp::ID_NEW_WILMARTH_BRIDGE, _(L"Wilmarth Bridge Plot"));
     fileMenu->Append(MyApp::ID_NEW_NIGHTINGALE_ROSE, _(L"Nightingale Rose Chart"));
     fileMenu->Append(MyApp::ID_NEW_DUBOIS_SPIRAL, _(L"Du Bois Spiral Chart"));
+    fileMenu->Append(MyApp::ID_NEW_DUELING_PIE, _(L"Dueling Pie Chart"));
     fileMenu->Append(MyApp::ID_NEW_PICTOGRAPH, _(L"Pictograph"));
     fileMenu->Append(MyApp::ID_NEW_BULLET_CHART, _(L"Bullet Chart"));
     fileMenu->Append(MyApp::ID_NEW_WATERFALL_CHART, _(L"Waterfall Chart"));
@@ -3137,6 +3139,61 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
 
         subframe->m_canvas->SetFixedObject(0, 0, spiralPlot);
         }
+    // Dueling Pie Chart
+    else if (event.GetId() == MyApp::ControlIDs::ID_NEW_DUELING_PIE)
+        {
+        subframe->SetTitle(_(L"Dueling Pie Chart"));
+        subframe->m_canvas->SetFixedObjectsGridSize(1, 1);
+
+        // Hours per day spent on five activities, on weekdays and on weekends.
+        // Each day adds up to 24 hours, and the activities are in the order they are drawn.
+        auto timeData = std::make_shared<Wisteria::Data::Dataset>();
+        const Wisteria::Data::ColumnWithStringTable::StringTableType activityTable{
+            { 0, L"Sleep" },
+            { 1, L"Work" },
+            { 2, L"Leisure" },
+            { 3, L"Chores" },
+            { 4, L"Commuting" }
+        };
+        const Wisteria::Data::ColumnWithStringTable::StringTableType dayTable{ { 0, L"Weekday" },
+                                                                               { 1, L"Weekend" } };
+        timeData->AddCategoricalColumn(L"Activity", activityTable);
+        timeData->AddCategoricalColumn(L"Day", dayTable);
+        timeData->AddContinuousColumn(L"Hours");
+        const std::vector<std::vector<double>> hoursPerDay{ { 7, 8, 4, 3, 2 }, { 9, 1, 8, 4, 2 } };
+        // weekdays first, which become the top fan
+        for (size_t dayId = 0; dayId < hoursPerDay.size(); ++dayId)
+            {
+            for (size_t activityId = 0; activityId < hoursPerDay[dayId].size(); ++activityId)
+                {
+                timeData->AddRow(
+                    Wisteria::Data::RowInfo()
+                        .Categoricals({ static_cast<Wisteria::Data::GroupIdType>(activityId),
+                                        static_cast<Wisteria::Data::GroupIdType>(dayId) })
+                        .Continuous({ hoursPerDay[dayId][activityId] }));
+                }
+            }
+
+        // one color per activity: sleep (bondi blue), work (angry red),
+        // leisure (soothing green), chores (unpleasant orange), commuting (dark yellow)
+        const auto duelingColors = std::make_shared<Wisteria::Colors::Schemes::ColorScheme>(
+            Wisteria::Colors::Schemes::ColorScheme{
+                wxColour{ 0, 149, 182 }, wxColour{ 196, 18, 28 }, wxColour{ 126, 188, 137 },
+                wxColour{ 226, 110, 14 }, wxColour{ 184, 150, 12 } });
+
+        // old paper color
+        subframe->m_canvas->SetBackgroundColor(wxColour{ 196, 192, 178 });
+
+        auto duelingPlot = std::make_shared<Wisteria::Graphs::DuelingPieChart>(
+            subframe->m_canvas, nullptr, duelingColors);
+        duelingPlot->SetData(timeData, L"Hours", L"Activity", L"Day");
+        duelingPlot->GetTitle().SetText(
+            _(L"HOW TIME IS SPENT ON WEEKDAYS AND WEEKENDS. (SAMPLE)\nHOURS PER DAY."));
+        duelingPlot->GetTitle().SetTextAlignment(Wisteria::TextAlignment::Centered);
+        duelingPlot->GetTitle().SetPadding(5, 5, 5, 5);
+
+        subframe->m_canvas->SetFixedObject(0, 0, duelingPlot);
+        }
     // Pictograph
     else if (event.GetId() == MyApp::ControlIDs::ID_NEW_PICTOGRAPH)
         {
@@ -3733,6 +3790,9 @@ void MyFrame::InitToolBar(wxToolBar* toolBar)
         MyApp::ID_NEW_DUBOIS_SPIRAL, _(L"Du Bois Spiral Chart"),
         wxBitmapBundle::FromSVGFile(appDir + L"/res/images/dubois-spiral.svg", iconSize),
         _(L"Du Bois Spiral Chart"));
+    toolBar->AddTool(MyApp::ID_NEW_DUELING_PIE, _(L"Dueling Pie Chart"),
+                     wxBitmapBundle::FromSVGFile(appDir + L"/res/images/dueling-pie.svg", iconSize),
+                     _(L"Dueling Pie Chart"));
     toolBar->AddTool(MyApp::ID_NEW_PICTOGRAPH, _(L"Pictograph"),
                      wxBitmapBundle::FromSVGFile(appDir + L"/res/images/pictograph.svg", iconSize),
                      _(L"Pictograph"));

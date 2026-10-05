@@ -399,6 +399,20 @@ namespace Wisteria::Graphs
             ///     The label and description will still be shown if the slice is selected.
             void ShowGroupLabel(const bool show) noexcept { m_showText = show; }
 
+            /// @returns The value (e.g., number of items in the group) for the slice.
+            [[nodiscard]]
+            double GetValue() const noexcept
+                {
+                return m_value;
+                }
+
+            /// @returns The percent of the pie that this slice consumes.
+            [[nodiscard]]
+            double GetPercent() const noexcept
+                {
+                return m_percent;
+                }
+
             /// @returns The custom midpoint display, specific to this slice.
             [[nodiscard]]
             std::optional<BinLabelDisplay> GetMidPointLabelDisplay() const noexcept

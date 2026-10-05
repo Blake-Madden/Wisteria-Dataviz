@@ -617,6 +617,12 @@ namespace Wisteria
                                                     item, canvas, currentRow, currentColumn));
                                                 }
                                             else if (typeProperty->AsString().CmpNoCase(
+                                                         L"dueling-pie-chart") == 0)
+                                                {
+                                                embeddedGraphs.push_back(LoadDuelingPieChart(
+                                                    item, canvas, currentRow, currentColumn));
+                                                }
+                                            else if (typeProperty->AsString().CmpNoCase(
                                                          L"pictograph") == 0)
                                                 {
                                                 embeddedGraphs.push_back(LoadPictograph(

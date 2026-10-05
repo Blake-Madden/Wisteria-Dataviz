@@ -70,6 +70,10 @@ Basic
 | :-------------- |
 | ![](docs/images/dubois-spiral-chart.svg) |
 
+| Dueling Pie Chart (Wisteria::Graphs::DuelingPieChart) |
+| :-------------- |
+| ![](docs/images/dueling-pie-chart.svg) |
+
 | Nightingale Rose Chart (Wisteria::Graphs::NightingaleRoseChart) |
 | :-------------- |
 | ![](docs/images/nightingale_rose_chart.svg) |
