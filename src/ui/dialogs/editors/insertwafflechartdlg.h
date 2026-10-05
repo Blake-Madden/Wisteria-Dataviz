@@ -92,7 +92,7 @@ namespace Wisteria::UI
         void OnEditShape([[maybe_unused]] wxCommandEvent& event);
         void OnRemoveShape([[maybe_unused]] wxCommandEvent& event);
         void RefreshShapeList();
-        static void BuildShapeFromDlg(const InsertShapeDlg& dlg, GraphItems::ShapeInfo& shapeInfo);
+        void BuildShapeFromDlg(const InsertShapeDlg& dlg, GraphItems::ShapeInfo& shapeInfo) const;
         wxString FormatShapeDescription(const GraphItems::ShapeInfo& shapeInfo) const;
 
         constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };

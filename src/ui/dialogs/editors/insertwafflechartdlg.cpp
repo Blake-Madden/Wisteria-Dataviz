@@ -151,7 +151,7 @@ namespace Wisteria::UI
 
     //-------------------------------------------
     void InsertWaffleChartDlg::BuildShapeFromDlg(const InsertShapeDlg& dlg,
-                                                 GraphItems::ShapeInfo& shapeInfo)
+                                                 GraphItems::ShapeInfo& shapeInfo) const
         {
         shapeInfo.Shape(dlg.GetIconShape())
             .Pen(wxPen{ dlg.GetPenColor(), dlg.GetPenWidth(), dlg.GetPenStyle() })
@@ -168,8 +168,16 @@ namespace Wisteria::UI
             }
         else
             {
-            // non-numeric (constant reference) — store raw, default repeat to 1
-            shapeInfo.Repeat(1);
+            // non-numeric (constant reference), so store it raw and expand it for the count
+            if (const auto expanded = ExpandNumber(repeatStr); expanded.has_value())
+                {
+                shapeInfo.Repeat(static_cast<size_t>(std::max(1L, std::lround(expanded.value()))));
+                }
+            // no value available, so keep the resolved count unless the template changed
+            else if (shapeInfo.GetPropertyTemplate(L"repeat") != repeatStr)
+                {
+                shapeInfo.Repeat(1);
+                }
             shapeInfo.SetPropertyTemplate(L"repeat", repeatStr);
             }
 

@@ -821,6 +821,12 @@ namespace Wisteria
         [[nodiscard]]
         wxString ExpandConstants(wxString str) const;
 
+        /** @brief Looks up a numeric user-defined value by name.
+            @param str The value's name, with or without surrounding double braces.
+            @returns The value, or @c std::nullopt if it isn't defined or isn't a number.*/
+        [[nodiscard]]
+        std::optional<double> ExpandNumericConstant(wxString str) const;
+
         /** @brief Converts a formula from U.S. format (period decimal separator,
                 comma parameter separator) into the current locale's format for display.
             @details Text inside backtick-quoted spans (column names, string literals)
@@ -1488,8 +1494,6 @@ namespace Wisteria
             return expanded;
             }
 
-        [[nodiscard]]
-        std::optional<double> ExpandNumericConstant(wxString str) const;
         /// @todo needs support for ID and date columns
         void CalcFormulas(const wxSimpleJSON::Ptr_t& formulasNode,
                           const std::shared_ptr<const Data::Dataset>& dataset);
