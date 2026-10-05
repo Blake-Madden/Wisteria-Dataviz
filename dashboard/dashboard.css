@@ -105,7 +105,7 @@ body
   gap: 8px 16px;
   }
 
-.dash-views, .dash-modes
+.dash-views
   {
   display: flex;
   gap: 4px;
@@ -131,8 +131,8 @@ body
 html[data-view="story"] .dash-progress
   { display: block; }
 
-/* the view and theme toggles sit in a labeled capsule */
-.dash-views, .dash-modes
+/* the view toggle sits in a labeled capsule */
+.dash-views
   {
   align-items: center;
   padding: 3px 4px 3px 12px;
@@ -226,8 +226,8 @@ html[data-view="story"] .dash-progress
   opacity: 0.7;
   }
 
-.dash-views button, .dash-modes button, .dash-layers-btn, .dash-filters-btn,
-.dash-help-btn, .dash-save-btn
+.dash-views button, .dash-layers-btn, .dash-filters-btn,
+.dash-help-btn, .dash-save-btn, .dash-theme-btn
   {
   padding: 4px 12px;
   border: 1px solid var(--border-color);
@@ -239,23 +239,24 @@ html[data-view="story"] .dash-progress
   transition: background-color 0.2s ease, border-color 0.2s ease;
   }
 
-.dash-views button:hover, .dash-modes button:hover, .dash-layers-btn:hover,
-.dash-filters-btn:hover, .dash-help-btn:hover, .dash-save-btn:hover
+.dash-views button:hover, .dash-layers-btn:hover, .dash-filters-btn:hover,
+.dash-help-btn:hover, .dash-save-btn:hover, .dash-theme-btn:hover
   { border-color: var(--accent); }
 
-.dash-views button[aria-pressed="true"], .dash-modes button[aria-pressed="true"],
+.dash-views button[aria-pressed="true"],
 .dash-layers-btn[aria-expanded="true"], .dash-filters-btn[aria-expanded="true"],
-.dash-help-btn[aria-expanded="true"], .dash-save-btn[aria-expanded="true"]
+.dash-help-btn[aria-expanded="true"], .dash-save-btn[aria-expanded="true"],
+.dash-theme-btn[aria-expanded="true"]
   {
   background-color: var(--accent);
   border-color: var(--accent);
   color: var(--accent-text);
   }
 
-.dash-views button:focus-visible, .dash-modes button:focus-visible,
+.dash-views button:focus-visible,
 .dash-layers-btn:focus-visible, .dash-filters-btn:focus-visible,
 .dash-rail button:focus-visible, .dash-card:focus-visible, .dash-help-btn:focus-visible,
-.dash-save-btn:focus-visible
+.dash-save-btn:focus-visible, .dash-theme-btn:focus-visible
   {
   outline: 2px solid Highlight;
   outline-offset: 2px;
@@ -877,6 +878,40 @@ html.motion-ready .page:not(.is-revealed) .page-svg
   color: var(--accent-text);
   outline: none;
   }
+
+/* ---------- Theme menu ------------------------------------------- */
+
+.dash-theme-btn
+  {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  }
+
+.dash-theme-caret
+  {
+  font-size: 0.8em;
+  }
+
+.dash-theme-menu button
+  {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  }
+
+.dash-theme-menu .dash-theme-icon
+  {
+  width: 1.2em;
+  text-align: center;
+  }
+
+.dash-theme-menu button[aria-checked="true"]
+  { color: var(--accent); }
+
+.dash-theme-menu button[aria-checked="true"]:hover,
+.dash-theme-menu button[aria-checked="true"]:focus-visible
+  { color: var(--accent-text); }
 
 /* ---------- Print -------------------------------------------- */
 

@@ -269,9 +269,19 @@ namespace Wisteria
         /// @returns The script saving the current page as a standalone SVG or PNG file.
         [[nodiscard]]
         static wxString GetDashboardScriptSave();
+        /// @returns The script for opening, closing, and keyboard navigation of the theme menu.
+        [[nodiscard]]
+        static wxString GetDashboardScriptThemeMenu();
+        /// @returns The script wiring up the theme button and menu items.
+        [[nodiscard]]
+        static wxString GetDashboardScriptTheme();
         /// @returns The script wiring up controls and the initial page load.
         [[nodiscard]]
         static wxString GetDashboardScriptEvents();
+
+      private:
+        [[nodiscard]]
+        wxString BuildLogo(HtmlDashboardOptions options);
         };
     } // namespace Wisteria
 

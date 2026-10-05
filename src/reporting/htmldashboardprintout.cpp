@@ -47,9 +47,13 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptState()
   }
   function applyColorMode() {
     root.style.colorScheme = schemeFor(colorMode);
-    document.querySelectorAll('.dash-modes button').forEach(function(btn) {
-      btn.setAttribute('aria-pressed', btn.dataset.mode === colorMode ? 'true' : 'false');
+    document.querySelectorAll('#dash-theme-menu button').forEach(function(item) {
+      item.setAttribute('aria-checked', item.dataset.mode === colorMode ? 'true' : 'false');
     });
+    const themeIcon = document.querySelector('#dash-theme .dash-theme-icon');
+    const activeIcon = document.querySelector('#dash-theme-menu [data-mode="' + colorMode +
+      '"] .dash-theme-icon');
+    if (themeIcon && activeIcon) themeIcon.textContent = activeIcon.textContent;
   }
   function setColorMode(value) {
     colorMode = value;
@@ -1145,12 +1149,108 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSave()
     }
 
 //------------------------------------------------------
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptThemeMenu()
+    {
+    return LR"JS(
+  let themeOpen = false;
+  let themeBtn = null;
+  let themeMenu = null;
+  let themeItems = [];
+  function positionThemeMenu() {
+    const rect = themeBtn.getBoundingClientRect();
+    const menuRect = themeMenu.getBoundingClientRect();
+    const left = Math.min(Math.max(8, rect.right - menuRect.width),
+      window.innerWidth - menuRect.width - 8);
+    themeMenu.style.left = left + 'px';
+    themeMenu.style.top = (rect.bottom + 8) + 'px';
+  }
+  function focusThemeItem(index) {
+    themeItems[(index + themeItems.length) % themeItems.length].focus();
+  }
+  function onThemeOutsidePointerDown(e) {
+    if (themeMenu.contains(e.target) || themeBtn.contains(e.target)) return;
+    closeThemeMenu(false);
+  }
+  function onThemeKeyDown(e) {
+    const at = themeItems.indexOf(document.activeElement);
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeThemeMenu(true);
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      focusThemeItem(at < 0 ? 0 : at + 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      focusThemeItem(at < 0 ? themeItems.length - 1 : at - 1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      focusThemeItem(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      focusThemeItem(themeItems.length - 1);
+    } else if (e.key === 'Enter' && at >= 0) {
+      e.preventDefault();
+      themeItems[at].click();
+    } else if (e.key === 'Tab') {
+      closeThemeMenu(false);
+    }
+  }
+  function openThemeMenu() {
+    themeOpen = true;
+    themeMenu.hidden = false;
+    positionThemeMenu();
+    window.requestAnimationFrame(function() { themeMenu.classList.add('is-open'); });
+    themeBtn.setAttribute('aria-expanded', 'true');
+    document.addEventListener('keydown', onThemeKeyDown);
+    document.addEventListener('pointerdown', onThemeOutsidePointerDown, true);
+    window.addEventListener('resize', positionThemeMenu);
+    const checked = themeItems.findIndex(function(item) {
+      return item.getAttribute('aria-checked') === 'true';
+    });
+    focusThemeItem(checked < 0 ? 0 : checked);
+  }
+  function closeThemeMenu(returnFocus) {
+    themeOpen = false;
+    themeMenu.classList.remove('is-open');
+    themeBtn.setAttribute('aria-expanded', 'false');
+    document.removeEventListener('keydown', onThemeKeyDown);
+    document.removeEventListener('pointerdown', onThemeOutsidePointerDown, true);
+    window.removeEventListener('resize', positionThemeMenu);
+    window.setTimeout(function() { if (!themeOpen) themeMenu.hidden = true; }, 150);
+    if (returnFocus) themeBtn.focus();
+  }
+)JS";
+    }
+
+//------------------------------------------------------
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptTheme()
+    {
+    return LR"JS(
+  function bindTheme() {
+    themeBtn = document.getElementById('dash-theme');
+    themeMenu = document.getElementById('dash-theme-menu');
+    if (!themeBtn || !themeMenu) return;
+    themeItems = Array.prototype.slice.call(themeMenu.querySelectorAll('button'));
+    themeBtn.addEventListener('click', function() {
+      if (themeOpen) closeThemeMenu(true); else openThemeMenu();
+    });
+    themeItems.forEach(function(item) {
+      item.addEventListener('click', function() {
+        setColorMode(item.dataset.mode);
+        closeThemeMenu(true);
+      });
+    });
+  }
+)JS";
+    }
+
+//------------------------------------------------------
 wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
     {
     return LR"JS(
   function onKeyDown(e) {
     if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || !pages.length ||
-        helpOpen || saveOpen) {
+        helpOpen || saveOpen || themeOpen) {
       return;
     }
     const tag = e.target && e.target.tagName;
@@ -1175,9 +1275,6 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
   function bindControls() {
     document.querySelectorAll('.dash-views button').forEach(function(btn) {
       btn.addEventListener('click', function() { setView(btn.dataset.view); });
-    });
-    document.querySelectorAll('.dash-modes button').forEach(function(btn) {
-      btn.addEventListener('click', function() { setColorMode(btn.dataset.mode); });
     });
     document.querySelectorAll('.dash-layers input[data-layer]').forEach(function(box) {
       box.addEventListener('change', function() { toggleLayer(box.dataset.layer); });
@@ -1236,6 +1333,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
     bindTooltips();
     bindHelp();
     bindSave();
+    bindTheme();
   }
   document.addEventListener('DOMContentLoaded', function() {
     collectPages();
@@ -1261,6 +1359,77 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
   });
 })();
 )JS";
+    }
+
+//------------------------------------------------------
+wxString Wisteria::HtmlDashboardPrintout::BuildLogo(HtmlDashboardOptions options)
+    {
+    wxString logoUri;
+    if (!options.m_logoPath.empty() && wxFileName::FileExists(options.m_logoPath))
+        {
+        const wxString logoExt{ wxFileName{ options.m_logoPath }.GetExt().Lower() };
+        wxString mimeType;
+        if (logoExt == L"svg")
+            {
+            mimeType = L"image/svg+xml";
+            }
+        else if (logoExt == L"png")
+            {
+            mimeType = L"image/png";
+            }
+        else if (logoExt == L"jpg" || logoExt == L"jpeg")
+            {
+            mimeType = L"image/jpeg";
+            }
+        else if (logoExt == L"gif")
+            {
+            mimeType = L"image/gif";
+            }
+        else if (logoExt == L"webp")
+            {
+            mimeType = L"image/webp";
+            }
+
+        wxFile logoFile{ options.m_logoPath };
+        if (!mimeType.empty() && logoFile.IsOpened() && logoFile.Length() > 0)
+            {
+            std::vector<char> logoBytes(static_cast<size_t>(logoFile.Length()));
+            if (logoFile.Read(logoBytes.data(), logoBytes.size()) ==
+                static_cast<ssize_t>(logoBytes.size()))
+                {
+                // downscale raster image that are larger than the logo's display size (at 2x)
+                if (logoExt != L"svg")
+                    {
+                    constexpr int MAX_LOGO_WIDTH{ 320 };
+                    constexpr int MAX_LOGO_HEIGHT{ 64 };
+                    wxMemoryInputStream logoStream(logoBytes.data(), logoBytes.size());
+                    wxImage logoImage;
+                    if (logoImage.LoadFile(logoStream) && logoImage.IsOk() &&
+                        (logoImage.GetWidth() > MAX_LOGO_WIDTH ||
+                         logoImage.GetHeight() > MAX_LOGO_HEIGHT))
+                        {
+                        const double logoScale{ std::min(
+                            safe_divide<double>(MAX_LOGO_WIDTH, logoImage.GetWidth()),
+                            safe_divide<double>(MAX_LOGO_HEIGHT, logoImage.GetHeight())) };
+                        logoImage.Rescale(std::max(1, wxRound(logoImage.GetWidth() * logoScale)),
+                                          std::max(1, wxRound(logoImage.GetHeight() * logoScale)),
+                                          wxIMAGE_QUALITY_HIGH);
+                        wxMemoryOutputStream scaledStream;
+                        if (logoImage.SaveFile(scaledStream, wxBITMAP_TYPE_PNG))
+                            {
+                            logoBytes.resize(scaledStream.GetSize());
+                            scaledStream.CopyTo(logoBytes.data(), logoBytes.size());
+                            // PNG keeps transparency, regardless of the original format
+                            mimeType = L"image/png";
+                            }
+                        }
+                    }
+                logoUri = L"data:" + mimeType + L";base64," +
+                          wxBase64Encode(logoBytes.data(), logoBytes.size());
+                }
+            }
+        }
+    return logoUri;
     }
 
 //------------------------------------------------------
@@ -1367,7 +1536,8 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
                      GetDashboardScriptNavigation() + GetDashboardScriptCounters() +
                      GetDashboardScriptMotion() + GetDashboardScriptZoom() +
                      GetDashboardScriptTooltips() + GetDashboardScriptHelp() +
-                     GetDashboardScriptSave() + GetDashboardScriptEvents() };
+                     GetDashboardScriptSave() + GetDashboardScriptThemeMenu() +
+                     GetDashboardScriptTheme() + GetDashboardScriptEvents() };
     script.Replace(L"{{TOGGLE}}", options.m_includeColorModeToggle ? L"true" : L"false");
     script.Replace(L"{{COUNTUP}}", options.m_countUpNumbers ? L"true" : L"false");
     script.Replace(L"{{MODE}}", initialMode);
@@ -1397,71 +1567,7 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
     html += L"</head>\n<body>\n";
 
     // optional logo, embedded as a data URI
-    wxString logoUri;
-    if (!options.m_logoPath.empty() && wxFileName::FileExists(options.m_logoPath))
-        {
-        const wxString logoExt{ wxFileName{ options.m_logoPath }.GetExt().Lower() };
-        wxString mimeType;
-        if (logoExt == L"svg")
-            {
-            mimeType = L"image/svg+xml";
-            }
-        else if (logoExt == L"png")
-            {
-            mimeType = L"image/png";
-            }
-        else if (logoExt == L"jpg" || logoExt == L"jpeg")
-            {
-            mimeType = L"image/jpeg";
-            }
-        else if (logoExt == L"gif")
-            {
-            mimeType = L"image/gif";
-            }
-        else if (logoExt == L"webp")
-            {
-            mimeType = L"image/webp";
-            }
-
-        wxFile logoFile{ options.m_logoPath };
-        if (!mimeType.empty() && logoFile.IsOpened() && logoFile.Length() > 0)
-            {
-            std::vector<char> logoBytes(static_cast<size_t>(logoFile.Length()));
-            if (logoFile.Read(logoBytes.data(), logoBytes.size()) ==
-                static_cast<ssize_t>(logoBytes.size()))
-                {
-                // downscale raster image that are larger than the logo's display size (at 2x)
-                if (logoExt != L"svg")
-                    {
-                    constexpr int MAX_LOGO_WIDTH{ 320 };
-                    constexpr int MAX_LOGO_HEIGHT{ 64 };
-                    wxMemoryInputStream logoStream(logoBytes.data(), logoBytes.size());
-                    wxImage logoImage;
-                    if (logoImage.LoadFile(logoStream) && logoImage.IsOk() &&
-                        (logoImage.GetWidth() > MAX_LOGO_WIDTH ||
-                         logoImage.GetHeight() > MAX_LOGO_HEIGHT))
-                        {
-                        const double logoScale{ std::min(
-                            safe_divide<double>(MAX_LOGO_WIDTH, logoImage.GetWidth()),
-                            safe_divide<double>(MAX_LOGO_HEIGHT, logoImage.GetHeight())) };
-                        logoImage.Rescale(std::max(1, wxRound(logoImage.GetWidth() * logoScale)),
-                                          std::max(1, wxRound(logoImage.GetHeight() * logoScale)),
-                                          wxIMAGE_QUALITY_HIGH);
-                        wxMemoryOutputStream scaledStream;
-                        if (logoImage.SaveFile(scaledStream, wxBITMAP_TYPE_PNG))
-                            {
-                            logoBytes.resize(scaledStream.GetSize());
-                            scaledStream.CopyTo(logoBytes.data(), logoBytes.size());
-                            // PNG keeps transparency, regardless of the original format
-                            mimeType = L"image/png";
-                            }
-                        }
-                    }
-                logoUri = L"data:" + mimeType + L";base64," +
-                          wxBase64Encode(logoBytes.data(), logoBytes.size());
-                }
-            }
-        }
+    const wxString logoUri = BuildLogo(options);
 
     html += L"<header class=\"dash-toolbar no-print\">\n";
     html += L"<div class=\"dash-brand\">\n";
@@ -1506,16 +1612,14 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
     if (options.m_includeColorModeToggle)
         {
         html += wxString::Format(
-            L"<div class=\"dash-modes\" role=\"group\" aria-labelledby=\"dash-modes-label\">\n"
-            "<span id=\"dash-modes-label\" class=\"dash-group-label\">%s</span>\n"
-            "<button type=\"button\" data-mode=\"auto\" aria-pressed=\"false\">%s</button>\n"
-            "<button type=\"button\" data-mode=\"light\" aria-pressed=\"false\" "
-            "aria-label=\"%s\">☀️</button>\n"
-            "<button type=\"button\" data-mode=\"dark\" aria-pressed=\"false\" "
-            "aria-label=\"%s\">\U0001F319</button>\n"
+            L"<div class=\"dash-modes\">\n"
+            "<button type=\"button\" id=\"dash-theme\" class=\"dash-theme-btn\" "
+            "aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"dash-theme-menu\" "
+            "aria-label=\"%s\"><span class=\"dash-theme-icon\" aria-hidden=\"true\">"
+            "◐</span><span class=\"dash-theme-caret\" aria-hidden=\"true\">"
+            "▾</span></button>\n"
             "</div>\n",
-            escapeText(_(L"Theme")), escapeText(_(L"Auto")), escapeAttr(_(L"Light")),
-            escapeAttr(_(L"Dark")));
+            escapeAttr(_(L"Theme")));
         }
     html += wxString::Format(
         L"<button type=\"button\" id=\"dash-save\" class=\"dash-save-btn\" "
@@ -1544,6 +1648,25 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         "<button type=\"button\" role=\"menuitem\" data-format=\"png\">%s</button>\n"
         "</div>\n",
         escapeAttr(_(L"Save page")), escapeText(_(L"Save as SVG")), escapeText(_(L"Save as PNG")));
+
+    if (options.m_includeColorModeToggle)
+        {
+        html += wxString::Format(
+            L"<div id=\"dash-theme-menu\" class=\"dash-help-panel dash-save-menu "
+            "dash-theme-menu no-print\" role=\"menu\" aria-label=\"%s\" hidden>\n"
+            "<button type=\"button\" role=\"menuitemradio\" aria-checked=\"false\" "
+            "data-mode=\"auto\"><span class=\"dash-theme-icon\" aria-hidden=\"true\">"
+            "◐</span>%s</button>\n"
+            "<button type=\"button\" role=\"menuitemradio\" aria-checked=\"false\" "
+            "data-mode=\"light\"><span class=\"dash-theme-icon\" aria-hidden=\"true\">"
+            "☀</span>%s</button>\n"
+            "<button type=\"button\" role=\"menuitemradio\" aria-checked=\"false\" "
+            "data-mode=\"dark\"><span class=\"dash-theme-icon\" aria-hidden=\"true\">"
+            "☾</span>%s</button>\n"
+            "</div>\n",
+            escapeAttr(_(L"Theme")), escapeText(_(L"System settings")), escapeText(_(L"Light")),
+            escapeText(_(L"Dark")));
+        }
 
     html += wxString::Format(
         L"<div id=\"dash-help-panel\" class=\"dash-help-panel no-print\" role=\"dialog\" "
