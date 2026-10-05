@@ -269,6 +269,12 @@ namespace Wisteria
         /// @returns The script saving the current page as a standalone SVG or PNG file.
         [[nodiscard]]
         static wxString GetDashboardScriptSave();
+        /// @returns The script printing the current page in its viewed orientation.
+        [[nodiscard]]
+        static wxString GetDashboardScriptPrint();
+        /// @returns The script for toggling fullscreen presentation mode.
+        [[nodiscard]]
+        static wxString GetDashboardScriptPresent();
         /// @returns The script for opening, closing, and keyboard navigation of the theme menu.
         [[nodiscard]]
         static wxString GetDashboardScriptThemeMenu();
@@ -282,6 +288,8 @@ namespace Wisteria
       private:
         [[nodiscard]]
         wxString BuildLogo(HtmlDashboardOptions options);
+        [[nodiscard]]
+        wxString BuildKeyboardTip();
         };
     } // namespace Wisteria
 

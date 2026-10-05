@@ -150,32 +150,32 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
                 const wxPoint topLeft{ offsetX + static_cast<int>(column) * cellSize,
                                        offsetY + static_cast<int>(row) * cellSize };
 
+                const GraphItems::GraphItemInfo cellInfo{ GraphItems::GraphItemInfo{}
+                                                              .Pen(shpInfo.GetPen())
+                                                              .Brush(shpInfo.GetBrush())
+                                                              .Scaling(GetScaling())
+                                                              .DPIScaling(GetDPIScaleFactor())
+                                                              .Selectable(false)
+                                                              .Anchoring(Anchoring::TopLeftCorner)
+                                                              .AnchorPoint(topLeft) };
+
+                std::unique_ptr<GraphItems::Shape> cell;
                 if (shpInfo.GetFillPercent() < math_constants::full)
                     {
-                    AddObject(std::make_unique<GraphItems::FillableShape>(
-                        GraphItems::GraphItemInfo{}
-                            .Pen(shpInfo.GetPen())
-                            .Brush(shpInfo.GetBrush())
-                            .Scaling(GetScaling())
-                            .DPIScaling(GetDPIScaleFactor())
-                            .Selectable(false)
-                            .Anchoring(Anchoring::TopLeftCorner)
-                            .AnchorPoint(topLeft),
-                        shpInfo.GetShape(), cellSizeDIPs, shpInfo.GetFillPercent()));
+                    cell = std::make_unique<GraphItems::FillableShape>(
+                        cellInfo, shpInfo.GetShape(), cellSizeDIPs, shpInfo.GetFillPercent());
                     }
                 else
                     {
-                    AddObject(
-                        std::make_unique<GraphItems::Shape>(GraphItems::GraphItemInfo{}
-                                                                .Pen(shpInfo.GetPen())
-                                                                .Brush(shpInfo.GetBrush())
-                                                                .Scaling(GetScaling())
-                                                                .DPIScaling(GetDPIScaleFactor())
-                                                                .Selectable(false)
-                                                                .Anchoring(Anchoring::TopLeftCorner)
-                                                                .AnchorPoint(topLeft),
-                                                            shpInfo.GetShape(), cellSizeDIPs));
+                    cell = std::make_unique<GraphItems::Shape>(cellInfo, shpInfo.GetShape(),
+                                                               cellSizeDIPs);
                     }
+                // cells with a label can be hidden along with their legend row
+                if (!shpInfo.GetText().empty())
+                    {
+                    MakeFilterable(*cell, shpInfo.GetText());
+                    }
+                AddObject(std::move(cell));
                 }
             }
         }
@@ -266,6 +266,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
             // add icon
             legend->GetLegendIcons().emplace_back(entry.shapeInfo.GetShape(),
                                                   entry.shapeInfo.GetPen(), entry.fillColor);
+            // the row hides along with the cells that share its label
+            legend->GetLegendIcons().back().m_filterLabel = entry.label;
             ++count;
             }
 
