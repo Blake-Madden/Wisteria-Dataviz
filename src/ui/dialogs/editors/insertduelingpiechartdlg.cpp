@@ -283,7 +283,7 @@ namespace Wisteria::UI
             {
             plot->SetId(oldGraph->GetId());
             }
-        // sets the color scheme, which SetData() uses to color the slices
+        // sets the color scheme, which the chart applies to the slices when it lays itself out
         ApplyGraphOptions(*plot);
         ApplyPageOptions(*plot);
 

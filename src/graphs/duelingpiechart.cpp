@@ -9,7 +9,9 @@
 #include "duelingpiechart.h"
 #include "../math/safe_math.h"
 #include <array>
+#include <limits>
 #include <numeric>
+#include <unordered_map>
 #include <wx/numformatter.h>
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuelingPieChart, Wisteria::Graphs::Graph2D)
@@ -45,44 +47,66 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuelingPieChart, Wisteria::Graphs::G
             {
             return;
             }
-        GetSelectedIds().clear();
-        m_topPie.clear();
-        m_bottomPie.clear();
-        m_topGroupLabel.clear();
-        m_bottomGroupLabel.clear();
 
-        SetDataset(data);
+        const auto valueCol = data->GetContinuousColumn(valueColumnName);
+        if (valueCol == data->GetContinuousColumns().cend())
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': value column not found for dueling pie chart.").ToUTF8(),
+                                 valueColumnName));
+            }
+        const auto categoryCol = data->GetCategoricalColumn(categoryColumnName);
+        if (categoryCol == data->GetCategoricalColumns().cend())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': category column not found for dueling pie chart.").ToUTF8(),
+                categoryColumnName));
+            }
+        const auto groupCol = data->GetCategoricalColumn(groupColumnName);
+        if (groupCol == data->GetCategoricalColumns().cend())
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': group column not found for dueling pie chart.").ToUTF8(),
+                                 groupColumnName));
+            }
 
-        m_valueColumnName = valueColumnName;
-        m_categoryColumnName = categoryColumnName;
-        m_groupColumnName = groupColumnName;
+        const auto categoryMissingCode = categoryCol->FindMissingDataCode().value_or(
+            Data::ColumnWithStringTable::MISSING_DATA_CODE);
+        const auto groupMissingCode = groupCol->FindMissingDataCode().value_or(
+            Data::ColumnWithStringTable::MISSING_DATA_CODE);
 
-        const auto valueCol = GetContinuousColumn(m_valueColumnName);
-        const auto categoryCol = GetCategoricalColumn(m_categoryColumnName);
-        const auto groupCol = GetCategoricalColumn(m_groupColumnName);
-
-        const auto isRowUsable = [&valueCol](const size_t row)
+        const auto hasGroup = [&](const size_t row)
+        { return groupCol->GetValue(row) != groupMissingCode; };
+        const auto hasCategory = [&](const size_t row)
+        { return categoryCol->GetValue(row) != categoryMissingCode; };
+        const auto hasUsableValue = [&valueCol](const size_t row)
         {
             const auto val = valueCol->GetValue(row);
             return std::isfinite(val) && val > 0;
         };
 
-        // categories and groups, in the order that they first appear
+        // Categories and groups, in the order that they first appear. Groups are taken from
+        // every row that has one, so which fan a group lands in doesn't depend on whether that
+        // row's category or value can be used. (A group with nothing usable gets an empty fan.)
         std::vector<Data::GroupIdType> categoryIds;
         std::vector<Data::GroupIdType> groupIds;
+        // each ID's position in the vectors above, for adding up the values below
+        std::unordered_map<Data::GroupIdType, size_t> categoryPositions;
+        std::unordered_map<Data::GroupIdType, size_t> groupPositions;
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
-            if (!isRowUsable(i))
+            if (!hasGroup(i))
                 {
                 continue;
                 }
-            if (std::ranges::find(categoryIds, categoryCol->GetValue(i)) == categoryIds.cend())
-                {
-                categoryIds.push_back(categoryCol->GetValue(i));
-                }
-            if (std::ranges::find(groupIds, groupCol->GetValue(i)) == groupIds.cend())
+            if (groupPositions.try_emplace(groupCol->GetValue(i), groupIds.size()).second)
                 {
                 groupIds.push_back(groupCol->GetValue(i));
+                }
+            if (hasCategory(i) && hasUsableValue(i) &&
+                categoryPositions.try_emplace(categoryCol->GetValue(i), categoryIds.size()).second)
+                {
+                categoryIds.push_back(categoryCol->GetValue(i));
                 }
             }
 
@@ -92,7 +116,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuelingPieChart, Wisteria::Graphs::G
                 wxString::Format(_(L"'%s': group column must contain exactly two distinct values "
                                    "for a dueling pie chart.")
                                      .ToUTF8(),
-                                 m_groupColumnName));
+                                 groupColumnName));
             }
 
         // totals for each category, per group
@@ -101,15 +125,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuelingPieChart, Wisteria::Graphs::G
                                                                           0.0) };
         for (size_t i = 0; i < data->GetRowCount(); ++i)
             {
-            if (!isRowUsable(i))
+            if (!hasGroup(i) || !hasCategory(i) || !hasUsableValue(i))
                 {
                 continue;
                 }
-            const auto groupPos = static_cast<size_t>(std::distance(
-                groupIds.begin(), std::ranges::find(groupIds, groupCol->GetValue(i))));
-            const auto categoryPos = static_cast<size_t>(std::distance(
-                categoryIds.begin(), std::ranges::find(categoryIds, categoryCol->GetValue(i))));
-            groupSums[groupPos][categoryPos] += valueCol->GetValue(i);
+            groupSums[groupPositions.at(groupCol->GetValue(i))]
+                     [categoryPositions.at(categoryCol->GetValue(i))] += valueCol->GetValue(i);
             }
 
         // Categories without a value in a group stay in that group's pie with a zero value.
@@ -125,11 +146,25 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuelingPieChart, Wisteria::Graphs::G
                                  safe_divide(sums[i], total));
                 }
         };
-        buildPie(0, m_topPie);
-        buildPie(1, m_bottomPie);
+        PieChart::PieInfo topPie;
+        PieChart::PieInfo bottomPie;
+        buildPie(0, topPie);
+        buildPie(1, bottomPie);
+        wxString topGroupLabel{ groupCol->GetLabelFromID(groupIds[0]) };
+        wxString bottomGroupLabel{ groupCol->GetLabelFromID(groupIds[1]) };
 
-        m_topGroupLabel = groupCol->GetLabelFromID(groupIds[0]);
-        m_bottomGroupLabel = groupCol->GetLabelFromID(groupIds[1]);
+        // the chart is only changed now that the data is known to be good
+        GetSelectedIds().clear();
+        SetDataset(data);
+
+        m_valueColumnName = valueColumnName;
+        m_categoryColumnName = categoryColumnName;
+        m_groupColumnName = groupColumnName;
+
+        m_topPie = std::move(topPie);
+        m_bottomPie = std::move(bottomPie);
+        m_topGroupLabel = std::move(topGroupLabel);
+        m_bottomGroupLabel = std::move(bottomGroupLabel);
         }
 
     //----------------------------------------------------------------
@@ -145,7 +180,54 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuelingPieChart, Wisteria::Graphs::G
         const auto plotArea = GetPlotAreaBoundingBox();
         const wxPoint center{ plotArea.GetLeft() + plotArea.GetWidth() / 2,
                               plotArea.GetTop() + plotArea.GetHeight() / 2 };
-        const double radius = std::min(plotArea.GetWidth(), plotArea.GetHeight()) * 0.4;
+
+        const wxColour textColor =
+            Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor());
+        const double edgeGap = ScaleToScreenAndCanvas(4);
+
+        const auto newLabel =
+            [&](const wxString& text, const Anchoring anchor, const TextAlignment alignment)
+        {
+            auto label = std::make_unique<GraphItems::Label>(GraphItems::GraphItemInfo{ text }
+                                                                 .Scaling(GetScaling())
+                                                                 .DPIScaling(GetDPIScaleFactor())
+                                                                 .Pen(wxNullPen)
+                                                                 .FontColor(textColor)
+                                                                 .LabelAlignment(alignment)
+                                                                 .Anchoring(anchor)
+                                                                 .AnchorPoint(center));
+            label->SetShape(LabelShape::NoShape);
+            label->SetBoxCorners(BoxCorners::Straight);
+            label->SetShadowType(ShadowType::NoDisplay);
+            return label;
+        };
+
+        // group names, which sit beyond the outer edge of each fan
+        auto topGroupLabel = newLabel(m_topGroupLabel, Anchoring::Center, TextAlignment::Centered);
+        auto bottomGroupLabel =
+            newLabel(m_bottomGroupLabel, Anchoring::Center, TextAlignment::Centered);
+        topGroupLabel->GetFont().MakeBold();
+        bottomGroupLabel->GetFont().MakeBold();
+        const double groupLabelHeight =
+            std::max<double>(topGroupLabel->GetBoundingBox(dc).GetHeight(),
+                             bottomGroupLabel->GetBoundingBox(dc).GetHeight());
+
+        // fans take up most of the plot, but leave room above and below for the group names
+        const double smallestPlotSide = std::min(plotArea.GetWidth(), plotArea.GetHeight());
+        const double halfPlotHeight = plotArea.GetHeight() / 2.0;
+        const double minRadius = smallestPlotSide * 0.2;
+        double radius{ std::min(smallestPlotSide * 0.4,
+                                halfPlotHeight - edgeGap - groupLabelHeight) };
+        if (radius < minRadius)
+            {
+            // not enough room for the names at their full size, so shrink them instead
+            radius = minRadius;
+            const double groupLabelScale =
+                std::clamp(safe_divide(halfPlotHeight - radius - edgeGap, groupLabelHeight),
+                           math_constants::tenth, 1.0);
+            topGroupLabel->SetScaling(topGroupLabel->GetScaling() * groupLabelScale);
+            bottomGroupLabel->SetScaling(bottomGroupLabel->GetScaling() * groupLabelScale);
+            }
         const wxRect pieArea{ wxPoint{ wxRound(center.x - radius), wxRound(center.y - radius) },
                               wxSize{ wxRound(radius * 2), wxRound(radius * 2) } };
 
@@ -162,7 +244,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuelingPieChart, Wisteria::Graphs::G
         };
 
         constexpr double middleLabelProportion{ 0.6 };
-        double smallestLabelFontSize{ GetBottomXAxis().GetFont().GetFractionalPointSize() };
+        // the smallest size that any label needed to fit its slice
+        double smallestLabelFontSize{ std::numeric_limits<double>::max() };
         std::vector<std::unique_ptr<GraphItems::Label>> middleLabels;
 
         // Slices run clockwise from the fan's first edge, so their angles decrease
@@ -213,39 +296,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuelingPieChart, Wisteria::Graphs::G
             AddObject(std::move(middleLabel));
             }
 
-        const wxColour textColor =
-            Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor());
-        const double edgeGap = ScaleToScreenAndCanvas(4);
-
-        const auto newLabel =
-            [&](const wxString& text, const Anchoring anchor, const TextAlignment alignment)
+        // place the group names just beyond the outer edge of each fan
+        const auto addGroupLabel =
+            [&](std::unique_ptr<GraphItems::Label> label, const bool isTopFan)
         {
-            auto label = std::make_unique<GraphItems::Label>(GraphItems::GraphItemInfo{ text }
-                                                                 .Scaling(GetScaling())
-                                                                 .DPIScaling(GetDPIScaleFactor())
-                                                                 .Pen(wxNullPen)
-                                                                 .FontColor(textColor)
-                                                                 .LabelAlignment(alignment)
-                                                                 .Anchoring(anchor)
-                                                                 .AnchorPoint(center));
-            label->SetShape(LabelShape::NoShape);
-            label->SetBoxCorners(BoxCorners::Straight);
-            label->SetShadowType(ShadowType::NoDisplay);
-            return label;
-        };
-
-        // group names, beyond the outer edge of each fan
-        const auto addGroupLabel = [&](const wxString& text, const bool isTopFan)
-        {
-            auto label = newLabel(text, Anchoring::Center, TextAlignment::Centered);
-            label->GetFont().MakeBold();
             const double offset = radius + edgeGap + (label->GetBoundingBox(dc).GetHeight() / 2.0);
             label->SetAnchorPoint(
                 wxPoint{ center.x, wxRound(center.y + (isTopFan ? -offset : offset)) });
             AddObject(std::move(label));
         };
-        addGroupLabel(m_topGroupLabel, true);
-        addGroupLabel(m_bottomGroupLabel, false);
+        addGroupLabel(std::move(topGroupLabel), true);
+        addGroupLabel(std::move(bottomGroupLabel), false);
 
         // The legend is split in two, filling the empty wedges to the left and right of
         // the center point. Both lists are centered vertically on the center point.
@@ -281,10 +342,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuelingPieChart, Wisteria::Graphs::G
 
         // A list's inner edge needs to be at least half of its height from the center point to
         // stay clear of the fans (the empty wedges have 45 degree edges).
-        // Shrink the legend text if the block would otherwise run past the plot area.
-        const double legendScale = std::clamp(
-            safe_divide((plotArea.GetWidth() / 2.0) - (edgeGap * 2), (listHeight / 2) + blockWidth),
-            math_constants::tenth, 1.0);
+        // Shrink the legend text if the block would otherwise run past the plot area's sides,
+        // or if the list would be taller than the fans (where the group names begin).
+        const double widthScale =
+            safe_divide((plotArea.GetWidth() / 2.0) - (edgeGap * 2), (listHeight / 2) + blockWidth);
+        const double heightScale = safe_divide(radius * 2, listHeight);
+        const double legendScale =
+            std::clamp(std::min(widthScale, heightScale), math_constants::tenth, 1.0);
         for (auto* label : legendLabels)
             {
             label->SetScaling(label->GetScaling() * legendScale);
@@ -360,7 +424,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuelingPieChart, Wisteria::Graphs::G
                     }
                 entries += wxString::Format(
                     _DT(L"%s: %s"), slice.GetGroupLabel(),
-                    wxNumberFormatter::ToString(slice.GetValue(), 0,
+                    wxNumberFormatter::ToString(slice.GetValue(), 6,
                                                 wxNumberFormatter::Style::Style_NoTrailingZeroes));
                 }
             label += L". " + groupLabel + L" - " + entries;

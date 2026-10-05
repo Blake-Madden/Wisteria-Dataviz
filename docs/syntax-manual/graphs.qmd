@@ -870,7 +870,9 @@ Properties for `"dueling-pie-chart"` nodes:
     Rows with a missing, zero, or negative value are skipped.
   - `"category"`: The categorical column containing the categories (the slices).
   - `"group"`: The categorical column containing the two groups (the fans). \
-    This column must contain exactly two distinct values; otherwise, an error is thrown.
+    This column must contain exactly two distinct values; otherwise, an error is thrown. \
+    Rows with a missing group are ignored, and rows with a missing category are not drawn. \
+    The first group in the dataset is drawn along the top, regardless of whether its first row has a usable value.
 - `"midpoint-label-display"`: A string specifying what is shown inside the slices. \
   Available options are:
   - `"percentage"`: The slice's percentage of its group's total (the default).

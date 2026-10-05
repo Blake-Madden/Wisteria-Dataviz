@@ -3188,7 +3188,7 @@ void MyFrame::OnNewWindow(wxCommandEvent& event)
             subframe->m_canvas, nullptr, duelingColors);
         duelingPlot->SetData(timeData, L"Hours", L"Activity", L"Day");
         duelingPlot->GetTitle().SetText(
-            _(L"HOW TIME IS SPENT ON WEEKDAYS AND WEEKENDS. (SAMPLE)\nHOURS PER DAY."));
+            _(L"HOW TIME IS SPENT ON WEEKDAYS AND WEEKENDS.\nHOURS PER DAY."));
         duelingPlot->GetTitle().SetTextAlignment(Wisteria::TextAlignment::Centered);
         duelingPlot->GetTitle().SetPadding(5, 5, 5, 5);
 

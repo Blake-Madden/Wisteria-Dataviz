@@ -57,6 +57,12 @@ namespace Wisteria::Graphs
 
         @par Missing Data:
         - Rows with a missing or non-positive value are ignored.
+        - Rows with a missing group are ignored.
+        - Rows with a missing category are not drawn, but their group is still counted.
+        - A group counts toward the required two even if none of its values can be used.
+          Its fan will be empty in that case.
+        - Which group is "first" depends only on the group column, not on whether
+          a row's category or value can be used.
         - If a group has no value for a category, then that category has no slice in that group's
           fan. (The category keeps its color and legend entry.)
 
