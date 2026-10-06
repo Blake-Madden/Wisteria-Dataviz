@@ -49,6 +49,44 @@ TEST_CASE("get_worksheet_names returns names parsed from workbook.xml", "[xlsx][
     REQUIRE(names[2] == L"RawData");
     }
 
+TEST_CASE("get_worksheet_names decodes XML entities in sheet names", "[xlsx][workbook][names]")
+    {
+    const wchar_t workbook_xml[] = LR"(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+          xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets>
+    <sheet name="Q&amp;A" sheetId="1" r:id="rId1"/>
+    <sheet name="R&amp;D Budget" sheetId="2" r:id="rId2"/>
+    <sheet name="Plain" sheetId="3" r:id="rId3"/>
+  </sheets>
+</workbook>)";
+
+    const wchar_t workbook_rels[] = LR"(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1"
+                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
+                Target="worksheets/sheet1.xml"/>
+  <Relationship Id="rId2"
+                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
+                Target="worksheets/sheet2.xml"/>
+  <Relationship Id="rId3"
+                Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet"
+                Target="worksheets/sheet3.xml"/>
+</Relationships>)";
+
+    xlsx_extract_text extractor{ true };
+    extractor.read_worksheet_names(workbook_xml, std::wcslen(workbook_xml));
+    extractor.read_relative_paths(workbook_rels, std::wcslen(workbook_rels));
+    extractor.map_workbook_paths();
+
+    const auto names = extractor.get_worksheet_names();
+
+    REQUIRE(names.size() == 3);
+    CHECK(names[0] == L"Q&A");
+    CHECK(names[1] == L"R&D Budget");
+    CHECK(names[2] == L"Plain");
+    }
+
 TEST_CASE("XLSX worksheet names, relationships, and paths are mapped correctly",
           "[xlsx][workbook][integration]")
     {
@@ -5434,6 +5472,140 @@ TEST_CASE("XLSX malformed cell reference does not trigger a runaway fill", "[xls
         CHECK(spreadsheet_extract_text::get_cell_text(L"A2", wrk) == L"20");
         CHECK(wrk[0].size() <= spreadsheet_extract_text::EXCEL_MAX_COLUMNS);
         CHECK(wrk[1].size() <= spreadsheet_extract_text::EXCEL_MAX_COLUMNS);
+        }
+    }
+
+TEST_CASE("XLSX inline strings with rich text", "[xlsx][inlinestr]")
+    {
+    SECTION("Multiple runs are combined and entities decoded")
+        {
+        xlsx_extract_text ext{ true };
+
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:B1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\">"
+            L"<c r=\"A1\" t=\"inlineStr\"><is>"
+            L"<r><t xml:space=\"preserve\">Hello </t></r>"
+            L"<r><rPr><b/></rPr><t>&amp; World</t></r>"
+            L"</is></c>"
+            L"<c r=\"B1\" t=\"inlineStr\"><is><t>Plain</t></is></c>"
+            L"</row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 2);
+        CHECK(wrk[0][0].get_value() == L"Hello & World");
+        CHECK(wrk[0][1].get_value() == L"Plain");
+        }
+    SECTION("Single run with entities decoded")
+        {
+        xlsx_extract_text ext{ true };
+
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:A1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\"><c r=\"A1\" t=\"inlineStr\"><is><t>R&amp;D &lt;draft&gt;</t></is></c></row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 1);
+        CHECK(wrk[0][0].get_value() == L"R&D <draft>");
+        }
+    SECTION("Three runs are combined")
+        {
+        xlsx_extract_text ext{ true };
+
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:A1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\"><c r=\"A1\" t=\"inlineStr\"><is>"
+            L"<r><t>alpha</t></r>"
+            L"<r><rPr><i/></rPr><t>beta</t></r>"
+            L"<r><t>gamma</t></r>"
+            L"</is></c></row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 1);
+        CHECK(wrk[0][0].get_value() == L"alphabetagamma");
+        }
+    SECTION("Runs do not leak into neighboring cells")
+        {
+        xlsx_extract_text ext{ true };
+
+        // A1 has multiple runs, B1 is a single run, C1 is an empty inline string,
+        // and D1 is a plain numeric cell.
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:D1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\">"
+            L"<c r=\"A1\" t=\"inlineStr\"><is><r><t>one</t></r><r><t>two</t></r></is></c>"
+            L"<c r=\"B1\" t=\"inlineStr\"><is><t>three</t></is></c>"
+            L"<c r=\"C1\" t=\"inlineStr\"><is><t></t></is></c>"
+            L"<c r=\"D1\"><v>4</v></c>"
+            L"</row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 4);
+        CHECK(wrk[0][0].get_value() == L"onetwo");
+        CHECK(wrk[0][1].get_value() == L"three");
+        CHECK(wrk[0][2].get_value() == L"");
+        CHECK(wrk[0][3].get_value() == L"4");
+        }
+    SECTION("Self-closing text run does not discard the cell")
+        {
+        xlsx_extract_text ext{ true };
+
+        const wchar_t* sheet_xml =
+            L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
+            L"<worksheet><dimension ref=\"A1:B1\"/>"
+            L"<sheetData>"
+            L"<row r=\"1\">"
+            L"<c r=\"A1\" t=\"inlineStr\"><is><r><t/></r><r><t>abc</t></r></is></c>"
+            L"<c r=\"B1\" t=\"inlineStr\"><is><r><t>abc</t></r><r><t/></r><r><t>def</t></r></is></c>"
+            L"</row>"
+            L"</sheetData></worksheet>";
+
+        xlsx_extract_text::worksheet wrk;
+        ext(sheet_xml, std::wcslen(sheet_xml), wrk);
+
+        REQUIRE(wrk.size() == 1);
+        REQUIRE(wrk[0].size() == 2);
+        CHECK(wrk[0][0].get_value() == L"abc");
+        CHECK(wrk[0][1].get_value() == L"abcdef");
+        }
+    SECTION("Shared string with self-closing text run keeps the rest")
+        {
+        xlsx_extract_text ext{ true };
+        const wchar_t* sst = L"<sst>"
+                             L"<si><r><t/></r><r><t>abc</t></r></si>"
+                             L"<si><r><t>abc</t></r><r><t/></r><r><t>def</t></r></si>"
+                             L"<si><t>Plain</t></si>"
+                             L"</sst>";
+        ext.read_shared_strings(sst, std::wcslen(sst));
+
+        REQUIRE(ext.get_shared_strings().size() == 3);
+        CHECK(ext.get_shared_strings().at(0) == L"abc");
+        CHECK(ext.get_shared_strings().at(1) == L"abcdef");
+        CHECK(ext.get_shared_strings().at(2) == L"Plain");
         }
     }
 

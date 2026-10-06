@@ -115,6 +115,12 @@ namespace lily_of_the_valley
                     {
                     break;
                     }
+                // self-closing (empty) run, so there is no text or end tag
+                if (*std::prev(stringTag) == L'/')
+                    {
+                    ++stringTag;
+                    continue;
+                    }
                 const wchar_t* const endStringTag =
                     html_extract_text::find_closing_element(++stringTag, endTag, L"t");
                 if (endStringTag == nullptr)
@@ -317,24 +323,36 @@ namespace lily_of_the_valley
                                 html_extract_text::find_closing_element(++isTag, cellEnd, L"is");
                             if (isEnd != nullptr)
                                 {
-                                const wchar_t* tTag =
-                                    html_extract_text::find_element(isTag, isEnd, L"t", true);
-                                if (tTag != nullptr &&
-                                    // NOLINTNEXTLINE(bugprone-assignment-in-if-condition)
-                                    (tTag = html_extract_text::find_close_tag(tTag)) != nullptr)
+                                // rich text is split into runs, so combine all of the <t> elements
+                                valueStr.clear();
+                                const wchar_t* tTag{ isTag };
+                                while ((tTag = html_extract_text::find_element(tTag, isEnd, L"t",
+                                                                               true)) != nullptr)
                                     {
-                                    const wchar_t* const tEnd =
-                                        html_extract_text::find_closing_element(++tTag, cellEnd,
-                                                                                L"t");
-                                    if (tEnd != nullptr)
+                                    tTag = html_extract_text::find_close_tag(tTag);
+                                    if (tTag == nullptr)
                                         {
-                                        valueStr.assign(tTag, tEnd - tTag);
-                                        // read a value
-                                        if (!valueStr.empty())
-                                            {
-                                            currentCell.set_value(decode_entities(valueStr));
-                                            }
+                                        break;
                                         }
+                                    // self-closing (empty) run, so there is no text or end tag
+                                    if (*std::prev(tTag) == L'/')
+                                        {
+                                        ++tTag;
+                                        continue;
+                                        }
+                                    const wchar_t* const tEnd =
+                                        html_extract_text::find_closing_element(++tTag, isEnd,
+                                                                                L"t");
+                                    if (tEnd == nullptr)
+                                        {
+                                        break;
+                                        }
+                                    valueStr.append(tTag, tEnd - tTag);
+                                    tTag = tEnd;
+                                    }
+                                if (!valueStr.empty())
+                                    {
+                                    currentCell.set_value(decode_entities(valueStr));
                                     }
                                 }
                             }
