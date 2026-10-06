@@ -274,6 +274,12 @@ namespace lily_of_the_valley
                 }
             }
 
+        /** @brief Decodes XML entities (e.g., "&amp;") in text read from an attribute.
+            @param text The text to decode.
+            @returns The decoded text.*/
+        [[nodiscard]]
+        static std::wstring decode_entities(const std::wstring& text);
+
         /** @returns The column name from a column index (1-indexed).
             @param col The column number.
             @returns The name of the column. For example, @c 30 will return "AD".*/

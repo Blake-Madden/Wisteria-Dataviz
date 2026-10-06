@@ -13,6 +13,21 @@
 namespace lily_of_the_valley
     {
     //------------------------------------------------------------------
+    std::wstring spreadsheet_extract_text::decode_entities(const std::wstring& text)
+        {
+        if (text.find(L'&') == std::wstring::npos)
+            {
+            return text;
+            }
+        html_extract_text htmlExtract;
+        if (htmlExtract(text.c_str(), text.length(), true, true) == nullptr)
+            {
+            return text;
+            }
+        return htmlExtract.get_filtered_buffer();
+        }
+
+    //------------------------------------------------------------------
     std::wstring spreadsheet_extract_text::get_cell_text(const wchar_t* cellName,
                                                          const worksheet& workSheet)
         {

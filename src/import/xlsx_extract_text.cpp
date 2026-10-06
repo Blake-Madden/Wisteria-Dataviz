@@ -332,7 +332,7 @@ namespace lily_of_the_valley
                                         // read a value
                                         if (!valueStr.empty())
                                             {
-                                            currentCell.set_value(valueStr);
+                                            currentCell.set_value(decode_entities(valueStr));
                                             }
                                         }
                                     }
@@ -453,13 +453,13 @@ namespace lily_of_the_valley
                                             }
                                         else
                                             {
-                                            currentCell.set_value(valueStr);
+                                            currentCell.set_value(decode_entities(valueStr));
                                             }
                                         }
                                     // just a value, so read that as-is
                                     else
                                         {
-                                        currentCell.set_value(valueStr);
+                                        currentCell.set_value(decode_entities(valueStr));
                                         }
                                     }
                                 }
@@ -868,8 +868,8 @@ namespace lily_of_the_valley
                    nullptr)
                 {
                 // read in the name of the current worksheet
-                std::wstring worksheetName =
-                    html_extract_text::read_attribute_as_string(text, L"name", false, true);
+                std::wstring worksheetName = decode_entities(
+                    html_extract_text::read_attribute_as_string(text, L"name", false, true));
                 std::wstring worksheetRelativeId =
                     html_extract_text::read_attribute_as_string(text, L"r:id", false, true);
                 if (!worksheetName.empty() && !worksheetRelativeId.empty())
@@ -900,8 +900,8 @@ namespace lily_of_the_valley
                nullptr)
             {
             std::wstring id = html_extract_text::read_attribute_as_string(text, L"Id", false, true);
-            std::wstring target =
-                html_extract_text::read_attribute_as_string(text, L"Target", false, true);
+            std::wstring target = decode_entities(
+                html_extract_text::read_attribute_as_string(text, L"Target", false, true));
 
             if (!id.empty() && !target.empty())
                 {

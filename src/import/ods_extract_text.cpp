@@ -41,8 +41,8 @@ namespace lily_of_the_valley
         while ((tableTag = html_extract_text::find_element(tableTag, spreadsheetEnd, L"table:table",
                                                            true)) != nullptr)
             {
-            const std::wstring tableName =
-                html_extract_text::read_attribute_as_string(tableTag, L"table:name", false, true);
+            const std::wstring tableName = decode_entities(
+                html_extract_text::read_attribute_as_string(tableTag, L"table:name", false, true));
             if (!tableName.empty())
                 {
                 m_worksheet_names.push_back(tableName);
@@ -102,8 +102,8 @@ namespace lily_of_the_valley
                                                            true)) != nullptr)
             {
             ++tableIndex;
-            const std::wstring tableName =
-                html_extract_text::read_attribute_as_string(tableTag, L"table:name", false, true);
+            const std::wstring tableName = decode_entities(
+                html_extract_text::read_attribute_as_string(tableTag, L"table:name", false, true));
 
             bool isMatch{ false };
             if (const auto* const namePtr = std::get_if<std::wstring>(&theWorksheet);
