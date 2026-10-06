@@ -308,8 +308,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptFilters()
       sections.forEach(function(section) {
         let title = section.title;
         if (!title) {
-          title = chartIds.length === 1 ? page.title :
-            format(strings.chart, chartIds.indexOf(section.chartId) + 1);
+          title = format(strings.chart, chartIds.indexOf(section.chartId) + 1);
         }
         if (section.ring) title += ': ' + section.ring;
         const group = document.createElement('div');
