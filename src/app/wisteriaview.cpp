@@ -570,6 +570,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     if (!GetReportBuilder().HasLoadedHtmlExportOptions())
         {
         GetReportBuilder().GetHtmlExportOptions() = appSettings->GetHtmlExportOptions();
+        // a logo is specific to a project, so it is never inherited
+        GetReportBuilder().GetHtmlExportOptions().m_logoPath.clear();
         }
     if (!GetReportBuilder().HasLoadedPdfExportOptions())
         {
