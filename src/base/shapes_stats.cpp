@@ -34,8 +34,8 @@ namespace Wisteria::GraphItems
 
         if (GetGraphItemInfo().GetBrush().IsOk() && GetGraphItemInfo().GetPen().IsOk())
             {
-            const wxDCPenChanger penGuard2{ dc, GetGraphItemInfo().GetPen() };
-            const wxDCBrushChanger brushGuard2{ dc, GetGraphItemInfo().GetBrush() };
+            gc->SetPen(GetGraphItemInfo().GetPen());
+            gc->SetBrush(GetGraphItemInfo().GetBrush());
             gc->DrawRoundedRectangle(wxRect2DDouble{ rect }, Settings::GetBoxRoundedCornerRadius() * 2);
             }
 
