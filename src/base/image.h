@@ -87,6 +87,7 @@ namespace Wisteria::GraphItems
                 m_originalImg = img;
                 m_size = img.GetSize();
                 m_frameSize = img.GetSize();
+                m_baseSize = img.GetSize();
                 }
             SetOk(m_originalImg.IsOk());
             }
@@ -100,6 +101,7 @@ namespace Wisteria::GraphItems
                 m_originalImg = img;
                 m_size = img.GetSize();
                 m_frameSize = img.GetSize();
+                m_baseSize = img.GetSize();
                 }
             SetOk(m_originalImg.IsOk());
             GetPen() = wxNullPen;
@@ -117,6 +119,7 @@ namespace Wisteria::GraphItems
                 m_originalImg = img;
                 m_size = img.GetSize();
                 m_frameSize = img.GetSize();
+                m_baseSize = img.GetSize();
                 }
             SetOk(m_originalImg.IsOk());
             GetPen() = wxNullPen;
@@ -126,7 +129,7 @@ namespace Wisteria::GraphItems
         void Clear()
             {
             m_originalImg = wxNullImage;
-            m_frameSize = m_size = wxDefaultSize;
+            m_frameSize = m_baseSize = m_size = wxDefaultSize;
             SetOk(false);
             }
 
@@ -586,6 +589,9 @@ namespace Wisteria::GraphItems
 
         /// @}
       private:
+        /// @brief Restores the image's size to the size it had when it was last set explicitly.
+        void ResetToBaseSize() noexcept { m_size = m_frameSize = m_baseSize; }
+
         /// @returns The size of the image as it is being drawn.
         [[nodiscard]]
         const wxSize& GetImageSize() const noexcept
@@ -723,6 +729,7 @@ namespace Wisteria::GraphItems
         wxImage m_originalImg;
         wxSize m_size{ 0, 0 };
         wxSize m_frameSize{ 0, 0 };
+        wxSize m_baseSize{ 0, 0 };
         uint8_t m_opacity{ wxALPHA_OPAQUE };
         ResizeMethod m_resizeMethod{ ResizeMethod::DownscaleOrUpscale };
         };

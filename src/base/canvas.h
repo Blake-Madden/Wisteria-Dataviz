@@ -460,6 +460,10 @@ namespace Wisteria
             // (not the current window's scaling) so that we measure it correctly against
             // a 1.0 scaled canvas
             const CanvasItemScalingChanger sc(item);
+            if (auto* img = dynamic_cast<GraphItems::Image*>(&item); img != nullptr)
+                {
+                img->ResetToBaseSize();
+                }
             // also, reset any previous min size information for a call to the object's
             // SetBoundingBox(), as we will be resizing this item from scratch
             item.SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);

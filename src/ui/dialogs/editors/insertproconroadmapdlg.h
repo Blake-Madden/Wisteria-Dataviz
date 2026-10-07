@@ -194,7 +194,6 @@ namespace Wisteria::UI
         // controls without DDX support
         wxSpinCtrl* m_minCountSpin{ nullptr };
         wxColourPickerCtrl* m_roadColorPicker{ nullptr };
-
         };
     } // namespace Wisteria::UI
 

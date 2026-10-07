@@ -443,7 +443,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
             width, geometry::rescaled_height(std::pair<double, double>(m_originalImg.GetWidth(),
                                                                        m_originalImg.GetHeight()),
                                              width));
-        m_frameSize = m_size;
+        m_frameSize = m_baseSize = m_size;
         }
 
     //-------------------------------------------
@@ -454,16 +454,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
                                                                       m_originalImg.GetHeight()),
                                             height),
                    height);
-        m_frameSize = m_size;
+        m_frameSize = m_baseSize = m_size;
         }
 
     //-------------------------------------------
-    void Image::SetSize(const wxSize sz) { m_size = m_frameSize = sz; }
+    void Image::SetSize(const wxSize sz) { m_baseSize = m_size = m_frameSize = sz; }
 
     //-------------------------------------------
     wxSize Image::SetBestSize(const wxSize suggestedSz)
         {
-        m_size = m_frameSize = GetBestSize(suggestedSz);
+        m_baseSize = m_size = m_frameSize = GetBestSize(suggestedSz);
         return m_size;
         }
 

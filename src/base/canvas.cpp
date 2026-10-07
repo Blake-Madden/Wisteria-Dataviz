@@ -1247,6 +1247,40 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     objectsPos->UpdateSelectedItems();
                     }
                 }
+                // Fixed-width items can leave part of the row unused. Distribute that space
+                // according to the row's page alignment so the row isn't stuck against the left
+                // edge.
+                {
+                const auto firstItem =
+                    std::ranges::find_if(std::as_const(currentRow),
+                                         [](const auto& obj) noexcept { return obj != nullptr; });
+                if (firstItem != currentRow.cend())
+                    {
+                    const bool hasFixedWidthItem{ std::ranges::any_of(
+                        std::as_const(currentRow), [](const auto& obj) noexcept
+                        { return obj != nullptr && obj->IsFixedWidthOnCanvas(); }) };
+                    const long leftover{ hasFixedWidthItem ?
+                                             fixedObjectRect.GetWidth() -
+                                                 static_cast<long>(std::lround(currentXPos)) :
+                                             0 };
+                    const auto alignment = (*firstItem)->GetPageHorizontalAlignment();
+                    const long shift =
+                        (alignment == PageHorizontalAlignment::Centered)     ? leftover / 2 :
+                        (alignment == PageHorizontalAlignment::RightAligned) ? leftover :
+                                                                               0;
+                    if (leftover > 0 && shift > 0)
+                        {
+                        for (auto& obj : currentRow)
+                            {
+                            if (obj != nullptr)
+                                {
+                                obj->Offset(shift, 0);
+                                obj->UpdateSelectedItems();
+                                }
+                            }
+                        }
+                    }
+                }
             if (IsRowContentAligned())
                 {
                 for (auto& fixedObjectsRowItems : GetFixedObjects())
@@ -2682,6 +2716,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
         wxGCDC gdc(this);
         const CanvasItemScalingChanger sc{ item };
+        if (auto* img = dynamic_cast<GraphItems::Image*>(&item); img != nullptr)
+            {
+            img->ResetToBaseSize();
+            }
         item.SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
         item.SetCanvasHeightProportion(std::nullopt);
         item.RecalcSizes(gdc);
