@@ -646,6 +646,12 @@ namespace Wisteria
                     {
                     return dataset->GetContinuousColumnValidN(columnName);
                     }
+                if (dataset->HasValidIdData() &&
+                    dataset->GetIdColumn().GetName().CmpNoCase(columnName) == 0)
+                    {
+                    return std::ranges::count_if(dataset->GetIdColumn().GetValues(),
+                                                 [](const auto& idVal) { return !idVal.empty(); });
+                    }
                 }
             // dataset or column name missing
             else
@@ -718,11 +724,23 @@ namespace Wisteria
                 {
                 const wxString columnName =
                     ConvertColumnOrGroupParameter(re.GetMatch(formula, 2), dataset);
-                // only continuous can be totaled
                 if (const auto catColumn = dataset->GetCategoricalColumn(columnName);
                     catColumn != dataset->GetCategoricalColumns().cend())
                     {
                     return catColumn->GetStringTable().size();
+                    }
+                if (dataset->HasValidIdData() &&
+                    dataset->GetIdColumn().GetName().CmpNoCase(columnName) == 0)
+                    {
+                    std::set<wxString, Data::wxStringLessNoCase> idValues;
+                    for (size_t i = 0; i < dataset->GetIdColumn().GetRowCount(); ++i)
+                        {
+                        if (const auto& idVal = dataset->GetIdColumn().GetValue(i); !idVal.empty())
+                            {
+                            idValues.insert(idVal);
+                            }
+                        }
+                    return idValues.size();
                     }
 
                 throw std::runtime_error(
@@ -864,6 +882,27 @@ namespace Wisteria
                     {
                     const auto [minVal, maxVal] = dataset->GetContinuousMinMax(columnName);
                     return (funcName.CmpNoCase(L"min") == 0 ? minVal : maxVal);
+                    }
+                if (dataset->HasValidIdData() &&
+                    dataset->GetIdColumn().GetName().CmpNoCase(columnName) == 0)
+                    {
+                    const bool isMin{ funcName.CmpNoCase(L"min") == 0 };
+                    wxString result;
+                    bool foundValue{ false };
+                    for (const auto& idVal : dataset->GetIdColumn().GetValues())
+                        {
+                        if (idVal.empty())
+                            {
+                            continue;
+                            }
+                        if (!foundValue ||
+                            (isMin ? idVal.CmpNoCase(result) < 0 : idVal.CmpNoCase(result) > 0))
+                            {
+                            result = idVal;
+                            foundValue = true;
+                            }
+                        }
+                    return result;
                     }
                 wxLogWarning(L"'%s' column not found in call to MIN or MAX. "
                              "A continuous or categorical column was expected.",
