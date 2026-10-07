@@ -1426,6 +1426,10 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
     bindTheme();
   }
   document.addEventListener('DOMContentLoaded', function() {
+    // Remove the native-tooltip sources only.
+    // Keep chart <desc> elements, screen readers need them.
+    document.querySelectorAll('.page-svg title').forEach(function(n) { n.remove(); });
+    document.querySelectorAll('.page-svg > g[id^="page-content"] > desc').forEach(function(n) { n.remove(); });
     collectPages();
     readHash();
     applyColorMode();
