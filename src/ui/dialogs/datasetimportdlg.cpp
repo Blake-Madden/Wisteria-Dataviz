@@ -910,7 +910,15 @@ namespace Wisteria::UI
         {
         TransferDataFromWindow();
         // convert to full ImportInfo from current m_columnInfo
-        auto importInfo = Data::Dataset::ImportInfoFromPreview(m_columnInfo);
+        auto importColumns = m_columnInfo;
+        // the ID column is imported as the ID, not also as a regular column
+        if (m_idColumnChoice->GetSelection() > 0)
+            {
+            const wxString idName{ m_idColumnChoice->GetStringSelection() };
+            std::erase_if(importColumns,
+                          [&idName](const auto& col) { return col.m_name.CmpNoCase(idName) == 0; });
+            }
+        auto importInfo = Data::Dataset::ImportInfoFromPreview(importColumns);
         importInfo.SkipRows(static_cast<size_t>(m_skipRows));
         importInfo.TreatLeadingZerosAsText(m_leadingZeros);
         importInfo.TreatYearsAsText(m_yearsAsText);
@@ -1195,7 +1203,14 @@ namespace Wisteria::UI
     Data::ImportInfo DatasetImportDlg::GetImportInfo()
         {
         TransferDataFromWindow();
-        const auto columnInfo = GetColumnPreviewInfo();
+        auto columnInfo = GetColumnPreviewInfo();
+        // the ID column is imported as the ID, not also as a regular column
+        if (m_idColumnChoice->GetSelection() > 0)
+            {
+            const wxString idName{ m_idColumnChoice->GetStringSelection() };
+            std::erase_if(columnInfo,
+                          [&idName](const auto& col) { return col.m_name.CmpNoCase(idName) == 0; });
+            }
 
         auto importInfo = Data::Dataset::ImportInfoFromPreview(columnInfo);
         importInfo.SkipRows(static_cast<size_t>(m_skipRows));

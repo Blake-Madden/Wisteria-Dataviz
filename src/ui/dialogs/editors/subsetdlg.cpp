@@ -508,6 +508,23 @@ namespace Wisteria::UI
             return;
             }
 
+        if (dataset->HasValidIdData() && dataset->GetIdColumn().GetName().CmpNoCase(column) == 0)
+            {
+            std::set<wxString, Data::wxStringLessNoCase> idValues;
+            for (size_t i = 0; i < dataset->GetIdColumn().GetRowCount(); ++i)
+                {
+                if (const auto& idVal = dataset->GetIdColumn().GetValue(i); !idVal.empty())
+                    {
+                    idValues.insert(idVal);
+                    }
+                }
+            for (const auto& idVal : idValues)
+                {
+                row.m_valuesCtrl->Append(idVal);
+                }
+            return;
+            }
+
         const auto catCol = dataset->GetCategoricalColumn(column);
         if (catCol != dataset->GetCategoricalColumns().cend())
             {

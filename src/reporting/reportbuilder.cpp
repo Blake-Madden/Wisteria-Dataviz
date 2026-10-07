@@ -2350,18 +2350,26 @@ namespace Wisteria
                     // build the ImportInfo from the deduced (and now overridden) columns;
                     // this fills in the continuous/categorical/date column lists for
                     // everything that wasn't explicitly overridden above
+                    // only honor the ID column if it's still present (and included) in the file
+                    const auto* idCol = findColumn(idColumn);
+                    const bool hasIdColumn{ !idColumn.empty() && idCol != nullptr &&
+                                            !idCol->m_excluded };
+                    // the ID column is imported as the ID, not also as a regular column
                     Data::Dataset::ColumnPreviewInfo includedColumns;
                     includedColumns.reserve(columnPreviewInfo.size());
                     std::ranges::copy_if(columnPreviewInfo, std::back_inserter(includedColumns),
-                                         [](const auto& col) { return !col.m_excluded; });
+                                         [&idColumn, hasIdColumn](const auto& col)
+                                         {
+                                             return !col.m_excluded &&
+                                                    !(hasIdColumn &&
+                                                      col.m_name.CmpNoCase(idColumn) == 0);
+                                         });
                     importDefines = Data::Dataset::ImportInfoFromPreview(includedColumns);
                     fillImportDefines();
                     importDefines.ContinuousMDRecodeValue(
                         datasetNode->GetProperty(L"continuous-md-recode-value")
                             ->AsDouble(std::numeric_limits<double>::quiet_NaN()));
-                    // only honor the ID column if it's still present (and included) in the file
-                    if (const auto* idCol = findColumn(idColumn);
-                        !idColumn.empty() && idCol != nullptr && !idCol->m_excluded)
+                    if (hasIdColumn)
                         {
                         importDefines.IdColumn(idColumn);
                         }
