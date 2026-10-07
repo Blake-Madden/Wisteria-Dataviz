@@ -31,7 +31,9 @@ namespace Wisteria::UI
         ShapeDlgIncludeFillable = 1 << 4,  ///< Show the fillable controls.
         ShapeDlgIncludeAlignment = 1 << 5, ///< Show the alignment controls.
         ShapeDlgIncludeRepeat = 1 << 6,    ///< Show the repeat count control.
-        /// @brief Most options enabled (the default, excludes repeat).
+        /// @brief Show the canvas margin controls.
+        ShapeDlgIncludeCanvasMargins = 1 << 7,
+        /// @brief Most options enabled (the default, excludes repeat and canvas margins).
         ShapeDlgIncludeMost = ShapeDlgIncludeSize | ShapeDlgIncludePen | ShapeDlgIncludeBrush |
         ShapeDlgIncludeLabel | ShapeDlgIncludeFillable | ShapeDlgIncludeAlignment
         };

@@ -1084,7 +1084,10 @@ namespace Wisteria::UI
     //-------------------------------------------
     bool InsertPageDlg::DropShape(Canvas* stagingCanvas, const size_t row, const size_t col)
         {
-        Wisteria::UI::InsertShapeDlg dlg(stagingCanvas, m_reportBuilder, this);
+        Wisteria::UI::InsertShapeDlg dlg(
+            stagingCanvas, m_reportBuilder, this, _(L"Insert Shape"), wxID_ANY, wxDefaultPosition,
+            wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+            InsertItemDlg::EditMode::Insert, ShapeDlgIncludeMost | ShapeDlgIncludeCanvasMargins);
         WisteriaView::SetDialogIcon(dlg, L"images/shape.svg");
         dlg.SetSelectedCell(row, col);
         if (dlg.ShowModal() != wxID_OK)

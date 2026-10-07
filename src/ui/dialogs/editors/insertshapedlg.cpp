@@ -18,7 +18,10 @@ namespace Wisteria::UI
                                    const wxPoint& pos, const wxSize& size, const long style,
                                    EditMode editMode, const int options)
         : InsertItemDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode,
-                        ItemDlgIncludeCanvasPlacement),
+                        ItemDlgIncludeCanvasPlacement |
+                            (((options & ShapeDlgIncludeCanvasMargins) != 0) ?
+                                 ItemDlgIncludeCanvasMargins :
+                                 0)),
           m_options(options)
         {
         CreateControls();
@@ -367,7 +370,7 @@ namespace Wisteria::UI
             rightColSizer->Add(alignBox, wxSizerFlags{}.Expand().Border());
             }
 
-        if (GetEditMode() != EditMode::Edit)
+        if (GetEditMode() != EditMode::Edit || (m_options & ShapeDlgIncludeCanvasMargins) != 0)
             {
             CreatePageOptionsPage();
             }
@@ -444,6 +447,12 @@ namespace Wisteria::UI
                 }
             ApplyAccessibilityOptions(*plainShape);
             shape = plainShape;
+            }
+
+        if ((m_options & ShapeDlgIncludeCanvasMargins) != 0)
+            {
+            const auto margins = GetCanvasMargins();
+            shape->SetCanvasMargins(margins[0], margins[1], margins[2], margins[3]);
             }
 
         return shape;
@@ -622,6 +631,7 @@ namespace Wisteria::UI
     void InsertShapeDlg::LoadFromShape(const Wisteria::GraphItems::Shape& shape)
         {
         LoadAccessibilityOptions(shape);
+        LoadCanvasMargins(shape);
 
         // alignment
         switch (shape.GetPageHorizontalAlignment())

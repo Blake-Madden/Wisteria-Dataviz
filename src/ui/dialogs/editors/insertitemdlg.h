@@ -38,6 +38,9 @@ namespace Wisteria::UI
         /// @brief Show the page-level controls (alignment, scaling, margins,
         ///     padding, outline, etc.).
         ItemDlgIncludePageSettings = 1 << 1,
+        /// @brief Show only the canvas margin controls.
+        /// @note Redundant if @c ItemDlgIncludePageSettings is also set.
+        ItemDlgIncludeCanvasMargins = 1 << 2,
         /// @brief Show all page options (the default).
         ItemDlgIncludeAllPageOptions = ItemDlgIncludeCanvasPlacement | ItemDlgIncludePageSettings
         };
@@ -190,6 +193,10 @@ namespace Wisteria::UI
         /// @brief Populates the page-level controls from an existing graph item.
         /// @param item The item to read the options from.
         void LoadPageOptions(const GraphItems::GraphItemBase& item);
+
+        /// @brief Populates the canvas margin controls from an existing graph item.
+        /// @param item The item to read the margins from.
+        void LoadCanvasMargins(const GraphItems::GraphItemBase& item);
 
         /** @brief Applies the accessibility options to a graph item.
             @param item The item to configure.*/

@@ -354,6 +354,31 @@ namespace Wisteria::UI
                               });
             }
 
+        // canvas margins (top, right, bottom, left)
+        const auto addMarginBox = [this, pagePage](wxSizer* parentSizer)
+        {
+            auto* marginBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Canvas Margins"));
+            auto* marginGrid = new wxFlexGridSizer(
+                4, wxSize{ wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder() });
+
+            const auto addMarginSpin = [&](const wxString& label, int* value)
+            {
+                marginGrid->Add(new wxStaticText(marginBox->GetStaticBox(), wxID_ANY, label),
+                                wxSizerFlags{}.CenterVertical());
+                auto* spin = new wxSpinCtrl(marginBox->GetStaticBox(), wxID_ANY);
+                spin->SetRange(0, 100);
+                spin->SetValidator(wxGenericValidator{ value });
+                marginGrid->Add(spin);
+            };
+            addMarginSpin(_(L"Top:"), &m_marginTop);
+            addMarginSpin(_(L"Right:"), &m_marginRight);
+            addMarginSpin(_(L"Bottom:"), &m_marginBottom);
+            addMarginSpin(_(L"Left:"), &m_marginLeft);
+
+            marginBox->Add(marginGrid, wxSizerFlags{}.Border());
+            parentSizer->Add(marginBox, wxSizerFlags{}.Border());
+        };
+
         // page-level settings (alignment, scaling, margins, padding, outline, etc.)
         if ((m_pageOptions & ItemDlgIncludePageSettings) != 0)
             {
@@ -415,27 +440,7 @@ namespace Wisteria::UI
                                wxDefaultSize, 0, wxGenericValidator{ &m_lockScaling });
             leftColumnSizer->Add(m_lockScalingCheck, wxSizerFlags{}.Border());
 
-            // canvas margins (top, right, bottom, left)
-            auto* marginBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Canvas Margins"));
-            auto* marginGrid = new wxFlexGridSizer(
-                4, wxSize{ wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder() });
-
-            const auto addMarginSpin = [&](const wxString& label, int* value)
-            {
-                marginGrid->Add(new wxStaticText(marginBox->GetStaticBox(), wxID_ANY, label),
-                                wxSizerFlags{}.CenterVertical());
-                auto* spin = new wxSpinCtrl(marginBox->GetStaticBox(), wxID_ANY);
-                spin->SetRange(0, 100);
-                spin->SetValidator(wxGenericValidator{ value });
-                marginGrid->Add(spin);
-            };
-            addMarginSpin(_(L"Top:"), &m_marginTop);
-            addMarginSpin(_(L"Right:"), &m_marginRight);
-            addMarginSpin(_(L"Bottom:"), &m_marginBottom);
-            addMarginSpin(_(L"Left:"), &m_marginLeft);
-
-            marginBox->Add(marginGrid, wxSizerFlags{}.Border());
-            rightColumnSizer->Add(marginBox, wxSizerFlags{}.Border());
+            addMarginBox(rightColumnSizer);
 
             // padding (top, right, bottom, left)
             auto* paddingBox = new wxStaticBoxSizer(wxVERTICAL, pagePage, _(L"Padding"));
@@ -523,6 +528,10 @@ namespace Wisteria::UI
             outlineBox->Add(borderSizer, wxSizerFlags{}.Border());
 
             leftColumnSizer->Add(outlineBox, wxSizerFlags{}.Border());
+            }
+        else if ((m_pageOptions & ItemDlgIncludeCanvasMargins) != 0)
+            {
+            addMarginBox(pageSizer);
             }
         }
 
@@ -669,6 +678,15 @@ namespace Wisteria::UI
     void InsertItemDlg::SetSelectedCell(const size_t row, const size_t column)
         {
         SelectCell(row, column);
+        }
+
+    //-------------------------------------------
+    void InsertItemDlg::LoadCanvasMargins(const GraphItems::GraphItemBase& item)
+        {
+        m_marginTop = item.GetTopCanvasMargin();
+        m_marginRight = item.GetRightCanvasMargin();
+        m_marginBottom = item.GetBottomCanvasMargin();
+        m_marginLeft = item.GetLeftCanvasMargin();
         }
 
     //-------------------------------------------

@@ -5558,7 +5558,11 @@ void WisteriaView::OnInsertShape([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    Wisteria::UI::InsertShapeDlg dlg(canvas, &m_reportBuilder, m_frame);
+    Wisteria::UI::InsertShapeDlg dlg(
+        canvas, &m_reportBuilder, m_frame, _(L"Insert Shape"), wxID_ANY, wxDefaultPosition,
+        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        Wisteria::UI::InsertItemDlg::EditMode::Insert,
+        Wisteria::UI::ShapeDlgIncludeMost | Wisteria::UI::ShapeDlgIncludeCanvasMargins);
     SetDialogIcon(dlg, L"images/shape.svg");
     if (dlg.ShowModal() != wxID_OK)
         {
@@ -5577,10 +5581,11 @@ void WisteriaView::OnInsertShape([[maybe_unused]] wxCommandEvent& event)
 void WisteriaView::EditShape(const Wisteria::GraphItems::Shape& shape, Wisteria::Canvas* canvas,
                              const size_t shapeRow, const size_t shapeCol) const
     {
-    Wisteria::UI::InsertShapeDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Shape"), wxID_ANY,
-                                     wxDefaultPosition, wxDefaultSize,
-                                     wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    Wisteria::UI::InsertShapeDlg dlg(
+        canvas, &m_reportBuilder, m_frame, _(L"Edit Shape"), wxID_ANY, wxDefaultPosition,
+        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        Wisteria::UI::InsertItemDlg::EditMode::Edit,
+        Wisteria::UI::ShapeDlgIncludeMost | Wisteria::UI::ShapeDlgIncludeCanvasMargins);
     SetDialogIcon(dlg, L"images/shape.svg");
     dlg.SetSelectedCell(shapeRow, shapeCol);
     dlg.LoadFromShape(shape);
@@ -5601,10 +5606,11 @@ void WisteriaView::EditFillableShape(const Wisteria::GraphItems::FillableShape& 
                                      Wisteria::Canvas* canvas, const size_t shapeRow,
                                      const size_t shapeCol) const
     {
-    Wisteria::UI::InsertShapeDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Fillable Shape"),
-                                     wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                     wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    Wisteria::UI::InsertShapeDlg dlg(
+        canvas, &m_reportBuilder, m_frame, _(L"Edit Fillable Shape"), wxID_ANY, wxDefaultPosition,
+        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        Wisteria::UI::InsertItemDlg::EditMode::Edit,
+        Wisteria::UI::ShapeDlgIncludeMost | Wisteria::UI::ShapeDlgIncludeCanvasMargins);
     SetDialogIcon(dlg, L"images/shape.svg");
     dlg.SetSelectedCell(shapeRow, shapeCol);
     dlg.LoadFromFillableShape(shape);
