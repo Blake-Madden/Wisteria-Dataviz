@@ -4244,8 +4244,9 @@ namespace Wisteria::Graphs
     //----------------------------------------------------------------
     wxString PieChart::GetSliceFilterKey(const bool isInnerRing, const wxString& label) const
         {
-        // decorated styles draw whole-pie extras that can't be hidden with a slice
-        if (GetPieStyle() != PieStyle::None || label.empty())
+        // highly decorated styles draw whole-pie extras that can't be hidden with a slice
+        if ((GetPieStyle() != PieStyle::None && GetPieStyle() != PieStyle::Clockface) ||
+            label.empty())
             {
             return {};
             }
