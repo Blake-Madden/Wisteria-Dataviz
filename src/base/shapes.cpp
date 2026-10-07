@@ -112,13 +112,18 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     wxRect Shape::Draw(wxDC& dc) const
         {
+        if (!m_shapeSizeDIPs.IsFullySpecified() || !m_shapeSizeDIPs.IsAtLeast({ 0, 0 }))
+            {
+            return {};
+            }
+
         if (GetClippingRect())
             {
             dc.SetClippingRegion(GetClippingRect().value());
             }
 
         const auto bBox = GetBoundingBox(dc);
-        auto drawRect = wxRect(ScaleToScreenAndCanvas(m_shapeSizeDIPs));
+        wxRect drawRect{ ScaleToScreenAndCanvas(m_shapeSizeDIPs) };
         // keep drawing area inside the full area, maintaining aspect ratio
         if (drawRect.GetWidth() > bBox.GetWidth() || drawRect.GetHeight() > bBox.GetHeight())
             {
@@ -354,7 +359,11 @@ namespace Wisteria::GraphItems
     //---------------------------------------------------
     wxRect Shape::GetBoundingBox([[maybe_unused]] wxDC& dc) const
         {
-        wxRect rect(ScaleToScreenAndCanvas(m_sizeDIPs));
+        if (!m_sizeDIPs.IsFullySpecified() || !m_sizeDIPs.IsAtLeast({ 0, 0 }))
+            {
+            return {};
+            }
+        wxRect rect{ ScaleToScreenAndCanvas(m_sizeDIPs) };
         if (GetAnchoring() == Anchoring::TopLeftCorner)
             {
             rect.SetTopLeft(GetAnchorPoint());

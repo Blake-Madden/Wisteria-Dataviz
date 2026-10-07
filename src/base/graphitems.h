@@ -2099,6 +2099,7 @@ namespace Wisteria
             /// @brief Apply screen DPI and parent canvas scaling to a value.
             /// @param value The value (e.g., pen width) to scale.
             /// @returns The scaled value.
+            /// @note Negative values will return zero as a negative scale makes no sense.
             /// @warning This should be used to rescale pixel values used for line
             ///     widths and point sizes. It should *not* be used with font point sizes
             ///     because DPI scaling is handled by the OS for those.
@@ -2106,15 +2107,20 @@ namespace Wisteria
             [[nodiscard]]
             double ScaleToScreenAndCanvas(const double value) const
                 {
-                return value * GetScaling() * GetDPIScaleFactor();
+                return std::max(0.0, value * GetScaling() * GetDPIScaleFactor());
                 }
 
             /// @brief Apply screen DPI and parent canvas scaling to a value.
             /// @param sz The size to be scaled.
+            /// @note Negative (i.e., invalid) dimensions will return a zero size.
             /// @returns The scaled size.
             [[nodiscard]]
             wxSize ScaleToScreenAndCanvas(const wxSize sz) const
                 {
+                if (!sz.IsFullySpecified() || !sz.IsAtLeast({ 0, 0 }))
+                    {
+                    return {};
+                    }
                 return sz * GetScaling() * GetDPIScaleFactor();
                 }
 

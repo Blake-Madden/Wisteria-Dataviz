@@ -696,7 +696,10 @@ namespace Wisteria::GraphItems
             @returns A self reference.*/
         ShapeInfo& Size(const wxSize sz) noexcept
             {
-            m_sizeDIPs = sz;
+            if (sz.IsFullySpecified() && sz.IsAtLeast({ 0, 0 }))
+                {
+                m_sizeDIPs = sz;
+                }
             return *this;
             }
 
