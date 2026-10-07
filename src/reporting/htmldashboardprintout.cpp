@@ -283,7 +283,12 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptFilters()
       // a key is either a plain label or "ring", U+2029, and "label" (e.g., for a two-ring pie)
       const fieldSeparator = String.fromCharCode(0x2029);
       const sections = new Map();
-      const chartIds = [];
+      // every graph on the page, in the order it appears, whether or not it has a filter
+      const pageChartIds = [];
+      page.svg.querySelectorAll('[data-chart-id]').forEach(function(group) {
+        const id = group.getAttribute('data-chart-id');
+        if (pageChartIds.indexOf(id) < 0) pageChartIds.push(id);
+      });
       page.svg.querySelectorAll('[data-filter]').forEach(function(el) {
         const chartId = scopeIdFor(el);
         const key = el.getAttribute('data-filter');
@@ -291,7 +296,6 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptFilters()
         const ring = splitAt < 0 ? '' : key.substring(0, splitAt);
         const text = splitAt < 0 ? key : key.substring(splitAt + 1);
         const sectionKey = chartId + fieldSeparator + ring;
-        if (chartIds.indexOf(chartId) < 0) chartIds.push(chartId);
         if (!sections.has(sectionKey)) {
           sections.set(sectionKey, {
             chartId: chartId,
@@ -308,7 +312,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptFilters()
       sections.forEach(function(section) {
         let title = section.title;
         if (!title) {
-          title = format(strings.chart, chartIds.indexOf(section.chartId) + 1);
+          title = format(strings.chart, pageChartIds.indexOf(section.chartId) + 1);
         }
         if (section.ring) title += ': ' + section.ring;
         const group = document.createElement('div');
