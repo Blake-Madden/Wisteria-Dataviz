@@ -1479,6 +1479,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         size_t currentRow{ 0 };
         size_t rowsBeingFit{ 0 };
         double overallScaling{ 1.0 };
+        // rows that must keep their content height because their text can't be scaled down
+        std::vector<bool> contentLockedRows(GetFixedObjects().size(), false);
         for (auto& row : GetFixedObjects())
             {
             // Go through the items in the row and see if there are any having the row fit their
@@ -1493,6 +1495,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                                               std::max(rowHeightProportion.value(),
                                                        CalcMinHeightProportion(*object)) :
                                               CalcMinHeightProportion(*object);
+                    if (const auto* label = dynamic_cast<const GraphItems::Label*>(object.get());
+                        label != nullptr && label->IsBoundingBoxScalingLocked())
+                        {
+                        contentLockedRows[currentRow] = true;
+                        }
                     }
                 // also re-adjust the width if being fit with its content width-wise
                 if (object != nullptr && object->IsFixedWidthOnCanvas())
@@ -1537,10 +1544,28 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                             { return initVal + val.GetHeightProportion(); });
         if (totalHeightProportion > 1)
             {
-            const auto proportionDiff = safe_divide<double>(1.0, totalHeightProportion);
-            for (auto& rowInfo : m_rowsInfo)
+            // rows with unscalable text keep their height, and the other rows absorb the overflow
+            double lockedTotal{ 0.0 };
+            for (size_t rowIndex = 0; rowIndex < m_rowsInfo.size(); ++rowIndex)
                 {
-                rowInfo.HeightProportion(rowInfo.GetHeightProportion() * proportionDiff);
+                if (contentLockedRows[rowIndex])
+                    {
+                    lockedTotal += m_rowsInfo[rowIndex].GetHeightProportion();
+                    }
+                }
+            const bool keepLockedRows{ lockedTotal < 1.0 };
+            const auto proportionDiff =
+                keepLockedRows ?
+                    safe_divide<double>(1.0 - lockedTotal, totalHeightProportion - lockedTotal) :
+                    safe_divide<double>(1.0, totalHeightProportion);
+            for (size_t rowIndex = 0; rowIndex < m_rowsInfo.size(); ++rowIndex)
+                {
+                if (keepLockedRows && contentLockedRows[rowIndex])
+                    {
+                    continue;
+                    }
+                m_rowsInfo[rowIndex].HeightProportion(m_rowsInfo[rowIndex].GetHeightProportion() *
+                                                      proportionDiff);
                 }
             }
         }
