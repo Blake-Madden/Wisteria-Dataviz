@@ -467,6 +467,7 @@ namespace Wisteria
             // also, reset any previous min size information for a call to the object's
             // SetBoundingBox(), as we will be resizing this item from scratch
             item.SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
+            SeedTableForMeasuring(item, gdc);
             item.RecalcSizes(gdc);
             return std::min(
                 1.0, safe_divide<double>(item.GetBoundingBox(gdc).GetWidth() +
@@ -935,6 +936,10 @@ namespace Wisteria
         std::shared_ptr<GraphItems::GraphItemBase> GetFixedObject(size_t row, size_t column) const;
 
       private:
+        /// @brief Gives a table a fresh, generous box so it measures at its natural size
+        ///     instead of being scaled down to the box left over from a previous layout.
+        void SeedTableForMeasuring(GraphItems::GraphItemBase& item, wxDC& dc);
+
         [[nodiscard]]
         static wxString ExpandWatermark(wxString label);
 

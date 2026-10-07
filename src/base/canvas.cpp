@@ -8,6 +8,7 @@
 
 #include "canvas.h"
 #include "../graphs/graph2d.h"
+#include "../graphs/table.h"
 #include "../graphs/waffle_chart.h"
 #include "../reporting/reportprintout.h"
 #include "../ui/dialogs/pdfexportdlg.h"
@@ -2698,6 +2699,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         }
 
     //------------------------------------------------------
+    void Canvas::SeedTableForMeasuring(GraphItems::GraphItemBase & item, wxDC & dc)
+        {
+        if (dynamic_cast<Graphs::Table*>(&item) == nullptr)
+            {
+            return;
+            }
+        // full canvas size at 1.0 scaling
+        item.SetBoundingBox(
+            wxRect{ wxPoint{ 0, 0 }, wxSize{ dc.FromDIP(GetCanvasMinWidthDIPs()),
+                                             dc.FromDIP(GetCanvasMinHeightDIPs()) } },
+            dc, 1.0);
+        }
+
+    //------------------------------------------------------
     double Canvas::CalcMinHeightProportion(GraphItems::GraphItemBase & item)
         {
         // A waffle chart has no intrinsic height, as it measures as the whole canvas.
@@ -2722,6 +2737,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             }
         item.SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
         item.SetCanvasHeightProportion(std::nullopt);
+        SeedTableForMeasuring(item, gdc);
         item.RecalcSizes(gdc);
         const auto bBox = item.GetBoundingBox(gdc);
         auto bBoxHeight = bBox.GetHeight();
