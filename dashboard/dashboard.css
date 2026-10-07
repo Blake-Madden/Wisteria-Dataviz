@@ -114,7 +114,7 @@ body
 .dash-layers, .dash-filters
   { position: relative; }
 
-/* reading progress through the Story view */
+/* reading progress through the Slides view */
 .dash-progress
   {
   position: absolute;
@@ -128,7 +128,7 @@ body
   transform-origin: 0 50%;
   }
 
-html[data-view="story"] .dash-progress
+html[data-view="slides"] .dash-progress
   { display: block; }
 
 /* the view toggle sits in a labeled capsule */
@@ -376,18 +376,18 @@ html[data-view="story"] .dash-progress
   user-select: none;
   }
 
-/* ---------- Story view --------------------------------------- */
+/* ---------- Slides view --------------------------------------- */
 
-html[data-view="story"]
+html[data-view="slides"]
   { scroll-snap-type: y proximity; }
 
-html[data-view="story"] .dash-pages
+html[data-view="slides"] .dash-pages
   {
   gap: 0;
   padding: 0 16px;
   }
 
-html[data-view="story"] .page
+html[data-view="slides"] .page
   {
   min-height: calc(var(--full-height) - var(--toolbar-height));
   display: flex;
@@ -401,7 +401,7 @@ html[data-view="story"] .page
 /* in a tall, narrow window, pages are sized by their content instead of the viewport height */
 @media (max-aspect-ratio: 1/1)
   {
-  html[data-view="story"] .page
+  html[data-view="slides"] .page
     {
     min-height: 0;
     padding: calc(var(--page-gap) / 2) 0;
@@ -421,7 +421,7 @@ html[data-view="story"] .page
   flex-direction: column;
   }
 
-html[data-view="story"] .dash-rail
+html[data-view="slides"] .dash-rail
   { display: flex; }
 
 .dash-rail button
@@ -465,7 +465,7 @@ html[data-view="story"] .dash-rail
     { right: 2px; }
   .dash-rail button
     { width: 20px; }
-  html[data-view="story"] .dash-pages
+  html[data-view="slides"] .dash-pages
     { padding: 0 24px; }
   }
 

@@ -125,7 +125,7 @@ namespace Wisteria::UI
         wxString m_theme;
         wxString m_logoPath;
         wxFilePickerCtrl* m_logoPicker{ nullptr };
-        // indices into the radio boxes (Gallery, Story and Auto, Light, Dark)
+        // indices into the radio boxes (Gallery, Slides and Auto, Light, Dark)
         int m_view{ 1 };
         int m_colorMode{ 0 };
         bool m_includeColorModeToggle{ true };

@@ -152,7 +152,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptPages()
   function readHash() {
     const params = new URLSearchParams(location.hash.slice(1));
     const wanted = params.get('view');
-    if (wanted === 'gallery' || wanted === 'story') view = wanted;
+    if (wanted === 'gallery' || wanted === 'slides') view = wanted;
     const index = parseInt(params.get('page'), 10);
     if (!isNaN(index)) current = clampIndex(index);
   }
@@ -197,7 +197,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptPages()
     });
   }
   function updateProgress() {
-    if (view !== 'story') return;
+    if (view !== 'slides') return;
     const span = document.documentElement.scrollHeight - window.innerHeight;
     root.style.setProperty('--progress', span > 0 ? String(Math.min(1, window.scrollY / span)) : '0');
   }
@@ -496,7 +496,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptNavigation()
   function observeStory() {
     if (!('IntersectionObserver' in window)) return;
     const observer = new IntersectionObserver(function(entries) {
-      if (view !== 'story') return;
+      if (view !== 'slides') return;
       entries.forEach(function(entry) {
         if (!entry.isIntersecting) return;
         const index = pages.findIndex(function(page) { return page.el === entry.target; });
@@ -1620,7 +1620,7 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
 
     // user-facing text used by the script
     const std::vector<std::pair<wxString, wxString>> scriptStrings{
-        { L"gallery", _(L"Gallery") },        { L"story", _(L"Storyline") },
+        { L"gallery", _(L"Gallery") },        { L"slides", _(L"Slideshow") },
         { L"page", _(L"Page {0}") },          { L"pageOf", _(L"Page {0} of {1}") },
         { L"goTo", _(L"Go to {0}") },         { L"pagesShown", _(L"{0} of {1} pages shown") },
         { L"noPages", _(L"No pages shown") }, { L"chart", _(L"Chart {0}") }
@@ -1701,11 +1701,11 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         L"<div class=\"dash-views\" role=\"group\" aria-labelledby=\"dash-views-label\">\n"
         "<span id=\"dash-views-label\" class=\"dash-group-label\">%s</span>\n"
         "<button type=\"button\" data-view=\"gallery\" aria-pressed=\"false\">%s</button>\n"
-        "<button type=\"button\" data-view=\"story\" aria-pressed=\"false\">%s</button>\n"
+        "<button type=\"button\" data-view=\"slides\" aria-pressed=\"false\">%s</button>\n"
         "</div>\n",
         SVGReportPrintout::EscapeXmlText(_(L"View")),
         SVGReportPrintout::EscapeXmlText(_(L"Gallery")),
-        SVGReportPrintout::EscapeXmlText(_(L"Storyline")));
+        SVGReportPrintout::EscapeXmlText(_(L"Slideshow")));
     if (!distinctLayers.empty())
         {
         html += wxString::Format(

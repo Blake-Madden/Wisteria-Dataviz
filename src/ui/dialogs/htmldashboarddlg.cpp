@@ -100,7 +100,7 @@ namespace Wisteria::UI
         // initial view
         auto* viewRadio =
             new wxRadioBox(this, wxID_ANY, _(L"Initial View"), wxDefaultPosition, wxDefaultSize,
-                           wxArrayString{ _(L"Gallery"), _(L"Storyline") }, 1, wxRA_SPECIFY_ROWS);
+                           wxArrayString{ _(L"Gallery"), _(L"Slideshow") }, 1, wxRA_SPECIFY_ROWS);
         viewRadio->SetValidator(wxGenericValidator{ &m_view });
         mainSizer->Add(viewRadio, wxSizerFlags{}.Expand().Border());
 
@@ -138,7 +138,7 @@ namespace Wisteria::UI
     Wisteria::HtmlDashboardOptions::DashboardView HtmlDashboardDlg::GetInitialView() const noexcept
         {
         return (m_view == 0) ? Wisteria::HtmlDashboardOptions::DashboardView::Gallery :
-                               Wisteria::HtmlDashboardOptions::DashboardView::Storyline;
+                               Wisteria::HtmlDashboardOptions::DashboardView::Slides;
         }
 
     //------------------------------------------------------

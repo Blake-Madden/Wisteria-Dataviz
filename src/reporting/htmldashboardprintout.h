@@ -36,7 +36,7 @@ namespace Wisteria
         enum class DashboardView
             {
             /// @brief Full-height pages in a scrolling column.
-            Storyline,
+            Slides,
             /// @brief Small page cards across the top, with the selected page shown below.
             Gallery
             };
@@ -78,7 +78,7 @@ namespace Wisteria
         [[nodiscard]]
         static wxString ViewToString(const DashboardView view)
             {
-            return (view == DashboardView::Gallery) ? L"gallery" : L"story";
+            return (view == DashboardView::Gallery) ? L"gallery" : L"slides";
             }
 
         /// @param str The string to parse.
@@ -91,9 +91,9 @@ namespace Wisteria
                 {
                 return DashboardView::Gallery;
                 }
-            if (str == L"story")
+            if (str == L"slides")
                 {
-                return DashboardView::Storyline;
+                return DashboardView::Slides;
                 }
             return fallback;
             }
