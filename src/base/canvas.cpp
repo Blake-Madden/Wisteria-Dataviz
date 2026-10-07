@@ -1482,7 +1482,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         // divide the remaining space amongst the rows being auto-fitted
         // (i.e., the rows with items whose heights don't need to be a particular value).
         const size_t autoFitRows = m_rowsInfo.size() - rowsBeingFit;
-        const auto avgAutoFitRowHeight = safe_divide<double>(overallScaling, autoFitRows);
+        // rows fit to their content can consume more than the whole canvas,
+        // in which case the auto-fit rows get nothing and everything is scaled down below
+        const auto avgAutoFitRowHeight =
+            std::max(0.0, safe_divide<double>(overallScaling, autoFitRows));
         for (auto& rowInfo : m_rowsInfo)
             {
             if (rowInfo.GetHeightProportion() == 0)
