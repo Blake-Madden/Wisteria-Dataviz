@@ -105,6 +105,18 @@ namespace Wisteria::Graphs
             return m_rowCount;
             }
 
+        /// @returns The number of rows and the number of columns in the grid of shapes.
+        [[nodiscard]]
+        std::pair<size_t, size_t> GetGridSize() const noexcept
+            {
+            size_t maxCols{ 0 };
+            for (const auto& row : m_matrix)
+                {
+                maxCols = std::max(maxCols, row.size());
+                }
+            return { m_matrix.size(), maxCols };
+            }
+
         /** @brief Builds and returns a legend explaining the shapes.
             @param options The options for how to build the legend.
             @note Will return @c nullptr if no shapes have text connected to them.

@@ -8,6 +8,7 @@
 
 #include "canvas.h"
 #include "../graphs/graph2d.h"
+#include "../graphs/waffle_chart.h"
 #include "../reporting/reportprintout.h"
 #include "../ui/dialogs/pdfexportdlg.h"
 #include "axis.h"
@@ -2665,6 +2666,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     //------------------------------------------------------
     double Canvas::CalcMinHeightProportion(GraphItems::GraphItemBase & item)
         {
+        // A waffle chart has no intrinsic height, as it measures as the whole canvas.
+        // Its content is a grid of square cells, so derive the height from its column's width.
+        if (const auto* waffle = dynamic_cast<const Graphs::WaffleChart*>(&item);
+            waffle != nullptr && item.IsFittingCanvasRowHeightToContent())
+            {
+            const auto [gridRows, gridCols] = waffle->GetGridSize();
+            const double widthDIPs{ std::max(
+                0.0, (GetCanvasMinWidthDIPs() * item.GetCanvasWidthProportion()) -
+                         item.GetLeftCanvasMargin() - item.GetRightCanvasMargin()) };
+            const double heightDIPs{ safe_divide<double>(widthDIPs, gridCols) * gridRows +
+                                     item.GetTopCanvasMargin() + item.GetBottomCanvasMargin() };
+            return std::min(1.0, safe_divide<double>(heightDIPs, GetCanvasMinHeightDIPs()));
+            }
+
         wxGCDC gdc(this);
         const CanvasItemScalingChanger sc{ item };
         item.SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
