@@ -20,6 +20,8 @@ namespace Wisteria::UI
                                        const wxSize& size, long style)
         : m_filePath(filePath), m_fileExt(wxFileName{ filePath }.GetExt())
         {
+        m_mdValues = JoinMDCodes(Data::ImportInfo::GetCommonMDCodes());
+
         wxWindow::SetExtraStyle(GetExtraStyle() | wxWS_EX_BLOCK_EVENTS);
         Wisteria::UI::DialogWithHelp::Create(parent, id, caption, pos, size, style);
 
@@ -321,12 +323,6 @@ namespace Wisteria::UI
         optionsSizer->Add(
             new wxStaticText(this, wxID_ANY, _(L"Missing data codes (comma separated):")),
             wxSizerFlags{}.CenterVertical());
-        // populate with common MD codes only if not already set
-        // (the editing constructor pre-populates m_mdValues)
-        if (m_mdValues.empty())
-            {
-            m_mdValues = JoinMDCodes(Data::ImportInfo::GetCommonMDCodes());
-            }
         auto* mdValuesText =
             new wxTextCtrl(this, wxID_ANY, m_mdValues, wxDefaultPosition,
                            wxSize{ FromDIP(300), -1 }, 0, wxGenericValidator{ &m_mdValues });
