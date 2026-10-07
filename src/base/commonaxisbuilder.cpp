@@ -7,6 +7,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "commonaxisbuilder.h"
+#include <algorithm>
+#include <wx/tokenzr.h>
 
 namespace Wisteria
     {
@@ -216,5 +218,77 @@ namespace Wisteria
             }
 
         return commonAxis;
+        }
+
+    //----------------------------------------------------------------
+    void CommonAxisBuilder::ReapplyToChildren(Canvas* canvas)
+        {
+        if (canvas == nullptr)
+            {
+            return;
+            }
+
+        const auto [rows, cols] = canvas->GetFixedObjectsGridSize();
+
+        for (size_t axisRow = 0; axisRow < rows; ++axisRow)
+            {
+            for (size_t axisCol = 0; axisCol < cols; ++axisCol)
+                {
+                const auto axisItem = canvas->GetFixedObject(axisRow, axisCol);
+                const auto* commonAxis = dynamic_cast<const GraphItems::Axis*>(axisItem.get());
+                if (commonAxis == nullptr)
+                    {
+                    continue;
+                    }
+                const auto childIdsStr = commonAxis->GetPropertyTemplate(L"child-ids");
+                if (childIdsStr.empty())
+                    {
+                    continue;
+                    }
+
+                std::vector<long> childIds;
+                wxStringTokenizer tokenizer(childIdsStr, L",");
+                while (tokenizer.HasMoreTokens())
+                    {
+                    long childId{ 0 };
+                    if (tokenizer.GetNextToken().Trim().Trim(false).ToLong(&childId))
+                        {
+                        childIds.push_back(childId);
+                        }
+                    }
+
+                std::vector<std::shared_ptr<Graphs::Graph2D>> children;
+                for (size_t row = 0; row < rows; ++row)
+                    {
+                    for (size_t col = 0; col < cols; ++col)
+                        {
+                        const auto item = canvas->GetFixedObject(row, col);
+                        if (item != nullptr &&
+                            std::ranges::find(childIds, item->GetId()) != childIds.end())
+                            {
+                            if (auto graph = std::dynamic_pointer_cast<Graphs::Graph2D>(item);
+                                graph != nullptr)
+                                {
+                                children.push_back(std::move(graph));
+                                }
+                            }
+                        }
+                    }
+
+                // the builders configure the children as a side effect;
+                // the returned axis is not needed since the canvas already has one
+                const auto axisType = commonAxis->GetAxisType();
+                if (axisType == AxisType::BottomXAxis || axisType == AxisType::TopXAxis)
+                    {
+                    [[maybe_unused]] const auto unused = BuildXAxis(
+                        canvas, children, axisType,
+                        commonAxis->GetPropertyTemplate(L"common-perpendicular-axis") == L"true");
+                    }
+                else
+                    {
+                    [[maybe_unused]] const auto unused = BuildYAxis(canvas, children, axisType);
+                    }
+                }
+            }
         }
     } // namespace Wisteria

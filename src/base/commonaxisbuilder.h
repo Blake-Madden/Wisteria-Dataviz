@@ -102,6 +102,12 @@ namespace Wisteria
         static std::unique_ptr<GraphItems::Axis>
         BuildXAxis(Canvas* canvas, const std::vector<std::shared_ptr<Graphs::Graph2D>>& graphs,
                    AxisType axisType, bool useCommonLeftAxis = false);
+        /** @brief Reapplies the common axes on a canvas to their child graphs.
+            @details Turns off the child graphs' axis labels and titles that the common axes
+                are responsible for.\n
+                This is useful after a child graph has been replaced (e.g., after being edited).
+            @param canvas The canvas containing the common axes and their child graphs.*/
+        static void ReapplyToChildren(Canvas* canvas);
         };
     } // namespace Wisteria
 

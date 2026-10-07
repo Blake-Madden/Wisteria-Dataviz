@@ -5684,6 +5684,7 @@ void WisteriaView::EditCommonAxis(Wisteria::GraphItems::Axis& axis, Wisteria::Ca
 //-------------------------------------------
 void WisteriaView::UpdateCanvas(Wisteria::Canvas* canvas)
     {
+    Wisteria::CommonAxisBuilder::ReapplyToChildren(canvas);
     canvas->ZoomReset();
     canvas->CalcRowDimensions();
     canvas->ResetResizeDelay();
