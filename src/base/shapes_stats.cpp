@@ -32,6 +32,13 @@ namespace Wisteria::GraphItems
             return;
             }
 
+        if (GetGraphItemInfo().GetBrush().IsOk() && GetGraphItemInfo().GetPen().IsOk())
+            {
+            const wxDCPenChanger penGuard2{ dc, GetGraphItemInfo().GetPen() };
+            const wxDCBrushChanger brushGuard2{ dc, GetGraphItemInfo().GetBrush() };
+            gc->DrawRoundedRectangle(wxRect2DDouble{ rect }, Settings::GetBoxRoundedCornerRadius() * 2);
+            }
+
         //--------------------------------------
         // Parse "left:right[:bottom]"
         //--------------------------------------
@@ -76,13 +83,8 @@ namespace Wisteria::GraphItems
             const int penWidth =
                 std::max<int>(1, ScaleToScreenAndCanvas(static_cast<int>(rawStroke)));
 
-            const wxPen pen = GetGraphItemInfo().GetPen().IsOk() ?
-                                  wxPen{ GetGraphItemInfo().GetPen().GetColour(), penWidth,
-                                         GetGraphItemInfo().GetPen().GetStyle() } :
-                                  wxPen{ *wxBLACK, penWidth };
-
-            gc->SetPen(pen);
-            gc->SetBrush(wxBrush{ pen.GetColour() });
+            gc->SetPen(wxPen{ *wxBLACK, penWidth });
+            gc->SetBrush(*wxBLACK_BRUSH);
 
             //--------------------------------------
             // Layout
