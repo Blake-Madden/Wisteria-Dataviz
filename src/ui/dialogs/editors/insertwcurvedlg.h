@@ -135,7 +135,6 @@ namespace Wisteria::UI
         std::vector<wxString> m_showcaseLines;
         int m_ghostOpacity{ 128 };
         wxEditableListBox* m_showcaseListBox{ nullptr };
-
         };
     } // namespace Wisteria::UI
 

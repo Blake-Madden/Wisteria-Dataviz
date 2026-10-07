@@ -110,7 +110,6 @@ namespace Wisteria::UI
 
         wxString m_xVariable;
         std::vector<wxString> m_yVariables;
-
         };
     } // namespace Wisteria::UI
 

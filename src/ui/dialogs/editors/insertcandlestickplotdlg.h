@@ -157,7 +157,6 @@ namespace Wisteria::UI
         wxString m_highVariable;
         wxString m_lowVariable;
         wxString m_closeVariable;
-
         };
     } // namespace Wisteria::UI
 

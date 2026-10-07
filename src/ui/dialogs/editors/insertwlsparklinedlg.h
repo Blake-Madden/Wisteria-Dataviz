@@ -140,7 +140,6 @@ namespace Wisteria::UI
         wxString m_shutoutVariable;
         wxString m_homeGameVariable;
         wxString m_postseasonVariable;
-
         };
     } // namespace Wisteria::UI
 

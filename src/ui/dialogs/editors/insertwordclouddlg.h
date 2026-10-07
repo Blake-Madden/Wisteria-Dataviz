@@ -115,7 +115,6 @@ namespace Wisteria::UI
         // DDX data members
         wxString m_wordVariable;
         wxString m_weightVariable;
-
         };
     } // namespace Wisteria::UI
 

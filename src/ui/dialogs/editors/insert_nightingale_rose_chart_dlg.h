@@ -159,7 +159,6 @@ namespace Wisteria::UI
         bool m_showLabels{ true };
         int m_ghostOpacity{ Wisteria::Settings::GHOST_OPACITY };
         std::vector<std::pair<wxString, wxString>> m_ghostedWedges;
-
         };
     } // namespace Wisteria::UI
 

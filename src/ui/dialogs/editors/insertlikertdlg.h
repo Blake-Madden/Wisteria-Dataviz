@@ -207,7 +207,6 @@ namespace Wisteria::UI
         wxString m_groupVariable;
 
         std::vector<Graphs::LikertChart::QuestionsBracket> m_questionBrackets;
-
         };
     } // namespace Wisteria::UI
 

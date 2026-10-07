@@ -228,7 +228,6 @@ namespace Wisteria::UI
         ResizeMethod m_imageResizeMethod{ ResizeMethod::DownscaleOrUpscale };
         ImageEffect m_imageEffect{ ImageEffect::NoEffect };
         Orientation m_imageStitchDirection{ Orientation::Horizontal };
-
         };
     } // namespace Wisteria::UI
 

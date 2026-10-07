@@ -132,7 +132,6 @@ namespace Wisteria::UI
         int m_valueFormatIndex{ 0 }; // matches the order of the choices (see GetValueFormat())
         bool m_showLabels{ true };
         int m_zigZagAngle{ static_cast<int>(Graphs::DuBoisSpiralChart::DEFAULT_ZIGZAG_ANGLE) };
-
         };
     } // namespace Wisteria::UI
 

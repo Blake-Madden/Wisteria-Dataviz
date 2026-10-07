@@ -122,7 +122,6 @@ namespace Wisteria::UI
         wxString m_labelVariable;
         int m_trackCountSelection{ 0 }; // 0 = Auto, 1 = One, 2 = Two
         bool m_showLabels{ true };
-
         };
     } // namespace Wisteria::UI
 

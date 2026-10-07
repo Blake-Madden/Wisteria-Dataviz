@@ -169,7 +169,6 @@ namespace Wisteria::UI
         int m_valueFormatIndex{ 0 }; // 0 = Value, 1 = Currency, 2 = Percentage, 3 = ValueSimple
         bool m_showBarValues{ true };
         bool m_showBlockValues{ false };
-
         };
     } // namespace Wisteria::UI
 

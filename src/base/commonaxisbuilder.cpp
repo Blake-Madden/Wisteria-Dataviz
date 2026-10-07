@@ -280,13 +280,15 @@ namespace Wisteria
                 const auto axisType = commonAxis->GetAxisType();
                 if (axisType == AxisType::BottomXAxis || axisType == AxisType::TopXAxis)
                     {
-                    [[maybe_unused]] const auto unused = BuildXAxis(
+                    [[maybe_unused]]
+                    const auto unused = BuildXAxis(
                         canvas, children, axisType,
                         commonAxis->GetPropertyTemplate(L"common-perpendicular-axis") == L"true");
                     }
                 else
                     {
-                    [[maybe_unused]] const auto unused = BuildYAxis(canvas, children, axisType);
+                    [[maybe_unused]]
+                    const auto unused = BuildYAxis(canvas, children, axisType);
                     }
                 }
             }

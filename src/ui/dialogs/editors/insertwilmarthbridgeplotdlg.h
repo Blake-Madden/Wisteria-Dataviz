@@ -161,7 +161,6 @@ namespace Wisteria::UI
         }; // 0 = None, 1 = AtRiskCount, 2 = SurvivalPercent, 3 = Both
         bool m_showCensoredMarkers{ true };
         wxString m_terminalRowLabel;
-
         };
     } // namespace Wisteria::UI
 

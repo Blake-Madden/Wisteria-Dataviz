@@ -134,7 +134,6 @@ namespace Wisteria::UI
         int m_valueFormatIndex{ 0 }; // matches the order of the choices (see GetValueFormat())
 
         Icons::IconShape m_iconShape{ Icons::IconShape::Square };
-
         };
     } // namespace Wisteria::UI
 

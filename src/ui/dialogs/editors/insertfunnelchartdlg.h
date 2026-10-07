@@ -140,7 +140,6 @@ namespace Wisteria::UI
         bool m_showExplanations{ false };
         bool m_showConversionLabels{ true };
         int m_targetGhostOpacity{ Settings::GHOST_OPACITY };
-
         };
     } // namespace Wisteria::UI
 
