@@ -152,7 +152,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptPages()
   function readHash() {
     const params = new URLSearchParams(location.hash.slice(1));
     const wanted = params.get('view');
-    if (wanted === 'gallery' || wanted === 'slides') view = wanted;
+    if (pages.length > 1 && (wanted === 'gallery' || wanted === 'slides')) view = wanted;
     const index = parseInt(params.get('page'), 10);
     if (!isNaN(index)) current = clampIndex(index);
   }
@@ -1624,7 +1624,11 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         rootStyle = L" style=\"color-scheme: dark\"";
         }
 
-    const wxString initialView{ HtmlDashboardOptions::ViewToString(options.m_view) };
+    // a lone page is always shown as a slide, without the view toggle or page rail
+    const bool singlePage{ std::count_if(canvases.cbegin(), canvases.cend(), [](const auto* canvas)
+                                         { return canvas != nullptr; }) == 1 };
+    const wxString initialView{ HtmlDashboardOptions::ViewToString(
+        singlePage ? HtmlDashboardOptions::DashboardView::Slides : options.m_view) };
 
     // user-facing text used by the script
     const std::vector<std::pair<wxString, wxString>> scriptStrings{
@@ -1705,15 +1709,18 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
     html += wxString::Format(L"<h1 class=\"dash-title\">%s</h1>\n</div>\n",
                              SVGReportPrintout::EscapeXmlText(title));
     html += L"<div class=\"dash-controls\">\n";
-    html += wxString::Format(
-        L"<div class=\"dash-views\" role=\"group\" aria-labelledby=\"dash-views-label\">\n"
-        "<span id=\"dash-views-label\" class=\"dash-group-label\">%s</span>\n"
-        "<button type=\"button\" data-view=\"gallery\" aria-pressed=\"false\">%s</button>\n"
-        "<button type=\"button\" data-view=\"slides\" aria-pressed=\"false\">%s</button>\n"
-        "</div>\n",
-        SVGReportPrintout::EscapeXmlText(_(L"View")),
-        SVGReportPrintout::EscapeXmlText(_(L"Gallery")),
-        SVGReportPrintout::EscapeXmlText(_(L"Slideshow")));
+    if (!singlePage)
+        {
+        html += wxString::Format(
+            L"<div class=\"dash-views\" role=\"group\" aria-labelledby=\"dash-views-label\">\n"
+            "<span id=\"dash-views-label\" class=\"dash-group-label\">%s</span>\n"
+            "<button type=\"button\" data-view=\"gallery\" aria-pressed=\"false\">%s</button>\n"
+            "<button type=\"button\" data-view=\"slides\" aria-pressed=\"false\">%s</button>\n"
+            "</div>\n",
+            SVGReportPrintout::EscapeXmlText(_(L"View")),
+            SVGReportPrintout::EscapeXmlText(_(L"Gallery")),
+            SVGReportPrintout::EscapeXmlText(_(L"Slideshow")));
+        }
     if (!distinctLayers.empty())
         {
         html += wxString::Format(
@@ -1788,13 +1795,18 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
     html += L"</div>\n<div class=\"dash-progress\" aria-hidden=\"true\"></div>\n</header>\n";
 
     html += wxString::Format(
-        L"<nav id=\"dash-gallery\" class=\"dash-gallery no-print\" aria-label=\"%s\"></nav>\n"
-        "<nav id=\"dash-rail\" class=\"dash-rail no-print\" aria-label=\"%s\"></nav>\n"
-        "<div id=\"dash-status\" class=\"visually-hidden\" role=\"status\" "
-        "aria-live=\"polite\"></div>\n"
-        "<div id=\"dash-tooltip\" class=\"dash-tooltip no-print\" aria-hidden=\"true\"></div>\n",
-        SVGReportPrintout::EscapeXmlAttr(_(L"Pages")),
+        L"<nav id=\"dash-gallery\" class=\"dash-gallery no-print\" aria-label=\"%s\"></nav>\n",
         SVGReportPrintout::EscapeXmlAttr(_(L"Pages")));
+    if (!singlePage)
+        {
+        html += wxString::Format(
+            L"<nav id=\"dash-rail\" class=\"dash-rail no-print\" aria-label=\"%s\"></nav>\n",
+            SVGReportPrintout::EscapeXmlAttr(_(L"Pages")));
+        }
+    html +=
+        L"<div id=\"dash-status\" class=\"visually-hidden\" role=\"status\" "
+        "aria-live=\"polite\"></div>\n"
+        "<div id=\"dash-tooltip\" class=\"dash-tooltip no-print\" aria-hidden=\"true\"></div>\n";
 
     if (options.m_includeSave)
         {
