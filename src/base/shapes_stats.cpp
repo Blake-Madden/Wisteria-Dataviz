@@ -32,12 +32,18 @@ namespace Wisteria::GraphItems
             return;
             }
 
-        if (GetGraphItemInfo().GetBrush().IsOk() && GetGraphItemInfo().GetPen().IsOk())
+        // drawing any sort of outline
+        if (GetGraphItemInfo().GetBrush().IsOk() || GetGraphItemInfo().GetPen().IsOk())
             {
-            gc->SetPen(GetGraphItemInfo().GetPen());
-            gc->SetBrush(GetGraphItemInfo().GetBrush());
-            gc->DrawRoundedRectangle(wxRect2DDouble{ rect },
-                                     Settings::GetBoxRoundedCornerRadius() * 2);
+            if (GetGraphItemInfo().GetPen().IsOk())
+                {
+                gc->SetPen(GetGraphItemInfo().GetPen());
+                }
+            if (GetGraphItemInfo().GetBrush().IsOk())
+                {
+                gc->SetBrush(GetGraphItemInfo().GetBrush());
+                }
+            gc->DrawRoundedRectangle(wxRect2DDouble{ rect }, Settings::GetBoxRoundedCornerRadius());
             }
 
         //--------------------------------------
@@ -75,52 +81,53 @@ namespace Wisteria::GraphItems
         //--------------------------------------
         // Helper: Draw the top line (labels + dots + bar)
         //--------------------------------------
-        auto drawTopLine = [&](const wxRect& r)
+        const auto drawTopLine = [&](const wxRect& r)
         {
             //--------------------------------------
-            // Scaled stroke & dots
-            //--------------------------------------
-            const double rawStroke = r.GetHeight() * 0.03;
-            const int penWidth =
-                std::max<int>(1, ScaleToScreenAndCanvas(static_cast<int>(rawStroke)));
-
-            gc->SetPen(wxPen{ *wxBLACK, penWidth });
-            gc->SetBrush(*wxBLACK_BRUSH);
-
-            //--------------------------------------
-            // Layout
+            // layout
             //--------------------------------------
             const double cy = r.GetY() + (r.GetHeight() * math_constants::half);
 
-            // Dot radius (smaller)
-            const double dotRadius = r.GetHeight() * (0.075 / 3);
-
-            // Left/right label regions
+            // left/right label regions
             const double leftRegionWidth = r.GetWidth() * math_constants::fifth;
             const double rightRegionWidth = r.GetWidth() * math_constants::fifth;
 
-            // Padding between labels and dots
-            const double dotPadding = r.GetWidth() * 0.04;
+            const auto drawBar = [&](const wxColour color, const int penWidth)
+            {
+                gc->SetPen(wxPen{ color, penWidth });
+                gc->SetBrush(wxBrush{ color });
 
-            // Bar endpoints (account for dot radius + padding)
-            const double x1 = r.GetX() + leftRegionWidth + dotRadius + dotPadding;
-            const double x2 = r.GetRight() - rightRegionWidth - dotRadius - dotPadding;
+                // dot radius (smaller)
+                const double dotRadius = r.GetHeight() * (0.075 / 3);
+
+                // padding between labels and dots
+                const double dotPadding = r.GetWidth() * 0.04;
+
+                // bar endpoints (account for dot radius + padding)
+                const double x1 = r.GetX() + leftRegionWidth + dotRadius + dotPadding;
+                const double x2 = r.GetRight() - rightRegionWidth - dotRadius - dotPadding;
+
+                //--------------------------------------
+                // draw bar + dots
+                //--------------------------------------
+                gc->StrokeLine(x1, cy, x2, cy);
+                gc->DrawEllipse(x1 - dotRadius, cy - dotRadius, dotRadius * 2, dotRadius * 2);
+                gc->DrawEllipse(x2 - dotRadius, cy - dotRadius, dotRadius * 2, dotRadius * 2);
+            };
+
+            const auto lineScaling =
+                std::max<int>(1, ScaleToScreenAndCanvas(static_cast<int>(r.GetHeight() * 0.03)));
+            drawBar(*wxWHITE, lineScaling * 2);
+            drawBar(*wxBLACK, lineScaling);
 
             //--------------------------------------
-            // Draw bar + dots
-            //--------------------------------------
-            gc->StrokeLine(x1, cy, x2, cy);
-            gc->DrawEllipse(x1 - dotRadius, cy - dotRadius, dotRadius * 2, dotRadius * 2);
-            gc->DrawEllipse(x2 - dotRadius, cy - dotRadius, dotRadius * 2, dotRadius * 2);
-
-            //--------------------------------------
-            // Label bounding box geometry
+            // label bounding box geometry
             //--------------------------------------
             const int labelWidth = static_cast<int>(leftRegionWidth * 0.85);
             const int labelHeight = static_cast<int>(r.GetHeight() * 0.70);
 
             //--------------------------------------
-            // Left label
+            // left label
             //--------------------------------------
             const wxPoint leftLabelCenter(
                 static_cast<int>(r.GetX() + (leftRegionWidth * math_constants::half)),
@@ -142,7 +149,7 @@ namespace Wisteria::GraphItems
                                      dc, GetScaling());
 
             //--------------------------------------
-            // Right label
+            // right label
             //--------------------------------------
             const wxPoint rightLabelCenter(
                 static_cast<int>((r.GetRight() - rightRegionWidth) +

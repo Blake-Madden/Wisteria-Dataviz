@@ -269,7 +269,7 @@ namespace Wisteria
         inline static uint8_t m_maxLegendItems{ 20 };
         inline static size_t m_maxLegendTextLength{ 40 };
         inline static size_t m_pointRadius{ 4 };
-        inline static double m_roundedCornerRadius{ 5 };
+        inline static double m_roundedCornerRadius{ 10 };
         inline static size_t m_maxObservationsInBin{ 25 };
         inline static wxString m_currencySymbol{ L"$" };
 
