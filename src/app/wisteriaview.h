@@ -101,6 +101,8 @@ class WisteriaView final : public wxView
     void OnCopyItem(wxCommandEvent& event);
     void OnPasteItem(wxCommandEvent& event);
     void OnPrintAll(wxCommandEvent& event);
+    void OnBackstagePrint(wxCommandEvent& event);
+    void PrintAllPages(bool prompt, int copies);
     void OnPrintSetup(wxCommandEvent& event);
     void OnSvgExport(wxCommandEvent& event);
     void OnHtmlExport(wxCommandEvent& event);
@@ -405,7 +407,6 @@ class WisteriaView final : public wxView
     std::vector<Wisteria::Canvas*> m_pages;
     WindowContainer m_workWindows;
 
-    wxMenu m_saveMenu;
     wxMenu m_dividerMenu;
     wxMenu m_basicGraphMenu;
     wxMenu m_businessGraphMenu;

@@ -115,6 +115,52 @@ class AppSettings
     /// @param paperId The paper ID (wxPaperSize).
     void SetPaperId(const wxPaperSize paperId) noexcept { m_paperId = paperId; }
 
+    /// @returns The duplex mode used when printing.
+    [[nodiscard]]
+    wxDuplexMode GetPrintDuplex() const noexcept
+        {
+        return m_printDuplex;
+        }
+
+    /// @brief Sets the duplex mode used when printing.
+    /// @param duplex The duplex mode.
+    void SetPrintDuplex(const wxDuplexMode duplex) noexcept { m_printDuplex = duplex; }
+
+    /// @returns @c true if multiple copies are collated when printing.
+    [[nodiscard]]
+    bool IsPrintCollated() const noexcept
+        {
+        return m_printCollate;
+        }
+
+    /// @brief Sets whether multiple copies are collated when printing.
+    /// @param collate @c true to collate.
+    void SetPrintCollated(const bool collate) noexcept { m_printCollate = collate; }
+
+    /// @returns @c true if printing is in color (@c false for monochrome).
+    ///     Whether this is honored depends on the printer driver.
+    [[nodiscard]]
+    bool IsPrintColor() const noexcept
+        {
+        return m_printColor;
+        }
+
+    /// @brief Sets whether printing is in color.
+    /// @param color @c true for color, @c false for monochrome.
+    void SetPrintColor(const bool color) noexcept { m_printColor = color; }
+
+    /// @brief Applies the print settings (orientation, paper, duplex, collation,
+    ///     and color) to a print data object.
+    /// @param printData The print data to update.
+    void ApplyPrintSettings(wxPrintData& printData) const
+        {
+        printData.SetOrientation(static_cast<wxPrintOrientation>(m_printOrientation));
+        printData.SetPaperId(m_paperId);
+        printData.SetDuplex(m_printDuplex);
+        printData.SetCollate(m_printCollate);
+        printData.SetColour(m_printColor);
+        }
+
     /// @returns @c true if the Log tab auto-refresh is enabled.
     [[nodiscard]]
     bool IsLogAutoRefresh() const noexcept
@@ -229,6 +275,9 @@ class AppSettings
     int m_appWindowHeight{ 700 };
     int m_printOrientation{ wxPORTRAIT };
     wxPaperSize m_paperId{ wxPAPER_LETTER };
+    wxDuplexMode m_printDuplex{ wxDUPLEX_SIMPLEX };
+    bool m_printCollate{ true };
+    bool m_printColor{ true };
     bool m_logAutoRefresh{ false };
     bool m_logVerbose{ false };
 

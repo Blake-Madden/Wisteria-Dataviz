@@ -70,7 +70,10 @@ images/odp.svg
 images/page-add.svg
 images/page-delete.svg
 images/page-edit.svg
+images/page-landscape.svg
+images/page-portrait.svg
 images/page.svg
+images/paper-size.svg
 images/paste.svg
 images/pdf.svg
 images/pictograph.svg
@@ -79,7 +82,13 @@ images/piechart.svg
 images/pivot-longer.svg
 images/pivot-wider.svg
 images/powerpoint.svg
+images/print-collated.svg
+images/print-color.svg
+images/print-grayscale.svg
+images/print-one-sided.svg
 images/print-setup.svg
+images/print-two-sided.svg
+images/print-uncollated.svg
 images/print.svg
 images/project-settings.svg
 images/question-mark.svg

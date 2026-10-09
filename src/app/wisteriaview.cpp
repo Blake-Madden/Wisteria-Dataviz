@@ -237,6 +237,10 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_splitter->SplitVertically(m_sideBar, m_workArea, m_frame->FromDIP(200));
 
     sizer->Add(m_splitter, wxSizerFlags{ 1 }.Expand());
+
+    // backstage (File tab), which temporarily replaces the splitter
+    sizer->Add(wxGetApp().CreateBackstage(panel, ribbon, m_splitter, doc),
+               wxSizerFlags{ 1 }.Expand());
     panel->SetSizer(sizer);
 
     auto* frameSizer = new wxBoxSizer(wxVERTICAL);
@@ -266,9 +270,6 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         wxEVT_RIBBONBUTTONBAR_CLICKED, []([[maybe_unused]] wxRibbonButtonBarEvent&)
         { wxGetApp().GetMainFrameEx()->ActivateLogTab(); }, ID_VIEW_LOG_REPORT);
 
-    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaApp::OnOpenDropdown, &wxGetApp(),
-                  wxID_OPEN);
-
     // bind copy/paste (route accelerator events to the active canvas)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnCopyItem, this, wxID_COPY);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPasteItem, this, wxID_PASTE);
@@ -278,6 +279,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     // bind print button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPrintAll, this, wxID_PRINT);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPrintAll, this, wxID_PRINT);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnBackstagePrint, this, ID_BACKSTAGE_PRINT_NOW);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPrintSetup, this, ID_PRINT_SETUP);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPrintSetup, this, ID_PRINT_SETUP);
 
@@ -390,9 +392,6 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaView::OnGraphDropdown, this,
                   ID_INSERT_GRAPH_SPORTS);
 
-    m_frame->Bind(
-        wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED,
-        [this](wxRibbonButtonBarEvent& event) { event.PopupMenu(&m_saveMenu); }, ID_SAVE_PROJECT);
     m_frame->Bind(
         wxEVT_MENU,
         [this]([[maybe_unused]]
@@ -1130,7 +1129,16 @@ void WisteriaView::OnPasteItem([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::OnPrintAll([[maybe_unused]] wxCommandEvent& event)
+void WisteriaView::OnPrintAll([[maybe_unused]] wxCommandEvent& event) { PrintAllPages(true, 1); }
+
+//-------------------------------------------
+void WisteriaView::OnBackstagePrint(wxCommandEvent& event)
+    {
+    PrintAllPages(false, std::max(1, event.GetInt()));
+    }
+
+//-------------------------------------------
+void WisteriaView::PrintAllPages(const bool prompt, const int copies)
     {
     if (m_pages.empty())
         {
@@ -1142,8 +1150,14 @@ void WisteriaView::OnPrintAll([[maybe_unused]] wxCommandEvent& event)
 
     auto& settings = wxGetApp().GetAppSettings();
     wxPrintData printData = m_pages.front()->GetPrinterSettings();
-    printData.SetOrientation(static_cast<wxPrintOrientation>(settings->GetPrintOrientation()));
-    printData.SetPaperId(settings->GetPaperId());
+    settings->ApplyPrintSettings(printData);
+    if (!prompt)
+        {
+        // printing from the backstage, which can override these for the print job
+        printData.SetOrientation(wxGetApp().GetPrintJobOrientation());
+        printData.SetPaperId(wxGetApp().GetPrintJobPaperId());
+        }
+    printData.SetNoCopies(copies);
 
 #if defined(__WXMSW__) || defined(__WXOSX__)
     wxPrinterDC dc(printData);
@@ -1162,7 +1176,7 @@ void WisteriaView::OnPrintAll([[maybe_unused]] wxCommandEvent& event)
     // Explicitly set print dialog data
     printer.GetPrintDialogData() = dialogData;
 
-    if (!printer.Print(m_frame, printOut.get(), true))
+    if (!printer.Print(m_frame, printOut.get(), prompt))
         {
         if (wxPrinter::GetLastError() == wxPRINTER_ERROR)
             {
@@ -2267,9 +2281,6 @@ void WisteriaView::BuildGraphMenus()
             }
         menu.Append(item);
     };
-
-    appendItem(m_saveMenu, ID_SAVE_PROJECT, _(L"Save"), L"images/file-save.svg");
-    appendItem(m_saveMenu, ID_SAVE_PROJECT_AS, _(L"Save As..."), L"images/file-save.svg");
 
     appendItem(m_dividerMenu, ID_NEW_DIVIDER_HORIZONTAL_SINGLE, _(L"Horizontal (Single Line)"),
                L"images/divider-horizontal-single.svg");

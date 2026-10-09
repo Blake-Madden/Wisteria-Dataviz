@@ -64,6 +64,19 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                 {
                 m_paperId = static_cast<wxPaperSize>(val);
                 }
+            if (child->GetAttribute(L"duplex", L"0").ToLong(&val) && val >= wxDUPLEX_SIMPLEX &&
+                val <= wxDUPLEX_VERTICAL)
+                {
+                m_printDuplex = static_cast<wxDuplexMode>(val);
+                }
+            if (child->GetAttribute(L"collate", L"1").ToLong(&val))
+                {
+                m_printCollate = (val != 0);
+                }
+            if (child->GetAttribute(L"color", L"1").ToLong(&val))
+                {
+                m_printColor = (val != 0);
+                }
             }
         else if (child->GetName() == L"log")
             {
@@ -371,6 +384,9 @@ bool AppSettings::SaveSettingsFile(const wxString& filePath)
     auto* printerNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"printer");
     printerNode->AddAttribute(L"orientation", std::to_wstring(m_printOrientation));
     printerNode->AddAttribute(L"paperId", std::to_wstring(static_cast<int>(m_paperId)));
+    printerNode->AddAttribute(L"duplex", std::to_wstring(static_cast<int>(m_printDuplex)));
+    printerNode->AddAttribute(L"collate", m_printCollate ? L"1" : L"0");
+    printerNode->AddAttribute(L"color", m_printColor ? L"1" : L"0");
     root->AddChild(printerNode);
 
     auto* logNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"log");

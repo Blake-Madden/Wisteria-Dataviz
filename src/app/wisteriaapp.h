@@ -18,9 +18,12 @@
 #include "../wxStartPage/startpage.h"
 #include "appsettings.h"
 #include <map>
+#include <optional>
 #include <vector>
 #include <wx/artprov.h>
 #include <wx/ribbon/art.h>
+#include <wx/ribbon/backstage.h>
+#include <wx/ribbon/backstagecontrols.h>
 #include <wx/ribbon/bar.h>
 #include <wx/ribbon/buttonbar.h>
 #include <wx/splitter.h>
@@ -112,6 +115,33 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     ///     for the main frame ribbon.
     /// @returns The ribbon bar.
     wxRibbonBar* CreateRibbon(wxWindow* parent, const wxDocument* doc = nullptr);
+
+    /// @brief Creates the backstage view (shown by the ribbon's File tab) and
+    ///     connects it to the ribbon.
+    /// @param parent The parent window, which should be the same as the ribbon's.
+    /// @param ribbon The ribbon to connect the backstage to.
+    /// @param content The window that the backstage temporarily replaces.
+    /// @param doc The project that the backstage shows information about and closes.
+    /// @returns The backstage, which the caller must add to the same sizer as the ribbon.
+    wxBackstage* CreateBackstage(wxWindow* parent, wxRibbonBar* ribbon, wxWindow* content,
+                                 wxDocument* doc);
+
+    /// @returns The orientation to print with when printing from the backstage.
+    ///     This is the page layout's orientation unless the backstage's Print page changed it.
+    [[nodiscard]]
+    wxPrintOrientation GetPrintJobOrientation() const
+        {
+        return m_printJobOrientation.value_or(
+            static_cast<wxPrintOrientation>(m_appSettings->GetPrintOrientation()));
+        }
+
+    /// @returns The paper size to print with when printing from the backstage.
+    ///     This is the page layout's paper size unless the backstage's Print page changed it.
+    [[nodiscard]]
+    wxPaperSize GetPrintJobPaperId() const
+        {
+        return m_printJobPaperId.value_or(m_appSettings->GetPaperId());
+        }
 
     /// @returns The image list for project sidebars.
     [[nodiscard]]
@@ -218,6 +248,13 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     ///     supported dataset format.
     [[nodiscard]]
     wxString GetProjectOrDataFileFilter() const;
+
+    // number of copies, bound to the backstage's Print page
+    int m_printCopies{ 1 };
+    // the backstage's Print page can override these for printing only
+    // (they are not saved and don't affect the projects' page layout)
+    std::optional<wxPrintOrientation> m_printJobOrientation;
+    std::optional<wxPaperSize> m_printJobPaperId;
 
     std::unique_ptr<AppSettings> m_appSettings{ nullptr };
     wxStartPage* m_startPage{ nullptr };
@@ -328,6 +365,24 @@ constexpr wxWindowID ID_JOIN_DATASET{ wxID_HIGHEST + 54 };
 constexpr wxWindowID ID_SAVE_PROJECT{ wxID_HIGHEST + 38 };
 constexpr wxWindowID ID_SAVE_PROJECT_AS{ wxID_HIGHEST + 41 };
 constexpr wxWindowID ID_REFRESH_ALL{ wxID_HIGHEST + 81 };
+
+// Backstage
+constexpr wxWindowID ID_BACKSTAGE_NEW{ wxID_HIGHEST + 110 };
+constexpr wxWindowID ID_BACKSTAGE_NEW_PROJECT{ wxID_HIGHEST + 111 };
+constexpr wxWindowID ID_BACKSTAGE_OPEN{ wxID_HIGHEST + 112 };
+constexpr wxWindowID ID_BACKSTAGE_OPEN_BROWSE{ wxID_HIGHEST + 113 };
+constexpr wxWindowID ID_BACKSTAGE_RECENT_LIST{ wxID_HIGHEST + 114 };
+constexpr wxWindowID ID_BACKSTAGE_SAVE{ wxID_HIGHEST + 115 };
+constexpr wxWindowID ID_BACKSTAGE_SAVE_AS{ wxID_HIGHEST + 116 };
+constexpr wxWindowID ID_BACKSTAGE_PRINT{ wxID_HIGHEST + 117 };
+// Sent as a @c wxEVT_MENU event from the backstage's Print page.
+// The event's int is the number of copies.
+constexpr wxWindowID ID_BACKSTAGE_PRINT_NOW{ wxID_HIGHEST + 118 };
+constexpr wxWindowID ID_BACKSTAGE_EXPORT{ wxID_HIGHEST + 119 };
+constexpr wxWindowID ID_BACKSTAGE_COPY_PATH{ wxID_HIGHEST + 120 };
+constexpr wxWindowID ID_BACKSTAGE_INFO{ wxID_HIGHEST + 122 };
+constexpr wxWindowID ID_BACKSTAGE_CLOSE{ wxID_HIGHEST + 123 };
+constexpr wxWindowID ID_BACKSTAGE_SETTINGS{ wxID_HIGHEST + 124 };
 
 // Item editing
 constexpr wxWindowID ID_EDIT_ITEM{ wxID_HIGHEST + 39 };

@@ -11,12 +11,24 @@
 #include "../import/text_matrix.h"
 #include "wisteriadoc.h"
 #include "wisteriaview.h"
+#include <algorithm>
 #include <array>
+#include <functional>
+#include <iterator>
+#include <utility>
 #include <wx/aboutdlg.h>
+#include <wx/clipbrd.h>
+#include <wx/dataobj.h>
+#include <wx/datetime.h>
 #include <wx/filedlg.h>
 #include <wx/filename.h>
 #include <wx/log.h>
+#include <wx/numformatter.h>
+#include <wx/simplebook.h>
+#include <wx/spinctrl.h>
 #include <wx/stdpaths.h>
+#include <wx/utils.h>
+#include <wx/valgen.h>
 
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast,cppcoreguidelines-avoid-non-const-global-variables)
 wxIMPLEMENT_APP(WisteriaApp);
@@ -705,79 +717,48 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
     auto* ribbon = new wxRibbonBar(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                    wxRIBBON_BAR_SHOW_PAGE_ICONS | wxRIBBON_BAR_DEFAULT_STYLE);
 
-    // Home tab
+    // File tab (shows the backstage, project windows only)
+    if (isProjectRibbon)
+        {
+        auto* filePage = new wxRibbonPage(ribbon, wxID_ANY, _(L"File"));
+        ribbon->SetBackstagePage(filePage);
+        ribbon->SetPageKeyTip(filePage, _DT(L"F"));
+        }
+
+    // Home tab (the main frame's, or the Pages tab for project windows)
     const auto homeIcon =
         ReadSvgIcon(wxSystemSettings::GetAppearance().IsDark() ? L"images/home-dark-mode.svg" :
                                                                  L"images/home.svg",
                     wxSize{ 16, 16 });
-    auto* homePage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Home"), homeIcon);
-    ribbon->SetPageKeyTip(homePage, _DT(L"H"));
+    wxRibbonPage* homePage{ nullptr };
+    if (!isProjectRibbon)
+        {
+        homePage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Home"), homeIcon);
+        ribbon->SetPageKeyTip(homePage, _DT(L"H"));
 
-    // Project panel with New and Open buttons
-    auto* projectPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Project"));
-    projectPanel->SetKeyTip(_DT(L"Q"));
-    auto* projectButtonBar = new wxRibbonButtonBar(projectPanel, wxID_ANY);
+        // Project panel
+        auto* projectPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Project"));
+        projectPanel->SetKeyTip(_DT(L"Q"));
+        auto* projectButtonBar = new wxRibbonButtonBar(projectPanel, wxID_ANY);
 
-    projectButtonBar->AddButton(wxID_NEW, _(L"New"), ReadSvgIcon(L"images/wisteria.svg"),
-                                _(L"Create a new project"));
-    projectButtonBar->SetKeyTip(wxID_NEW, _DT(L"N"));
+        projectButtonBar->AddButton(wxID_NEW, _(L"New"), ReadSvgIcon(L"images/wisteria.svg"),
+                                    _(L"Create a new project"));
+        projectButtonBar->SetKeyTip(wxID_NEW, _DT(L"N"));
 
-    projectButtonBar->AddHybridButton(wxID_OPEN, _(L"Open"), ReadSvgIcon(L"images/file-open.svg"),
-                                      _(L"Open a data file"));
-    projectButtonBar->SetKeyTip(wxID_OPEN, _DT(L"O"));
-    projectButtonBar->SetDropdownKeyTip(wxID_OPEN, _DT(L"U"));
+        projectButtonBar->AddHybridButton(
+            wxID_OPEN, _(L"Open"), ReadSvgIcon(L"images/file-open.svg"), _(L"Open a data file"));
+        projectButtonBar->SetKeyTip(wxID_OPEN, _DT(L"O"));
+        projectButtonBar->SetDropdownKeyTip(wxID_OPEN, _DT(L"U"));
+        }
 
     if (isProjectRibbon)
         {
-        projectButtonBar->AddHybridButton(ID_SAVE_PROJECT, _(L"Save"),
-                                          ReadSvgIcon(L"images/file-save.svg"),
-                                          _(L"Save the project"));
-        projectButtonBar->SetKeyTip(ID_SAVE_PROJECT, _DT(L"S"));
-        projectButtonBar->SetDropdownKeyTip(ID_SAVE_PROJECT, _DT(L"X"));
-        projectButtonBar->AddButton(ID_SVG_EXPORT, _(L"SVG Export"),
-                                    ReadSvgIcon(L"images/report.svg"),
-                                    _(L"Export all pages to SVG"));
-        projectButtonBar->SetKeyTip(ID_SVG_EXPORT, _DT(L"V"));
-        projectButtonBar->AddButton(ID_HTML_EXPORT, _(L"HTML Export"),
-                                    ReadSvgIcon(L"images/dashboard.svg"),
-                                    _(L"Export all pages to an interactive HTML dashboard"));
-        projectButtonBar->SetKeyTip(ID_HTML_EXPORT, _DT(L"HE"));
-        projectButtonBar->AddButton(ID_PDF_EXPORT, _(L"PDF Export"), ReadSvgIcon(L"images/pdf.svg"),
-                                    _(L"Export all pages to PDF"));
-        projectButtonBar->SetKeyTip(ID_PDF_EXPORT, _DT(L"F"));
-        projectButtonBar->AddButton(ID_PPTX_EXPORT, _(L"PowerPoint Export"),
-                                    ReadSvgIcon(L"images/powerpoint.svg"),
-                                    _(L"Export all pages to PowerPoint"));
-        projectButtonBar->SetKeyTip(ID_PPTX_EXPORT, _DT(L"W"));
-        projectButtonBar->AddButton(ID_ODP_EXPORT, _(L"ODP Export"), ReadSvgIcon(L"images/odp.svg"),
-                                    _(L"Export all pages to an OpenDocument presentation"));
-        projectButtonBar->SetKeyTip(ID_ODP_EXPORT, _DT(L"Z"));
-        projectButtonBar->AddButton(ID_REFRESH_ALL, _(L"Refresh All"),
-                                    ReadSvgIcon(L"images/reload.svg"), _(L"Reload the project"));
-        projectButtonBar->SetKeyTip(ID_REFRESH_ALL, _DT(L"R"));
-        projectButtonBar->AddButton(ID_PROJECT_SETTINGS, _(L"Project Settings"),
-                                    ReadSvgIcon(L"images/project-settings.svg"),
-                                    _(L"Edit the project settings"));
-        projectButtonBar->SetKeyTip(ID_PROJECT_SETTINGS, _DT(L"J"));
-
-        // Print panel
-        auto* printPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Print"));
-        printPanel->SetKeyTip(_DT(L"T"));
-        auto* printButtonBar = new wxRibbonButtonBar(printPanel, wxID_ANY);
-        printButtonBar->AddButton(wxID_PRINT, _(L"Print"), ReadSvgIcon(L"images/print.svg"),
-                                  _(L"Print all pages"));
-        printButtonBar->SetKeyTip(wxID_PRINT, _DT(L"I"));
-        printButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Setup"),
-                                  ReadSvgIcon(L"images/print-setup.svg"),
-                                  _(L"Configure print settings"));
-        printButtonBar->SetKeyTip(ID_PRINT_SETUP, _DT(L"G"));
-
-        // Pages tab
-        auto* pagesPage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Pages"));
-        ribbon->SetPageKeyTip(pagesPage, _DT(L"P"));
+        // Home tab
+        homePage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Home"), homeIcon);
+        ribbon->SetPageKeyTip(homePage, _DT(L"H"));
 
         // Pages panel
-        auto* pagesPanel = new wxRibbonPanel(pagesPage, wxID_ANY, _(L"Pages"));
+        auto* pagesPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Pages"));
         pagesPanel->SetKeyTip(_DT(L"S"));
         auto* pagesButtonBar = new wxRibbonButtonBar(pagesPanel, ID_PAGES_BUTTONBAR);
 
@@ -795,13 +776,16 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                   ReadSvgIcon(L"images/sort.svg"),
                                   _(L"Reorder or remove the project's pages"));
         pagesButtonBar->SetKeyTip(ID_REARRANGE_PAGES, _DT(L"R"));
-        pagesButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Setup"),
+        pagesButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Layout"),
                                   ReadSvgIcon(L"images/print-setup.svg"),
                                   _(L"Configure print settings"));
         pagesButtonBar->SetKeyTip(ID_PRINT_SETUP, _DT(L"G"));
+        pagesButtonBar->AddButton(ID_REFRESH_ALL, _(L"Refresh All"),
+                                  ReadSvgIcon(L"images/reload.svg"), _(L"Reload the project"));
+        pagesButtonBar->SetKeyTip(ID_REFRESH_ALL, _DT(L"L"));
 
         // Objects panel (labels, images, shapes)
-        auto* objectsPanel = new wxRibbonPanel(pagesPage, wxID_ANY, _(L"Objects"));
+        auto* objectsPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Objects"));
         objectsPanel->SetKeyTip(_DT(L"OB"));
         auto* objectsButtonBar = new wxRibbonButtonBar(objectsPanel, ID_OBJECTS_BUTTONBAR);
 
@@ -953,14 +937,6 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                           ReadSvgIcon(L"images/chart-sports.svg"),
                                           _(L"Sports graphs"));
         graphButtonBar->SetKeyTip(ID_INSERT_GRAPH_SPORTS, _DT(L"T"));
-
-        // Tools panel (project frames only, navigates to main frame log tab)
-        auto* toolsPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Tools"));
-        toolsPanel->SetKeyTip(_DT(L"C"));
-        auto* toolsButtonBar = new wxRibbonButtonBar(toolsPanel, wxID_ANY);
-        toolsButtonBar->AddButton(ID_VIEW_LOG_REPORT, _(L"Log"),
-                                  ReadSvgIcon(L"images/log-book.svg"), _(L"View the log report"));
-        toolsButtonBar->SetKeyTip(ID_VIEW_LOG_REPORT, _DT(L"B"));
         }
     else
         {
@@ -968,7 +944,7 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         auto* printPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Print"));
         printPanel->SetKeyTip(_DT(L"R"));
         auto* printButtonBar = new wxRibbonButtonBar(printPanel, wxID_ANY);
-        printButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Setup"),
+        printButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Layout"),
                                   ReadSvgIcon(L"images/print-setup.svg"),
                                   _(L"Configure print settings"));
         printButtonBar->SetKeyTip(ID_PRINT_SETUP, _DT(L"G"));
@@ -985,6 +961,17 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
     ribbon->SetToggleButtonKeyTip(_DT(L"M"));
     ribbon->SetHelpButtonKeyTip(_DT(L"K"));
 
+    if (isProjectRibbon)
+        {
+        // Tools panel (project frames only, navigates to main frame log tab)
+        auto* toolsPanel = new wxRibbonPanel(helpPage, wxID_ANY, _(L"Tools"));
+        toolsPanel->SetKeyTip(_DT(L"C"));
+        auto* toolsButtonBar = new wxRibbonButtonBar(toolsPanel, wxID_ANY);
+        toolsButtonBar->AddButton(ID_VIEW_LOG_REPORT, _(L"Log"),
+                                  ReadSvgIcon(L"images/log-book.svg"), _(L"View the log report"));
+        toolsButtonBar->SetKeyTip(ID_VIEW_LOG_REPORT, _DT(L"B"));
+        }
+
     auto* aboutPanel = new wxRibbonPanel(helpPage, wxID_ANY, _(L"About"));
     aboutPanel->SetKeyTip(_DT(L"O"));
     auto* aboutButtonBar = new wxRibbonButtonBar(aboutPanel, wxID_ANY);
@@ -995,8 +982,658 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
 
     ribbon->SetArtProvider(new wxRibbonMSWFlatArtProvider);
     ribbon->Realize();
+    ribbon->SetActivePage(homePage);
 
     return ribbon;
+    }
+
+//-------------------------------------------
+wxBackstage* WisteriaApp::CreateBackstage(wxWindow* parent, wxRibbonBar* ribbon, wxWindow* content,
+                                          wxDocument* doc)
+    {
+    auto* backstage = new wxBackstage(parent);
+    backstage->AddButton(ID_BACKSTAGE_NEW, _(L"New"));
+
+    const int margin = parent->FromDIP(30);
+
+    auto* newPage = backstage->AddPage(ID_BACKSTAGE_NEW);
+    auto* newSizer = new wxBoxSizer(wxVERTICAL);
+    newSizer->Add(new wxBackstageHeading(newPage, wxID_ANY, _(L"New")),
+                  wxSizerFlags{}.Border(wxLEFT | wxTOP, margin));
+
+    auto* newProjectButton = new wxBackstageButton(
+        newPage, ID_BACKSTAGE_NEW_PROJECT, _(L"New Project"),
+        GetResourceManager().GetSVG(L"images/wisteria.svg"), wxBackstageButtonStyle::Card);
+    newSizer->Add(newProjectButton, wxSizerFlags{}.Border(wxLEFT | wxTOP, margin));
+    newPage->SetSizer(newSizer);
+
+    backstage->Bind(
+        wxEVT_BUTTON, [this](wxCommandEvent&) { GetDocManager()->CreateNewDocument(); },
+        ID_BACKSTAGE_NEW_PROJECT);
+
+    // Open page
+    backstage->AddButton(ID_BACKSTAGE_OPEN, _(L"Open"));
+    backstage->AddSeparator();
+    backstage->AddButton(ID_BACKSTAGE_INFO, _(L"Info"));
+
+    // Save and Save As have no pages, so they are just actions
+    backstage->AddButton(ID_BACKSTAGE_SAVE, _(L"Save"));
+    backstage->AddButton(ID_BACKSTAGE_SAVE_AS, _(L"Save As"));
+    backstage->AddSeparator();
+    backstage->AddButton(ID_BACKSTAGE_PRINT, _(L"Print"));
+    backstage->AddButton(ID_BACKSTAGE_EXPORT, _(L"Export"));
+    backstage->AddFlexibleSpace();
+    backstage->AddButton(ID_BACKSTAGE_SETTINGS, _(L"Settings"));
+    backstage->AddButton(ID_BACKSTAGE_CLOSE, _(L"Close"));
+
+    auto* openPage = backstage->AddPage(ID_BACKSTAGE_OPEN);
+    auto* openSizer = new wxBoxSizer(wxVERTICAL);
+    openSizer->Add(new wxBackstageHeading(openPage, wxID_ANY, _(L"Open")),
+                   wxSizerFlags{}.Border(wxLEFT | wxTOP, margin));
+
+    auto* browseButton =
+        new wxBackstageButton(openPage, ID_BACKSTAGE_OPEN_BROWSE, _(L"Browse"),
+                              wxArtProvider::GetBitmapBundle(wxART_FILE_OPEN, wxART_BUTTON),
+                              wxBackstageButtonStyle::Wide, _(L"Open a project or data file"));
+
+    auto* openColumns = new wxBoxSizer(wxHORIZONTAL);
+
+    // left column: Browse
+    openColumns->Add(browseButton, wxSizerFlags{}.Top().Border(wxLEFT | wxTOP, margin));
+
+    // right column: recent files
+    auto* recentColumn = new wxBoxSizer(wxVERTICAL);
+    recentColumn->Add(
+        new wxBackstageHeading(openPage, wxID_ANY, _(L"Recent"), wxBackstageHeadingStyle::Section),
+        wxSizerFlags{}.Border(wxBOTTOM, margin / 2));
+    auto* recentList = new wxBackstageMRUList(openPage, ID_BACKSTAGE_RECENT_LIST);
+    recentList->SetEmptyText(_(L"You haven't opened any projects recently."));
+    recentList->SetMinSize(openPage->FromDIP(wxSize{ 560, 340 }));
+    recentColumn->Add(recentList, wxSizerFlags{ 1 }.Expand());
+    openColumns->Add(recentColumn, wxSizerFlags{ 1 }.Expand().Border(wxALL, margin));
+
+    openSizer->Add(openColumns, wxSizerFlags{ 1 }.Expand());
+    openPage->SetSizer(openSizer);
+
+    // the file history changes while the app runs, so refresh before showing the page
+    recentList->SetFiles(*GetDocManager()->GetFileHistory());
+    backstage->Bind(
+        wxEVT_BACKSTAGE_CLICKED,
+        [this, recentList](wxNotifyEvent& event)
+        {
+            recentList->SetFiles(*GetDocManager()->GetFileHistory());
+            event.Skip();
+        },
+        ID_BACKSTAGE_OPEN);
+
+    backstage->Bind(
+        wxEVT_BUTTON,
+        [this](wxCommandEvent&)
+        {
+            wxCommandEvent openEvent(wxEVT_MENU, wxID_OPEN);
+            GetDocManager()->ProcessEvent(openEvent);
+        },
+        ID_BACKSTAGE_OPEN_BROWSE);
+    backstage->Bind(
+        wxEVT_BACKSTAGE_ITEM_CLICKED,
+        [this](wxCommandEvent& event)
+        {
+            if (GetDocManager()->CreateDocument(event.GetString(), wxDOC_SILENT) == nullptr)
+                {
+                GetDocManager()->OnOpenFileFailure();
+                }
+        },
+        ID_BACKSTAGE_RECENT_LIST);
+
+    // Print page
+    auto* printPage = backstage->AddPage(ID_BACKSTAGE_PRINT);
+    auto* printSizer = new wxBoxSizer(wxVERTICAL);
+    printSizer->Add(new wxBackstageHeading(printPage, wxID_ANY, _(L"Print")),
+                    wxSizerFlags{}.Border(wxLEFT | wxTOP, margin));
+
+    // Print button with the number of copies
+    auto* printTopSizer = new wxBoxSizer(wxHORIZONTAL);
+    auto* printButton = new wxBackstageButton(printPage, ID_BACKSTAGE_PRINT_NOW, _(L"Print"),
+                                              GetResourceManager().GetSVG(L"images/print.svg"));
+    printButton->SetIconSize(wxSize{ 48, 48 });
+    printTopSizer->Add(printButton, wxSizerFlags{}.Top());
+    auto* copiesSizer = new wxBoxSizer(wxHORIZONTAL);
+    copiesSizer->Add(new wxStaticText(printPage, wxID_ANY, _(L"Copies:")),
+                     wxSizerFlags{}.CenterVertical().Border(wxRIGHT, margin / 3));
+    auto* copiesCtrl = new wxSpinCtrl(printPage, wxID_ANY, wxString{}, wxDefaultPosition,
+                                      wxDefaultSize, wxSP_ARROW_KEYS, 1, 999, 1);
+    copiesCtrl->SetValidator(wxGenericValidator{ &m_printCopies });
+    copiesSizer->Add(copiesCtrl, wxSizerFlags{}.CenterVertical());
+    printTopSizer->Add(copiesSizer, wxSizerFlags{}.Top().Border(wxLEFT, margin));
+    printSizer->Add(printTopSizer, wxSizerFlags{}.Border(wxLEFT | wxTOP, margin));
+
+    // settings, which are drop-down buttons showing their current value
+    printSizer->Add(new wxBackstageHeading(printPage, wxID_ANY, _(L"Settings"),
+                                           wxBackstageHeadingStyle::Section),
+                    wxSizerFlags{}.Border(wxLEFT | wxTOP, margin));
+
+    const auto createSettingButton = [printPage, printSizer, margin]()
+    {
+        auto* button = new wxBackstageButton(printPage, wxID_ANY, wxString{}, wxBitmapBundle{},
+                                             wxBackstageButtonStyle::Wide);
+        button->ShowDropDownArrow();
+        button->SetMinSize(printPage->FromDIP(wxSize{ 340, -1 }));
+        printSizer->Add(button, wxSizerFlags{}.Border(wxLEFT | wxTOP, margin / 2));
+        return button;
+    };
+    auto* orientationButton = createSettingButton();
+    auto* paperButton = createSettingButton();
+    auto* sidesButton = createSettingButton();
+    auto* collateButton = createSettingButton();
+    auto* colorButton = createSettingButton();
+    printPage->SetSizer(printSizer);
+
+    const std::vector<wxPaperSize> paperSizes{ wxPAPER_LETTER,    wxPAPER_LEGAL, wxPAPER_TABLOID,
+                                               wxPAPER_EXECUTIVE, wxPAPER_A3,    wxPAPER_A4,
+                                               wxPAPER_A5,        wxPAPER_B4,    wxPAPER_B5 };
+
+    // name of a paper size without its dimensions (e.g., "Letter")
+    const auto paperName = [](const wxPaperSize paperId)
+    {
+        const auto* paperType = wxThePrintPaperDatabase->FindPaperType(paperId);
+        return (paperType != nullptr) ? paperType->GetName().BeforeFirst(L',') : wxString{};
+    };
+    // dimensions of a paper size (e.g., 8.5" x 11" (216 x 279 mm))
+    const auto paperDimensions = [](const wxPaperSize paperId)
+    {
+        const auto* paperType = wxThePrintPaperDatabase->FindPaperType(paperId);
+        if (paperType == nullptr)
+            {
+            return wxString{};
+            }
+        // paper sizes are in tenths of a millimeter
+        const wxSize sizeTenthsMM = paperType->GetSize();
+        constexpr double TENTHS_MM_PER_INCH{ 254.0 };
+        const auto inches = [](const int tenthsMM)
+        {
+            return wxNumberFormatter::ToString(tenthsMM / TENTHS_MM_PER_INCH, 2,
+                                               wxNumberFormatter::Style_NoTrailingZeroes);
+        };
+        return wxString::Format(_(L"%s\" x %s\" (%d x %d mm)"), inches(sizeTenthsMM.GetWidth()),
+                                inches(sizeTenthsMM.GetHeight()),
+                                wxRound(sizeTenthsMM.GetWidth() / 10.0),
+                                wxRound(sizeTenthsMM.GetHeight() / 10.0));
+    };
+
+    // shows the current print settings on the buttons
+    const auto refreshSettingButtons = [this, orientationButton, paperButton, sidesButton,
+                                        collateButton, colorButton, paperName, paperDimensions]()
+    {
+        const auto& settings = GetAppSettings();
+
+        const bool landscape = (GetPrintJobOrientation() == wxLANDSCAPE);
+        orientationButton->SetLabel(landscape ? _(L"Landscape Orientation") :
+                                                _(L"Portrait Orientation"));
+        orientationButton->SetIcon(GetResourceManager().GetSVG(
+            landscape ? L"images/page-landscape.svg" : L"images/page-portrait.svg"));
+
+        paperButton->SetLabel(paperName(GetPrintJobPaperId()));
+        paperButton->SetDescription(paperDimensions(GetPrintJobPaperId()));
+        paperButton->SetIcon(GetResourceManager().GetSVG(L"images/paper-size.svg"));
+
+        const auto duplex = settings->GetPrintDuplex();
+        sidesButton->SetLabel((duplex == wxDUPLEX_SIMPLEX) ? _(L"Print on One Side") :
+                                                             _(L"Print on Both Sides"));
+        sidesButton->SetDescription((duplex == wxDUPLEX_SIMPLEX) ? _(L"Only print on one side") :
+                                    (duplex == wxDUPLEX_HORIZONTAL) ?
+                                                                   _(L"Flip pages on short edge") :
+                                                                   _(L"Flip pages on long edge"));
+        sidesButton->SetIcon(GetResourceManager().GetSVG((duplex == wxDUPLEX_SIMPLEX) ?
+                                                             L"images/print-one-sided.svg" :
+                                                             L"images/print-two-sided.svg"));
+
+        const bool collated = settings->IsPrintCollated();
+        collateButton->SetLabel(collated ? _(L"Collated") : _(L"Uncollated"));
+        collateButton->SetDescription(collated ? _(L"1,2,3   1,2,3   1,2,3") :
+                                                 _(L"1,1,1   2,2,2   3,3,3"));
+        collateButton->SetIcon(GetResourceManager().GetSVG(
+            collated ? L"images/print-collated.svg" : L"images/print-uncollated.svg"));
+
+        const bool color = settings->IsPrintColor();
+        colorButton->SetLabel(color ? _(L"Color") : _(L"Grayscale"));
+        colorButton->SetDescription(
+            color ? _(L"Print in color") : _(L"Print in shades of gray (if supported by printer)"));
+        colorButton->SetIcon(GetResourceManager().GetSVG(color ? L"images/print-color.svg" :
+                                                                 L"images/print-grayscale.svg"));
+
+        for (auto* button :
+             { orientationButton, paperButton, sidesButton, collateButton, colorButton })
+            {
+            button->Refresh();
+            }
+        orientationButton->GetParent()->Layout();
+    };
+    refreshSettingButtons();
+
+    // shows a menu below a button, calling onChosen with the chosen item's index
+    const auto popupChoices = [](wxWindow* anchor, const std::vector<wxString>& labels,
+                                 const size_t current, const std::function<void(size_t)>& onChosen)
+    {
+        wxMenu menu;
+        std::vector<int> itemIds;
+        for (size_t i = 0; i < labels.size(); ++i)
+            {
+            auto* item = menu.AppendRadioItem(wxID_ANY, labels[i]);
+            item->Check(i == current);
+            itemIds.push_back(item->GetId());
+            }
+        menu.Bind(wxEVT_MENU,
+                  [&itemIds, &onChosen](wxCommandEvent& event)
+                  {
+                      const auto itemPos =
+                          std::find(itemIds.cbegin(), itemIds.cend(), event.GetId());
+                      if (itemPos != itemIds.cend())
+                          {
+                          onChosen(static_cast<size_t>(std::distance(itemIds.cbegin(), itemPos)));
+                          }
+                  });
+        anchor->PopupMenu(&menu, wxPoint{ 0, anchor->GetSize().GetHeight() });
+    };
+
+    // any change to the settings is saved back to the app's print settings
+    orientationButton->Bind(
+        wxEVT_BUTTON,
+        [this, orientationButton, popupChoices, refreshSettingButtons](wxCommandEvent&)
+        {
+            popupChoices(orientationButton,
+                         { _(L"Portrait Orientation"), _(L"Landscape Orientation") },
+                         (GetPrintJobOrientation() == wxLANDSCAPE) ? 1 : 0,
+                         [this, refreshSettingButtons](const size_t index)
+                         {
+                             m_printJobOrientation = (index == 1) ? wxLANDSCAPE : wxPORTRAIT;
+                             refreshSettingButtons();
+                         });
+        });
+
+    paperButton->Bind(wxEVT_BUTTON,
+                      [this, paperButton, popupChoices, refreshSettingButtons, paperSizes,
+                       paperName](wxCommandEvent&)
+                      {
+                          // the current paper size is always offered, even if it isn't a common one
+                          std::vector<wxPaperSize> choices{ paperSizes };
+                          if (std::find(choices.cbegin(), choices.cend(), GetPrintJobPaperId()) ==
+                              choices.cend())
+                              {
+                              choices.push_back(GetPrintJobPaperId());
+                              }
+                          std::vector<wxString> labels;
+                          size_t current{ 0 };
+                          for (size_t i = 0; i < choices.size(); ++i)
+                              {
+                              labels.push_back(paperName(choices[i]));
+                              if (choices[i] == GetPrintJobPaperId())
+                                  {
+                                  current = i;
+                                  }
+                              }
+                          popupChoices(paperButton, labels, current,
+                                       [this, choices, refreshSettingButtons](const size_t index)
+                                       {
+                                           m_printJobPaperId = choices[index];
+                                           refreshSettingButtons();
+                                       });
+                      });
+
+    sidesButton->Bind(
+        wxEVT_BUTTON,
+        [this, sidesButton, popupChoices, refreshSettingButtons](wxCommandEvent&)
+        {
+            // the order matches wxDuplexMode
+            popupChoices(sidesButton,
+                         { _(L"Print on One Side"), _(L"Print on Both Sides (Flip on Short Edge)"),
+                           _(L"Print on Both Sides (Flip on Long Edge)") },
+                         static_cast<size_t>(GetAppSettings()->GetPrintDuplex()),
+                         [this, refreshSettingButtons](const size_t index)
+                         {
+                             GetAppSettings()->SetPrintDuplex(static_cast<wxDuplexMode>(index));
+                             GetAppSettings()->SaveSettingsFile();
+                             refreshSettingButtons();
+                         });
+        });
+
+    collateButton->Bind(wxEVT_BUTTON,
+                        [this, collateButton, popupChoices, refreshSettingButtons](wxCommandEvent&)
+                        {
+                            popupChoices(collateButton,
+                                         { _(L"Collated (1,2,3   1,2,3   1,2,3)"),
+                                           _(L"Uncollated (1,1,1   2,2,2   3,3,3)") },
+                                         GetAppSettings()->IsPrintCollated() ? 0 : 1,
+                                         [this, refreshSettingButtons](const size_t index)
+                                         {
+                                             GetAppSettings()->SetPrintCollated(index == 0);
+                                             GetAppSettings()->SaveSettingsFile();
+                                             refreshSettingButtons();
+                                         });
+                        });
+
+    colorButton->Bind(wxEVT_BUTTON,
+                      [this, colorButton, popupChoices, refreshSettingButtons](wxCommandEvent&)
+                      {
+                          popupChoices(colorButton, { _(L"Color"), _(L"Grayscale") },
+                                       GetAppSettings()->IsPrintColor() ? 0 : 1,
+                                       [this, refreshSettingButtons](const size_t index)
+                                       {
+                                           GetAppSettings()->SetPrintColor(index == 0);
+                                           GetAppSettings()->SaveSettingsFile();
+                                           refreshSettingButtons();
+                                       });
+                      });
+
+    printPage->TransferDataToWindow();
+
+    // other project windows may have changed the settings, so refresh before showing the page
+    backstage->Bind(
+        wxEVT_BACKSTAGE_CLICKED,
+        [refreshSettingButtons](wxNotifyEvent& event)
+        {
+            refreshSettingButtons();
+            event.Skip();
+        },
+        ID_BACKSTAGE_PRINT);
+
+    // the project window does the printing
+    backstage->Bind(
+        wxEVT_BUTTON,
+        [this, backstage, printPage](wxCommandEvent&)
+        {
+            printPage->TransferDataFromWindow();
+            wxCommandEvent printEvent(wxEVT_MENU, ID_BACKSTAGE_PRINT_NOW);
+            printEvent.SetInt(m_printCopies);
+            backstage->ProcessWindowEvent(printEvent);
+        },
+        ID_BACKSTAGE_PRINT_NOW);
+
+    // Export page, with its own side panel of export types
+    auto* exportPage = backstage->AddPage(ID_BACKSTAGE_EXPORT);
+    auto* exportSizer = new wxBoxSizer(wxVERTICAL);
+    exportSizer->Add(new wxBackstageHeading(exportPage, wxID_ANY, _(L"Export")),
+                     wxSizerFlags{}.Border(wxLEFT | wxTOP, margin));
+
+    struct ExportType
+        {
+        wxWindowID m_commandId;
+        wxString m_name;
+        wxString m_buttonLabel;
+        wxString m_iconPath;
+        std::vector<wxString> m_bullets;
+        };
+
+    const std::vector<ExportType> exportTypes{
+        { ID_HTML_EXPORT,
+          _(L"HTML Dashboard"),
+          _(L"Export Dashboard"),
+          L"images/dashboard.svg",
+          { _(L"Exports all of the project's pages to an interactive HTML dashboard."),
+            _(L"Opens in any web browser, with no extra software needed."),
+            _(L"Choose the theme and color mode in the export options.") } },
+        { ID_SVG_EXPORT,
+          _(L"SVG"),
+          _(L"Export SVG"),
+          L"images/report.svg",
+          { _(L"Exports all of the project's pages to a single SVG file."),
+            _(L"Vector graphics stay sharp at any size."),
+            _(L"Transitions, highlighting, and a slideshow can be included.") } },
+        { ID_PDF_EXPORT,
+          _(L"PDF"),
+          _(L"Export PDF"),
+          L"images/pdf.svg",
+          { _(L"Exports all of the project's pages to a PDF document."),
+            _(L"Easy to share and print, and looks the same on any device.") } },
+        { ID_PPTX_EXPORT,
+          _(L"PowerPoint"),
+          _(L"Export PowerPoint"),
+          L"images/powerpoint.svg",
+          { _(L"Creates a PowerPoint presentation from the project's pages."),
+            _(L"Opens in PowerPoint and other presentation software.") } },
+        { ID_ODP_EXPORT,
+          _(L"OpenDocument Presentation"),
+          _(L"Export ODP"),
+          L"images/odp.svg",
+          { _(L"Creates an OpenDocument presentation from the project's pages."),
+            _(L"Opens in LibreOffice Impress and other presentation software.") } }
+    };
+
+    auto* exportColumns = new wxBoxSizer(wxHORIZONTAL);
+    auto* exportTypesSizer = new wxBoxSizer(wxVERTICAL);
+    auto* exportBook = new wxSimplebook(exportPage);
+    std::vector<wxBackstageButton*> exportNavButtons;
+
+    for (const auto& exportType : exportTypes)
+        {
+        auto* navButton = new wxBackstageButton(exportPage, wxID_ANY, exportType.m_name,
+                                                GetResourceManager().GetSVG(exportType.m_iconPath),
+                                                wxBackstageButtonStyle::Wide);
+        navButton->SetMinSize(exportPage->FromDIP(wxSize{ 240, -1 }));
+        exportTypesSizer->Add(navButton, wxSizerFlags{}.Border(wxBOTTOM, margin / 4));
+        exportNavButtons.push_back(navButton);
+
+        // the export button and a bulleted list describing it
+        auto* detailPanel = new wxPanel(exportBook);
+        auto* detailSizer = new wxBoxSizer(wxVERTICAL);
+        auto* exportButton =
+            new wxBackstageButton(detailPanel, exportType.m_commandId, exportType.m_buttonLabel,
+                                  GetResourceManager().GetSVG(exportType.m_iconPath));
+        exportButton->SetIconSize(wxSize{ 64, 64 });
+        detailSizer->Add(exportButton, wxSizerFlags{}.Border(wxBOTTOM, margin / 2));
+        for (const auto& bullet : exportType.m_bullets)
+            {
+            auto* bulletSizer = new wxBoxSizer(wxHORIZONTAL);
+            bulletSizer->Add(new wxStaticText(detailPanel, wxID_ANY, wxString{ L"•" }),
+                             wxSizerFlags{}.Top().Border(wxRIGHT, margin / 3));
+            auto* bulletText = new wxStaticText(detailPanel, wxID_ANY, bullet);
+            bulletText->Wrap(detailPanel->FromDIP(420));
+            bulletSizer->Add(bulletText, wxSizerFlags{ 1 }.Top());
+            detailSizer->Add(bulletSizer, wxSizerFlags{}.Border(wxBOTTOM, margin / 4));
+            }
+        detailPanel->SetSizer(detailSizer);
+        exportBook->AddPage(detailPanel, exportType.m_name);
+        }
+
+    // shows an export type's details and highlights its side panel button
+    const auto selectExportType = [backstage, exportBook, exportNavButtons](const size_t index)
+    {
+        const wxColour pageColor = backstage->GetPageBackgroundColour();
+        const bool darkPage = (backstage->GetPageForegroundColour().GetLuminance() > 0.5);
+        const wxColour selectedColor = pageColor.ChangeLightness(darkPage ? 130 : 92);
+        exportBook->SetSelection(index);
+        for (size_t i = 0; i < exportNavButtons.size(); ++i)
+            {
+            exportNavButtons[i]->SetCalloutColour((i == index) ? selectedColor : wxColour{});
+            }
+        exportBook->GetParent()->Layout();
+    };
+    for (size_t i = 0; i < exportNavButtons.size(); ++i)
+        {
+        exportNavButtons[i]->Bind(wxEVT_BUTTON,
+                                  [selectExportType, i](wxCommandEvent&) { selectExportType(i); });
+        }
+
+    // the project window does the exporting (through its regular export handlers)
+    for (const auto& exportType : exportTypes)
+        {
+        backstage->Bind(
+            wxEVT_BUTTON,
+            [backstage, commandId = exportType.m_commandId](wxCommandEvent&)
+            {
+                wxCommandEvent exportEvent(wxEVT_MENU, commandId);
+                backstage->ProcessWindowEvent(exportEvent);
+            },
+            exportType.m_commandId);
+        }
+
+    exportColumns->Add(exportTypesSizer, wxSizerFlags{}.Top().Border(wxLEFT | wxTOP, margin));
+    exportColumns->Add(exportBook, wxSizerFlags{ 1 }.Expand().Border(wxALL, margin));
+    exportSizer->Add(exportColumns, wxSizerFlags{ 1 }.Expand());
+    exportPage->SetSizer(exportSizer);
+    selectExportType(0);
+
+    // Info page
+    auto* infoPage = backstage->AddPage(ID_BACKSTAGE_INFO);
+    auto* infoSizer = new wxBoxSizer(wxVERTICAL);
+    infoSizer->Add(new wxBackstageHeading(infoPage, wxID_ANY, _(L"Info")),
+                   wxSizerFlags{}.Border(wxLEFT | wxTOP, margin));
+
+    auto* infoColumns = new wxBoxSizer(wxHORIZONTAL);
+
+    // project name, folder, and file actions
+    auto* infoMainSizer = new wxBoxSizer(wxVERTICAL);
+    auto* projectName =
+        new wxBackstageHeading(infoPage, wxID_ANY, wxString{}, wxBackstageHeadingStyle::Section);
+    infoMainSizer->Add(projectName, wxSizerFlags{}.Border(wxBOTTOM, margin / 6));
+    auto* projectFolder = new wxStaticText(infoPage, wxID_ANY, wxString{}, wxDefaultPosition,
+                                           wxDefaultSize, wxST_ELLIPSIZE_MIDDLE);
+    projectFolder->SetMinSize(infoPage->FromDIP(wxSize{ 420, -1 }));
+    infoMainSizer->Add(projectFolder, wxSizerFlags{}.Border(wxBOTTOM, margin / 2));
+
+    auto* infoActionsSizer = new wxBoxSizer(wxHORIZONTAL);
+    auto* copyPathButton = new wxBackstageButton(infoPage, ID_BACKSTAGE_COPY_PATH, _(L"Copy Path"),
+                                                 GetResourceManager().GetSVG(L"images/copy.svg"),
+                                                 wxBackstageButtonStyle::Wide);
+    infoActionsSizer->Add(copyPathButton);
+    infoMainSizer->Add(infoActionsSizer);
+    infoColumns->Add(infoMainSizer, wxSizerFlags{ 1 }.Border(wxLEFT | wxTOP, margin));
+
+    // properties, dates, and people
+    auto* infoPropertiesSizer = new wxBoxSizer(wxVERTICAL);
+    auto* infoGrid = new wxFlexGridSizer(2, wxSize{ margin, margin / 6 });
+    const auto addInfoSection = [infoPage, infoGrid, margin](const wxString& title)
+    {
+        infoGrid->Add(
+            new wxBackstageHeading(infoPage, wxID_ANY, title, wxBackstageHeadingStyle::Section),
+            wxSizerFlags{}.Border(wxTOP, margin / 2));
+        infoGrid->AddSpacer(0);
+    };
+    const auto addInfoRow = [infoPage, infoGrid](const wxString& label)
+    {
+        infoGrid->Add(new wxStaticText(infoPage, wxID_ANY, label));
+        auto* value = new wxStaticText(infoPage, wxID_ANY, wxString{});
+        infoGrid->Add(value);
+        return value;
+    };
+    addInfoSection(_(L"Properties"));
+    auto* sizeValue = addInfoRow(_(L"Size"));
+    auto* pagesValue = addInfoRow(_(L"Pages"));
+    auto* datasourcesValue = addInfoRow(_(L"Datasources"));
+    addInfoSection(_(L"Related Dates"));
+    auto* modifiedValue = addInfoRow(_(L"Last Modified"));
+    auto* createdValue = addInfoRow(_(L"Created"));
+    infoPropertiesSizer->Add(infoGrid);
+    infoColumns->Add(infoPropertiesSizer, wxSizerFlags{}.Top().Border(wxALL, margin));
+
+    infoSizer->Add(infoColumns, wxSizerFlags{ 1 }.Expand());
+    infoPage->SetSizer(infoSizer);
+
+    // everything that can be known about the project's file
+    const auto refreshInfo = [doc, projectName, projectFolder, copyPathButton, sizeValue,
+                              pagesValue, datasourcesValue, modifiedValue, createdValue, infoPage]()
+    {
+        const wxString notSaved{ _(L"Not saved yet") };
+        const wxFileName projectFile{ doc->GetFilename() };
+        const bool fileExists = projectFile.IsOk() && projectFile.FileExists();
+
+        projectName->SetLabel(doc->GetUserReadableName());
+        projectFolder->SetLabel(fileExists ? projectFile.GetPath() : notSaved);
+        copyPathButton->Enable(fileExists);
+
+        const auto* view = dynamic_cast<WisteriaView*>(doc->GetFirstView());
+        pagesValue->SetLabel((view != nullptr) ? wxNumberFormatter::ToString(
+                                                     static_cast<long>(view->GetPages().size())) :
+                                                 wxString{});
+        // only the imported datasets, not the pivots, subsets, or merges derived from them
+        datasourcesValue->SetLabel(
+            (view != nullptr) ? wxNumberFormatter::ToString(static_cast<long>(
+                                    view->GetReportBuilder().GetDatasetImportOptions().size())) :
+                                wxString{});
+
+        wxDateTime modified;
+        wxDateTime created;
+        if (fileExists)
+            {
+            projectFile.GetTimes(nullptr, &modified, &created);
+            }
+        const auto formatDate = [&notSaved](const wxDateTime& date)
+        { return date.IsValid() ? date.FormatDate() + L" " + date.FormatTime() : notSaved; };
+        sizeValue->SetLabel(fileExists ? projectFile.GetHumanReadableSize() : notSaved);
+        modifiedValue->SetLabel(formatDate(modified));
+        createdValue->SetLabel(formatDate(created));
+
+        infoPage->Layout();
+    };
+    refreshInfo();
+
+    // the project may have been saved since the page was last shown
+    backstage->Bind(
+        wxEVT_BACKSTAGE_CLICKED,
+        [refreshInfo](wxNotifyEvent& event)
+        {
+            refreshInfo();
+            event.Skip();
+        },
+        ID_BACKSTAGE_INFO);
+
+    copyPathButton->Bind(wxEVT_BUTTON,
+                         [doc](wxCommandEvent&)
+                         {
+                             if (wxTheClipboard->Open())
+                                 {
+                                 wxTheClipboard->SetData(new wxTextDataObject(doc->GetFilename()));
+                                 wxTheClipboard->Close();
+                                 }
+                         });
+
+    // Settings has no page, so it is just an action that opens the project's settings
+    backstage->Bind(
+        wxEVT_BACKSTAGE_CLICKED,
+        [backstage](wxNotifyEvent&)
+        {
+            wxCommandEvent settingsEvent(wxEVT_MENU, ID_PROJECT_SETTINGS);
+            backstage->ProcessWindowEvent(settingsEvent);
+        },
+        ID_BACKSTAGE_SETTINGS);
+
+    // Close has no page, so it is just an action
+    backstage->Bind(
+        wxEVT_BACKSTAGE_CLICKED,
+        [this, doc](wxNotifyEvent&)
+        {
+            // closing destroys the project window that this backstage lives in
+            CallAfter(
+                [this, doc]()
+                {
+                    if (GetDocManager()->GetDocuments().Find(doc) != nullptr)
+                        {
+                        GetDocManager()->CloseDocument(doc);
+                        }
+                });
+        },
+        ID_BACKSTAGE_CLOSE);
+
+    // route the actions to the project window's regular Save and Save As handlers
+    backstage->Bind(
+        wxEVT_BACKSTAGE_CLICKED,
+        [backstage](wxNotifyEvent&)
+        {
+            wxCommandEvent saveEvent(wxEVT_MENU, ID_SAVE_PROJECT);
+            backstage->ProcessWindowEvent(saveEvent);
+        },
+        ID_BACKSTAGE_SAVE);
+    backstage->Bind(
+        wxEVT_BACKSTAGE_CLICKED,
+        [backstage](wxNotifyEvent&)
+        {
+            wxCommandEvent saveAsEvent(wxEVT_MENU, ID_SAVE_PROJECT_AS);
+            backstage->ProcessWindowEvent(saveAsEvent);
+        },
+        ID_BACKSTAGE_SAVE_AS);
+
+    backstage->Hide();
+    ribbon->SetBackstage(backstage, content);
+    return backstage;
     }
 
 //-------------------------------------------
