@@ -349,6 +349,19 @@ html[data-view="slides"] .dash-progress
 .page-svg .ink-keep [fill="#000000"], .page-svg .ink-keep [fill="black"]
   { fill: #000000; }
 
+.page-svg .ink-keep [stroke="#000000"], .page-svg .ink-keep [stroke="black"]
+  { stroke: #000000; }
+
+.page-svg .ink-keep [stroke="#FFFFFF"]
+  { stroke: #FFFFFF; }
+
+/* chernoff legend connection lines follow light/dark mode */
+.page-svg .chernoff-legend-line [stroke]:not([stroke="none"])
+  { stroke: light-dark(#0095B6, #ACE5EE); }
+
+.page-svg .chernoff-legend-line [fill]:not([fill="none"])
+  { fill: light-dark(#0095B6, #ACE5EE); }
+
 /* lays a page out invisibly so the script can measure it */
 .page.ink-measure
   {

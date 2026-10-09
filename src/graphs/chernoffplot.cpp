@@ -652,6 +652,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
 
             // draw the face (scoped so GraphicsContext is flushed before drawing lines)
             {
+            std::optional<wxSVGAccessibleGroup> keepInkGroup;
+            if (auto* svgDc = dynamic_cast<wxSVGFileDC*>(&dc); svgDc != nullptr)
+                {
+                keepInkGroup.emplace(*svgDc, wxSVGAttributes{}.Class(_DT(L"ink-keep")));
+                }
             const GraphItems::GraphicsContextFallback gcf{ &dc, faceRect };
             auto* gc = gcf.GetGraphicsContext();
             if (gc != nullptr)
@@ -774,7 +779,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             dimensionLines.AddLine(wxPoint(faceRect.GetRight(), labelCenterY),
                                    wxPoint(faceRect.GetRight(), labelCenterY + shortTick));
 
-            dimensionLines.Draw(dc);
+                {
+                std::optional<wxSVGAccessibleGroup> lineGroup;
+                if (auto* svgDc = dynamic_cast<wxSVGFileDC*>(&dc); svgDc != nullptr)
+                    {
+                    lineGroup.emplace(*svgDc,
+                                      wxSVGAttributes{}.Class(_DT(L"chernoff-legend-line")));
+                    }
+                dimensionLines.Draw(dc);
+                }
             label.Draw(dc);
             }
 
@@ -840,8 +853,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             label.Draw(dc);
             }
 
-        // draw all arrow lines
-        arrowLines.Draw(dc);
+            // draw all arrow lines
+            {
+            std::optional<wxSVGAccessibleGroup> lineGroup;
+            if (auto* svgDc = dynamic_cast<wxSVGFileDC*>(&dc); svgDc != nullptr)
+                {
+                lineGroup.emplace(*svgDc, wxSVGAttributes{}.Class(_DT(L"chernoff-legend-line")));
+                }
+            arrowLines.Draw(dc);
+            }
 
         // draw the hair-style and hair-addition key sections below the face
         // (rendered as side-by-side columns, centered horizontally in the legend rect)
@@ -927,6 +947,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                                                iconRects.front().GetWidth(),
                                                iconRects.back().GetBottom() -
                                                    iconRects.front().GetY() + 1 };
+                    std::optional<wxSVGAccessibleGroup> keepInkGroup;
+                    if (auto* svgDc = dynamic_cast<wxSVGFileDC*>(&dc); svgDc != nullptr)
+                        {
+                        keepInkGroup.emplace(*svgDc, wxSVGAttributes{}.Class(_DT(L"ink-keep")));
+                        }
                     const GraphItems::GraphicsContextFallback gcf{ &dc, allIconsRect };
                     auto* gc = gcf.GetGraphicsContext();
                     if (gc != nullptr)
@@ -953,6 +978,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 else if (m_gender == Gender::Female)
                     {
                     // hair-addition (female): draw HairAccessory IconShape directly
+                    std::optional<wxSVGAccessibleGroup> keepInkGroup;
+                    if (auto* svgDc = dynamic_cast<wxSVGFileDC*>(&dc); svgDc != nullptr)
+                        {
+                        keepInkGroup.emplace(*svgDc, wxSVGAttributes{}.Class(_DT(L"ink-keep")));
+                        }
                     for (size_t i = 0; i < labels.size(); ++i)
                         {
                         Icons::IconShape iconShape{ Icons::IconShape::Blank };
@@ -1004,6 +1034,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                                                iconRects.front().GetWidth(),
                                                iconRects.back().GetBottom() -
                                                    iconRects.front().GetY() + 1 };
+                    std::optional<wxSVGAccessibleGroup> keepInkGroup;
+                    if (auto* svgDc = dynamic_cast<wxSVGFileDC*>(&dc); svgDc != nullptr)
+                        {
+                        keepInkGroup.emplace(*svgDc, wxSVGAttributes{}.Class(_DT(L"ink-keep")));
+                        }
                     const GraphItems::GraphicsContextFallback gcf{ &dc, allIconsRect };
                     auto* gc = gcf.GetGraphicsContext();
                     if (gc != nullptr)
@@ -1542,6 +1577,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                         GraphItems::GraphItemInfo{}
                             .Pen(wxNullPen)
                             .Selectable(true)
+                            .Accessibility(wxSVGAttributes{}.Class(_DT(L"ink-keep")))
                             .Anchoring(Anchoring::TopLeftCorner)
                             .AnchorPoint(wxPoint{ x, y }),
                         m_faces[faceIndex], wxSize{ faceSize, faceSize }, m_faceColorLighter,
