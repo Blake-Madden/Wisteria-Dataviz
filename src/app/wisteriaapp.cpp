@@ -941,15 +941,15 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
     else
         {
         // Print panel
-        auto* printPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Print"));
+        auto* printPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Page"));
         printPanel->SetKeyTip(_DT(L"R"));
         auto* printButtonBar = new wxRibbonButtonBar(printPanel, wxID_ANY);
         printButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Layout"),
                                   ReadSvgIcon(L"images/print-setup.svg"),
-                                  _(L"Configure print settings"));
+                                  _(L"Configure page view settings"));
         printButtonBar->SetKeyTip(ID_PRINT_SETUP, _DT(L"G"));
 
-        // Log tab (main frame only)
+        // Log tab
         LoadRibbonLogPage(ribbon);
         ribbon->SetPageKeyTip(GetMainFrameEx()->GetLogRibbonPage(), _DT(L"L"));
         }
@@ -1485,17 +1485,16 @@ wxBackstage* WisteriaApp::CreateBackstage(wxWindow* parent, wxRibbonBar* ribbon,
     auto* projectName =
         new wxBackstageHeading(infoPage, wxID_ANY, wxString{}, wxBackstageHeadingStyle::Section);
     infoMainSizer->Add(projectName, wxSizerFlags{}.Border(wxBOTTOM, margin / 6));
+    auto* pathSizer = new wxBoxSizer(wxHORIZONTAL);
     auto* projectFolder = new wxStaticText(infoPage, wxID_ANY, wxString{}, wxDefaultPosition,
                                            wxDefaultSize, wxST_ELLIPSIZE_MIDDLE);
     projectFolder->SetMinSize(infoPage->FromDIP(wxSize{ 420, -1 }));
-    infoMainSizer->Add(projectFolder, wxSizerFlags{}.Border(wxBOTTOM, margin / 2));
-
-    auto* infoActionsSizer = new wxBoxSizer(wxHORIZONTAL);
-    auto* copyPathButton = new wxBackstageButton(infoPage, ID_BACKSTAGE_COPY_PATH, _(L"Copy Path"),
-                                                 GetResourceManager().GetSVG(L"images/copy.svg"),
-                                                 wxBackstageButtonStyle::Wide);
-    infoActionsSizer->Add(copyPathButton);
-    infoMainSizer->Add(infoActionsSizer);
+    pathSizer->Add(projectFolder, wxSizerFlags{ 1 }.CenterVertical());
+    auto* copyPathButton = new wxBitmapButton(
+        infoPage, ID_BACKSTAGE_COPY_PATH, GetResourceManager().GetSVG(L"images/copy.svg"),
+        wxDefaultPosition, infoPage->FromDIP(wxSize{ 16, 16 }), wxBORDER_SIMPLE);
+    pathSizer->Add(copyPathButton, wxSizerFlags{}.CenterVertical().Border(wxLEFT, margin / 4));
+    infoMainSizer->Add(pathSizer, wxSizerFlags{}.Border(wxBOTTOM, margin / 2));
     infoColumns->Add(infoMainSizer, wxSizerFlags{ 1 }.Border(wxLEFT | wxTOP, margin));
 
     // properties, dates, and people
