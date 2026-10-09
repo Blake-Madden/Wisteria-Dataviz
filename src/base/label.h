@@ -404,7 +404,9 @@ namespace Wisteria::GraphItems
         /** @brief Bounds the label to be within the given rectangle.
             @param rect The rectangle to bound the label to.
             @param dc The DC to measure content with.
-            @param parentScaling The parent's scaling (not used in this implementation).
+            @param parentScaling The parent's scaling (e.g., the canvas's zoom level).
+                This is only used if the bounding box scaling is locked, in which case it
+                is applied to the label's fonts (on top of the label's own scaling).
             @note The scaling of the label will be adjusted to this box,
                 and will also be anchored (length-wise if vertical, height-wise if horizontal)
                 within this box.\n
@@ -413,8 +415,7 @@ namespace Wisteria::GraphItems
                 Call `GetGraphItemInfo().SetAnchoring()` to control how it is anchored.
             @sa SetBoundingBoxToContentAdjustment(), LockBoundingBoxScaling(),
                 UnlockBoundingBoxScaling().*/
-        void SetBoundingBox(const wxRect& rect, wxDC& dc,
-                            [[maybe_unused]] double parentScaling) final;
+        void SetBoundingBox(const wxRect& rect, wxDC& dc, double parentScaling) final;
 
         /** @brief When calling SetBoundingBox(), calling this first will prevent the scaling
                 from being adjusted to the bounding box.
@@ -469,6 +470,10 @@ namespace Wisteria::GraphItems
 
         /// @brief When calling SetBoundingBox(), having the scaling unlocked (the default)
         ///     will cause the scaling to be adjusted to the new bounding box.
+        /// @note While locked, the label's scaling is left alone, but its fonts are drawn
+        ///     (and measured) at the label's scaling multiplied by the parent scaling last
+        ///     passed to SetBoundingBox(). This way, the text keeps pace with its
+        ///     bounding box as the canvas is zoomed.
         /// @sa LockBoundingBoxScaling(), SetBoundingBox(), SetScaling().
         void UnlockBoundingBoxScaling() noexcept { m_boundingBoxScalingLocked = false; }
 
@@ -649,6 +654,24 @@ namespace Wisteria::GraphItems
         /// @}
 
       private:
+        /** @returns The scaling to apply to this label's fonts.
+            @details Normally, this is just the label's scaling, because the canvas sets that
+                to its own scaling (i.e., zoom level) and SetBoundingBox() then fits the
+                label to its box.\n
+                When the bounding box scaling is locked (see LockBoundingBoxScaling()),
+                the canvas leaves the label's scaling alone (e.g., at @c 1.0), while the
+                bounding box that it hands to SetBoundingBox() still grows and shrinks with
+                the zoom level. In that case, the canvas scaling that was last passed to
+                SetBoundingBox() is applied to the font, so that the text keeps pace
+                with its box.
+            @note This is only the canvas's scaling (not the screen's DPI scaling),
+                as the OS already handles DPI scaling for fonts.*/
+        [[nodiscard]]
+        double GetFontScaling() const noexcept
+            {
+            return IsBoundingBoxScalingLocked() ? (GetScaling() * m_parentScaling) : GetScaling();
+            }
+
         /// @returns @c true if the label's box is drawn as a word balloon.
         [[nodiscard]]
         bool IsWordBalloon() const noexcept
@@ -830,6 +853,9 @@ namespace Wisteria::GraphItems
         std::optional<std::vector<ShapeInfo>> m_topShape{ std::nullopt };
         size_t m_topImageOffset{ 0 };
         bool m_boundingBoxScalingLocked{ false };
+        // the canvas's scaling from the last call to SetBoundingBox(),
+        // which is applied to the font when the bounding box scaling is locked
+        double m_parentScaling{ 1.0 };
         bool m_markupEnabled{ false };
         bool m_isLegend{ false };
 

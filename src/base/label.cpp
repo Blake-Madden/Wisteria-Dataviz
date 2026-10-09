@@ -172,8 +172,7 @@ namespace Wisteria::GraphItems
         }
 
     //-------------------------------------------
-    void Label::SetBoundingBox(const wxRect& rect, wxDC& dc,
-                               [[maybe_unused]] const double parentScaling)
+    void Label::SetBoundingBox(const wxRect& rect, wxDC& dc, const double parentScaling)
         {
         InvalidateCachedBoundingBox();
 
@@ -183,6 +182,11 @@ namespace Wisteria::GraphItems
             {
             return;
             }
+
+        // If the scaling is locked, then the font follows the parent canvas's
+        // scaling instead of this label's scaling (which isn't being adjusted to the box).
+        // This must be set before measuring below.
+        m_parentScaling = (parentScaling > 0) ? parentScaling : 1.0;
 
         if (GetAnchoring() == Anchoring::Center)
             {
@@ -250,7 +254,7 @@ namespace Wisteria::GraphItems
         textAreaWidthNoSideImages = std::max<wxCoord>(0, textAreaWidthNoSideImages);
         textAreaHeightNoSideImages = std::max<wxCoord>(0, textAreaHeightNoSideImages);
 
-        if (!m_boundingBoxScalingLocked &&
+        if (!IsBoundingBoxScalingLocked() &&
             ( // too small in both dimensions, so upscale
                 (measuredWidth <= rect.GetWidth() && measureHeight <= rect.GetHeight()) ||
                 // or too big in one of the dimensions, so downscale
@@ -415,7 +419,7 @@ namespace Wisteria::GraphItems
 
         width = height = 0;
 
-        const DCFontChangerIfDifferent fc(dc, GetFont().Scaled(GetScaling()));
+        const DCFontChangerIfDifferent fc(dc, GetFont().Scaled(GetFontScaling()));
 
         // strip markup for measuring (markup doesn't affect text dimensions)
         const wxString strippedText = IsMarkupEnabled() ? StripMarkup(GetText()) : GetText();
@@ -460,7 +464,7 @@ namespace Wisteria::GraphItems
                 {
                 const DCFontChangerIfDifferent fc2(
                     dc, GetHeaderInfo().GetFont().IsOk() ?
-                            GetHeaderInfo().GetFont().Scaled(GetScaling() *
+                            GetHeaderInfo().GetFont().Scaled(GetFontScaling() *
                                                              GetHeaderInfo().GetRelativeScaling()) :
                             dc.GetFont());
                 auto topLineSize = dc.GetMultiLineTextExtent(strippedText.substr(0, firstLineEnd));
@@ -524,7 +528,7 @@ namespace Wisteria::GraphItems
                 {
                 const DCFontChangerIfDifferent fc2(
                     dc, GetHeaderInfo().GetFont().IsOk() ?
-                            GetHeaderInfo().GetFont().Scaled(GetScaling() *
+                            GetHeaderInfo().GetFont().Scaled(GetFontScaling() *
                                                              GetHeaderInfo().GetRelativeScaling()) :
                             dc.GetFont());
                 auto topLineSize = dc.GetMultiLineTextExtent(strippedText.substr(0, firstLineEnd));
@@ -598,7 +602,7 @@ namespace Wisteria::GraphItems
                 {
                 const DCFontChangerIfDifferent fc2(
                     dc, GetHeaderInfo().GetFont().IsOk() ?
-                            GetHeaderInfo().GetFont().Scaled(GetScaling() *
+                            GetHeaderInfo().GetFont().Scaled(GetFontScaling() *
                                                              GetHeaderInfo().GetRelativeScaling()) :
                             GetFont());
                 topLineHeight = dc.GetTextExtent(topLine).GetHeight();
@@ -783,7 +787,7 @@ namespace Wisteria::GraphItems
                 if (lineIndex == 0 && hasHeaderLine)
                     {
                     const DCFontChangerIfDifferent fc{
-                        dc, GetHeaderInfo().GetFont().Scaled(GetScaling() *
+                        dc, GetHeaderInfo().GetFont().Scaled(GetFontScaling() *
                                                              GetHeaderInfo().GetRelativeScaling())
                     };
                     lineHeight = dc.GetCharHeight();
@@ -1199,7 +1203,7 @@ namespace Wisteria::GraphItems
                                       GetMinLegendWidthDIPs(), GetLeftPadding()));
 
         wxASSERT_MSG(GetFont().IsOk(), L"Invalid font in label!");
-        const DCFontChangerIfDifferent fc(dc, GetFont().Scaled(GetScaling()));
+        const DCFontChangerIfDifferent fc(dc, GetFont().Scaled(GetFontScaling()));
 
         const wxRect boundingBox = GetBoundingBox(dc);
 
@@ -1712,8 +1716,9 @@ namespace Wisteria::GraphItems
             {
             return;
             }
-        // note that fonts should not have their point size DPI scaled, only scaled to the canvas
-        const DCFontChangerIfDifferent fc(dc, GetFont().Scaled(GetScaling()));
+        // note that fonts are only scaled to the canvas (via GetFontScaling()),
+        // unless the scaling is locked, in which case the screen scale is included
+        const DCFontChangerIfDifferent fc(dc, GetFont().Scaled(GetFontScaling()));
 
         wxString text = GetText();
         text.Trim(false);
@@ -1918,7 +1923,7 @@ namespace Wisteria::GraphItems
                 {
                 const DCFontChangerIfDifferent fc(
                     dc, GetHeaderInfo().GetFont().IsOk() ?
-                            GetHeaderInfo().GetFont().Scaled(GetScaling() *
+                            GetHeaderInfo().GetFont().Scaled(GetFontScaling() *
                                                              GetHeaderInfo().GetRelativeScaling()) :
                             dc.GetFont());
                 dc.GetTextExtent(token, &lineX, &lineY);
@@ -2002,7 +2007,7 @@ namespace Wisteria::GraphItems
                                   GetHeaderInfo().GetFont().IsOk()) };
             const DCFontChangerIfDifferent fc(
                 dc, isHeader ? GetHeaderInfo().GetFont().Scaled(
-                                   GetScaling() * GetHeaderInfo().GetRelativeScaling()) :
+                                   GetFontScaling() * GetHeaderInfo().GetRelativeScaling()) :
                                dc.GetFont());
             const DCTextColourChangerIfDifferent tcc(dc, isHeader ? GetHeaderInfo().GetFontColor() :
                                                                     dc.GetTextForeground());
@@ -2172,7 +2177,7 @@ namespace Wisteria::GraphItems
                 // remeasure for (possibly) different font in header
                 const DCFontChangerIfDifferent fc(
                     dc, GetHeaderInfo().GetFont().IsOk() ?
-                            GetHeaderInfo().GetFont().Scaled(GetScaling() *
+                            GetHeaderInfo().GetFont().Scaled(GetFontScaling() *
                                                              GetHeaderInfo().GetRelativeScaling()) :
                             dc.GetFont());
                 dc.GetTextExtent(token, &lineX, &lineY);
@@ -2257,10 +2262,10 @@ namespace Wisteria::GraphItems
             const bool isHeader{ (currentLineNumber == 0 && GetLineCount() > 1 &&
                                   GetHeaderInfo().IsEnabled() &&
                                   GetHeaderInfo().GetFont().IsOk()) };
-            const wxFont baseFont = isHeader ?
-                                        GetHeaderInfo().GetFont().Scaled(
-                                            GetScaling() * GetHeaderInfo().GetRelativeScaling()) :
-                                        dc.GetFont();
+            const wxFont baseFont =
+                isHeader ? GetHeaderInfo().GetFont().Scaled(GetFontScaling() *
+                                                            GetHeaderInfo().GetRelativeScaling()) :
+                           dc.GetFont();
             const DCFontChangerIfDifferent fc(dc, baseFont);
             const DCTextColourChangerIfDifferent tcc(dc, isHeader ? GetHeaderInfo().GetFontColor() :
                                                                     dc.GetTextForeground());
