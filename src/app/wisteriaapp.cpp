@@ -1154,7 +1154,7 @@ wxBackstage* WisteriaApp::CreateBackstage(wxWindow* parent, wxRibbonBar* ribbon,
             return wxNumberFormatter::ToString(tenthsMM / TENTHS_MM_PER_INCH, 2,
                                                wxNumberFormatter::Style_NoTrailingZeroes);
         };
-        return wxString::Format(_(L"%s\" x %s\" (%d x %d mm)"), inches(sizeTenthsMM.GetWidth()),
+        return wxString::Format(_DT(L"%s\" x %s\" (%d x %d mm)"), inches(sizeTenthsMM.GetWidth()),
                                 inches(sizeTenthsMM.GetHeight()),
                                 wxRound(sizeTenthsMM.GetWidth() / 10.0),
                                 wxRound(sizeTenthsMM.GetHeight() / 10.0));
@@ -1189,8 +1189,8 @@ wxBackstage* WisteriaApp::CreateBackstage(wxWindow* parent, wxRibbonBar* ribbon,
 
         const bool collated = settings->IsPrintCollated();
         collateButton->SetLabel(collated ? _(L"Collated") : _(L"Uncollated"));
-        collateButton->SetDescription(collated ? _(L"1,2,3   1,2,3   1,2,3") :
-                                                 _(L"1,1,1   2,2,2   3,3,3"));
+        collateButton->SetDescription(collated ? _DT(L"1,2,3   1,2,3   1,2,3") :
+                                                 _DT(L"1,1,1   2,2,2   3,3,3"));
         collateButton->SetIcon(GetResourceManager().GetSVG(
             collated ? L"images/print-collated.svg" : L"images/print-uncollated.svg"));
 
@@ -1372,20 +1372,20 @@ wxBackstage* WisteriaApp::CreateBackstage(wxWindow* parent, wxRibbonBar* ribbon,
             _(L"Opens in any web browser, with no extra software needed."),
             _(L"Choose the theme and color mode in the export options.") } },
         { ID_SVG_EXPORT,
-          _(L"SVG"),
+          _DT(L"SVG"),
           _(L"Export SVG"),
           L"images/report.svg",
           { _(L"Exports all of the project's pages to a single SVG file."),
             _(L"Vector graphics stay sharp at any size."),
             _(L"Transitions, highlighting, and a slideshow can be included.") } },
         { ID_PDF_EXPORT,
-          _(L"PDF"),
+          _DT(L"PDF"),
           _(L"Export PDF"),
           L"images/pdf.svg",
           { _(L"Exports all of the project's pages to a PDF document."),
             _(L"Easy to share and print, and looks the same on any device.") } },
         { ID_PPTX_EXPORT,
-          _(L"PowerPoint"),
+          _DT(L"PowerPoint"),
           _(L"Export PowerPoint"),
           L"images/powerpoint.svg",
           { _(L"Creates a PowerPoint presentation from the project's pages."),
