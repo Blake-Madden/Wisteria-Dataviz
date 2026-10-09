@@ -815,6 +815,10 @@ namespace Wisteria
             return m_odpExportOptionsLoaded;
             }
 
+        /** @brief Sets the page number used when expanding page number placeholders.
+            @param pageNumber The (one-based) number of the page being worked on.*/
+        void SetPageNumber(const size_t pageNumber) noexcept { m_pageNumber = pageNumber; }
+
         /** @brief Expands embedded placeholders in strings into their values.
             @param str The full string to expand.
             @returns The original string, with any placeholders in it replaced

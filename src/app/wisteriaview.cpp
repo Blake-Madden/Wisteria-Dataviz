@@ -2498,10 +2498,30 @@ Wisteria::Canvas* WisteriaView::GetActiveCanvas() const noexcept
     }
 
 //-------------------------------------------
+void WisteriaView::SyncPageNumber(const Wisteria::Canvas* canvas)
+    {
+    size_t pageNumber{ 1 };
+    for (const auto* page : m_pages)
+        {
+        if (page->IsResettingPageNumbering())
+            {
+            pageNumber = 1;
+            }
+        if (page == canvas)
+            {
+            break;
+            }
+        ++pageNumber;
+        }
+    m_reportBuilder.SetPageNumber(pageNumber);
+    }
+
+//-------------------------------------------
 Wisteria::Canvas* WisteriaView::EnsureActivePage()
     {
     if (auto* canvas = GetActiveCanvas(); canvas != nullptr)
         {
+        SyncPageNumber(canvas);
         return canvas;
         }
 
@@ -2525,6 +2545,7 @@ Wisteria::Canvas* WisteriaView::EnsureActivePage()
 
     m_sideBar->SelectFolder(static_cast<size_t>(sel) + 2, true, true);
 
+    SyncPageNumber(m_pages[static_cast<size_t>(sel)]);
     return m_pages[static_cast<size_t>(sel)];
     }
 
@@ -2813,6 +2834,8 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
         {
         return;
         }
+
+    SyncPageNumber(canvas);
 
     // find the selected item in the canvas grid
     const auto [gridRows, gridCols] = canvas->GetFixedObjectsGridSize();

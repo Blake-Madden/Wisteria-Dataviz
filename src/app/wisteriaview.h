@@ -377,6 +377,11 @@ class WisteriaView final : public wxView
     [[nodiscard]]
     Wisteria::Canvas* EnsureActivePage();
 
+    /// @brief Points the report builder's page number at @c canvas,
+    ///     so that page number placeholders expand to that page's number.
+    /// @param canvas The page being worked on.
+    void SyncPageNumber(const Wisteria::Canvas* canvas);
+
     [[nodiscard]]
     bool IsPageSelected() const noexcept;
 
