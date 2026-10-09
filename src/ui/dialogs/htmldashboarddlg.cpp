@@ -25,7 +25,8 @@ namespace Wisteria::UI
           m_includeColorModeToggle(options.m_includeColorModeToggle),
           m_countUpNumbers(options.m_countUpNumbers), m_pageWidth(options.m_pageSize.GetWidth()),
           m_pageHeight(options.m_pageSize.GetHeight()),
-          m_dualOrientations(options.m_dualOrientations)
+          m_dualOrientations(options.m_dualOrientations), m_includeSave(options.m_includeSave),
+          m_includePrint(options.m_includePrint)
         {
         m_view = (options.m_view == Wisteria::HtmlDashboardOptions::DashboardView::Gallery) ? 0 : 1;
         m_colorMode = (options.m_colorMode == Wisteria::HtmlDashboardOptions::ColorMode::Auto) ? 0 :
@@ -127,6 +128,14 @@ namespace Wisteria::UI
         auto* dualCheck = new wxCheckBox(this, wxID_ANY, _(L"Include dual layout orientations"));
         dualCheck->SetValidator(wxGenericValidator{ &m_dualOrientations });
         mainSizer->Add(dualCheck, wxSizerFlags{}.Border());
+
+        auto* saveCheck = new wxCheckBox(this, wxID_ANY, _(L"Include Save button"));
+        saveCheck->SetValidator(wxGenericValidator{ &m_includeSave });
+        mainSizer->Add(saveCheck, wxSizerFlags{}.Border());
+
+        auto* printCheck = new wxCheckBox(this, wxID_ANY, _(L"Include Print button"));
+        printCheck->SetValidator(wxGenericValidator{ &m_includePrint });
+        mainSizer->Add(printCheck, wxSizerFlags{}.Border());
 
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
                        wxSizerFlags{}.Expand().Border());

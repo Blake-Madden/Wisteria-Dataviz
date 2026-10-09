@@ -66,6 +66,10 @@ namespace Wisteria
         /// @brief Whether each page is also rendered with its width and height swapped.
         /// @details The browser shows whichever orientation best fits its window.
         bool m_dualOrientations{ true };
+        /// @brief Whether to include the Save button.
+        bool m_includeSave{ true };
+        /// @brief Whether to include the Print button.
+        bool m_includePrint{ true };
         /// @brief The name of the theme that @c m_css was built from.
         /// @note This is only stored by the caller. The exporter uses @c m_css.
         wxString m_theme;
@@ -223,6 +227,24 @@ namespace Wisteria
         HtmlDashboardOptions& DualOrientations(const bool dual) noexcept
             {
             m_dualOrientations = dual;
+            return *this;
+            }
+
+        /// @brief Enables/disables the Save button.
+        /// @param include @c true to include the button.
+        /// @returns A reference to this object.
+        HtmlDashboardOptions& IncludeSave(const bool include) noexcept
+            {
+            m_includeSave = include;
+            return *this;
+            }
+
+        /// @brief Enables/disables the Print button.
+        /// @param include @c true to include the button.
+        /// @returns A reference to this object.
+        HtmlDashboardOptions& IncludePrint(const bool include) noexcept
+            {
+            m_includePrint = include;
             return *this;
             }
         };

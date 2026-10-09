@@ -1759,19 +1759,27 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         "viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M2.5 6V2.5H6M10 2.5h3.5V6"
         "M13.5 10v3.5H10M6 13.5H2.5V10\"/></svg></button>\n",
         SVGReportPrintout::EscapeXmlAttr(_(L"Presentation mode")));
-    html += wxString::Format(
-        L"<button type=\"button\" id=\"dash-print\" class=\"dash-print-btn\" "
-        "aria-label=\"%s\"><svg class=\"dash-btn-icon\" viewBox=\"0 0 16 16\" "
-        "aria-hidden=\"true\"><path d=\"M4.5 6V2.5h7V6M4.5 11.5h-2v-5h11v5h-2M4.5 9.5h7v4h-7z\"/>"
-        "</svg></button>\n",
-        SVGReportPrintout::EscapeXmlAttr(_(L"Print page")));
-    html += wxString::Format(
-        L"<button type=\"button\" id=\"dash-save\" class=\"dash-save-btn\" "
-        "aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"dash-save-menu\" "
-        "aria-label=\"%s\"><svg class=\"dash-btn-icon\" viewBox=\"0 0 16 16\" "
-        "aria-hidden=\"true\"><path d=\"M3 2.5h8l2.5 2.5v8.5H3zM5 2.5v3.5h5V2.5M5 13.5v-4h6v4\"/>"
-        "</svg></button>\n",
-        SVGReportPrintout::EscapeXmlAttr(_(L"Save page")));
+    if (options.m_includePrint)
+        {
+        html +=
+            wxString::Format(L"<button type=\"button\" id=\"dash-print\" class=\"dash-print-btn\" "
+                             "aria-label=\"%s\"><svg class=\"dash-btn-icon\" viewBox=\"0 0 16 16\" "
+                             "aria-hidden=\"true\"><path d=\"M4.5 6V2.5h7V6M4.5 "
+                             "11.5h-2v-5h11v5h-2M4.5 9.5h7v4h-7z\"/>"
+                             "</svg></button>\n",
+                             SVGReportPrintout::EscapeXmlAttr(_(L"Print page")));
+        }
+    if (options.m_includeSave)
+        {
+        html += wxString::Format(
+            L"<button type=\"button\" id=\"dash-save\" class=\"dash-save-btn\" "
+            "aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"dash-save-menu\" "
+            "aria-label=\"%s\"><svg class=\"dash-btn-icon\" viewBox=\"0 0 16 16\" "
+            "aria-hidden=\"true\"><path d=\"M3 2.5h8l2.5 2.5v8.5H3zM5 2.5v3.5h5V2.5M5 "
+            "13.5v-4h6v4\"/>"
+            "</svg></button>\n",
+            SVGReportPrintout::EscapeXmlAttr(_(L"Save page")));
+        }
     html += wxString::Format(
         L"<button type=\"button\" id=\"dash-help\" class=\"dash-help-btn\" "
         "aria-haspopup=\"dialog\" aria-expanded=\"false\" aria-controls=\"dash-help-panel\" "
@@ -1788,15 +1796,18 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         SVGReportPrintout::EscapeXmlAttr(_(L"Pages")),
         SVGReportPrintout::EscapeXmlAttr(_(L"Pages")));
 
-    html += wxString::Format(
-        L"<div id=\"dash-save-menu\" class=\"dash-help-panel dash-save-menu no-print\" "
-        "role=\"menu\" aria-label=\"%s\" hidden>\n"
-        "<button type=\"button\" role=\"menuitem\" data-format=\"svg\">%s</button>\n"
-        "<button type=\"button\" role=\"menuitem\" data-format=\"png\">%s</button>\n"
-        "</div>\n",
-        SVGReportPrintout::EscapeXmlAttr(_(L"Save page")),
-        SVGReportPrintout::EscapeXmlText(_(L"Save as SVG")),
-        SVGReportPrintout::EscapeXmlText(_(L"Save as PNG")));
+    if (options.m_includeSave)
+        {
+        html += wxString::Format(
+            L"<div id=\"dash-save-menu\" class=\"dash-help-panel dash-save-menu no-print\" "
+            "role=\"menu\" aria-label=\"%s\" hidden>\n"
+            "<button type=\"button\" role=\"menuitem\" data-format=\"svg\">%s</button>\n"
+            "<button type=\"button\" role=\"menuitem\" data-format=\"png\">%s</button>\n"
+            "</div>\n",
+            SVGReportPrintout::EscapeXmlAttr(_(L"Save page")),
+            SVGReportPrintout::EscapeXmlText(_(L"Save as SVG")),
+            SVGReportPrintout::EscapeXmlText(_(L"Save as PNG")));
+        }
 
     if (options.m_includeColorModeToggle)
         {

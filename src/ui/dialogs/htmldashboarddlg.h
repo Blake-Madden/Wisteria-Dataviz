@@ -97,6 +97,20 @@ namespace Wisteria::UI
             return m_dualOrientations;
             }
 
+        /// @returns Whether the Save button is included.
+        [[nodiscard]]
+        bool IncludeSave() const noexcept
+            {
+            return m_includeSave;
+            }
+
+        /// @returns Whether the Print button is included.
+        [[nodiscard]]
+        bool IncludePrint() const noexcept
+            {
+            return m_includePrint;
+            }
+
         /// @returns The page size (in DIPs/pixels).
         [[nodiscard]]
         wxSize GetPageSize() const noexcept
@@ -133,6 +147,8 @@ namespace Wisteria::UI
         int m_pageWidth{ 1280 };
         int m_pageHeight{ 720 };
         bool m_dualOrientations{ true };
+        bool m_includeSave{ true };
+        bool m_includePrint{ true };
         };
     } // namespace Wisteria::UI
 
