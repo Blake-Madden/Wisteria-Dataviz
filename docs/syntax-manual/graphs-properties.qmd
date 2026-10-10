@@ -188,6 +188,7 @@ Properties common to all graphs:
   - `"tractor"`
   - `"prohibited-sign"`
   - `"property-bag"`
+  - `"pumpkin-pie"`
 - `"line-scheme"`: For graphs that support line schemes only. \
   This is an array of line specifications (which can be recycled). \
   Each specification contains the following:

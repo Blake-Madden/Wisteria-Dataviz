@@ -132,8 +132,9 @@ namespace Wisteria::Icons
         Star,                     /*!< A star.*/
         ProhibitedSign,           /*!< A red "prohibited" sign (a circle with a diagonal bar
                                        across it), as in "not allowed".*/
-        PropertyBag               /*!< A lumpy brown bag (tied at the top) with dark speckles,
+        PropertyBag,              /*!< A lumpy brown bag (tied at the top) with dark speckles,
                                        as in a bag of money or property.*/
+        PumpkinPie                /*!< A pumpkin pie with a fluted crust and small brown spots.*/
         };
 
     /// @brief Item to draw on a legend.

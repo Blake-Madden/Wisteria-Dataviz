@@ -471,6 +471,119 @@ namespace Wisteria::GraphItems
         }
 
     //---------------------------------------------------
+    void ShapeRenderer::DrawPumpkinPie(wxRect rect, wxDC& dc) const
+        {
+        const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+        const wxDCBrushChanger brushGuard{ dc,
+                                           Colors::ColorBrewer::GetColor(Colors::Color::Black) };
+
+        const GraphicsContextFallback gcf{ &dc, rect };
+        auto* gc = gcf.GetGraphicsContext();
+        if (gc == nullptr)
+            {
+            return;
+            }
+
+        rect.Deflate(ScaleToScreenAndCanvas(2));
+
+        const double cx = rect.GetX() + (rect.GetWidth() / 2.0);
+        const double cy = rect.GetY() + (rect.GetHeight() / 2.0);
+        const double radius = GetRadius(rect);
+
+        // fluted crust, drawn as a ring of rounded bumps with creases between them
+        constexpr int FLUTE_COUNT{ 20 };
+        constexpr int SAMPLES_PER_FLUTE{ 6 };
+        constexpr int SAMPLE_COUNT{ FLUTE_COUNT * SAMPLES_PER_FLUTE };
+
+        const double fluteDepth = radius * 0.06;
+        const double crustThickness = std::max(2.0, radius * 0.16);
+
+        const wxColour doughColor{ 238, 198, 130 };
+        const wxColour doughEdgeColor{ 165, 115, 60 };
+        const wxColour toastedColor{ 200, 138, 66, 120 };
+
+        wxGraphicsPath crustPath = gc->CreatePath();
+        for (int sample = 0; sample <= SAMPLE_COUNT; ++sample)
+            {
+            const double angle = safe_divide<double>(2.0 * std::numbers::pi * sample, SAMPLE_COUNT);
+            const double cycles =
+                safe_divide<double>(static_cast<double>(sample), SAMPLES_PER_FLUTE);
+            const double bump = std::abs(std::sin(std::numbers::pi * cycles));
+            const double edgeRadius = radius - fluteDepth + (fluteDepth * bump);
+            const double ptX = cx + (std::cos(angle) * edgeRadius);
+            const double ptY = cy + (std::sin(angle) * edgeRadius);
+            if (sample == 0)
+                {
+                crustPath.MoveToPoint(ptX, ptY);
+                }
+            else
+                {
+                crustPath.AddLineToPoint(ptX, ptY);
+                }
+            }
+        crustPath.CloseSubpath();
+
+        gc->SetBrush(wxBrush{ doughColor });
+        gc->SetPen(wxPen{ doughEdgeColor, std::max<int>(1, ScaleToScreenAndCanvas(0.5)) });
+        gc->DrawPath(crustPath);
+
+        // browned outer edge of the crust
+        gc->SetBrush(wxBrush{ toastedColor });
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        const double toastedRadius = radius - (crustThickness * 0.4);
+        wxGraphicsPath toastedPath = gc->CreatePath();
+        toastedPath.AddCircle(cx, cy, radius);
+        toastedPath.AddCircle(cx, cy, toastedRadius);
+        gc->FillPath(toastedPath, wxODDEVEN_RULE);
+
+        // pumpkin filling
+        const double fillRadius = radius - crustThickness;
+        const wxColour fillColor{ 214, 122, 38 };
+        const wxColour fillEdgeColor{ 170, 90, 25 };
+
+        auto fillBrush = gc->CreateRadialGradientBrush(cx, cy, cx, cy, fillRadius,
+                                                       wxColour{ 232, 140, 48 }, fillColor);
+        gc->SetBrush(fillBrush);
+        gc->SetPen(wxPen{ fillEdgeColor, std::max<int>(1, ScaleToScreenAndCanvas(0.5)) });
+        gc->DrawEllipse(cx - fillRadius, cy - fillRadius, fillRadius * 2, fillRadius * 2);
+
+        // faint slice lines from the center out to the crust
+        constexpr int SLICE_COUNT{ 8 };
+        const wxColour sliceLineColor{ 120, 60, 15, 90 };
+
+        gc->SetPen(wxPen{ sliceLineColor, std::max<int>(1, ScaleToScreenAndCanvas(0.5)) });
+        for (int i = 0; i < SLICE_COUNT; ++i)
+            {
+            const double angle = safe_divide<double>(2.0 * std::numbers::pi * i, SLICE_COUNT);
+            gc->StrokeLine(cx, cy, cx + (std::cos(angle) * fillRadius),
+                           cy + (std::sin(angle) * fillRadius));
+            }
+
+        // small brown spots
+        constexpr int SPOT_COUNT{ 12 };
+        constexpr uint32_t SPOT_SEED{ 0x9A11B1E5 };
+        const double spotSize = std::max(1.0, radius * 0.045);
+        const double maxSpotDistance = fillRadius * 0.85;
+
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(wxBrush{ wxColour{ 105, 52, 20, 140 } });
+        for (int i = 0; i < SPOT_COUNT; ++i)
+            {
+            const uint32_t seed = SPOT_SEED + static_cast<uint32_t>(i * 431);
+            const double angle = (safe_divide<double>(360.0 * i, SPOT_COUNT) +
+                                  static_cast<double>((seed % 30) - 15)) *
+                                 std::numbers::pi / 180.0;
+            const double distance = maxSpotDistance * (0.2 + 0.8 * ((seed % 100) / 100.0));
+            const double spotX = cx + (std::cos(angle) * distance);
+            const double spotY = cy + (std::sin(angle) * distance);
+            const double spotW = spotSize * (0.8 + 0.5 * (((seed * 7) % 100) / 100.0));
+            const double spotH = spotSize * (0.6 + 0.4 * (((seed * 13) % 100) / 100.0));
+
+            gc->DrawEllipse(spotX - (spotW / 2), spotY - (spotH / 2), spotW, spotH);
+            }
+        }
+
+    //---------------------------------------------------
     void ShapeRenderer::DrawCoffeeShopCup(wxRect rect, wxDC& dc) const
         {
         const wxDCPenChanger penGuard{ dc, Colors::ColorBrewer::GetColor(Colors::Color::Black) };

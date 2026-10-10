@@ -124,7 +124,8 @@ namespace Wisteria
             { L"butterfly", Icons::IconShape::Butterfly },
             { L"star", Icons::IconShape::Star },
             { L"prohibited-sign", Icons::IconShape::ProhibitedSign },
-            { L"property-bag", Icons::IconShape::PropertyBag }
+            { L"property-bag", Icons::IconShape::PropertyBag },
+            { L"pumpkin-pie", Icons::IconShape::PumpkinPie }
         };
 
         inline static const std::map<std::wstring, wxPaperSize> m_paperSizeValues = {
@@ -1648,7 +1649,8 @@ namespace Wisteria
                 { Icons::IconShape::Butterfly, L"butterfly" },
                 { Icons::IconShape::Star, L"star" },
                 { Icons::IconShape::ProhibitedSign, L"prohibited-sign" },
-                { Icons::IconShape::PropertyBag, L"property-bag" }
+                { Icons::IconShape::PropertyBag, L"property-bag" },
+                { Icons::IconShape::PumpkinPie, L"pumpkin-pie" }
             };
 
             const auto foundValue = values.find(value);

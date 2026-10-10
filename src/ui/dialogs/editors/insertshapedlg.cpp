@@ -99,6 +99,7 @@ namespace Wisteria::UI
             { _(L"Prohibited sign"), Icons::IconShape::ProhibitedSign },
             { _(L"Property bag"), Icons::IconShape::PropertyBag },
             { _(L"Pumpkin"), Icons::IconShape::Pumpkin },
+            { _(L"Pumpkin pie"), Icons::IconShape::PumpkinPie },
             { _(L"Ruler"), Icons::IconShape::Ruler },
             { _(L"Snowflake"), Icons::IconShape::Snowflake },
             { _(L"Square"), Icons::IconShape::Square },

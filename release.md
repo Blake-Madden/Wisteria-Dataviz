@@ -18,6 +18,7 @@
 - Added word balloon styles to labels.
 - Added new shapes:
     - Prohibited sign
+    - Pumpkin pie
 - Added styling options to pie charts to make them look like:
     - Bagels
     - Pumpkin pies

@@ -277,6 +277,7 @@ namespace Wisteria::GraphItems
             { Icons::IconShape::PepperoniPizza, &ShapeRenderer::DrawPepperoniPizza },
             { Icons::IconShape::HawaiianPizza, &ShapeRenderer::DrawHawaiianPizza },
             { Icons::IconShape::ChocolateChipCookie, &ShapeRenderer::DrawChocolateChipCookie },
+            { Icons::IconShape::PumpkinPie, &ShapeRenderer::DrawPumpkinPie },
             { Icons::IconShape::CoffeeShopCup, &ShapeRenderer::DrawCoffeeShopCup },
             { Icons::IconShape::Pill, &ShapeRenderer::DrawPill },
             { Icons::IconShape::Tractor, &ShapeRenderer::DrawTractor },
@@ -592,6 +593,8 @@ namespace Wisteria::GraphItems
             return _(L"Hawaiian pizza");
         case Icons::IconShape::ChocolateChipCookie:
             return _(L"chocolate chip cookie");
+        case Icons::IconShape::PumpkinPie:
+            return _(L"pumpkin pie");
         case Icons::IconShape::CoffeeShopCup:
             return _(L"coffee cup");
         case Icons::IconShape::CurvingRoad:
