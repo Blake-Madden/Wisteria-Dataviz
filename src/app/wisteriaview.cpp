@@ -558,38 +558,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     LoadProject(GetDocument()->GetFilename());
 
     // seed the per-project export options from the global app settings when the
-    // project file did not carry its own (new projects, or ones saved before these
-    // options existed)
-    auto& appSettings = wxGetApp().GetAppSettings();
-    if (!GetReportBuilder().HasLoadedSvgExportOptions())
-        {
-        auto& svgOpts = GetReportBuilder().GetSvgExportOptions();
-        svgOpts = appSettings->GetSvgExportOptions();
-        svgOpts.m_paperId = appSettings->GetPaperId();
-        svgOpts.m_paperOrientation =
-            static_cast<wxPrintOrientation>(appSettings->GetPrintOrientation());
-        }
-    if (!GetReportBuilder().HasLoadedHtmlExportOptions())
-        {
-        GetReportBuilder().GetHtmlExportOptions() = appSettings->GetHtmlExportOptions();
-        // a logo is specific to a project, so it is never inherited
-        GetReportBuilder().GetHtmlExportOptions().m_logoPath.clear();
-        }
-    if (!GetReportBuilder().HasLoadedPdfExportOptions())
-        {
-        auto& pdfOpts = GetReportBuilder().GetPdfExportOptions();
-        pdfOpts.m_paperSize = appSettings->GetPaperId();
-        pdfOpts.m_paperOrientation =
-            static_cast<wxPrintOrientation>(appSettings->GetPrintOrientation());
-        }
-    if (!GetReportBuilder().HasLoadedPowerPointExportOptions())
-        {
-        GetReportBuilder().GetPowerPointExportOptions() = appSettings->GetPowerPointExportOptions();
-        }
-    if (!GetReportBuilder().HasLoadedOdpExportOptions())
-        {
-        GetReportBuilder().GetOdpExportOptions() = appSettings->GetOdpExportOptions();
-        }
+    // project file did not carry its own
+    wxGetApp().ApplyDefaultExportOptions(GetReportBuilder());
 
     if (initialDataset != nullptr)
         {
@@ -1312,11 +1282,25 @@ void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
+    ExportSvg(GetReportBuilder(), m_pages, fileDlg.GetPath());
+    }
+
+//-------------------------------------------
+void WisteriaView::ExportSvg(const Wisteria::ReportBuilder& builder,
+                             const std::vector<Wisteria::Canvas*>& pages, const wxString& filePath)
+    {
+    const auto& savedOptions = builder.GetSvgExportOptions();
+
+    const wxString dashboardFolder{ wxGetApp().FindResourceDirectory(_DT(L"res/dashboard")) };
+    const wxString themesFolder{ dashboardFolder.empty() ?
+                                     wxString{} :
+                                     dashboardFolder + wxFileName::GetPathSeparator() + L"themes" };
+
     // RAII creates the report, maybe_unused is to silence clang-tidy false positive
     [[maybe_unused]]
     Wisteria::SVGReportPrintout svgReport(
-        m_pages,
-        Wisteria::SVGReportOptions(fileDlg.GetPath())
+        pages,
+        Wisteria::SVGReportOptions(filePath)
             .PageSize(savedOptions.m_pageSize)
             .UseGlobalPrintSettings(savedOptions.m_useGlobalPrintSettings)
             .PaperId(savedOptions.m_paperId)
@@ -1399,9 +1383,6 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
         }
     wxGetApp().GetAppSettings()->GetHtmlExportOptions() = savedOptions;
 
-    const wxString themeCss{ ReadTextFile(themesFolder + wxFileName::GetPathSeparator() +
-                                          optionsDlg.GetTheme() + L".css") };
-
     wxFileDialog fileDlg(m_frame, _(L"Export to HTML"), wxString{},
                          GetDocument()->GetUserReadableName(), _(L"HTML files (*.html)|*.html"),
                          wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
@@ -1410,31 +1391,58 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
+    ExportHtml(GetReportBuilder(), m_pages, fileDlg.GetPath(), optionsDlg.GetDashboardTitle());
+    }
+
+//-------------------------------------------
+void WisteriaView::ExportHtml(const Wisteria::ReportBuilder& builder,
+                              const std::vector<Wisteria::Canvas*>& pages, const wxString& filePath,
+                              const wxString& title)
+    {
+    const auto& savedOptions = builder.GetHtmlExportOptions();
+
+    const wxString dashboardFolder{ wxGetApp().FindResourceDirectory(_DT(L"res/dashboard")) };
+    const wxString themesFolder{ dashboardFolder + wxFileName::GetPathSeparator() + L"themes" };
+
+    const wxString coreCss{ dashboardFolder.empty() ?
+                                wxString{} :
+                                ReadTextFile(dashboardFolder + wxFileName::GetPathSeparator() +
+                                             L"dashboard.css") };
+    if (coreCss.empty())
+        {
+        Wisteria::Settings::ReportError(
+            _(L"Unable to find the dashboard stylesheet (dashboard.css)."), _(L"Export Error"));
+        return;
+        }
+
+    const wxString themeCss{ ReadTextFile(themesFolder + wxFileName::GetPathSeparator() +
+                                          savedOptions.m_theme + L".css") };
+
     // page labels hold the raw name template, so the expanded titles are only used for the export
     std::vector<wxString> pageTitles;
-    pageTitles.reserve(m_pages.size());
-    for (const auto* page : m_pages)
+    pageTitles.reserve(pages.size());
+    for (const auto* page : pages)
         {
         pageTitles.push_back((page != nullptr && !page->GetNameTemplate().empty()) ?
-                                 GetReportBuilder().ExpandConstants(page->GetNameTemplate()) :
+                                 builder.ExpandConstants(page->GetNameTemplate()) :
                                  wxString{});
         }
 
     [[maybe_unused]]
     Wisteria::HtmlDashboardPrintout htmlDashboard(
-        m_pages, Wisteria::HtmlDashboardOptions(fileDlg.GetPath())
-                     .Title(GetReportBuilder().ExpandConstants(optionsDlg.GetDashboardTitle()))
-                     .Css(coreCss + L"\n" + themeCss)
-                     .Logo(optionsDlg.GetLogoPath())
-                     .InitialView(optionsDlg.GetInitialView())
-                     .InitialColorMode(optionsDlg.GetInitialColorMode())
-                     .ColorModeToggle(optionsDlg.IncludeColorModeToggle())
-                     .CountUpNumbers(optionsDlg.CountUpNumbers())
-                     .PageSize(optionsDlg.GetPageSize())
-                     .DualOrientations(optionsDlg.DualOrientations())
-                     .IncludeSave(optionsDlg.IncludeSave())
-                     .IncludePrint(optionsDlg.IncludePrint())
-                     .PageTitles(std::move(pageTitles)));
+        pages, Wisteria::HtmlDashboardOptions(filePath)
+                   .Title(builder.ExpandConstants(title))
+                   .Css(coreCss + L"\n" + themeCss)
+                   .Logo(savedOptions.m_logoPath)
+                   .InitialView(savedOptions.m_view)
+                   .InitialColorMode(savedOptions.m_colorMode)
+                   .ColorModeToggle(savedOptions.m_includeColorModeToggle)
+                   .CountUpNumbers(savedOptions.m_countUpNumbers)
+                   .PageSize(savedOptions.m_pageSize)
+                   .DualOrientations(savedOptions.m_dualOrientations)
+                   .IncludeSave(savedOptions.m_includeSave)
+                   .IncludePrint(savedOptions.m_includePrint)
+                   .PageTitles(std::move(pageTitles)));
     }
 
 //-------------------------------------------
@@ -1494,12 +1502,25 @@ void WisteriaView::OnPdfExport([[maybe_unused]] wxCommandEvent& event)
         savedPdfOptions.m_compress = options.m_compress;
         }
 
-    Wisteria::ReportPDFExport pdfReport(m_pages, fileDlg.GetPath(), options);
+    ExportPdf(GetReportBuilder(), m_pages, fileDlg.GetPath(), GetDocument()->GetUserReadableName());
 
     if (docInfoChanged || pdfPaperChanged)
         {
         GetDocument()->Modify(true);
         }
+    }
+
+//-------------------------------------------
+void WisteriaView::ExportPdf(const Wisteria::ReportBuilder& builder,
+                             const std::vector<Wisteria::Canvas*>& pages, const wxString& filePath,
+                             const wxString& fallbackTitle)
+    {
+    Wisteria::PdfExportOptions options{ builder.GetPdfExportOptions() };
+    options.m_title = builder.GetName().empty() ? fallbackTitle : builder.GetName();
+    options.m_subject = builder.GetSubject();
+    options.m_keywords = builder.GetKeywords();
+
+    Wisteria::ReportPDFExport pdfReport(pages, filePath, options);
     }
 
 //-------------------------------------------
@@ -1563,12 +1584,26 @@ void WisteriaView::OnPptxExport([[maybe_unused]] wxCommandEvent& event)
         savedOptions = options;
         }
 
-    Wisteria::ReportPowerPointExport pptxReport(m_pages, fileDlg.GetPath(), options);
+    ExportPptx(GetReportBuilder(), m_pages, fileDlg.GetPath(),
+               GetDocument()->GetUserReadableName());
 
     if (docInfoChanged || pptxOptionsChanged)
         {
         GetDocument()->Modify(true);
         }
+    }
+
+//-------------------------------------------
+void WisteriaView::ExportPptx(const Wisteria::ReportBuilder& builder,
+                              const std::vector<Wisteria::Canvas*>& pages, const wxString& filePath,
+                              const wxString& fallbackTitle)
+    {
+    Wisteria::PowerPointExportOptions options{ builder.GetPowerPointExportOptions() };
+    options.m_title = builder.GetName().empty() ? fallbackTitle : builder.GetName();
+    options.m_subject = builder.GetSubject();
+    options.m_keywords = builder.GetKeywords();
+
+    Wisteria::ReportPowerPointExport pptxReport(pages, filePath, options);
     }
 
 //-------------------------------------------
@@ -1629,12 +1664,25 @@ void WisteriaView::OnOdpExport([[maybe_unused]] wxCommandEvent& event)
         savedOptions = options;
         }
 
-    Wisteria::ReportOdpExport odpReport(m_pages, fileDlg.GetPath(), options);
+    ExportOdp(GetReportBuilder(), m_pages, fileDlg.GetPath(), GetDocument()->GetUserReadableName());
 
     if (docInfoChanged || odpOptionsChanged)
         {
         GetDocument()->Modify(true);
         }
+    }
+
+//-------------------------------------------
+void WisteriaView::ExportOdp(const Wisteria::ReportBuilder& builder,
+                             const std::vector<Wisteria::Canvas*>& pages, const wxString& filePath,
+                             const wxString& fallbackTitle)
+    {
+    Wisteria::OdpExportOptions options{ builder.GetOdpExportOptions() };
+    options.m_title = builder.GetName().empty() ? fallbackTitle : builder.GetName();
+    options.m_subject = builder.GetSubject();
+    options.m_keywords = builder.GetKeywords();
+
+    Wisteria::ReportOdpExport odpReport(pages, filePath, options);
     }
 
 //-------------------------------------------

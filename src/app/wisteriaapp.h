@@ -29,6 +29,11 @@
 #include <wx/splitter.h>
 #include <wx/wx.h>
 
+namespace Wisteria
+    {
+    class ReportBuilder;
+    }
+
 namespace Wisteria::GraphItems
     {
     class GraphItemBase;
@@ -228,6 +233,11 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     /// @param datasetPath The path to the dataset to open.
     void StartProjectFromDataset(const wxString& datasetPath);
 
+    /// @brief Fills in the export options that a loaded project did not save,
+    ///     using the app settings.
+    /// @param builder The project's report builder.
+    void ApplyDefaultExportOptions(Wisteria::ReportBuilder& builder);
+
     /// @brief Handler for the Open button's dropdown arrow.
     ///     Pops up a menu of recently opened files.
     /// @param event The dropdown event.
@@ -236,6 +246,11 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
   private:
     bool OnInit() override;
     int OnExit() override;
+    void OnInitCmdLine(wxCmdLineParser& parser) override;
+    bool OnCmdLineParsed(wxCmdLineParser& parser) override;
+    int OnRun() override;
+    // loads the command-line project and runs its exports, returns the exit code
+    int RunHeadlessExport();
     void LoadInterface();
     void InitProjectSidebar();
     void LoadRibbonLogPage(wxRibbonBar* ribbon);
@@ -260,6 +275,19 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     wxStartPage* m_startPage{ nullptr };
     std::vector<wxBitmapBundle> m_projectSideBarImageList;
     wxString m_pendingDatasetImportPath;
+
+    // writes log messages to stderr (and the log file) and counts errors
+    class HeadlessLog;
+
+    // command-line options
+    bool m_headless{ false };
+    int m_headlessExitCode{ 0 };
+    wxString m_cmdLineProjectPath;
+    wxString m_exportPdfPath;
+    wxString m_exportPptxPath;
+    wxString m_exportOdpPath;
+    wxString m_exportSvgPath;
+    wxString m_exportHtmlPath;
     };
 
 /// @brief Extended icon provider, which is connected to the

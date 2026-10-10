@@ -13,11 +13,13 @@
 #include "wisteriaview.h"
 #include <algorithm>
 #include <array>
+#include <cstdio>
 #include <functional>
 #include <iterator>
 #include <utility>
 #include <wx/aboutdlg.h>
 #include <wx/clipbrd.h>
+#include <wx/cmdline.h>
 #include <wx/dataobj.h>
 #include <wx/datetime.h>
 #include <wx/filedlg.h>
@@ -29,6 +31,9 @@
 #include <wx/stdpaths.h>
 #include <wx/utils.h>
 #include <wx/valgen.h>
+#ifdef __WXMSW__
+    #include <wx/msw/wrapwin.h>
+#endif
 
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast,cppcoreguidelines-avoid-non-const-global-variables)
 wxIMPLEMENT_APP(WisteriaApp);
@@ -113,13 +118,222 @@ bool WisteriaApp::OnInit()
         GetDocManager()->FileHistoryLoad(config);
         }
 
+    if (m_headless)
+        {
+        // OnRun() returns this without starting the main loop
+        m_headlessExitCode = RunHeadlessExport();
+        return true;
+        }
+
     LoadInterface();
     InitProjectSidebar();
 
     BaseApp::LogSystemInfo();
 
+    // open a project passed on the command line once the main loop is running
+    if (!m_cmdLineProjectPath.empty())
+        {
+        CallAfter([this]() { GetMainFrame()->OpenFile(m_cmdLineProjectPath); });
+        }
+
     return true;
     // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
+    }
+
+//-------------------------------------------
+void WisteriaApp::ApplyDefaultExportOptions(Wisteria::ReportBuilder& builder)
+    {
+    auto& appSettings = GetAppSettings();
+    if (!builder.HasLoadedSvgExportOptions())
+        {
+        auto& svgOpts = builder.GetSvgExportOptions();
+        svgOpts = appSettings->GetSvgExportOptions();
+        svgOpts.m_paperId = appSettings->GetPaperId();
+        svgOpts.m_paperOrientation =
+            static_cast<wxPrintOrientation>(appSettings->GetPrintOrientation());
+        }
+    if (!builder.HasLoadedHtmlExportOptions())
+        {
+        builder.GetHtmlExportOptions() = appSettings->GetHtmlExportOptions();
+        // a logo is specific to a project, so it is never inherited
+        builder.GetHtmlExportOptions().m_logoPath.clear();
+        }
+    if (!builder.HasLoadedPdfExportOptions())
+        {
+        auto& pdfOpts = builder.GetPdfExportOptions();
+        pdfOpts.m_paperSize = appSettings->GetPaperId();
+        pdfOpts.m_paperOrientation =
+            static_cast<wxPrintOrientation>(appSettings->GetPrintOrientation());
+        }
+    if (!builder.HasLoadedPowerPointExportOptions())
+        {
+        builder.GetPowerPointExportOptions() = appSettings->GetPowerPointExportOptions();
+        }
+    if (!builder.HasLoadedOdpExportOptions())
+        {
+        builder.GetOdpExportOptions() = appSettings->GetOdpExportOptions();
+        }
+    }
+
+//-------------------------------------------
+void WisteriaApp::OnInitCmdLine(wxCmdLineParser& parser)
+    {
+    BaseApp::OnInitCmdLine(parser);
+
+    parser.AddLongSwitch(L"headless", _(L"Export the project without showing the interface."));
+    parser.AddLongOption(L"export-pdf", _(L"Export the project to a PDF file."));
+    parser.AddLongOption(L"export-pptx", _(L"Export the project to a PowerPoint file."));
+    parser.AddLongOption(L"export-odp", _(L"Export the project to an OpenDocument presentation."));
+    parser.AddLongOption(L"export-svg", _(L"Export the project to an SVG file."));
+    parser.AddLongOption(L"export-html", _(L"Export the project to an HTML dashboard."));
+    parser.AddParam(_(L"project file"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL);
+    }
+
+//-------------------------------------------
+bool WisteriaApp::OnCmdLineParsed(wxCmdLineParser& parser)
+    {
+    if (!BaseApp::OnCmdLineParsed(parser))
+        {
+        return false;
+        }
+
+    m_headless = parser.Found(L"headless");
+    parser.Found(L"export-pdf", &m_exportPdfPath);
+    parser.Found(L"export-pptx", &m_exportPptxPath);
+    parser.Found(L"export-odp", &m_exportOdpPath);
+    parser.Found(L"export-svg", &m_exportSvgPath);
+    parser.Found(L"export-html", &m_exportHtmlPath);
+    if (parser.GetParamCount() > 0)
+        {
+        m_cmdLineProjectPath = parser.GetParam(0);
+        }
+
+    if (!m_headless &&
+        (!m_exportPdfPath.empty() || !m_exportPptxPath.empty() || !m_exportOdpPath.empty() ||
+         !m_exportSvgPath.empty() || !m_exportHtmlPath.empty()))
+        {
+        Wisteria::Settings::ReportError(_(L"The export options require --headless."),
+                                        _(L"Command Line Error"));
+        return false;
+        }
+
+    return true;
+    }
+
+//-------------------------------------------
+class WisteriaApp::HeadlessLog final : public wxLogChain
+    {
+  public:
+    HeadlessLog() : wxLogChain(new wxLogStderr) {}
+
+    [[nodiscard]]
+    size_t GetErrorCount() const noexcept
+        {
+        return m_errorCount;
+        }
+
+  protected:
+    void DoLogRecord(const wxLogLevel level, const wxString& msg, const wxLogRecordInfo& info) final
+        {
+        if (level <= wxLOG_Error)
+            {
+            ++m_errorCount;
+            }
+        wxLogChain::DoLogRecord(level, msg, info);
+        }
+
+  private:
+    size_t m_errorCount{ 0 };
+    };
+
+//-------------------------------------------
+int WisteriaApp::OnRun() { return m_headless ? m_headlessExitCode : BaseApp::OnRun(); }
+
+//-------------------------------------------
+int WisteriaApp::RunHeadlessExport()
+    {
+    Wisteria::Settings::SetInteractive(false);
+
+#ifdef __WXMSW__
+    // a GUI app has no console, so write to the one that launched it
+    // (unless stderr was redirected by the caller)
+    if (::GetStdHandle(STD_ERROR_HANDLE) == nullptr && ::AttachConsole(ATTACH_PARENT_PROCESS))
+        {
+        FILE* stream{ nullptr };
+        freopen_s(&stream, "CONOUT$", "w", stderr);
+        }
+#endif
+
+    // becomes the active log target, which wxWidgets owns
+    const auto* headlessLog = new HeadlessLog;
+
+    if (m_cmdLineProjectPath.empty())
+        {
+        wxLogError(_(L"No project file was specified."));
+        return 2;
+        }
+    if (m_exportPdfPath.empty() && m_exportPptxPath.empty() && m_exportOdpPath.empty() &&
+        m_exportSvgPath.empty() && m_exportHtmlPath.empty())
+        {
+        wxLogError(_(L"No export was specified."));
+        return 2;
+        }
+
+    // canvases need a parent window, even though it is never shown
+    auto* hiddenFrame = new wxFrame(nullptr, wxID_ANY, wxString{});
+
+    try
+        {
+        Wisteria::ReportBuilder builder;
+        const auto pages = builder.LoadConfigurationFile(m_cmdLineProjectPath, hiddenFrame);
+        if (pages.empty())
+            {
+            wxLogError(_(L"No pages were loaded from '%s'."), m_cmdLineProjectPath);
+            hiddenFrame->Destroy();
+            return 1;
+            }
+
+        ApplyDefaultExportOptions(builder);
+        for (auto* page : pages)
+            {
+            if (page != nullptr)
+                {
+                page->FitToPageWhenPrinting(true);
+                page->MaintainAspectRatio(true);
+                }
+            }
+
+        const wxString fallbackTitle{ wxFileName{ m_cmdLineProjectPath }.GetName() };
+        if (!m_exportPdfPath.empty())
+            {
+            WisteriaView::ExportPdf(builder, pages, m_exportPdfPath, fallbackTitle);
+            }
+        if (!m_exportPptxPath.empty())
+            {
+            WisteriaView::ExportPptx(builder, pages, m_exportPptxPath, fallbackTitle);
+            }
+        if (!m_exportOdpPath.empty())
+            {
+            WisteriaView::ExportOdp(builder, pages, m_exportOdpPath, fallbackTitle);
+            }
+        if (!m_exportSvgPath.empty())
+            {
+            WisteriaView::ExportSvg(builder, pages, m_exportSvgPath);
+            }
+        if (!m_exportHtmlPath.empty())
+            {
+            WisteriaView::ExportHtml(builder, pages, m_exportHtmlPath,
+                                     builder.GetName().empty() ? fallbackTitle : builder.GetName());
+            }
+        }
+    catch (const std::exception& exc)
+        {
+        wxLogError(L"%s", wxString::FromUTF8(exc.what()));
+        }
+
+    hiddenFrame->Destroy();
+
+    return (headlessLog->GetErrorCount() == 0) ? 0 : 1;
     }
 
 //-------------------------------------------

@@ -74,6 +74,49 @@ class WisteriaView final : public wxView
         return m_reportBuilder;
         }
 
+    /// @brief Exports pages to SVG using the project's saved SVG options.
+    /// @param builder The project's report builder.
+    /// @param pages The pages to export.
+    /// @param filePath The output file path.
+    static void ExportSvg(const Wisteria::ReportBuilder& builder,
+                          const std::vector<Wisteria::Canvas*>& pages, const wxString& filePath);
+
+    /// @brief Exports pages to an HTML dashboard using the project's saved HTML options.
+    /// @param builder The project's report builder.
+    /// @param pages The pages to export.
+    /// @param filePath The output file path.
+    /// @param title The dashboard title (constants are expanded).
+    static void ExportHtml(const Wisteria::ReportBuilder& builder,
+                           const std::vector<Wisteria::Canvas*>& pages, const wxString& filePath,
+                           const wxString& title);
+
+    /// @brief Exports pages to PDF using the project's saved PDF options.
+    /// @param builder The project's report builder.
+    /// @param pages The pages to export.
+    /// @param filePath The output file path.
+    /// @param fallbackTitle The title to use if the project has no name.
+    static void ExportPdf(const Wisteria::ReportBuilder& builder,
+                          const std::vector<Wisteria::Canvas*>& pages, const wxString& filePath,
+                          const wxString& fallbackTitle);
+
+    /// @brief Exports pages to PowerPoint using the project's saved PowerPoint options.
+    /// @param builder The project's report builder.
+    /// @param pages The pages to export.
+    /// @param filePath The output file path.
+    /// @param fallbackTitle The title to use if the project has no name.
+    static void ExportPptx(const Wisteria::ReportBuilder& builder,
+                           const std::vector<Wisteria::Canvas*>& pages, const wxString& filePath,
+                           const wxString& fallbackTitle);
+
+    /// @brief Exports pages to ODP using the project's saved ODP options.
+    /// @param builder The project's report builder.
+    /// @param pages The pages to export.
+    /// @param filePath The output file path.
+    /// @param fallbackTitle The title to use if the project has no name.
+    static void ExportOdp(const Wisteria::ReportBuilder& builder,
+                          const std::vector<Wisteria::Canvas*>& pages, const wxString& filePath,
+                          const wxString& fallbackTitle);
+
   private:
     [[nodiscard]]
     Wisteria::UI::SideBar* GetSideBar() noexcept
