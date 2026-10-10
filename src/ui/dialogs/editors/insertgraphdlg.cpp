@@ -494,6 +494,9 @@ namespace Wisteria::UI
             m_customShapeListBox->GetNewButton()->SetBitmapLabel(
                 wxGetApp().ReadSvgIcon(L"images/shape.svg", wxSize{ 16, 16 }));
 
+            m_customShapeListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                                       [this](wxListEvent&) { OnEditCustomShape(); });
+
             // override Edit to open a shape picker for the selected item
             m_customShapeListBox->GetEditButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
                                                         { OnEditCustomShape(); });
@@ -907,6 +910,32 @@ namespace Wisteria::UI
         // override Edit to open a color picker for the selected item
         editor.m_listBox->GetEditButton()->Bind(wxEVT_BUTTON, [this, &editor](wxCommandEvent&)
                                                 { OnEditCustomColor(editor); });
+
+        // double-clicking a color opens the color picker for it
+        editor.m_listBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                               [this, &editor](wxListEvent&) { OnEditCustomColor(editor); });
+
+        // apply a color typed in directly (e.g., "#FF8800") to the color list
+        editor.m_listBox->Bind(
+            wxEVT_LIST_END_LABEL_EDIT,
+            [this, &editor](wxListEvent& event)
+            {
+                if (event.IsEditCancelled())
+                    {
+                    return;
+                    }
+                const long idx = event.GetIndex();
+                wxColour newColor;
+                if (idx < 0 || std::cmp_greater_equal(idx, editor.m_customColors.size()) ||
+                    !newColor.Set(event.GetLabel().Strip(wxString::both)))
+                    {
+                    event.Veto();
+                    CallAfter([this, &editor]() { RefreshCustomColorList(editor); });
+                    return;
+                    }
+                editor.m_customColors[static_cast<size_t>(idx)] = newColor;
+                CallAfter([this, &editor]() { RefreshCustomColorList(editor); });
+            });
 
         // override Delete to remove the selected color from our vector
         editor.m_listBox->GetDelButton()->Bind(wxEVT_BUTTON, [this, &editor](wxCommandEvent&)
