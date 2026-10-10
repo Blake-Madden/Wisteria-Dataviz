@@ -1352,8 +1352,34 @@ namespace Wisteria
                 }
             }
 
-        // is there a legend?
+        // legend settings, shared by the detached and placed paths
         const auto legendNode = graphNode->GetProperty(L"legend");
+        const auto ringPerimeterStr = legendNode->GetProperty(L"ring")->AsString();
+        const auto ringPerimeter =
+            (ringPerimeterStr.CmpNoCase(L"inner") == 0 ? Perimeter::Inner : Perimeter::Outer);
+        const auto includeHeader = legendNode->GetProperty(L"include-header")->AsBool(true);
+        const auto headerLabel = legendNode->GetProperty(L"title")->AsString();
+        const auto placement = legendNode->GetProperty(L"placement")->AsString();
+
+        // a detached load only needs the configured graph, not its placement on the canvas
+        if (m_detachedLoad)
+            {
+            if (legendNode->IsOk())
+                {
+                graph->SetLegendInfo(
+                    Graphs::LegendOptions{}
+                        .RingPerimeter(ringPerimeter)
+                        .IncludeHeader(includeHeader)
+                        .Title(headerLabel)
+                        .Placement(placement.CmpNoCase(L"left") == 0   ? Side::Left :
+                                   placement.CmpNoCase(L"top") == 0    ? Side::Top :
+                                   placement.CmpNoCase(L"bottom") == 0 ? Side::Bottom :
+                                                                         Side::Right));
+                }
+            return;
+            }
+
+        // is there a legend?
         if (legendNode->IsOk())
             {
             const bool useEnhancedChernoffLegend =
@@ -1362,12 +1388,6 @@ namespace Wisteria
             auto* chernoffPlot = useEnhancedChernoffLegend ?
                                      dynamic_cast<Graphs::ChernoffFacesPlot*>(graph.get()) :
                                      nullptr;
-            const auto ringPerimeterStr = legendNode->GetProperty(L"ring")->AsString();
-            const auto ringPerimeter =
-                (ringPerimeterStr.CmpNoCase(L"inner") == 0 ? Perimeter::Inner : Perimeter::Outer);
-            const auto includeHeader = legendNode->GetProperty(L"include-header")->AsBool(true);
-            const auto headerLabel = legendNode->GetProperty(L"title")->AsString();
-            const auto placement = legendNode->GetProperty(L"placement")->AsString();
 
             // a choropleth map has a specialized legend
             auto* choroplethMap = dynamic_cast<Graphs::ChoroplethMap*>(graph.get());
@@ -2202,7 +2222,7 @@ namespace Wisteria
             table->SetPropertyTemplate(L"row-sort", sortNode->Print(false));
             }
 
-        if (tableNode->HasProperty(L"link-id"))
+        if (!m_detachedLoad && tableNode->HasProperty(L"link-id"))
             {
             if (const auto linkId = ConvertNumber(tableNode->GetProperty(L"link-id")))
                 {

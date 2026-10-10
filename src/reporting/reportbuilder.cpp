@@ -15,6 +15,179 @@
 namespace Wisteria
     {
     //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D>
+    ReportBuilder::LoadGraphByType(const wxSimpleJSON::Ptr_t& graphNode, const wxString& type,
+                                   Canvas* canvas, size_t& currentRow, size_t& currentColumn)
+        {
+        if (type.CmpNoCase(L"line-plot") == 0)
+            {
+            return LoadLinePlot(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"multi-series-line-plot") == 0)
+            {
+            return LoadMultiSeriesLinePlot(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"heatmap") == 0)
+            {
+            return LoadHeatMap(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"choropleth-map") == 0)
+            {
+            return LoadChoroplethMap(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"win-loss-sparkline") == 0)
+            {
+            return LoadWinLossSparkline(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"waffle-chart") == 0)
+            {
+            return LoadWaffleChart(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"race-track-chart") == 0)
+            {
+            return LoadRaceTrackChart(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"nightingale-rose-chart") == 0)
+            {
+            return LoadNightingaleRoseChart(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"bullet-chart") == 0)
+            {
+            return LoadBulletChart(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"waterfall-chart") == 0)
+            {
+            return LoadWaterfallChart(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"funnel-chart") == 0)
+            {
+            return LoadFunnelChart(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"dubois-spiral-chart") == 0)
+            {
+            return LoadDuBoisSpiralChart(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"dueling-pie-chart") == 0)
+            {
+            return LoadDuelingPieChart(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"pictograph") == 0)
+            {
+            return LoadPictograph(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"wilmarth-bridge-plot") == 0)
+            {
+            return LoadWilmarthBridgePlot(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"stem-and-leaf-plot") == 0)
+            {
+            return LoadStemAndLeafPlot(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"gantt-chart") == 0)
+            {
+            return LoadGanttChart(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"candlestick-plot") == 0)
+            {
+            return LoadCandlestickPlot(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"w-curve-plot") == 0)
+            {
+            return LoadWCurvePlot(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"likert-chart") == 0)
+            {
+            return LoadLikertChart(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"linear-regression-roadmap") == 0)
+            {
+            return LoadLRRoadmap(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"pro-con-roadmap") == 0)
+            {
+            return LoadProConRoadmap(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"word-cloud") == 0)
+            {
+            return LoadWordCloud(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"sankey-diagram") == 0)
+            {
+            return LoadSankeyDiagram(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"box-plot") == 0)
+            {
+            return LoadBoxPlot(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"pie-chart") == 0)
+            {
+            return LoadPieChart(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"histogram") == 0)
+            {
+            return LoadHistogram(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"scale-chart") == 0)
+            {
+            return LoadScaleChart(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"categorical-bar-chart") == 0)
+            {
+            return LoadCategoricalBarChart(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"scatter-plot") == 0)
+            {
+            return LoadScatterPlot(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"bubble-plot") == 0)
+            {
+            return LoadBubblePlot(graphNode, canvas, currentRow, currentColumn);
+            }
+        if (type.CmpNoCase(L"chernoff-faces") == 0)
+            {
+            return LoadChernoffFaces(graphNode, canvas, currentRow, currentColumn);
+            }
+        return nullptr;
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D> ReportBuilder::LoadGraphDetached(const wxString& json,
+                                                                      Canvas* parent)
+        {
+        if (parent == nullptr)
+            {
+            return nullptr;
+            }
+        const auto graphNode = wxSimpleJSON::Create(json, true);
+        if (graphNode == nullptr || !graphNode->IsOk())
+            {
+            return nullptr;
+            }
+        const auto typeNode = graphNode->GetProperty(L"type");
+        if (!typeNode->IsOk())
+            {
+            return nullptr;
+            }
+
+        m_detachedLoad = true;
+        size_t row{ 0 };
+        size_t col{ 0 };
+        try
+            {
+            auto graph = (typeNode->AsString().CmpNoCase(L"table") == 0) ?
+                             LoadTable(graphNode, parent, row, col) :
+                             LoadGraphByType(graphNode, typeNode->AsString(), parent, row, col);
+            m_detachedLoad = false;
+            return graph;
+            }
+        catch (...)
+            {
+            m_detachedLoad = false;
+            throw;
+            }
+        }
+
+    //---------------------------------------------------
     std::vector<Canvas*> ReportBuilder::LoadConfigurationFile(const wxString& filePath,
                                                               wxWindow* parent)
         {
@@ -556,197 +729,13 @@ namespace Wisteria
                                                Other objects like labels and images will be added to
                                                the canvas here though, as we know it will just be
                                                that one object.*/
-                                            if (typeProperty->AsString().CmpNoCase(L"line-plot") ==
-                                                0)
+                                            const auto typeName = typeProperty->AsString();
+                                            if (auto graph =
+                                                    LoadGraphByType(item, typeName, canvas,
+                                                                    currentRow, currentColumn);
+                                                graph != nullptr)
                                                 {
-                                                embeddedGraphs.push_back(LoadLinePlot(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"multi-series-line-plot") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadMultiSeriesLinePlot(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"heatmap") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadHeatMap(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"choropleth-map") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadChoroplethMap(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"win-loss-sparkline") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadWinLossSparkline(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"waffle-chart") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadWaffleChart(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"race-track-chart") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadRaceTrackChart(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"nightingale-rose-chart") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadNightingaleRoseChart(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"bullet-chart") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadBulletChart(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"waterfall-chart") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadWaterfallChart(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"funnel-chart") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadFunnelChart(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"dubois-spiral-chart") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadDuBoisSpiralChart(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"dueling-pie-chart") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadDuelingPieChart(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"pictograph") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadPictograph(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"wilmarth-bridge-plot") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadWilmarthBridgePlot(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"stem-and-leaf-plot") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadStemAndLeafPlot(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"gantt-chart") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadGanttChart(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"candlestick-plot") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadCandlestickPlot(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"w-curve-plot") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadWCurvePlot(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"likert-chart") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadLikertChart(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"linear-regression-roadmap") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadLRRoadmap(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"pro-con-roadmap") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadProConRoadmap(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"word-cloud") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadWordCloud(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"sankey-diagram") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadSankeyDiagram(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"box-plot") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadBoxPlot(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"pie-chart") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadPieChart(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"histogram") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadHistogram(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"scale-chart") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadScaleChart(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"categorical-bar-chart") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadCategoricalBarChart(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"scatter-plot") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadScatterPlot(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"bubble-plot") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadBubblePlot(
-                                                    item, canvas, currentRow, currentColumn));
-                                                }
-                                            else if (typeProperty->AsString().CmpNoCase(
-                                                         L"chernoff-faces") == 0)
-                                                {
-                                                embeddedGraphs.push_back(LoadChernoffFaces(
-                                                    item, canvas, currentRow, currentColumn));
+                                                embeddedGraphs.push_back(std::move(graph));
                                                 }
                                             else if (typeProperty->AsString().CmpNoCase(L"label") ==
                                                      0)

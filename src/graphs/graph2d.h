@@ -741,6 +741,10 @@ namespace Wisteria::Graphs
             return m_legendInfo;
             }
 
+        /// @brief Sets the legend options used when the legend was created.
+        /// @param options The legend options.
+        void SetLegendInfo(const LegendOptions& options) { m_legendInfo = options; }
+
         /// @returns A label, truncated if it is more than 32 characters.
         /// @param variableName The variable name to truncate.
         /// @note This is useful for shortening long variable names being displayed on a legend.
@@ -1175,10 +1179,6 @@ namespace Wisteria::Graphs
 
         /// @brief Additional info to show when selecting a plot in debug mode.
         wxString m_debugDrawInfoLabel;
-
-        /// @brief Sets the legend options used when the legend was created.
-        /// @param options The legend options.
-        void SetLegendInfo(const LegendOptions& options) { m_legendInfo = options; }
 
       private:
         std::optional<LegendOptions> m_legendInfo;

@@ -44,6 +44,14 @@ class WisteriaDoc final : public wxDocument
     /// @returns @c true on success.
     bool SaveProject(const wxString& filePath) const;
 
+    /// @brief Serializes a graph's settings to a JSON string.
+    /// @param graph The graph to serialize.
+    /// @param canvas The canvas that the graph belongs to.
+    /// @returns The graph's JSON, or an empty string if it could not be serialized.
+    [[nodiscard]]
+    wxString SerializeGraphToJson(const Wisteria::Graphs::Graph2D* graph,
+                                  const Wisteria::Canvas* canvas) const;
+
   private:
     bool OnNewDocument() override;
     bool OnOpenDocument(const wxString& filename) override;

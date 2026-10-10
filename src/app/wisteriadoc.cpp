@@ -464,6 +464,22 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
     }
 
 //-------------------------------------------
+wxString WisteriaDoc::SerializeGraphToJson(const Wisteria::Graphs::Graph2D* graph,
+                                           const Wisteria::Canvas* canvas) const
+    {
+    if (graph == nullptr || canvas == nullptr)
+        {
+        return {};
+        }
+    const auto graphNode = SaveGraphByType(graph, canvas);
+    if (graphNode == nullptr || !graphNode->IsOk())
+        {
+        return {};
+        }
+    return graphNode->Print(false);
+    }
+
+//-------------------------------------------
 wxString WisteriaDoc::EscapeJsonStr(const wxString& str)
     {
     wxString escaped;

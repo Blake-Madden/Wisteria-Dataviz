@@ -81,6 +81,15 @@ namespace Wisteria
         [[nodiscard]]
         std::vector<Canvas*> LoadConfigurationFile(const wxString& filePath, wxWindow* parent);
 
+        /// @brief Builds a single graph from its serialized JSON without placing it on a canvas.
+        /// @details The dataset that the graph refers to must already be loaded.
+        /// @param json The JSON of a single graph (as written by a project save).
+        /// @param parent The canvas to use as the graph's parent.
+        /// @returns The graph, or @c nullptr if the JSON is not a supported graph type.
+        /// @throws `std::runtime_error` If the graph's dataset or variables cannot be found.
+        [[nodiscard]]
+        std::shared_ptr<Graphs::Graph2D> LoadGraphDetached(const wxString& json, Canvas* parent);
+
         /// @returns The map of color names and their respective colors.
         [[nodiscard]]
         static const std::map<std::wstring_view, Wisteria::Colors::Color>& GetColorMap() noexcept
@@ -1026,6 +1035,17 @@ namespace Wisteria
         /// @todo many features still needed!
         void LoadGraph(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas, size_t& currentRow,
                        size_t& currentColumn, const std::shared_ptr<Graphs::Graph2D>& graph);
+        /// @brief Loads a graph node by calling the loader that matches its type.
+        /// @param graphNode The graph node to parse.
+        /// @param type The graph's type string (e.g., "pie-chart").
+        /// @param canvas The canvas to add the graph to.
+        /// @param[in,out] currentRow The row in the canvas where the graph will be placed.
+        /// @param[in,out] currentColumn The column in the canvas where the graph will be placed.
+        /// @returns The loaded graph, or null if @p type is not a graph type.
+        [[nodiscard]]
+        std::shared_ptr<Graphs::Graph2D> LoadGraphByType(const wxSimpleJSON::Ptr_t& graphNode,
+                                                         const wxString& type, Canvas* canvas,
+                                                         size_t& currentRow, size_t& currentColumn);
         /// @brief Loads a line plot node into the canvas.
         /// @param graphNode The graph node to parse.
         /// @param canvas The canvas to add the graph to.
@@ -1667,6 +1687,8 @@ namespace Wisteria
         std::vector<PendingErrorMessage> m_pendingErrorMessages;
         MissingDatasetResolver m_missingDatasetResolver;
         bool m_resolvedMissingDatasets{ false };
+
+        bool m_detachedLoad{ false };
 
         wxString m_configFilePath;
         };

@@ -41,12 +41,16 @@
 /// @cond DOXYGEN_IGNORE
 wxDECLARE_EVENT(wxEVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
 wxDECLARE_EVENT(wxEVT_WISTERIA_CANVAS_SELECTION_CHANGED, wxCommandEvent);
+wxDECLARE_EVENT(wxEVT_WISTERIA_CANVAS_COPY_GRAPH, wxCommandEvent);
 
 #define EVT_WISTERIA_CANVAS_DCLICK(winId, fn)                                                      \
     wx__DECLARE_EVT1(wxEVT_WISTERIA_CANVAS_DCLICK, winId, wxCommandEventHandler(fn))
 
 #define EVT_WISTERIA_CANVAS_SELECTION_CHANGED(winId, fn)                                           \
     wx__DECLARE_EVT1(wxEVT_WISTERIA_CANVAS_SELECTION_CHANGED, winId, wxCommandEventHandler(fn))
+
+#define EVT_WISTERIA_CANVAS_COPY_GRAPH(winId, fn)                                                  \
+    wx__DECLARE_EVT1(wxEVT_WISTERIA_CANVAS_COPY_GRAPH, winId, wxCommandEventHandler(fn))
 
 /// @endcond
 
@@ -242,6 +246,30 @@ namespace Wisteria
         static const std::shared_ptr<GraphItems::Image>& GetImageClipboard() noexcept
             {
             return m_imageClipboard;
+            }
+
+        /// @returns The copied graph's settings (as JSON) for report-editing paste,
+        ///     or an empty string if none.
+        [[nodiscard]]
+        static const wxString& GetGraphClipboard() noexcept
+            {
+            return m_graphClipboard;
+            }
+
+        /// @brief Sets the copied graph's settings, replacing whatever was previously copied.
+        /// @param graphJson The graph's settings, as JSON.
+        static void SetGraphClipboard(const wxString& graphJson)
+            {
+            ClearItemClipboards();
+            m_graphClipboard = graphJson;
+            }
+
+        /// @brief Clears the copied label, image, and graph.
+        static void ClearItemClipboards() noexcept
+            {
+            m_labelClipboard.reset();
+            m_imageClipboard.reset();
+            m_graphClipboard.clear();
             }
 
         /** @name Background Functions
@@ -1104,6 +1132,7 @@ namespace Wisteria
         // buffered items for report-editing copy/paste (shared across all canvas instances)
         inline static std::shared_ptr<GraphItems::Label> m_labelClipboard;
         inline static std::shared_ptr<GraphItems::Image> m_imageClipboard;
+        inline static wxString m_graphClipboard;
 
         // draggable items
         // (note that these objects must be share_ptrs because a state-based share_ptr must be

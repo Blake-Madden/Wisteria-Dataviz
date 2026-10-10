@@ -481,6 +481,9 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     // bind canvas double-click to edit the selected item
     m_frame->Bind(wxEVT_WISTERIA_CANVAS_DCLICK, &WisteriaView::OnCanvasDClick, this);
 
+    // bind canvas graph copy to save the graph's settings to the clipboard
+    m_frame->Bind(wxEVT_WISTERIA_CANVAS_COPY_GRAPH, &WisteriaView::OnCanvasCopyGraph, this);
+
     // refresh ribbon button states whenever the canvas selection changes
     m_frame->Bind(wxEVT_WISTERIA_CANVAS_SELECTION_CHANGED,
                   [this]([[maybe_unused]]
@@ -1094,6 +1097,33 @@ void WisteriaView::OnPasteItem([[maybe_unused]] wxCommandEvent& event)
         {
         return;
         }
+
+    // a copied graph's settings reopen the matching Insert dialog
+    if (const auto& graphJson = Wisteria::Canvas::GetGraphClipboard(); !graphJson.empty())
+        {
+        SyncPageNumber(canvas);
+
+        std::shared_ptr<Wisteria::Graphs::Graph2D> graph;
+        try
+            {
+            graph = m_reportBuilder.LoadGraphDetached(graphJson, canvas);
+            }
+        catch (const std::exception& exc)
+            {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Paste"), wxOK | wxICON_ERROR, m_frame);
+            return;
+            }
+        if (graph == nullptr)
+            {
+            wxMessageBox(_(L"This type of graph cannot be pasted."), _(L"Paste"),
+                         wxOK | wxICON_INFORMATION, m_frame);
+            return;
+            }
+        graph->SetId(wxID_ANY);
+        EditGraphByType(*graph, canvas, 0, 0, true);
+        return;
+        }
+
     std::shared_ptr<Wisteria::GraphItems::GraphItemBase> canvasItem{
         Wisteria::Canvas::GetLabelClipboard()
     };
@@ -2794,14 +2824,19 @@ void WisteriaView::OnInsertTable([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                             const size_t graphRow, const size_t graphCol)
+                             const size_t graphRow, const size_t graphCol, const bool pasteAsNew)
     {
-    Wisteria::UI::InsertTableDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Table"), wxID_ANY,
+    Wisteria::UI::InsertTableDlg dlg(canvas, &m_reportBuilder, m_frame,
+                                     pasteAsNew ? _(L"Insert Table") : _(L"Edit Table"), wxID_ANY,
                                      wxDefaultPosition, wxDefaultSize,
                                      wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
+                                     pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                                                  Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/table.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -2825,6 +2860,34 @@ void WisteriaView::EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas*
 
 //-------------------------------------------
 void WisteriaView::OnCanvasDClick(wxCommandEvent& event) { OnEditItem(event); }
+
+//-------------------------------------------
+void WisteriaView::OnCanvasCopyGraph(wxCommandEvent& event)
+    {
+    auto* canvas = dynamic_cast<Wisteria::Canvas*>(event.GetEventObject());
+    const auto* doc = dynamic_cast<WisteriaDoc*>(GetDocument());
+    if (canvas == nullptr || doc == nullptr)
+        {
+        return;
+        }
+
+    // the canvas has already verified this is the single selected item
+    const auto* graph = dynamic_cast<const Wisteria::Graphs::Graph2D*>(
+        static_cast<const Wisteria::GraphItems::GraphItemBase*>(event.GetClientData()));
+    if (graph == nullptr)
+        {
+        return;
+        }
+
+    const auto graphJson = doc->SerializeGraphToJson(graph, canvas);
+    if (graphJson.empty())
+        {
+        wxMessageBox(_(L"This graph could not be copied."), _(L"Copy"), wxOK | wxICON_INFORMATION,
+                     m_frame);
+        return;
+        }
+    Wisteria::Canvas::SetGraphClipboard(graphJson);
+    }
 
 //-------------------------------------------
 void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
@@ -2927,139 +2990,147 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
+    EditGraphByType(*graph, canvas, itemRow, itemCol);
+    }
+
+//-------------------------------------------
+void WisteriaView::EditGraphByType(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                   const size_t graphRow, const size_t graphCol,
+                                   const bool pasteAsNew)
+    {
     // dispatch to the appropriate edit function based on graph type
     // (check derived classes before their base classes)
-    if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BubblePlot)))
+    if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::BubblePlot)))
         {
-        EditBubblePlot(*graph, canvas, itemRow, itemCol);
+        EditBubblePlot(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScatterPlot)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScatterPlot)))
         {
-        EditScatterPlot(*graph, canvas, itemRow, itemCol);
+        EditScatterPlot(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot)))
         {
-        EditChernoffPlot(*graph, canvas, itemRow, itemCol);
+        EditChernoffPlot(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WCurvePlot)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::WCurvePlot)))
         {
-        EditWCurvePlot(*graph, canvas, itemRow, itemCol);
+        EditWCurvePlot(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::MultiSeriesLinePlot)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::MultiSeriesLinePlot)))
         {
-        EditMultiSeriesLinePlot(*graph, canvas, itemRow, itemCol);
+        EditMultiSeriesLinePlot(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LinePlot)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::LinePlot)))
         {
-        EditLinePlot(*graph, canvas, itemRow, itemCol);
+        EditLinePlot(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LRRoadmap)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::LRRoadmap)))
         {
-        EditLRRoadmap(*graph, canvas, itemRow, itemCol);
+        EditLRRoadmap(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ProConRoadmap)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::ProConRoadmap)))
         {
-        EditProConRoadmap(*graph, canvas, itemRow, itemCol);
+        EditProConRoadmap(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BoxPlot)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::BoxPlot)))
         {
-        EditBoxPlot(*graph, canvas, itemRow, itemCol);
+        EditBoxPlot(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScaleChart)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScaleChart)))
         {
-        EditScaleChart(*graph, canvas, itemRow, itemCol);
+        EditScaleChart(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CategoricalBarChart)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::CategoricalBarChart)))
         {
-        EditCatBarChart(*graph, canvas, itemRow, itemCol);
+        EditCatBarChart(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LikertChart)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::LikertChart)))
         {
-        EditLikertChart(*graph, canvas, itemRow, itemCol);
+        EditLikertChart(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::HeatMap)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::HeatMap)))
         {
-        EditHeatMap(*graph, canvas, itemRow, itemCol);
+        EditHeatMap(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Histogram)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::Histogram)))
         {
-        EditHistogram(*graph, canvas, itemRow, itemCol);
+        EditHistogram(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WordCloud)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::WordCloud)))
         {
-        EditWordCloud(*graph, canvas, itemRow, itemCol);
+        EditWordCloud(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChoroplethMap)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChoroplethMap)))
         {
-        EditChoroplethMap(*graph, canvas, itemRow, itemCol);
+        EditChoroplethMap(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WinLossSparkline)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::WinLossSparkline)))
         {
-        EditWLSparkline(*graph, canvas, itemRow, itemCol);
+        EditWLSparkline(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::StemAndLeafPlot)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::StemAndLeafPlot)))
         {
-        EditStemAndLeaf(*graph, canvas, itemRow, itemCol);
+        EditStemAndLeaf(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::PieChart)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::PieChart)))
         {
-        EditPieChart(*graph, canvas, itemRow, itemCol);
+        EditPieChart(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::CandlestickPlot)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::CandlestickPlot)))
         {
-        EditCandlestickPlot(*graph, canvas, itemRow, itemCol);
+        EditCandlestickPlot(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::SankeyDiagram)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::SankeyDiagram)))
         {
-        EditSankeyDiagram(*graph, canvas, itemRow, itemCol);
+        EditSankeyDiagram(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::GanttChart)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::GanttChart)))
         {
-        EditGanttChart(*graph, canvas, itemRow, itemCol);
+        EditGanttChart(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WaffleChart)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::WaffleChart)))
         {
-        EditWaffleChart(*graph, canvas, itemRow, itemCol);
+        EditWaffleChart(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::RaceTrackChart)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::RaceTrackChart)))
         {
-        EditRaceTrackChart(*graph, canvas, itemRow, itemCol);
+        EditRaceTrackChart(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::NightingaleRoseChart)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::NightingaleRoseChart)))
         {
-        EditNightingaleRoseChart(*graph, canvas, itemRow, itemCol);
+        EditNightingaleRoseChart(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::DuBoisSpiralChart)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::DuBoisSpiralChart)))
         {
-        EditDuBoisSpiralChart(*graph, canvas, itemRow, itemCol);
+        EditDuBoisSpiralChart(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::DuelingPieChart)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::DuelingPieChart)))
         {
-        EditDuelingPieChart(*graph, canvas, itemRow, itemCol);
+        EditDuelingPieChart(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Pictograph)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::Pictograph)))
         {
-        EditPictograph(*graph, canvas, itemRow, itemCol);
+        EditPictograph(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BulletChart)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::BulletChart)))
         {
-        EditBulletChart(*graph, canvas, itemRow, itemCol);
+        EditBulletChart(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WaterfallChart)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::WaterfallChart)))
         {
-        EditWaterfallChart(*graph, canvas, itemRow, itemCol);
+        EditWaterfallChart(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::FunnelChart)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::FunnelChart)))
         {
-        EditFunnelChart(*graph, canvas, itemRow, itemCol);
+        EditFunnelChart(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WilmarthBridgePlot)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::WilmarthBridgePlot)))
         {
-        EditWilmarthBridgePlot(*graph, canvas, itemRow, itemCol);
+        EditWilmarthBridgePlot(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
-    else if (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Table)))
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::Table)))
         {
-        EditTable(*graph, canvas, itemRow, itemCol);
+        EditTable(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
     }
 
@@ -3247,14 +3318,21 @@ void WisteriaView::OnGoToDatasource([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditScatterPlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                   const size_t graphRow, const size_t graphCol) const
+                                   const size_t graphRow, const size_t graphCol,
+                                   const bool pasteAsNew) const
     {
     Wisteria::UI::InsertScatterPlotDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Scatter Plot"), wxID_ANY, wxDefaultPosition,
-        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Scatter Plot") : _(L"Edit Scatter Plot"), wxID_ANY,
+        wxDefaultPosition, wxDefaultSize,
+        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/scatterplot.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -3267,7 +3345,10 @@ void WisteriaView::EditScatterPlot(const Wisteria::Graphs::Graph2D& graph, Wiste
         auto plot = dlg.BuildScatterPlot(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
@@ -3310,14 +3391,20 @@ void WisteriaView::OnInsertBubblePlot([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditBubblePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                  const size_t graphRow, const size_t graphCol) const
+                                  const size_t graphRow, const size_t graphCol,
+                                  const bool pasteAsNew) const
     {
     Wisteria::UI::InsertBubblePlotDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Bubble Plot"), wxID_ANY, wxDefaultPosition,
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Bubble Plot") : _(L"Edit Bubble Plot"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/bubbleplot.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -3330,7 +3417,10 @@ void WisteriaView::EditBubblePlot(const Wisteria::Graphs::Graph2D& graph, Wister
         auto plot = dlg.BuildBubblePlot(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
@@ -3344,15 +3434,20 @@ void WisteriaView::EditBubblePlot(const Wisteria::Graphs::Graph2D& graph, Wister
 //-------------------------------------------
 void WisteriaView::EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph,
                                     Wisteria::Canvas* canvas, const size_t graphRow,
-                                    const size_t graphCol) const
+                                    const size_t graphCol, const bool pasteAsNew) const
     {
     Wisteria::UI::InsertChernoffDlg dlg(canvas, &m_reportBuilder, m_frame,
-                                        _(L"Edit Chernoff Faces Plot"), wxID_ANY, wxDefaultPosition,
-                                        wxDefaultSize,
+                                        pasteAsNew ? _(L"Insert Chernoff Faces Plot") :
+                                                     _(L"Edit Chernoff Faces Plot"),
+                                        wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                                        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+                                        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                                                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/chernoffplot.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -3365,7 +3460,10 @@ void WisteriaView::EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph,
         auto plot = dlg.BuildChernoffFacesPlot(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         auto legend =
             BuildLegend(dlg, legendPlacement,
@@ -3419,14 +3517,20 @@ void WisteriaView::OnInsertLinePlot([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditLinePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                const size_t graphRow, const size_t graphCol) const
+                                const size_t graphRow, const size_t graphCol,
+                                const bool pasteAsNew) const
     {
-    Wisteria::UI::InsertLinePlotDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Line Plot"),
+    Wisteria::UI::InsertLinePlotDlg dlg(canvas, &m_reportBuilder, m_frame,
+                                        pasteAsNew ? _(L"Insert Line Plot") : _(L"Edit Line Plot"),
                                         wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                                        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+                                        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                                                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/lineplot.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -3439,7 +3543,10 @@ void WisteriaView::EditLinePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria
         auto plot = dlg.BuildLinePlot(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
@@ -3483,15 +3590,20 @@ void WisteriaView::OnInsertMultiSeriesLinePlot([[maybe_unused]] wxCommandEvent& 
 //-------------------------------------------
 void WisteriaView::EditMultiSeriesLinePlot(const Wisteria::Graphs::Graph2D& graph,
                                            Wisteria::Canvas* canvas, const size_t graphRow,
-                                           const size_t graphCol) const
+                                           const size_t graphCol, const bool pasteAsNew) const
     {
     Wisteria::UI::InsertMultiSeriesLinePlotDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Multi-Series Line Plot"), wxID_ANY,
-        wxDefaultPosition, wxDefaultSize,
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Multi-Series Line Plot") : _(L"Edit Multi-Series Line Plot"),
+        wxID_ANY, wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/lineplot.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -3504,7 +3616,10 @@ void WisteriaView::EditMultiSeriesLinePlot(const Wisteria::Graphs::Graph2D& grap
         auto plot = dlg.BuildMultiSeriesLinePlot(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
@@ -3547,14 +3662,21 @@ void WisteriaView::OnInsertWCurvePlot([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditWCurvePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                  const size_t graphRow, const size_t graphCol) const
+                                  const size_t graphRow, const size_t graphCol,
+                                  const bool pasteAsNew) const
     {
-    Wisteria::UI::InsertWCurveDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit W-Curve Plot"),
+    Wisteria::UI::InsertWCurveDlg dlg(canvas, &m_reportBuilder, m_frame,
+                                      pasteAsNew ? _(L"Insert W-Curve Plot") :
+                                                   _(L"Edit W-Curve Plot"),
                                       wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                       wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                                      Wisteria::UI::InsertItemDlg::EditMode::Edit);
+                                      pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                                                   Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/wcurve.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -3567,7 +3689,10 @@ void WisteriaView::EditWCurvePlot(const Wisteria::Graphs::Graph2D& graph, Wister
         auto plot = dlg.BuildWCurvePlot(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
@@ -3610,15 +3735,21 @@ void WisteriaView::OnInsertLRRoadmap([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditLRRoadmap(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                 const size_t graphRow, const size_t graphCol) const
+                                 const size_t graphRow, const size_t graphCol,
+                                 const bool pasteAsNew) const
     {
-    Wisteria::UI::InsertLRRoadmapDlg dlg(canvas, &m_reportBuilder, m_frame,
-                                         _(L"Edit Linear Regression Roadmap"), wxID_ANY,
-                                         wxDefaultPosition, wxDefaultSize,
-                                         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                                         Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    Wisteria::UI::InsertLRRoadmapDlg dlg(
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Linear Regression Roadmap") : _(L"Edit Linear Regression Roadmap"),
+        wxID_ANY, wxDefaultPosition, wxDefaultSize,
+        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/roadmap.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -3631,7 +3762,10 @@ void WisteriaView::EditLRRoadmap(const Wisteria::Graphs::Graph2D& graph, Wisteri
         auto plot = dlg.BuildLRRoadmap(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
@@ -3675,15 +3809,20 @@ void WisteriaView::OnInsertProConRoadmap([[maybe_unused]] wxCommandEvent& event)
 //-------------------------------------------
 void WisteriaView::EditProConRoadmap(const Wisteria::Graphs::Graph2D& graph,
                                      Wisteria::Canvas* canvas, const size_t graphRow,
-                                     const size_t graphCol) const
+                                     const size_t graphCol, const bool pasteAsNew) const
     {
     Wisteria::UI::InsertProConRoadmapDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Pro && Con Roadmap"), wxID_ANY,
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Pro && Con Roadmap") : _(L"Edit Pro && Con Roadmap"), wxID_ANY,
         wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/roadmap.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -3696,7 +3835,10 @@ void WisteriaView::EditProConRoadmap(const Wisteria::Graphs::Graph2D& graph,
         auto plot = dlg.BuildProConRoadmap(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
@@ -3739,14 +3881,20 @@ void WisteriaView::OnInsertGanttChart([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                  const size_t graphRow, const size_t graphCol) const
+                                  const size_t graphRow, const size_t graphCol,
+                                  const bool pasteAsNew) const
     {
     Wisteria::UI::InsertGanttChartDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Gantt Chart"), wxID_ANY, wxDefaultPosition,
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Gantt Chart") : _(L"Edit Gantt Chart"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/gantt.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -3759,7 +3907,10 @@ void WisteriaView::EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Ca
         auto plot = dlg.BuildGanttChart(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
@@ -3804,14 +3955,20 @@ void WisteriaView::OnInsertCandlestickPlot([[maybe_unused]] wxCommandEvent& even
 //-------------------------------------------
 void WisteriaView::EditCandlestickPlot(const Wisteria::Graphs::Graph2D& graph,
                                        Wisteria::Canvas* canvas, const size_t graphRow,
-                                       const size_t graphCol) const
+                                       const size_t graphCol, const bool pasteAsNew) const
     {
     Wisteria::UI::InsertCandlestickPlotDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Candlestick Plot"), wxID_ANY, wxDefaultPosition,
-        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Candlestick Plot") : _(L"Edit Candlestick Plot"), wxID_ANY,
+        wxDefaultPosition, wxDefaultSize,
+        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/candlestick.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -3822,11 +3979,20 @@ void WisteriaView::EditCandlestickPlot(const Wisteria::Graphs::Graph2D& graph,
     try
         {
         auto plot = dlg.BuildCandlestickPlot(&graph);
-        canvas->SetFixedObject(graphRow, graphCol, plot);
+        if (pasteAsNew)
+            {
+            PlaceGraphWithLegend(
+                canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
+            }
+        else
+            {
+            canvas->SetFixedObject(graphRow, graphCol, plot);
 
-        UpdateCanvas(canvas);
+            UpdateCanvas(canvas);
 
-        GetDocument()->Modify(true);
+            GetDocument()->Modify(true);
+            }
         }
     catch (const std::exception& exc)
         {
@@ -3869,14 +4035,20 @@ void WisteriaView::OnInsertSankeyDiagram([[maybe_unused]] wxCommandEvent& event)
 //-------------------------------------------
 void WisteriaView::EditSankeyDiagram(const Wisteria::Graphs::Graph2D& graph,
                                      Wisteria::Canvas* canvas, const size_t graphRow,
-                                     const size_t graphCol) const
+                                     const size_t graphCol, const bool pasteAsNew) const
     {
     Wisteria::UI::InsertSankeyDiagramDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Sankey Diagram"), wxID_ANY, wxDefaultPosition,
-        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Sankey Diagram") : _(L"Edit Sankey Diagram"), wxID_ANY,
+        wxDefaultPosition, wxDefaultSize,
+        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/sankey.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -3888,11 +4060,20 @@ void WisteriaView::EditSankeyDiagram(const Wisteria::Graphs::Graph2D& graph,
         {
         auto plot = dlg.BuildSankeyDiagram(&graph);
 
-        canvas->SetFixedObject(graphRow, graphCol, plot);
+        if (pasteAsNew)
+            {
+            PlaceGraphWithLegend(
+                canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
+            }
+        else
+            {
+            canvas->SetFixedObject(graphRow, graphCol, plot);
 
-        UpdateCanvas(canvas);
+            UpdateCanvas(canvas);
 
-        GetDocument()->Modify(true);
+            GetDocument()->Modify(true);
+            }
         }
     catch (const std::exception& exc)
         {
@@ -3938,7 +4119,8 @@ void WisteriaView::OnInsertBoxPlot([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                               const size_t graphRow, const size_t graphCol) const
+                               const size_t graphRow, const size_t graphCol,
+                               const bool pasteAsNew) const
     {
     auto* doc = dynamic_cast<WisteriaDoc*>(GetDocument());
     if (doc == nullptr)
@@ -3947,12 +4129,17 @@ void WisteriaView::EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
         return;
         }
 
-    Wisteria::UI::InsertBoxPlotDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Box Plot"),
+    Wisteria::UI::InsertBoxPlotDlg dlg(canvas, &m_reportBuilder, m_frame,
+                                       pasteAsNew ? _(L"Insert Box Plot") : _(L"Edit Box Plot"),
                                        wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                                       Wisteria::UI::InsertItemDlg::EditMode::Edit);
+                                       pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                                                    Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/boxplot.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -3965,7 +4152,10 @@ void WisteriaView::EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canva
         auto plot = dlg.BuildBoxPlot(doc, &graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
@@ -4014,7 +4204,8 @@ void WisteriaView::OnInsertCatBarChart([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                   const size_t graphRow, const size_t graphCol) const
+                                   const size_t graphRow, const size_t graphCol,
+                                   const bool pasteAsNew) const
     {
     auto* doc = dynamic_cast<WisteriaDoc*>(GetDocument());
     if (doc == nullptr)
@@ -4024,11 +4215,16 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         }
 
     Wisteria::UI::InsertCatBarChartDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Bar Chart"), wxID_ANY, wxDefaultPosition,
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Bar Chart") : _(L"Edit Bar Chart"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/barchart.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -4041,7 +4237,10 @@ void WisteriaView::EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         auto plot = dlg.BuildCatBarChart(doc, &graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
@@ -4084,14 +4283,21 @@ void WisteriaView::OnInsertLikertChart([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditLikertChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                   const size_t graphRow, const size_t graphCol) const
+                                   const size_t graphRow, const size_t graphCol,
+                                   const bool pasteAsNew) const
     {
-    Wisteria::UI::InsertLikertDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Likert Chart"),
+    Wisteria::UI::InsertLikertDlg dlg(canvas, &m_reportBuilder, m_frame,
+                                      pasteAsNew ? _(L"Insert Likert Chart") :
+                                                   _(L"Edit Likert Chart"),
                                       wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                       wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                                      Wisteria::UI::InsertItemDlg::EditMode::Edit);
+                                      pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                                                   Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/likert7.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -4104,10 +4310,13 @@ void WisteriaView::EditLikertChart(const Wisteria::Graphs::Graph2D& graph, Wiste
         auto plot = dlg.BuildLikertChart(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
-        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement), graphRow,
-                             graphCol, legendPlacement);
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -4147,14 +4356,20 @@ void WisteriaView::OnInsertHeatMap([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditHeatMap(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                               const size_t graphRow, const size_t graphCol) const
+                               const size_t graphRow, const size_t graphCol,
+                               const bool pasteAsNew) const
     {
-    Wisteria::UI::InsertHeatMapDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Heat Map"),
+    Wisteria::UI::InsertHeatMapDlg dlg(canvas, &m_reportBuilder, m_frame,
+                                       pasteAsNew ? _(L"Insert Heat Map") : _(L"Edit Heat Map"),
                                        wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                                       Wisteria::UI::InsertItemDlg::EditMode::Edit);
+                                       pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                                                    Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/heatmap.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -4167,7 +4382,10 @@ void WisteriaView::EditHeatMap(const Wisteria::Graphs::Graph2D& graph, Wisteria:
         auto plot = dlg.BuildHeatMap(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
@@ -4210,14 +4428,20 @@ void WisteriaView::OnInsertHistogram([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditHistogram(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                 const size_t graphRow, const size_t graphCol) const
+                                 const size_t graphRow, const size_t graphCol,
+                                 const bool pasteAsNew) const
     {
-    Wisteria::UI::InsertHistogramDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Histogram"),
-                                         wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                                         Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    Wisteria::UI::InsertHistogramDlg dlg(
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Histogram") : _(L"Edit Histogram"), wxID_ANY, wxDefaultPosition,
+        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/histogram.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -4230,7 +4454,10 @@ void WisteriaView::EditHistogram(const Wisteria::Graphs::Graph2D& graph, Wisteri
         auto plot = dlg.BuildHistogram(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
@@ -4273,14 +4500,20 @@ void WisteriaView::OnInsertScaleChart([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditScaleChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                  const size_t graphRow, const size_t graphCol) const
+                                  const size_t graphRow, const size_t graphCol,
+                                  const bool pasteAsNew) const
     {
     Wisteria::UI::InsertScaleChartDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Scale Chart"), wxID_ANY, wxDefaultPosition,
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Scale Chart") : _(L"Edit Scale Chart"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/scale.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -4293,7 +4526,10 @@ void WisteriaView::EditScaleChart(const Wisteria::Graphs::Graph2D& graph, Wister
         auto plot = dlg.BuildScaleChart(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
@@ -4384,14 +4620,20 @@ void WisteriaView::OnInsertChoroplethMap([[maybe_unused]] wxCommandEvent& event)
 //-------------------------------------------
 void WisteriaView::EditChoroplethMap(const Wisteria::Graphs::Graph2D& graph,
                                      Wisteria::Canvas* canvas, const size_t graphRow,
-                                     const size_t graphCol) const
+                                     const size_t graphCol, const bool pasteAsNew) const
     {
     Wisteria::UI::InsertChoroplethMapDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Choropleth Map"), wxID_ANY, wxDefaultPosition,
-        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Choropleth Map") : _(L"Edit Choropleth Map"), wxID_ANY,
+        wxDefaultPosition, wxDefaultSize,
+        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/choropleth.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -4420,7 +4662,10 @@ void WisteriaView::EditChoroplethMap(const Wisteria::Graphs::Graph2D& graph,
                                            plot->CreateChoroplethLegend(options));
                         });
 
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
         PlaceGraphWithLegend(canvas, plot, std::move(legendObject), dlg.GetSelectedRow(),
                              dlg.GetSelectedColumn(), legendPlacement);
         }
@@ -4432,14 +4677,20 @@ void WisteriaView::EditChoroplethMap(const Wisteria::Graphs::Graph2D& graph,
 
 //-------------------------------------------
 void WisteriaView::EditWordCloud(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                 const size_t graphRow, const size_t graphCol) const
+                                 const size_t graphRow, const size_t graphCol,
+                                 const bool pasteAsNew) const
     {
-    Wisteria::UI::InsertWordCloudDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Word Cloud"),
-                                         wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                                         Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    Wisteria::UI::InsertWordCloudDlg dlg(
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Word Cloud") : _(L"Edit Word Cloud"), wxID_ANY, wxDefaultPosition,
+        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/wordcloud.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -4452,7 +4703,10 @@ void WisteriaView::EditWordCloud(const Wisteria::Graphs::Graph2D& graph, Wisteri
         auto plot = dlg.BuildWordCloud(&graph);
 
         // word clouds do not support legends; clear old graph directly
-        canvas->SetFixedObject(graphRow, graphCol, nullptr);
+        if (!pasteAsNew)
+            {
+            canvas->SetFixedObject(graphRow, graphCol, nullptr);
+            }
         PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
                              Wisteria::UI::LegendPlacement::None);
@@ -4495,15 +4749,21 @@ void WisteriaView::OnInsertWLSparkline([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditWLSparkline(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                   const size_t graphRow, const size_t graphCol) const
+                                   const size_t graphRow, const size_t graphCol,
+                                   const bool pasteAsNew) const
     {
     Wisteria::UI::InsertWLSparklineDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Win/Loss Sparkline"), wxID_ANY,
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Win/Loss Sparkline") : _(L"Edit Win/Loss Sparkline"), wxID_ANY,
         wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/sparkline.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -4516,7 +4776,10 @@ void WisteriaView::EditWLSparkline(const Wisteria::Graphs::Graph2D& graph, Wiste
         auto plot = dlg.BuildWinLossSparkline(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
@@ -4559,15 +4822,21 @@ void WisteriaView::OnInsertStemAndLeaf([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditStemAndLeaf(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                   const size_t graphRow, const size_t graphCol) const
+                                   const size_t graphRow, const size_t graphCol,
+                                   const bool pasteAsNew) const
     {
     Wisteria::UI::InsertStemAndLeafDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Stem-and-Leaf Plot"), wxID_ANY,
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Stem-and-Leaf Plot") : _(L"Edit Stem-and-Leaf Plot"), wxID_ANY,
         wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/stem-leaf.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -4580,7 +4849,10 @@ void WisteriaView::EditStemAndLeaf(const Wisteria::Graphs::Graph2D& graph, Wiste
         auto plot = dlg.BuildStemAndLeafPlot(&graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
@@ -4629,7 +4901,8 @@ void WisteriaView::OnInsertPieChart([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                const size_t graphRow, const size_t graphCol) const
+                                const size_t graphRow, const size_t graphCol,
+                                const bool pasteAsNew) const
     {
     auto* doc = dynamic_cast<WisteriaDoc*>(GetDocument());
     if (doc == nullptr)
@@ -4638,12 +4911,17 @@ void WisteriaView::EditPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria
         return;
         }
 
-    Wisteria::UI::InsertPieChartDlg dlg(canvas, &m_reportBuilder, m_frame, _(L"Edit Pie Chart"),
+    Wisteria::UI::InsertPieChartDlg dlg(canvas, &m_reportBuilder, m_frame,
+                                        pasteAsNew ? _(L"Insert Pie Chart") : _(L"Edit Pie Chart"),
                                         wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-                                        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+                                        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                                                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/piechart.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -4656,7 +4934,10 @@ void WisteriaView::EditPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria
         auto plot = dlg.BuildPieChart(doc, &graph);
         const auto legendPlacement = dlg.GetLegendPlacement();
 
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
@@ -4699,14 +4980,21 @@ void WisteriaView::OnInsertWaffleChart([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditWaffleChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                   const size_t graphRow, const size_t graphCol) const
+                                   const size_t graphRow, const size_t graphCol,
+                                   const bool pasteAsNew) const
     {
     Wisteria::UI::InsertWaffleChartDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Waffle Chart"), wxID_ANY, wxDefaultPosition,
-        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Waffle Chart") : _(L"Edit Waffle Chart"), wxID_ANY,
+        wxDefaultPosition, wxDefaultSize,
+        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/waffle.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -4719,7 +5007,10 @@ void WisteriaView::EditWaffleChart(const Wisteria::Graphs::Graph2D& graph, Wiste
         auto plot = dlg.BuildWaffleChart(&graph);
 
         // clear old legend if present
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
 
@@ -4765,14 +5056,20 @@ void WisteriaView::OnInsertRaceTrackChart([[maybe_unused]] wxCommandEvent& event
 //-------------------------------------------
 void WisteriaView::EditRaceTrackChart(const Wisteria::Graphs::Graph2D& graph,
                                       Wisteria::Canvas* canvas, const size_t graphRow,
-                                      const size_t graphCol) const
+                                      const size_t graphCol, const bool pasteAsNew) const
     {
     Wisteria::UI::InsertRaceTrackChartDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Race Track Chart"), wxID_ANY, wxDefaultPosition,
-        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Race Track Chart") : _(L"Edit Race Track Chart"), wxID_ANY,
+        wxDefaultPosition, wxDefaultSize,
+        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/racetrack.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -4785,7 +5082,10 @@ void WisteriaView::EditRaceTrackChart(const Wisteria::Graphs::Graph2D& graph,
         auto plot = dlg.BuildRaceTrackChart(&graph);
 
         // clear old legend if present
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
@@ -4830,15 +5130,20 @@ void WisteriaView::OnInsertNightingaleRoseChart([[maybe_unused]] wxCommandEvent&
 //-------------------------------------------
 void WisteriaView::EditNightingaleRoseChart(const Wisteria::Graphs::Graph2D& graph,
                                             Wisteria::Canvas* canvas, const size_t graphRow,
-                                            const size_t graphCol) const
+                                            const size_t graphCol, const bool pasteAsNew) const
     {
     Wisteria::UI::InsertNightingaleRoseChartDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Nightingale Rose Chart"), wxID_ANY,
-        wxDefaultPosition, wxDefaultSize,
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Nightingale Rose Chart") : _(L"Edit Nightingale Rose Chart"),
+        wxID_ANY, wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/rose.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -4851,7 +5156,10 @@ void WisteriaView::EditNightingaleRoseChart(const Wisteria::Graphs::Graph2D& gra
         auto plot = dlg.BuildNightingaleRoseChart(&graph);
 
         // clear old legend if present
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         const auto legendPlacement = dlg.GetLegendPlacement();
 
@@ -4897,14 +5205,21 @@ void WisteriaView::OnInsertBulletChart([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditBulletChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                   const size_t graphRow, const size_t graphCol) const
+                                   const size_t graphRow, const size_t graphCol,
+                                   const bool pasteAsNew) const
     {
     Wisteria::UI::InsertBulletChartDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Bullet Chart"), wxID_ANY, wxDefaultPosition,
-        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Bullet Chart") : _(L"Edit Bullet Chart"), wxID_ANY,
+        wxDefaultPosition, wxDefaultSize,
+        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/bulletchart.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -4915,11 +5230,20 @@ void WisteriaView::EditBulletChart(const Wisteria::Graphs::Graph2D& graph, Wiste
     try
         {
         auto plot = dlg.BuildBulletChart(&graph);
-        canvas->SetFixedObject(graphRow, graphCol, plot);
+        if (pasteAsNew)
+            {
+            PlaceGraphWithLegend(
+                canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
+            }
+        else
+            {
+            canvas->SetFixedObject(graphRow, graphCol, plot);
 
-        UpdateCanvas(canvas);
+            UpdateCanvas(canvas);
 
-        GetDocument()->Modify(true);
+            GetDocument()->Modify(true);
+            }
         }
     catch (const std::exception& exc)
         {
@@ -4961,14 +5285,20 @@ void WisteriaView::OnInsertWaterfallChart([[maybe_unused]] wxCommandEvent& event
 //-------------------------------------------
 void WisteriaView::EditWaterfallChart(const Wisteria::Graphs::Graph2D& graph,
                                       Wisteria::Canvas* canvas, const size_t graphRow,
-                                      const size_t graphCol) const
+                                      const size_t graphCol, const bool pasteAsNew) const
     {
     Wisteria::UI::InsertWaterfallChartDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Waterfall Chart"), wxID_ANY, wxDefaultPosition,
-        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Waterfall Chart") : _(L"Edit Waterfall Chart"), wxID_ANY,
+        wxDefaultPosition, wxDefaultSize,
+        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/waterfallchart.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -4979,11 +5309,20 @@ void WisteriaView::EditWaterfallChart(const Wisteria::Graphs::Graph2D& graph,
     try
         {
         auto plot = dlg.BuildWaterfallChart(&graph);
-        canvas->SetFixedObject(graphRow, graphCol, plot);
+        if (pasteAsNew)
+            {
+            PlaceGraphWithLegend(
+                canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
+            }
+        else
+            {
+            canvas->SetFixedObject(graphRow, graphCol, plot);
 
-        UpdateCanvas(canvas);
+            UpdateCanvas(canvas);
 
-        GetDocument()->Modify(true);
+            GetDocument()->Modify(true);
+            }
         }
     catch (const std::exception& exc)
         {
@@ -5024,14 +5363,21 @@ void WisteriaView::OnInsertFunnelChart([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditFunnelChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                   const size_t graphRow, const size_t graphCol) const
+                                   const size_t graphRow, const size_t graphCol,
+                                   const bool pasteAsNew) const
     {
     Wisteria::UI::InsertFunnelChartDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Funnel Chart"), wxID_ANY, wxDefaultPosition,
-        wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Funnel Chart") : _(L"Edit Funnel Chart"), wxID_ANY,
+        wxDefaultPosition, wxDefaultSize,
+        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/funnel.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -5042,11 +5388,20 @@ void WisteriaView::EditFunnelChart(const Wisteria::Graphs::Graph2D& graph, Wiste
     try
         {
         auto plot = dlg.BuildFunnelChart(&graph);
-        canvas->SetFixedObject(graphRow, graphCol, plot);
+        if (pasteAsNew)
+            {
+            PlaceGraphWithLegend(
+                canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
+            }
+        else
+            {
+            canvas->SetFixedObject(graphRow, graphCol, plot);
 
-        UpdateCanvas(canvas);
+            UpdateCanvas(canvas);
 
-        GetDocument()->Modify(true);
+            GetDocument()->Modify(true);
+            }
         }
     catch (const std::exception& exc)
         {
@@ -5088,15 +5443,20 @@ void WisteriaView::OnInsertDuBoisSpiralChart([[maybe_unused]] wxCommandEvent& ev
 //-------------------------------------------
 void WisteriaView::EditDuBoisSpiralChart(const Wisteria::Graphs::Graph2D& graph,
                                          Wisteria::Canvas* canvas, const size_t graphRow,
-                                         const size_t graphCol) const
+                                         const size_t graphCol, const bool pasteAsNew) const
     {
     Wisteria::UI::InsertDuBoisSpiralChartDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Du Bois Spiral Chart"), wxID_ANY,
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Du Bois Spiral Chart") : _(L"Edit Du Bois Spiral Chart"), wxID_ANY,
         wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/dubois-spiral.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -5107,11 +5467,20 @@ void WisteriaView::EditDuBoisSpiralChart(const Wisteria::Graphs::Graph2D& graph,
     try
         {
         auto plot = dlg.BuildDuBoisSpiralChart(&graph);
-        canvas->SetFixedObject(graphRow, graphCol, plot);
+        if (pasteAsNew)
+            {
+            PlaceGraphWithLegend(
+                canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
+            }
+        else
+            {
+            canvas->SetFixedObject(graphRow, graphCol, plot);
 
-        UpdateCanvas(canvas);
+            UpdateCanvas(canvas);
 
-        GetDocument()->Modify(true);
+            GetDocument()->Modify(true);
+            }
         }
     catch (const std::exception& exc)
         {
@@ -5153,15 +5522,20 @@ void WisteriaView::OnInsertDuelingPieChart([[maybe_unused]] wxCommandEvent& even
 //-------------------------------------------
 void WisteriaView::EditDuelingPieChart(const Wisteria::Graphs::Graph2D& graph,
                                        Wisteria::Canvas* canvas, const size_t graphRow,
-                                       const size_t graphCol) const
+                                       const size_t graphCol, const bool pasteAsNew) const
     {
     Wisteria::UI::InsertDuelingPieChartDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Dueling Pie Chart"), wxID_ANY,
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Dueling Pie Chart") : _(L"Edit Dueling Pie Chart"), wxID_ANY,
         wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/dueling-pie.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -5172,11 +5546,20 @@ void WisteriaView::EditDuelingPieChart(const Wisteria::Graphs::Graph2D& graph,
     try
         {
         auto plot = dlg.BuildDuelingPieChart(&graph);
-        canvas->SetFixedObject(graphRow, graphCol, plot);
+        if (pasteAsNew)
+            {
+            PlaceGraphWithLegend(
+                canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
+            }
+        else
+            {
+            canvas->SetFixedObject(graphRow, graphCol, plot);
 
-        UpdateCanvas(canvas);
+            UpdateCanvas(canvas);
 
-        GetDocument()->Modify(true);
+            GetDocument()->Modify(true);
+            }
         }
     catch (const std::exception& exc)
         {
@@ -5217,14 +5600,20 @@ void WisteriaView::OnInsertPictograph([[maybe_unused]] wxCommandEvent& event)
 
 //-------------------------------------------
 void WisteriaView::EditPictograph(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                  const size_t graphRow, const size_t graphCol) const
+                                  const size_t graphRow, const size_t graphCol,
+                                  const bool pasteAsNew) const
     {
     Wisteria::UI::InsertPictographDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Pictograph"), wxID_ANY, wxDefaultPosition,
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Pictograph") : _(L"Edit Pictograph"), wxID_ANY, wxDefaultPosition,
         wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/pictograph.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -5235,11 +5624,20 @@ void WisteriaView::EditPictograph(const Wisteria::Graphs::Graph2D& graph, Wister
     try
         {
         auto plot = dlg.BuildPictograph(&graph);
-        canvas->SetFixedObject(graphRow, graphCol, plot);
+        if (pasteAsNew)
+            {
+            PlaceGraphWithLegend(
+                canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
+            }
+        else
+            {
+            canvas->SetFixedObject(graphRow, graphCol, plot);
 
-        UpdateCanvas(canvas);
+            UpdateCanvas(canvas);
 
-        GetDocument()->Modify(true);
+            GetDocument()->Modify(true);
+            }
         }
     catch (const std::exception& exc)
         {
@@ -5280,15 +5678,20 @@ void WisteriaView::OnInsertWilmarthBridgePlot([[maybe_unused]] wxCommandEvent& e
 //-------------------------------------------
 void WisteriaView::EditWilmarthBridgePlot(const Wisteria::Graphs::Graph2D& graph,
                                           Wisteria::Canvas* canvas, const size_t graphRow,
-                                          const size_t graphCol) const
+                                          const size_t graphCol, const bool pasteAsNew) const
     {
     Wisteria::UI::InsertWilmarthBridgePlotDlg dlg(
-        canvas, &m_reportBuilder, m_frame, _(L"Edit Wilmarth Bridge Plot"), wxID_ANY,
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Wilmarth Bridge Plot") : _(L"Edit Wilmarth Bridge Plot"), wxID_ANY,
         wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
-        Wisteria::UI::InsertItemDlg::EditMode::Edit);
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
     SetDialogIcon(dlg, L"images/wilmarth-bridge.svg");
-    dlg.SetSelectedCell(graphRow, graphCol);
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
     dlg.LoadFromGraph(graph);
 
     if (dlg.ShowModal() != wxID_OK)
@@ -5302,7 +5705,10 @@ void WisteriaView::EditWilmarthBridgePlot(const Wisteria::Graphs::Graph2D& graph
         const auto legendPlacement = dlg.GetLegendPlacement();
 
         // clear old legend if present
-        ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
 
         PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);

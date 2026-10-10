@@ -148,41 +148,41 @@ class WisteriaView final : public wxView
     void OnInsertPieChart(wxCommandEvent& event);
     void OnInsertWaffleChart(wxCommandEvent& event);
     void EditWaffleChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                         size_t graphRow, size_t graphCol) const;
+                         size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void OnInsertRaceTrackChart(wxCommandEvent& event);
     void EditRaceTrackChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                            size_t graphRow, size_t graphCol) const;
+                            size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void OnInsertNightingaleRoseChart(wxCommandEvent& event);
     void EditNightingaleRoseChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                  size_t graphRow, size_t graphCol) const;
+                                  size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void OnInsertDuBoisSpiralChart(wxCommandEvent& event);
     void EditDuBoisSpiralChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                               size_t graphRow, size_t graphCol) const;
+                               size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void OnInsertDuelingPieChart(wxCommandEvent& event);
     void EditDuelingPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                             size_t graphRow, size_t graphCol) const;
+                             size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void OnInsertPictograph(wxCommandEvent& event);
     void EditPictograph(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                        size_t graphRow, size_t graphCol) const;
+                        size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void OnInsertBulletChart(wxCommandEvent& event);
     void EditBulletChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                         size_t graphRow, size_t graphCol) const;
+                         size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void OnInsertWaterfallChart(wxCommandEvent& event);
     void EditWaterfallChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                            size_t graphRow, size_t graphCol) const;
+                            size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void OnInsertFunnelChart(wxCommandEvent& event);
     void EditFunnelChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                         size_t graphRow, size_t graphCol) const;
+                         size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void OnInsertWilmarthBridgePlot(wxCommandEvent& event);
     void EditWilmarthBridgePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                size_t graphRow, size_t graphCol) const;
+                                size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void OnInsertScaleChart(wxCommandEvent& event);
     void EditScaleChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                        size_t graphRow, size_t graphCol) const;
+                        size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void OnInsertTable(wxCommandEvent& event);
     void OnInsertCatBarChart(wxCommandEvent& event);
     void EditCatBarChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                         size_t graphRow, size_t graphCol) const;
+                         size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void OnInsertLabel(wxCommandEvent& event);
     void EditLabel(const Wisteria::GraphItems::Label& label, Wisteria::Canvas* canvas,
                    size_t labelRow, size_t labelCol) const;
@@ -205,48 +205,51 @@ class WisteriaView final : public wxView
     void OnDeleteItem(wxCommandEvent& event);
     void OnGoToDatasource(wxCommandEvent& event);
     void OnCanvasDClick(wxCommandEvent& event);
+    void OnCanvasCopyGraph(wxCommandEvent& event);
+    void EditGraphByType(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                         size_t graphRow, size_t graphCol, bool pasteAsNew = false);
     void EditScatterPlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                         size_t graphRow, size_t graphCol) const;
+                         size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void EditBubblePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                        size_t graphRow, size_t graphCol) const;
+                        size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void EditChernoffPlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                          size_t graphRow, size_t graphCol) const;
+                          size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void EditLinePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                      size_t graphRow, size_t graphCol) const;
+                      size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void EditMultiSeriesLinePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                                 size_t graphRow, size_t graphCol) const;
+                                 size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void EditWCurvePlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                        size_t graphRow, size_t graphCol) const;
+                        size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void EditLRRoadmap(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                       size_t graphRow, size_t graphCol) const;
+                       size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void EditProConRoadmap(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                           size_t graphRow, size_t graphCol) const;
+                           size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void EditBoxPlot(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
-                     size_t graphCol) const;
+                     size_t graphCol, bool pasteAsNew = false) const;
     void EditLikertChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                         size_t graphRow, size_t graphCol) const;
+                         size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void EditHeatMap(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                     size_t graphRow, size_t graphCol) const;
+                     size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void EditHistogram(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                       size_t graphRow, size_t graphCol) const;
+                       size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void EditWordCloud(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                       size_t graphRow, size_t graphCol) const;
+                       size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void EditChoroplethMap(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                           size_t graphRow, size_t graphCol) const;
+                           size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void EditWLSparkline(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                         size_t graphRow, size_t graphCol) const;
+                         size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void EditStemAndLeaf(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                         size_t graphRow, size_t graphCol) const;
+                         size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void EditPieChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                      size_t graphRow, size_t graphCol) const;
+                      size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void EditGanttChart(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
-                        size_t graphCol) const;
+                        size_t graphCol, bool pasteAsNew = false) const;
     void EditCandlestickPlot(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                             size_t graphRow, size_t graphCol) const;
+                             size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void EditSankeyDiagram(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
-                           size_t graphRow, size_t graphCol) const;
+                           size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
-                   size_t graphCol);
+                   size_t graphCol, bool pasteAsNew = false);
     void PlaceGraphWithLegend(Wisteria::Canvas* canvas,
                               const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend,

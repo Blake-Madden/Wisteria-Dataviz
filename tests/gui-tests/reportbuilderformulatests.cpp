@@ -1,4 +1,4 @@
-#include "../../src/base/reportbuilder.h"
+#include "../../src/reporting/reportbuilder.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers.hpp>
 #include <wx/uilocale.h>

@@ -23,6 +23,7 @@
 
 wxDEFINE_EVENT(wxEVT_WISTERIA_CANVAS_DCLICK, wxCommandEvent);
 wxDEFINE_EVENT(wxEVT_WISTERIA_CANVAS_SELECTION_CHANGED, wxCommandEvent);
+wxDEFINE_EVENT(wxEVT_WISTERIA_CANVAS_COPY_GRAPH, wxCommandEvent);
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
@@ -154,8 +155,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         if (Settings::IsReportEditingEnabled())
             {
             // reset cached copied objects
-            m_labelClipboard = nullptr;
-            m_imageClipboard = nullptr;
+            ClearItemClipboards();
             // find the single selected item across all object collections
             std::shared_ptr<GraphItems::GraphItemBase> singleSelected;
             size_t totalSelected{ 0 };
@@ -200,6 +200,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                         {
                         m_imageClipboard = std::make_shared<GraphItems::Image>(
                             *std::static_pointer_cast<GraphItems::Image>(singleSelected));
+                        return;
+                        }
+                    if (singleSelected->IsKindOf(CLASSINFO(Graphs::Graph2D)))
+                        {
+                        wxCommandEvent copyEvent(wxEVT_WISTERIA_CANVAS_COPY_GRAPH, GetId());
+                        copyEvent.SetEventObject(this);
+                        copyEvent.SetClientData(singleSelected.get());
+                        GetEventHandler()->ProcessEvent(copyEvent);
                         return;
                         }
                     }
