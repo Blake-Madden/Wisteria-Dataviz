@@ -248,6 +248,13 @@ namespace Wisteria
             return m_imageClipboard;
             }
 
+        /// @returns The copied shape for report-editing paste, or null if none.
+        [[nodiscard]]
+        static const std::shared_ptr<GraphItems::Shape>& GetShapeClipboard() noexcept
+            {
+            return m_shapeClipboard;
+            }
+
         /// @returns The copied graph's settings (as JSON) for report-editing paste,
         ///     or an empty string if none.
         [[nodiscard]]
@@ -264,11 +271,12 @@ namespace Wisteria
             m_graphClipboard = graphJson;
             }
 
-        /// @brief Clears the copied label, image, and graph.
+        /// @brief Clears the copied label, image, shape, and graph.
         static void ClearItemClipboards() noexcept
             {
             m_labelClipboard.reset();
             m_imageClipboard.reset();
+            m_shapeClipboard.reset();
             m_graphClipboard.clear();
             }
 
@@ -1132,6 +1140,7 @@ namespace Wisteria
         // buffered items for report-editing copy/paste (shared across all canvas instances)
         inline static std::shared_ptr<GraphItems::Label> m_labelClipboard;
         inline static std::shared_ptr<GraphItems::Image> m_imageClipboard;
+        inline static std::shared_ptr<GraphItems::Shape> m_shapeClipboard;
         inline static wxString m_graphClipboard;
 
         // draggable items

@@ -202,6 +202,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                             *std::static_pointer_cast<GraphItems::Image>(singleSelected));
                         return;
                         }
+                    // check FillableShape before Shape since it derives from Shape
+                    if (singleSelected->IsKindOf(CLASSINFO(GraphItems::FillableShape)))
+                        {
+                        m_shapeClipboard = std::make_shared<GraphItems::FillableShape>(
+                            *std::static_pointer_cast<GraphItems::FillableShape>(singleSelected));
+                        return;
+                        }
+                    if (singleSelected->IsKindOf(CLASSINFO(GraphItems::Shape)))
+                        {
+                        m_shapeClipboard = std::make_shared<GraphItems::Shape>(
+                            *std::static_pointer_cast<GraphItems::Shape>(singleSelected));
+                        return;
+                        }
                     if (singleSelected->IsKindOf(CLASSINFO(Graphs::Graph2D)))
                         {
                         wxCommandEvent copyEvent(wxEVT_WISTERIA_CANVAS_COPY_GRAPH, GetId());
