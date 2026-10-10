@@ -84,26 +84,9 @@ namespace Wisteria::UI
             });
 
         // override Edit to browse for a replacement file
-        m_pathListBox->GetEditButton()->Bind(
-            wxEVT_BUTTON,
-            [this]([[maybe_unused]] wxCommandEvent&)
-            {
-                const auto sel = m_pathListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
-                                                                           wxLIST_STATE_SELECTED);
-                if (sel == wxNOT_FOUND)
-                    {
-                    return;
-                    }
-                const auto currentPath = m_pathListBox->GetListCtrl()->GetItemText(sel);
-                wxFileDialog fileDlg(this, _(L"Select an image"), wxString{}, currentPath,
-                                     Wisteria::GraphItems::Image::GetImageFileFilter(),
-                                     wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-                if (fileDlg.ShowModal() != wxID_OK)
-                    {
-                    return;
-                    }
-                m_pathListBox->GetListCtrl()->SetItemText(sel, fileDlg.GetPath());
-            });
+        m_pathListBox->GetEditButton()->Bind(wxEVT_BUTTON,
+                                             [this](wxCommandEvent&) { OnEditImagePath(); });
+        m_pathListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED, [this](wxListEvent&) { OnEditImagePath(); });
 
         // stitch direction
         if ((m_options & ImageDlgIncludeStitch) != 0)
@@ -201,6 +184,26 @@ namespace Wisteria::UI
             {
             CreatePageOptionsPage();
             }
+        }
+
+    //-------------------------------------------
+    void InsertImageDlg::OnEditImagePath()
+        {
+        const auto sel =
+            m_pathListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+        if (sel == wxNOT_FOUND)
+            {
+            return;
+            }
+        const auto currentPath = m_pathListBox->GetListCtrl()->GetItemText(sel);
+        wxFileDialog fileDlg(this, _(L"Select an image"), wxString{}, currentPath,
+                             Wisteria::GraphItems::Image::GetImageFileFilter(),
+                             wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        if (fileDlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+        m_pathListBox->GetListCtrl()->SetItemText(sel, fileDlg.GetPath());
         }
 
     //-------------------------------------------

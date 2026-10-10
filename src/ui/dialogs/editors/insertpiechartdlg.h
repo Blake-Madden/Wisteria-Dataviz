@@ -238,6 +238,8 @@ namespace Wisteria::UI
         bool Validate() final;
         void OnSelectVariables();
         void OnDatasetChanged();
+        void OnEditShowcasedSlice();
+        void OnEditSliceImage();
         void OnEditDonutHoleLabel();
         void OnShowcaseModeChanged();
         void OnPieSliceEffectChanged();

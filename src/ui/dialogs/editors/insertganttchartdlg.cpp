@@ -329,38 +329,10 @@ namespace Wisteria::UI
             });
 
         // override Edit button
-        m_showcaseListBox->GetEditButton()->Bind(
-            wxEVT_BUTTON,
-            [this, gatherBarLabels]([[maybe_unused]]
-                                    wxCommandEvent& event)
-            {
-                auto* listCtrl = m_showcaseListBox->GetListCtrl();
-                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-                if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseBars.size()))
-                    {
-                    return;
-                    }
-
-                const auto choices = gatherBarLabels();
-                if (choices.empty())
-                    {
-                    return;
-                    }
-
-                wxSingleChoiceDialog dlg(this, _(L"Select bar to showcase:"), _(L"Showcase Bar"),
-                                         choices);
-                dlg.SetSelection(sel);
-                if (dlg.ShowModal() == wxID_OK)
-                    {
-                    m_showcaseBars[sel] = dlg.GetStringSelection();
-                    wxArrayString strings;
-                    for (const auto& s : m_showcaseBars)
-                        {
-                        strings.Add(s);
-                        }
-                    m_showcaseListBox->SetStrings(strings);
-                    }
-            });
+        m_showcaseListBox->GetEditButton()->Bind(wxEVT_BUTTON,
+                                                 [this](wxCommandEvent&) { OnEditShowcasedBar(); });
+        m_showcaseListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                                [this](wxListEvent&) { OnEditShowcasedBar(); });
 
         // override Delete button
         m_showcaseListBox->GetDelButton()->Bind(
@@ -416,34 +388,35 @@ namespace Wisteria::UI
                 SyncBarShapesToList();
             });
 
-        // override Edit button for per-bar shapes
-        m_shapePerBarListBox->GetEditButton()->Bind(
-            wxEVT_BUTTON,
-            [this, gatherBarLabels, promptForShape]([[maybe_unused]]
-                                                    wxCommandEvent& event)
-            {
-                auto* listCtrl = m_shapePerBarListBox->GetListCtrl();
-                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-                if (sel < 0 || std::cmp_greater_equal(sel, m_barShapes.size()))
-                    {
-                    return;
-                    }
-                const auto barChoices = gatherBarLabels();
-                if (barChoices.empty())
-                    {
-                    return;
-                    }
-                auto& entry = m_barShapes[sel];
-                wxString label = entry.first;
-                auto shape = entry.second;
-                if (!promptForShape(barChoices, _(L"Edit Per-Bar Shape"), label, shape))
-                    {
-                    return;
-                    }
-                entry.first = label;
-                entry.second = shape;
-                SyncBarShapesToList();
-            });
+        // edit button and double-click both edit the selected per-bar shape
+        const auto editBarShape = [this, gatherBarLabels, promptForShape]()
+        {
+            const long sel = m_shapePerBarListBox->GetListCtrl()->GetNextItem(
+                -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+            if (sel < 0 || std::cmp_greater_equal(sel, m_barShapes.size()))
+                {
+                return;
+                }
+            const auto barChoices = gatherBarLabels();
+            if (barChoices.empty())
+                {
+                return;
+                }
+            auto& entry = m_barShapes[sel];
+            wxString label = entry.first;
+            auto shape = entry.second;
+            if (!promptForShape(barChoices, _(L"Edit Per-Bar Shape"), label, shape))
+                {
+                return;
+                }
+            entry.first = label;
+            entry.second = shape;
+            SyncBarShapesToList();
+        };
+        m_shapePerBarListBox->GetEditButton()->Bind(wxEVT_BUTTON, [editBarShape](wxCommandEvent&)
+                                                    { editBarShape(); });
+        m_shapePerBarListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                                   [editBarShape](wxListEvent&) { editBarShape(); });
 
         // override Delete button for per-bar shapes
         m_shapePerBarListBox->GetDelButton()->Bind(
@@ -459,18 +432,6 @@ namespace Wisteria::UI
                     }
                 m_barShapes.erase(m_barShapes.begin() + sel);
                 SyncBarShapesToList();
-            });
-
-        // double-clicking a row triggers the Edit button
-        m_shapePerBarListBox->GetListCtrl()->Bind(
-            wxEVT_LIST_ITEM_ACTIVATED,
-            [this]([[maybe_unused]]
-                   wxListEvent& event)
-            {
-                auto* editBtn = m_shapePerBarListBox->GetEditButton();
-                wxCommandEvent clickEvent(wxEVT_BUTTON, editBtn->GetId());
-                clickEvent.SetEventObject(editBtn);
-                editBtn->GetEventHandler()->ProcessEvent(clickEvent);
             });
 
         // helper to prompt for a task label, block index, and decal text
@@ -570,32 +531,33 @@ namespace Wisteria::UI
                 SyncBarBlockDecalsToList();
             });
 
-        // override Edit button for bar block decals
+        // edit button and double-click both edit the selected bar block decal
+        const auto editBarBlockDecal = [this, promptForDecal]()
+        {
+            const long sel = m_barBlockDecalListBox->GetListCtrl()->GetNextItem(
+                -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+            if (sel < 0 || std::cmp_greater_equal(sel, m_barBlockDecals.size()))
+                {
+                return;
+                }
+            auto& info = m_barBlockDecals[sel];
+            wxString label = info.m_barLabel;
+            size_t block = info.m_blockIndex;
+            wxString text = info.m_decal.GetText();
+            if (!promptForDecal(_(L"Edit Bar Block Decal"), label, block, text))
+                {
+                return;
+                }
+            info.m_barLabel = label;
+            info.m_blockIndex = block;
+            info.m_decal.SetText(text);
+            info.m_decal.SetPropertyTemplate(L"text", text);
+            SyncBarBlockDecalsToList();
+        };
         m_barBlockDecalListBox->GetEditButton()->Bind(
-            wxEVT_BUTTON,
-            [this, promptForDecal]([[maybe_unused]]
-                                   wxCommandEvent& event)
-            {
-                auto* listCtrl = m_barBlockDecalListBox->GetListCtrl();
-                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-                if (sel < 0 || std::cmp_greater_equal(sel, m_barBlockDecals.size()))
-                    {
-                    return;
-                    }
-                auto& info = m_barBlockDecals[sel];
-                wxString label = info.m_barLabel;
-                size_t block = info.m_blockIndex;
-                wxString text = info.m_decal.GetText();
-                if (!promptForDecal(_(L"Edit Bar Block Decal"), label, block, text))
-                    {
-                    return;
-                    }
-                info.m_barLabel = label;
-                info.m_blockIndex = block;
-                info.m_decal.SetText(text);
-                info.m_decal.SetPropertyTemplate(L"text", text);
-                SyncBarBlockDecalsToList();
-            });
+            wxEVT_BUTTON, [editBarBlockDecal](wxCommandEvent&) { editBarBlockDecal(); });
+        m_barBlockDecalListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                                     [editBarBlockDecal](wxListEvent&) { editBarBlockDecal(); });
 
         // override Delete button for bar block decals
         m_barBlockDecalListBox->GetDelButton()->Bind(
@@ -611,18 +573,6 @@ namespace Wisteria::UI
                     }
                 m_barBlockDecals.erase(m_barBlockDecals.begin() + sel);
                 SyncBarBlockDecalsToList();
-            });
-
-        // double-clicking a row triggers the Edit button
-        m_barBlockDecalListBox->GetListCtrl()->Bind(
-            wxEVT_LIST_ITEM_ACTIVATED,
-            [this]([[maybe_unused]]
-                   wxListEvent& event)
-            {
-                auto* editBtn = m_barBlockDecalListBox->GetEditButton();
-                wxCommandEvent clickEvent(wxEVT_BUTTON, editBtn->GetId());
-                clickEvent.SetEventObject(editBtn);
-                editBtn->GetEventHandler()->ProcessEvent(clickEvent);
             });
 
         // bind events
@@ -644,6 +594,40 @@ namespace Wisteria::UI
         CreateAxisOptionsPage();
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
+        }
+
+    //-------------------------------------------
+    void InsertGanttChartDlg::OnEditShowcasedBar()
+        {
+        const long sel = m_showcaseListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                       wxLIST_STATE_SELECTED);
+        if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseBars.size()))
+            {
+            return;
+            }
+
+        wxArrayString choices;
+        for (const auto& label : m_taskLabels)
+            {
+            choices.Add(label);
+            }
+        if (choices.empty())
+            {
+            return;
+            }
+
+        wxSingleChoiceDialog dlg(this, _(L"Select bar to showcase:"), _(L"Showcase Bar"), choices);
+        dlg.SetSelection(sel);
+        if (dlg.ShowModal() == wxID_OK)
+            {
+            m_showcaseBars[sel] = dlg.GetStringSelection();
+            wxArrayString strings;
+            for (const auto& showBar : m_showcaseBars)
+                {
+                strings.Add(showBar);
+                }
+            m_showcaseListBox->SetStrings(strings);
+            }
         }
 
     //-------------------------------------------

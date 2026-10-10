@@ -460,32 +460,33 @@ namespace Wisteria::UI
                 SyncBarBlockDecalsToList();
             });
 
-        // override Edit button for bar block decals
+        // edit button and double-click both edit the selected bar block decal
+        const auto editBarBlockDecal = [this, promptForDecal]()
+        {
+            const long sel = m_barBlockDecalListBox->GetListCtrl()->GetNextItem(
+                -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+            if (sel < 0 || std::cmp_greater_equal(sel, m_barBlockDecals.size()))
+                {
+                return;
+                }
+            auto& info = m_barBlockDecals[sel];
+            wxString label = info.m_barLabel;
+            size_t block = info.m_blockIndex;
+            wxString text = info.m_decal.GetText();
+            if (!promptForDecal(_(L"Edit Bar Block Decal"), label, block, text))
+                {
+                return;
+                }
+            info.m_barLabel = label;
+            info.m_blockIndex = block;
+            info.m_decal.SetText(text);
+            info.m_decal.SetPropertyTemplate(L"text", text);
+            SyncBarBlockDecalsToList();
+        };
         m_barBlockDecalListBox->GetEditButton()->Bind(
-            wxEVT_BUTTON,
-            [this, promptForDecal]([[maybe_unused]]
-                                   wxCommandEvent& event)
-            {
-                auto* listCtrl = m_barBlockDecalListBox->GetListCtrl();
-                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-                if (sel < 0 || std::cmp_greater_equal(sel, m_barBlockDecals.size()))
-                    {
-                    return;
-                    }
-                auto& info = m_barBlockDecals[sel];
-                wxString label = info.m_barLabel;
-                size_t block = info.m_blockIndex;
-                wxString text = info.m_decal.GetText();
-                if (!promptForDecal(_(L"Edit Bar Block Decal"), label, block, text))
-                    {
-                    return;
-                    }
-                info.m_barLabel = label;
-                info.m_blockIndex = block;
-                info.m_decal.SetText(text);
-                info.m_decal.SetPropertyTemplate(L"text", text);
-                SyncBarBlockDecalsToList();
-            });
+            wxEVT_BUTTON, [editBarBlockDecal](wxCommandEvent&) { editBarBlockDecal(); });
+        m_barBlockDecalListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                                     [editBarBlockDecal](wxListEvent&) { editBarBlockDecal(); });
 
         // override Delete button for bar block decals
         m_barBlockDecalListBox->GetDelButton()->Bind(
@@ -501,18 +502,6 @@ namespace Wisteria::UI
                     }
                 m_barBlockDecals.erase(m_barBlockDecals.begin() + sel);
                 SyncBarBlockDecalsToList();
-            });
-
-        // double-clicking a row triggers the Edit button
-        m_barBlockDecalListBox->GetListCtrl()->Bind(
-            wxEVT_LIST_ITEM_ACTIVATED,
-            [this]([[maybe_unused]]
-                   wxListEvent& event)
-            {
-                auto* editBtn = m_barBlockDecalListBox->GetEditButton();
-                wxCommandEvent clickEvent(wxEVT_BUTTON, editBtn->GetId());
-                clickEvent.SetEventObject(editBtn);
-                editBtn->GetEventHandler()->ProcessEvent(clickEvent);
             });
 
         CreateLegendOptionsPage();
@@ -564,41 +553,10 @@ namespace Wisteria::UI
             });
 
         // override Edit button
-        m_showcaseListBox->GetEditButton()->Bind(
-            wxEVT_BUTTON,
-            [this]([[maybe_unused]]
-                   wxCommandEvent& event)
-            {
-                const auto dataset = GetSelectedDataset();
-                auto* listCtrl = m_showcaseListBox->GetListCtrl();
-                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-                if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseBars.size()) ||
-                    dataset == nullptr || m_categoricalVariable.empty())
-                    {
-                    return;
-                    }
-
-                wxArrayString choices;
-                m_sortLabelListBox->GetStrings(choices);
-                if (choices.empty())
-                    {
-                    return;
-                    }
-
-                wxSingleChoiceDialog dlg(this, _(L"Select bar to showcase:"), _(L"Showcase Bar"),
-                                         choices);
-                dlg.SetSelection(sel);
-                if (dlg.ShowModal() == wxID_OK)
-                    {
-                    m_showcaseBars[sel] = dlg.GetStringSelection();
-                    wxArrayString strings;
-                    for (const auto& s : m_showcaseBars)
-                        {
-                        strings.Add(s);
-                        }
-                    m_showcaseListBox->SetStrings(strings);
-                    }
-            });
+        m_showcaseListBox->GetEditButton()->Bind(wxEVT_BUTTON,
+                                                 [this](wxCommandEvent&) { OnEditShowcasedBar(); });
+        m_showcaseListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                                [this](wxListEvent&) { OnEditShowcasedBar(); });
 
         // override Delete button
         m_showcaseListBox->GetDelButton()->Bind(
@@ -721,111 +679,10 @@ namespace Wisteria::UI
             wxGetApp().ReadSvgIcon(L"images/group.svg", wxSize{ 16, 16 }));
 
         // override Edit button
-        m_barGroupListBox->GetEditButton()->Bind(
-            wxEVT_BUTTON,
-            [this]([[maybe_unused]]
-                   wxCommandEvent& event)
-            {
-                auto* listCtrl = m_barGroupListBox->GetListCtrl();
-                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-                if (sel < 0 || std::cmp_greater_equal(sel, m_barGroups.size()))
-                    {
-                    return;
-                    }
-
-                auto& group = m_barGroups[sel];
-
-                const auto sortLabels = GetBarSortLabels();
-                wxArrayString barChoices;
-                if (!sortLabels.empty())
-                    {
-                    for (const auto& label : sortLabels)
-                        {
-                        barChoices.Add(label);
-                        }
-                    }
-                else
-                    {
-                    m_sortLabelListBox->GetStrings(barChoices);
-                    }
-                if (barChoices.size() < 2)
-                    {
-                    return;
-                    }
-
-                wxDialog dlg(this, wxID_ANY, _(L"Edit Bar Group"), wxDefaultPosition, wxDefaultSize,
-                             wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
-                auto* sizer = new wxBoxSizer(wxVERTICAL);
-                auto* grid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
-                                                            wxSizerFlags::GetDefaultBorder() });
-                grid->AddGrowableCol(1, 1);
-
-                grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start bar:")),
-                          wxSizerFlags{}.CenterVertical());
-                auto* startCtrl =
-                    new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, barChoices);
-                startCtrl->SetStringSelection(group.m_startLabel);
-                grid->Add(startCtrl, wxSizerFlags{}.Expand());
-
-                grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"End bar:")),
-                          wxSizerFlags{}.CenterVertical());
-                auto* endCtrl =
-                    new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, barChoices);
-                endCtrl->SetStringSelection(group.m_endLabel);
-                grid->Add(endCtrl, wxSizerFlags{}.Expand());
-
-                grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label:")),
-                          wxSizerFlags{}.CenterVertical());
-                auto* decalCtrl = new wxTextCtrl(&dlg, wxID_ANY, group.m_decal, wxDefaultPosition,
-                                                 wxDefaultSize, wxTE_MULTILINE | wxTE_RICH2);
-#if wxUSE_SPELLCHECK
-                decalCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
-#endif
-                grid->Add(decalCtrl, wxSizerFlags{}.Expand());
-
-                const bool hasCustomColor = group.m_color.IsOk();
-                grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Color:")),
-                          wxSizerFlags{}.CenterVertical());
-                auto* colorSizer = new wxBoxSizer(wxHORIZONTAL);
-                auto* customColorCheck = new wxCheckBox(&dlg, wxID_ANY, _(L"Custom:"));
-                customColorCheck->SetValue(hasCustomColor);
-                colorSizer->Add(customColorCheck, wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
-                auto* colorPicker = new wxColourPickerCtrl(
-                    &dlg, wxID_ANY, hasCustomColor ? group.m_color : *wxWHITE);
-                colorPicker->Enable(hasCustomColor);
-                colorSizer->Add(colorPicker, wxSizerFlags{}.CenterVertical());
-                customColorCheck->Bind(wxEVT_CHECKBOX,
-                                       [colorPicker, customColorCheck]([[maybe_unused]]
-                                                                       wxCommandEvent& evt)
-                                       { colorPicker->Enable(customColorCheck->GetValue()); });
-                grid->Add(colorSizer, wxSizerFlags{}.Expand());
-
-                sizer->Add(grid, wxSizerFlags{ 1 }.Expand().Border());
-                sizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
-                           wxSizerFlags{}.Expand().Border());
-                dlg.SetSizer(sizer);
-                dlg.Fit();
-                dlg.SetMinSize(dlg.GetSize());
-
-                if (dlg.ShowModal() != wxID_OK)
-                    {
-                    return;
-                    }
-
-                const auto startSel2 = startCtrl->GetSelection();
-                const auto endSel2 = endCtrl->GetSelection();
-                if (startSel2 == wxNOT_FOUND || endSel2 == wxNOT_FOUND)
-                    {
-                    return;
-                    }
-
-                group.m_startLabel = barChoices[startSel2];
-                group.m_endLabel = barChoices[endSel2];
-                group.m_decal = decalCtrl->GetValue().Trim(true).Trim(false);
-                group.m_color =
-                    customColorCheck->GetValue() ? colorPicker->GetColour() : wxColour{};
-                SyncBarGroupsToList();
-            });
+        m_barGroupListBox->GetEditButton()->Bind(wxEVT_BUTTON,
+                                                 [this](wxCommandEvent&) { OnEditBarGroup(); });
+        m_barGroupListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                                [this](wxListEvent&) { OnEditBarGroup(); });
 
         // override Delete button
         m_barGroupListBox->GetDelButton()->Bind(
@@ -841,18 +698,6 @@ namespace Wisteria::UI
                     }
                 m_barGroups.erase(m_barGroups.begin() + sel);
                 SyncBarGroupsToList();
-            });
-
-        // double-clicking a row triggers the Edit button
-        m_barGroupListBox->GetListCtrl()->Bind(
-            wxEVT_LIST_ITEM_ACTIVATED,
-            [this]([[maybe_unused]]
-                   wxListEvent& event)
-            {
-                auto* editBtn = m_barGroupListBox->GetEditButton();
-                wxCommandEvent clickEvent(wxEVT_BUTTON, editBtn->GetId());
-                clickEvent.SetEventObject(editBtn);
-                editBtn->GetEventHandler()->ProcessEvent(clickEvent);
             });
 
         // helper to collect available bar labels (sort list labels take priority,
@@ -967,34 +812,35 @@ namespace Wisteria::UI
                 SyncBarShapesToList();
             });
 
-        // override Edit button for per-bar shapes
-        m_shapePerBarListBox->GetEditButton()->Bind(
-            wxEVT_BUTTON,
-            [this, gatherBarLabels, promptForShape]([[maybe_unused]]
-                                                    wxCommandEvent& event)
-            {
-                auto* listCtrl = m_shapePerBarListBox->GetListCtrl();
-                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-                if (sel < 0 || std::cmp_greater_equal(sel, m_barShapes.size()))
-                    {
-                    return;
-                    }
-                const auto barChoices = gatherBarLabels();
-                if (barChoices.empty())
-                    {
-                    return;
-                    }
-                auto& entry = m_barShapes[sel];
-                wxString label = entry.first;
-                auto shape = entry.second;
-                if (!promptForShape(barChoices, _(L"Edit Per-Bar Shape"), label, shape))
-                    {
-                    return;
-                    }
-                entry.first = label;
-                entry.second = shape;
-                SyncBarShapesToList();
-            });
+        // edit button and double-click both edit the selected per-bar shape
+        const auto editBarShape = [this, gatherBarLabels, promptForShape]()
+        {
+            const long sel = m_shapePerBarListBox->GetListCtrl()->GetNextItem(
+                -1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+            if (sel < 0 || std::cmp_greater_equal(sel, m_barShapes.size()))
+                {
+                return;
+                }
+            const auto barChoices = gatherBarLabels();
+            if (barChoices.empty())
+                {
+                return;
+                }
+            auto& entry = m_barShapes[sel];
+            wxString label = entry.first;
+            auto shape = entry.second;
+            if (!promptForShape(barChoices, _(L"Edit Per-Bar Shape"), label, shape))
+                {
+                return;
+                }
+            entry.first = label;
+            entry.second = shape;
+            SyncBarShapesToList();
+        };
+        m_shapePerBarListBox->GetEditButton()->Bind(wxEVT_BUTTON, [editBarShape](wxCommandEvent&)
+                                                    { editBarShape(); });
+        m_shapePerBarListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                                   [editBarShape](wxListEvent&) { editBarShape(); });
 
         // override Delete button for per-bar shapes
         m_shapePerBarListBox->GetDelButton()->Bind(
@@ -1010,18 +856,6 @@ namespace Wisteria::UI
                     }
                 m_barShapes.erase(m_barShapes.begin() + sel);
                 SyncBarShapesToList();
-            });
-
-        // double-clicking a row triggers the Edit button
-        m_shapePerBarListBox->GetListCtrl()->Bind(
-            wxEVT_LIST_ITEM_ACTIVATED,
-            [this]([[maybe_unused]]
-                   wxListEvent& event)
-            {
-                auto* editBtn = m_shapePerBarListBox->GetEditButton();
-                wxCommandEvent clickEvent(wxEVT_BUTTON, editBtn->GetId());
-                clickEvent.SetEventObject(editBtn);
-                editBtn->GetEventHandler()->ProcessEvent(clickEvent);
             });
 
         // bind events
@@ -1434,6 +1268,138 @@ namespace Wisteria::UI
                                  m_imagePaths.GetCount()));
             }
         GetSideBarBook()->GetCurrentPage()->Layout();
+        }
+
+    //-------------------------------------------
+    void InsertCatBarChartDlg::OnEditBarGroup()
+        {
+        const long sel = m_barGroupListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                       wxLIST_STATE_SELECTED);
+        if (sel < 0 || std::cmp_greater_equal(sel, m_barGroups.size()))
+            {
+            return;
+            }
+
+        auto& group = m_barGroups[sel];
+
+        const auto sortLabels = GetBarSortLabels();
+        wxArrayString barChoices;
+        if (!sortLabels.empty())
+            {
+            for (const auto& label : sortLabels)
+                {
+                barChoices.Add(label);
+                }
+            }
+        else
+            {
+            m_sortLabelListBox->GetStrings(barChoices);
+            }
+        if (barChoices.size() < 2)
+            {
+            return;
+            }
+
+        wxDialog dlg(this, wxID_ANY, _(L"Edit Bar Group"), wxDefaultPosition, wxDefaultSize,
+                     wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+        auto* sizer = new wxBoxSizer(wxVERTICAL);
+        auto* grid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        grid->AddGrowableCol(1, 1);
+
+        grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start bar:")),
+                  wxSizerFlags{}.CenterVertical());
+        auto* startCtrl =
+            new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, barChoices);
+        startCtrl->SetStringSelection(group.m_startLabel);
+        grid->Add(startCtrl, wxSizerFlags{}.Expand());
+
+        grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"End bar:")),
+                  wxSizerFlags{}.CenterVertical());
+        auto* endCtrl = new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, barChoices);
+        endCtrl->SetStringSelection(group.m_endLabel);
+        grid->Add(endCtrl, wxSizerFlags{}.Expand());
+
+        grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label:")), wxSizerFlags{}.CenterVertical());
+        auto* decalCtrl = new wxTextCtrl(&dlg, wxID_ANY, group.m_decal, wxDefaultPosition,
+                                         wxDefaultSize, wxTE_MULTILINE | wxTE_RICH2);
+#if wxUSE_SPELLCHECK
+        decalCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
+#endif
+        grid->Add(decalCtrl, wxSizerFlags{}.Expand());
+
+        const bool hasCustomColor = group.m_color.IsOk();
+        grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Color:")), wxSizerFlags{}.CenterVertical());
+        auto* colorSizer = new wxBoxSizer(wxHORIZONTAL);
+        auto* customColorCheck = new wxCheckBox(&dlg, wxID_ANY, _(L"Custom:"));
+        customColorCheck->SetValue(hasCustomColor);
+        colorSizer->Add(customColorCheck, wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+        auto* colorPicker =
+            new wxColourPickerCtrl(&dlg, wxID_ANY, hasCustomColor ? group.m_color : *wxWHITE);
+        colorPicker->Enable(hasCustomColor);
+        colorSizer->Add(colorPicker, wxSizerFlags{}.CenterVertical());
+        customColorCheck->Bind(wxEVT_CHECKBOX, [colorPicker, customColorCheck]([[maybe_unused]]
+                                                                               wxCommandEvent& evt)
+                               { colorPicker->Enable(customColorCheck->GetValue()); });
+        grid->Add(colorSizer, wxSizerFlags{}.Expand());
+
+        sizer->Add(grid, wxSizerFlags{ 1 }.Expand().Border());
+        sizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
+                   wxSizerFlags{}.Expand().Border());
+        dlg.SetSizer(sizer);
+        dlg.Fit();
+        dlg.SetMinSize(dlg.GetSize());
+
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+
+        const auto startSel = startCtrl->GetSelection();
+        const auto endSel = endCtrl->GetSelection();
+        if (startSel == wxNOT_FOUND || endSel == wxNOT_FOUND)
+            {
+            return;
+            }
+
+        group.m_startLabel = barChoices[startSel];
+        group.m_endLabel = barChoices[endSel];
+        group.m_decal = decalCtrl->GetValue().Trim(true).Trim(false);
+        group.m_color = customColorCheck->GetValue() ? colorPicker->GetColour() : wxColour{};
+        SyncBarGroupsToList();
+        }
+
+    //-------------------------------------------
+    void InsertCatBarChartDlg::OnEditShowcasedBar()
+        {
+        const auto dataset = GetSelectedDataset();
+        const long sel = m_showcaseListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                       wxLIST_STATE_SELECTED);
+        if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseBars.size()) || dataset == nullptr ||
+            m_categoricalVariable.empty())
+            {
+            return;
+            }
+
+        wxArrayString choices;
+        m_sortLabelListBox->GetStrings(choices);
+        if (choices.empty())
+            {
+            return;
+            }
+
+        wxSingleChoiceDialog dlg(this, _(L"Select bar to showcase:"), _(L"Showcase Bar"), choices);
+        dlg.SetSelection(sel);
+        if (dlg.ShowModal() == wxID_OK)
+            {
+            m_showcaseBars[sel] = dlg.GetStringSelection();
+            wxArrayString strings;
+            for (const auto& showBar : m_showcaseBars)
+                {
+                strings.Add(showBar);
+                }
+            m_showcaseListBox->SetStrings(strings);
+            }
         }
 
     //-------------------------------------------

@@ -208,6 +208,7 @@ namespace Wisteria::UI
         bool Validate() override;
         void OnSelectVariables();
         void OnDatasetChanged();
+        void OnEditShowcasedStream();
         void UpdateVariableLabels();
         void UpdateColumnHeaderUI();
         void RefreshShowcaseListBox();

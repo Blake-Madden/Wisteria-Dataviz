@@ -327,6 +327,8 @@ namespace Wisteria::UI
         bool Validate() override;
         void OnSelectVariables();
         void OnDatasetChanged();
+        void OnEditShowcasedBar();
+        void OnEditBarGroup();
         void OnSelectStippleShape();
         void OnSelectImages();
         void OnBoxEffectChanged();

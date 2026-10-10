@@ -357,36 +357,10 @@ namespace Wisteria::UI
             });
 
         // override Edit button
-        m_showcaseListBox->GetEditButton()->Bind(
-            wxEVT_BUTTON,
-            [this]([[maybe_unused]]
-                   wxCommandEvent& event)
-            {
-                auto* listCtrl = m_showcaseListBox->GetListCtrl();
-                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-                if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseSlices.size()) ||
-                    GetSelectedDataset() == nullptr || m_groupVariable.empty())
-                    {
-                    return;
-                    }
-                const auto sliceChoices = GetOuterSliceChoices();
-                if (sliceChoices.empty())
-                    {
-                    return;
-                    }
-                wxSingleChoiceDialog dlg(this, _(L"Select slice to showcase:"),
-                                         _(L"Showcase Slice"), sliceChoices);
-                const int found = sliceChoices.Index(m_showcaseSlices[sel]);
-                if (found != wxNOT_FOUND)
-                    {
-                    dlg.SetSelection(found);
-                    }
-                if (dlg.ShowModal() == wxID_OK)
-                    {
-                    m_showcaseSlices[sel] = dlg.GetStringSelection();
-                    RefreshShowcaseListBox();
-                    }
-            });
+        m_showcaseListBox->GetEditButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
+                                                 { OnEditShowcasedSlice(); });
+        m_showcaseListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                                [this](wxListEvent&) { OnEditShowcasedSlice(); });
 
         // override Delete button
         m_showcaseListBox->GetDelButton()->Bind(
@@ -455,27 +429,10 @@ namespace Wisteria::UI
             });
 
         // override Edit to browse for a replacement file
-        m_imageListBox->GetEditButton()->Bind(
-            wxEVT_BUTTON,
-            [this]([[maybe_unused]] wxCommandEvent&)
-            {
-                auto* listCtrl = m_imageListBox->GetListCtrl();
-                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-                if (sel < 0)
-                    {
-                    return;
-                    }
-                const auto currentPath = listCtrl->GetItemText(sel);
-                wxFileDialog fileDlg(this, _(L"Select an image"), wxString{}, currentPath,
-                                     Wisteria::GraphItems::Image::GetImageFileFilter(),
-                                     wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-                if (fileDlg.ShowModal() != wxID_OK)
-                    {
-                    return;
-                    }
-                listCtrl->SetItemText(sel, fileDlg.GetPath());
-                SyncImagePathsFromListBox();
-            });
+        m_imageListBox->GetEditButton()->Bind(wxEVT_BUTTON,
+                                              [this](wxCommandEvent&) { OnEditSliceImage(); });
+        m_imageListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                             [this](wxListEvent&) { OnEditSliceImage(); });
 
         effectChoice->Bind(wxEVT_CHOICE,
                            [this]([[maybe_unused]] wxCommandEvent&) { OnPieSliceEffectChanged(); });
@@ -647,6 +604,56 @@ namespace Wisteria::UI
                 }
             }
         return choices;
+        }
+
+    //-------------------------------------------
+    void InsertPieChartDlg::OnEditShowcasedSlice()
+        {
+        const long sel = m_showcaseListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                       wxLIST_STATE_SELECTED);
+        if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseSlices.size()) ||
+            GetSelectedDataset() == nullptr || m_groupVariable.empty())
+            {
+            return;
+            }
+        const auto sliceChoices = GetOuterSliceChoices();
+        if (sliceChoices.empty())
+            {
+            return;
+            }
+        wxSingleChoiceDialog dlg(this, _(L"Select slice to showcase:"), _(L"Showcase Slice"),
+                                 sliceChoices);
+        const int found = sliceChoices.Index(m_showcaseSlices[sel]);
+        if (found != wxNOT_FOUND)
+            {
+            dlg.SetSelection(found);
+            }
+        if (dlg.ShowModal() == wxID_OK)
+            {
+            m_showcaseSlices[sel] = dlg.GetStringSelection();
+            RefreshShowcaseListBox();
+            }
+        }
+
+    //-------------------------------------------
+    void InsertPieChartDlg::OnEditSliceImage()
+        {
+        auto* listCtrl = m_imageListBox->GetListCtrl();
+        const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+        if (sel < 0)
+            {
+            return;
+            }
+        const auto currentPath = listCtrl->GetItemText(sel);
+        wxFileDialog fileDlg(this, _(L"Select an image"), wxString{}, currentPath,
+                             Wisteria::GraphItems::Image::GetImageFileFilter(),
+                             wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        if (fileDlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+        listCtrl->SetItemText(sel, fileDlg.GetPath());
+        SyncImagePathsFromListBox();
         }
 
     //-------------------------------------------

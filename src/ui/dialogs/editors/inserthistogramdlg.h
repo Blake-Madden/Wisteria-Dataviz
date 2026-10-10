@@ -179,6 +179,7 @@ namespace Wisteria::UI
         bool Validate() override;
         void OnSelectVariables();
         void OnDatasetChanged();
+        void OnEditShowcasedBin();
         void UpdateVariableLabels();
 
         // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)

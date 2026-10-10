@@ -131,6 +131,7 @@ namespace Wisteria::UI
         bool Validate() override;
         void OnSelectVariables();
         void OnDatasetChanged();
+        void OnEditGhostedWedge();
         void UpdateVariableLabels();
         void RefreshGhostedWedgesList();
         /// @brief Prompts for a {group, category} ghost entry.

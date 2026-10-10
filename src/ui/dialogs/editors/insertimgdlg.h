@@ -172,6 +172,7 @@ namespace Wisteria::UI
         void CreateControls() final;
         bool Validate() final;
         void OnEnableCustomSize(bool enable) const;
+        void OnEditImagePath();
 
         // starts at +3 to avoid collision with InsertItemDlg (+1)
         // and InsertLabelDlg (+2)

@@ -229,36 +229,10 @@ namespace Wisteria::UI
             });
 
         // override Edit button
-        m_showcaseListBox->GetEditButton()->Bind(
-            wxEVT_BUTTON,
-            [this]([[maybe_unused]]
-                   wxCommandEvent& event)
-            {
-                auto* listCtrl = m_showcaseListBox->GetListCtrl();
-                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-                if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseStreams.size()) ||
-                    GetSelectedDataset() == nullptr || m_toVariable.empty())
-                    {
-                    return;
-                    }
-                const auto labelChoices = GetToLabelChoices();
-                if (labelChoices.empty())
-                    {
-                    return;
-                    }
-                wxSingleChoiceDialog dlg(this, _(L"Select \"to\" label to showcase:"),
-                                         _(L"Showcase Stream"), labelChoices);
-                const int found = labelChoices.Index(m_showcaseStreams[sel]);
-                if (found != wxNOT_FOUND)
-                    {
-                    dlg.SetSelection(found);
-                    }
-                if (dlg.ShowModal() == wxID_OK)
-                    {
-                    m_showcaseStreams[sel] = dlg.GetStringSelection();
-                    RefreshShowcaseListBox();
-                    }
-            });
+        m_showcaseListBox->GetEditButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
+                                                 { OnEditShowcasedStream(); });
+        m_showcaseListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                                [this](wxListEvent&) { OnEditShowcasedStream(); });
 
         // override Delete button
         m_showcaseListBox->GetDelButton()->Bind(
@@ -298,6 +272,35 @@ namespace Wisteria::UI
 
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
+        }
+
+    //-------------------------------------------
+    void InsertSankeyDiagramDlg::OnEditShowcasedStream()
+        {
+        const long sel = m_showcaseListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                       wxLIST_STATE_SELECTED);
+        if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseStreams.size()) ||
+            GetSelectedDataset() == nullptr || m_toVariable.empty())
+            {
+            return;
+            }
+        const auto labelChoices = GetToLabelChoices();
+        if (labelChoices.empty())
+            {
+            return;
+            }
+        wxSingleChoiceDialog dlg(this, _(L"Select \"to\" label to showcase:"),
+                                 _(L"Showcase Stream"), labelChoices);
+        const int found = labelChoices.Index(m_showcaseStreams[sel]);
+        if (found != wxNOT_FOUND)
+            {
+            dlg.SetSelection(found);
+            }
+        if (dlg.ShowModal() == wxID_OK)
+            {
+            m_showcaseStreams[sel] = dlg.GetStringSelection();
+            RefreshShowcaseListBox();
+            }
         }
 
     //-------------------------------------------

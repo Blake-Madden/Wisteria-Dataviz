@@ -183,6 +183,7 @@ namespace Wisteria::UI
         bool Validate() override;
         void OnSelectVariables();
         void OnDatasetChanged();
+        void OnEditShowcasedBar();
         void OnBarShapeModeChanged();
         void OnBarShapeAllChanged();
         void UpdateVariableLabels();

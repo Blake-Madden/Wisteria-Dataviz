@@ -165,24 +165,10 @@ namespace Wisteria::UI
                                                           RefreshGhostedWedgesList();
                                                           }
                                                   });
-        m_ghostedWedgesList->GetEditButton()->Bind(
-            wxEVT_BUTTON,
-            [this]([[maybe_unused]] wxCommandEvent&)
-            {
-                auto* listCtrl = m_ghostedWedgesList->GetListCtrl();
-                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-                if (sel < 0 || std::cmp_greater_equal(sel, m_ghostedWedges.size()))
-                    {
-                    return;
-                    }
-                wxString gpLabel = m_ghostedWedges[sel].first;
-                wxString catLabel = m_ghostedWedges[sel].second;
-                if (EditGhostOptions(gpLabel, catLabel))
-                    {
-                    m_ghostedWedges[sel] = { gpLabel, catLabel };
-                    RefreshGhostedWedgesList();
-                    }
-            });
+        m_ghostedWedgesList->GetEditButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
+                                                   { OnEditGhostedWedge(); });
+        m_ghostedWedgesList->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                                  [this](wxListEvent&) { OnEditGhostedWedge(); });
         m_ghostedWedgesList->GetDelButton()->Bind(
             wxEVT_BUTTON,
             [this]([[maybe_unused]] wxCommandEvent&)
@@ -209,6 +195,24 @@ namespace Wisteria::UI
         CreateLegendOptionsPage();
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
+        }
+
+    //-------------------------------------------
+    void InsertNightingaleRoseChartDlg::OnEditGhostedWedge()
+        {
+        const long sel = m_ghostedWedgesList->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                         wxLIST_STATE_SELECTED);
+        if (sel < 0 || std::cmp_greater_equal(sel, m_ghostedWedges.size()))
+            {
+            return;
+            }
+        wxString gpLabel = m_ghostedWedges[sel].first;
+        wxString catLabel = m_ghostedWedges[sel].second;
+        if (EditGhostOptions(gpLabel, catLabel))
+            {
+            m_ghostedWedges[sel] = { gpLabel, catLabel };
+            RefreshGhostedWedgesList();
+            }
         }
 
     //-------------------------------------------

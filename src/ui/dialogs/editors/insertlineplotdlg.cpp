@@ -165,52 +165,10 @@ namespace Wisteria::UI
             });
 
         // override Edit button
-        m_showcaseListBox->GetEditButton()->Bind(
-            wxEVT_BUTTON,
-            [this]([[maybe_unused]]
-                   wxCommandEvent& event)
-            {
-                const auto dataset = GetSelectedDataset();
-                auto* listCtrl = m_showcaseListBox->GetListCtrl();
-                const long sel = listCtrl->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-                if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseLines.size()) ||
-                    dataset == nullptr || m_groupVariable.empty())
-                    {
-                    return;
-                    }
-
-                wxArrayString groupChoices;
-                const auto groupCol = dataset->GetCategoricalColumn(m_groupVariable);
-                if (groupCol != dataset->GetCategoricalColumns().cend())
-                    {
-                    for (const auto& [id, label] : groupCol->GetStringTable())
-                        {
-                        if (!label.empty())
-                            {
-                            groupChoices.Add(label);
-                            }
-                        }
-                    }
-
-                if (groupChoices.empty())
-                    {
-                    return;
-                    }
-
-                wxSingleChoiceDialog dlg(this, _(L"Select line to showcase:"), _(L"Showcase Line"),
-                                         groupChoices);
-                dlg.SetSelection(sel);
-                if (dlg.ShowModal() == wxID_OK)
-                    {
-                    m_showcaseLines[sel] = dlg.GetStringSelection();
-                    wxArrayString strings;
-                    for (const auto& s : m_showcaseLines)
-                        {
-                        strings.Add(s);
-                        }
-                    m_showcaseListBox->SetStrings(strings);
-                    }
-            });
+        m_showcaseListBox->GetEditButton()->Bind(wxEVT_BUTTON, [this](wxCommandEvent&)
+                                                 { OnEditShowcasedLine(); });
+        m_showcaseListBox->Bind(wxEVT_LIST_ITEM_ACTIVATED,
+                                [this](wxListEvent&) { OnEditShowcasedLine(); });
 
         // override Delete button
         m_showcaseListBox->GetDelButton()->Bind(
@@ -245,6 +203,51 @@ namespace Wisteria::UI
         CreateAxisOptionsPage();
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
+        }
+
+    //-------------------------------------------
+    void InsertLinePlotDlg::OnEditShowcasedLine()
+        {
+        const auto dataset = GetSelectedDataset();
+        const long sel = m_showcaseListBox->GetListCtrl()->GetNextItem(-1, wxLIST_NEXT_ALL,
+                                                                       wxLIST_STATE_SELECTED);
+        if (sel < 0 || std::cmp_greater_equal(sel, m_showcaseLines.size()) || dataset == nullptr ||
+            m_groupVariable.empty())
+            {
+            return;
+            }
+
+        wxArrayString groupChoices;
+        const auto groupCol = dataset->GetCategoricalColumn(m_groupVariable);
+        if (groupCol != dataset->GetCategoricalColumns().cend())
+            {
+            for (const auto& [id, label] : groupCol->GetStringTable())
+                {
+                if (!label.empty())
+                    {
+                    groupChoices.Add(label);
+                    }
+                }
+            }
+
+        if (groupChoices.empty())
+            {
+            return;
+            }
+
+        wxSingleChoiceDialog dlg(this, _(L"Select line to showcase:"), _(L"Showcase Line"),
+                                 groupChoices);
+        dlg.SetSelection(sel);
+        if (dlg.ShowModal() == wxID_OK)
+            {
+            m_showcaseLines[sel] = dlg.GetStringSelection();
+            wxArrayString strings;
+            for (const auto& showLine : m_showcaseLines)
+                {
+                strings.Add(showLine);
+                }
+            m_showcaseListBox->SetStrings(strings);
+            }
         }
 
     //-------------------------------------------
