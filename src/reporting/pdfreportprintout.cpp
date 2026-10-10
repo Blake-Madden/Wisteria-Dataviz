@@ -36,6 +36,10 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
     printData.SetPaperId(options.m_paperSize);
     printData.SetFilename(filePath);
     wxPdfDC pdfDC(printData);
+    // render fonts at their point size (rather than scaled to the screen's PPI)
+    // so that text matches the DC's DIP scaling
+    pdfDC.SetMapModeStyle(wxPDF_MAPMODESTYLE_PDF);
+    pdfDC.SetMapMode(wxMM_POINTS);
 
     if (!pdfDC.StartDoc(options.m_title))
         {
@@ -74,17 +78,20 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
         const int rightMargin = pdfDC.ToDIP(wxSize{ 10, 0 }).GetWidth();
         const int bottomMargin = pdfDC.ToDIP(wxSize{ 0, 10 }).GetHeight();
 
+        // the DC's logical units per inch (not necessarily PDF points)
+        const double pdfPPI{ static_cast<double>(pdfDC.GetPPI().GetWidth()) };
+
         int dipW{ 0 }, dipH{ 0 };
         if (paper != nullptr)
             {
             const bool landscape = (printData.GetOrientation() == wxLANDSCAPE);
             const auto paperSzTenthsMM = paper->GetSize();
-            const wxSize ptsSize(
+            const wxSize logicalSize(
                 wxRound((landscape ? paperSzTenthsMM.GetHeight() : paperSzTenthsMM.GetWidth()) /
-                        254.0 * 72.0),
+                        254.0 * pdfPPI),
                 wxRound((landscape ? paperSzTenthsMM.GetWidth() : paperSzTenthsMM.GetHeight()) /
-                        254.0 * 72.0));
-            const wxSize dipSize = pdfDC.ToDIP(ptsSize);
+                        254.0 * pdfPPI));
+            const wxSize dipSize = pdfDC.ToDIP(logicalSize);
             dipW = dipSize.GetWidth() - leftMargin - rightMargin;
             dipH = dipSize.GetHeight() - topMargin - bottomMargin;
             }
@@ -92,7 +99,8 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
         if (dipW <= 0 || dipH <= 0)
             {
             // fallback to US Letter
-            const wxSize dipSize = pdfDC.ToDIP(wxSize{ wxRound(8.5 * 72.0), wxRound(11.0 * 72.0) });
+            const wxSize dipSize =
+                pdfDC.ToDIP(wxSize{ wxRound(8.5 * pdfPPI), wxRound(11.0 * pdfPPI) });
             dipW = dipSize.GetWidth() - leftMargin - rightMargin;
             dipH = dipSize.GetHeight() - topMargin - bottomMargin;
             }

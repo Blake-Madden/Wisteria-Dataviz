@@ -587,6 +587,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             wxPrintData printData = GetPrinterSettings();
             printData.SetFilename(filePath.GetFullPath());
             wxPdfDC pdfDC(printData);
+            // render fonts at their point size (rather than scaled to the screen's PPI)
+            // so that text matches the DC's DIP scaling
+            pdfDC.SetMapModeStyle(wxPDF_MAPMODESTYLE_PDF);
+            pdfDC.SetMapMode(wxMM_POINTS);
             if (pdfDC.StartDoc(pdfOptions.m_title.empty() ? GetLabel() : pdfOptions.m_title))
                 {
                 pdfDC.GetPdfDocument()->SetTitle(pdfOptions.m_title);
@@ -609,19 +613,21 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     {
                     const bool landscape = printData.GetOrientation() == wxLANDSCAPE;
                     const auto paperSzTenthsMM = paper->GetSize();
-                    const wxSize ptsSize(wxRound((landscape ? paperSzTenthsMM.GetHeight() :
-                                                              paperSzTenthsMM.GetWidth()) /
-                                                 254.0 * 72.0),
-                                         wxRound((landscape ? paperSzTenthsMM.GetWidth() :
-                                                              paperSzTenthsMM.GetHeight()) /
-                                                 254.0 * 72.0));
+                    // the DC's logical units per inch (not necessarily PDF points)
+                    const double pdfPPI{ static_cast<double>(pdfDC.GetPPI().GetWidth()) };
+                    const wxSize logicalSize(wxRound((landscape ? paperSzTenthsMM.GetHeight() :
+                                                                  paperSzTenthsMM.GetWidth()) /
+                                                     254.0 * pdfPPI),
+                                             wxRound((landscape ? paperSzTenthsMM.GetWidth() :
+                                                                  paperSzTenthsMM.GetHeight()) /
+                                                     254.0 * pdfPPI));
 
                     const int leftMargin = pdfDC.ToDIP(wxSize{ 5, 0 }).GetWidth();
                     const int topMargin = pdfDC.ToDIP(wxSize{ 0, 0 }).GetHeight();
                     const int rightMargin = pdfDC.ToDIP(wxSize{ 10, 0 }).GetWidth();
                     const int bottomMargin = pdfDC.ToDIP(wxSize{ 0, 10 }).GetHeight();
 
-                    const wxSize dipSize = pdfDC.ToDIP(ptsSize);
+                    const wxSize dipSize = pdfDC.ToDIP(logicalSize);
                     const int dipW = dipSize.GetWidth() - leftMargin - rightMargin;
                     const int dipH = dipSize.GetHeight() - topMargin - bottomMargin;
                     m_rectDIPs.SetSize(wxSize{ dipW, dipH });
