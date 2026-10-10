@@ -1914,8 +1914,8 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         }
     else
         {
-        wxMessageBox(
+        Settings::ReportError(
             wxString::Format(_(L"Failed to save HTML dashboard to \"%s\"."), options.m_filePath),
-            _(L"Export Error"), wxOK | wxICON_ERROR);
+            _(L"Export Error"));
         }
     }

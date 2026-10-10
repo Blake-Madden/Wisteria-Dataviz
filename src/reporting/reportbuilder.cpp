@@ -2107,8 +2107,7 @@ namespace Wisteria
                 }
             else
                 {
-                wxLogWarning(_(L"Transformation dataset without a name."),
-                             wxOK | wxICON_WARNING | wxCENTRE);
+                wxLogWarning(_(L"Transformation dataset without a name."));
                 }
             }
         }

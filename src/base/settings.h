@@ -14,6 +14,8 @@
 
 #include "colorbrewer.h"
 #include "version.h"
+#include <wx/log.h>
+#include <wx/msgdlg.h>
 #include <wx/numformatter.h>
 #include <wx/version.h>
 
@@ -250,6 +252,32 @@ namespace Wisteria
             m_enableReportEditing = enable;
             }
 
+        /// @returns @c true if the library may show modal UI (e.g., message boxes).
+        [[nodiscard]]
+        static bool IsInteractive() noexcept
+            {
+            return m_interactive;
+            }
+
+        /// @brief Enables or disables modal UI.
+        /// @param interactive @c false to log errors instead of showing message boxes.
+        static void SetInteractive(const bool interactive) noexcept { m_interactive = interactive; }
+
+        /// @brief Shows an error message box if interactive; otherwise, logs the error.
+        /// @param message The error message.
+        /// @param title The title of the message box (or prefix of the logged message).
+        static void ReportError(const wxString& message, const wxString& title)
+            {
+            if (IsInteractive())
+                {
+                wxMessageBox(message, title, wxOK | wxICON_ERROR);
+                }
+            else
+                {
+                wxLogError(L"%s: %s", title, message);
+                }
+            }
+
         /// @brief The default opacity when ghosting items.
         constexpr static uint8_t GHOST_OPACITY = 32;
 
@@ -264,6 +292,7 @@ namespace Wisteria
 
       private:
         inline static bool m_enableReportEditing{ false };
+        inline static bool m_interactive{ true };
         inline static wxSize m_imageResolutionDPI{ 300, 300 };
         inline static uint8_t m_translucencyValue{ 100 };
         inline static uint8_t m_maxLegendItems{ 20 };

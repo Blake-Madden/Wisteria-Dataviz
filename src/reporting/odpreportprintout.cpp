@@ -616,8 +616,9 @@ Wisteria::ReportOdpExport::ReportOdpExport(const std::vector<Canvas*>& canvases,
     wxFFileOutputStream fileStream{ filePath };
     if (!fileStream.IsOk())
         {
-        wxMessageBox(wxString::Format(_(L"Failed to save ODP report to \"%s\"."), filePath),
-                     _(L"Export Error"), wxOK | wxICON_ERROR);
+        Settings::ReportError(
+            wxString::Format(_(L"Failed to save ODP report to \"%s\"."), filePath),
+            _(L"Export Error"));
         return;
         }
     wxZipOutputStream zipStream{ fileStream };
@@ -658,7 +659,8 @@ Wisteria::ReportOdpExport::ReportOdpExport(const std::vector<Canvas*>& canvases,
     const bool closedOk{ zipStream.Close() && fileStream.Close() };
     if (!ok || !closedOk)
         {
-        wxMessageBox(wxString::Format(_(L"Failed to save ODP report to \"%s\"."), filePath),
-                     _(L"Export Error"), wxOK | wxICON_ERROR);
+        Settings::ReportError(
+            wxString::Format(_(L"Failed to save ODP report to \"%s\"."), filePath),
+            _(L"Export Error"));
         }
     }

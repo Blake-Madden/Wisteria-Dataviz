@@ -669,8 +669,9 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
     wxFFileOutputStream fileStream{ filePath };
     if (!fileStream.IsOk())
         {
-        wxMessageBox(wxString::Format(_(L"Failed to save PowerPoint report to \"%s\"."), filePath),
-                     _(L"Export Error"), wxOK | wxICON_ERROR);
+        Settings::ReportError(
+            wxString::Format(_(L"Failed to save PowerPoint report to \"%s\"."), filePath),
+            _(L"Export Error"));
         return;
         }
     wxZipOutputStream zipStream{ fileStream };
@@ -851,7 +852,8 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
     const bool closedOk{ zipStream.Close() && fileStream.Close() };
     if (!ok || !closedOk)
         {
-        wxMessageBox(wxString::Format(_(L"Failed to save PowerPoint report to \"%s\"."), filePath),
-                     _(L"Export Error"), wxOK | wxICON_ERROR);
+        Settings::ReportError(
+            wxString::Format(_(L"Failed to save PowerPoint report to \"%s\"."), filePath),
+            _(L"Export Error"));
         }
     }

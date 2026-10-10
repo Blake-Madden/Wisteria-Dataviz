@@ -900,9 +900,9 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
         }
     else
         {
-        wxMessageBox(
+        Settings::ReportError(
             wxString::Format(_(L"Failed to save SVG report to \"%s\"."), options.m_filePath),
-            _(L"Export Error"), wxOK | wxICON_ERROR);
+            _(L"Export Error"));
         }
     }
 

@@ -39,8 +39,9 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
 
     if (!pdfDC.StartDoc(options.m_title))
         {
-        wxMessageBox(wxString::Format(_(L"Failed to create PDF document \"%s\"."), filePath),
-                     _(L"Export Error"), wxOK | wxICON_ERROR);
+        Settings::ReportError(
+            wxString::Format(_(L"Failed to create PDF document \"%s\"."), filePath),
+            _(L"Export Error"));
         return;
         }
 
