@@ -602,7 +602,10 @@ namespace Wisteria
         GlazedDonut,
         /// @brief A bagel topped with white and black sesame seeds.
         ///     Slice colors will be overridden with a golden baked-dough color.
-        Bagel
+        Bagel,
+        /// @brief A pumpkin pie with a thin, fluted crust and small brown spots.
+        ///     Slice colors will be overridden with pumpkin-filling colors.
+        PumpkinPie
         };
 
     /// @brief Effects that could be applied to an image.

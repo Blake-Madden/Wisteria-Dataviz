@@ -126,6 +126,7 @@ namespace Wisteria::UI
             styleChoice->Append(_(L"Chocolate chip cookie"));
             styleChoice->Append(_(L"Glazed donut"));
             styleChoice->Append(_(L"Bagel"));
+            styleChoice->Append(_(L"Pumpkin pie"));
             styleSizer->Add(styleChoice);
             }
         leftColumnSizer->Add(styleSizer, wxSizerFlags{}.Border());

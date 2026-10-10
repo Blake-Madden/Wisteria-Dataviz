@@ -20,6 +20,7 @@
     - Prohibited sign
 - Added styling options to pie charts to make them look like:
     - Bagels
+    - Pumpkin pies
 
 ## 1.2.1
 

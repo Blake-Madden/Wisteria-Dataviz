@@ -1342,6 +1342,11 @@ namespace Wisteria::Graphs
             {
             AddBagelSeeds(drawAreas);
             }
+        else if (GetPieStyle() == PieStyle::PumpkinPie)
+            {
+            AddPumpkinPieSpots(drawAreas);
+            AddPumpkinPieCrust(drawAreas);
+            }
         }
 
     //----------------------------------------------------------------
@@ -3341,6 +3346,207 @@ namespace Wisteria::Graphs
         }
 
     //----------------------------------------------------------------
+    void PieChart::AddPumpkinPieSpots(const DrawAreas& drawAreas)
+        {
+        const wxRect pieRect = drawAreas.m_pieDrawArea;
+
+        const double centerX = pieRect.GetX() + (pieRect.GetWidth() * math_constants::half);
+        const double centerY = pieRect.GetY() + (pieRect.GetHeight() * math_constants::half);
+        const double radiusX = pieRect.GetWidth() * math_constants::half;
+        const double radiusY = pieRect.GetHeight() * math_constants::half;
+        const double pieRadius = std::min(radiusX, radiusY);
+
+        const bool hasHole = IsIncludingDonutHole();
+        const double holeProportion = hasHole ? GetDonutHoleProportion() : 0.0;
+
+        // Overlapping translucent bands, which build up to a browner tone toward the outer edge.
+        // (Many faint bands are used so that the transition reads as a smooth gradient.)
+        constexpr int BAND_COUNT{ 24 };
+        constexpr int BAND_SAMPLE_COUNT{ 120 };
+        const wxColour bandColor{ 120, 55, 15, 6 };
+
+        for (int bandIndex = 0; bandIndex < BAND_COUNT; ++bandIndex)
+            {
+            const double outerFraction{ 1.0 };
+            const double innerFraction =
+                std::max(0.45 + (0.5 * bandIndex / BAND_COUNT), holeProportion);
+
+            std::vector<wxPoint> bandPoints;
+            bandPoints.reserve((static_cast<size_t>(BAND_SAMPLE_COUNT) + 1) * 2);
+
+            // sample through 360 degrees so that the closing edge doesn't cut a chord
+            // across the circle at the start angle
+            for (int sample = 0; sample <= BAND_SAMPLE_COUNT; ++sample)
+                {
+                const double angleRadians = geometry::degrees_to_radians(
+                    safe_divide<double>(360.0 * sample, BAND_SAMPLE_COUNT));
+                bandPoints.emplace_back(
+                    wxRound(centerX + (radiusX * outerFraction * std::cos(angleRadians))),
+                    wxRound(centerY + (radiusY * outerFraction * std::sin(angleRadians))));
+                }
+            for (int sample = BAND_SAMPLE_COUNT; sample >= 0; --sample)
+                {
+                const double angleRadians = geometry::degrees_to_radians(
+                    safe_divide<double>(360.0 * sample, BAND_SAMPLE_COUNT));
+                bandPoints.emplace_back(
+                    wxRound(centerX + (radiusX * innerFraction * std::cos(angleRadians))),
+                    wxRound(centerY + (radiusY * innerFraction * std::sin(angleRadians))));
+                }
+
+            AddObject(std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo{}
+                                                                .Brush(wxBrush{ bandColor })
+                                                                .Pen(wxNullPen)
+                                                                .Scaling(GetScaling())
+                                                                .DPIScaling(GetDPIScaleFactor())
+                                                                .Selectable(false),
+                                                            bandPoints));
+            }
+
+        // small, random brown spots
+        constexpr int SPOT_COUNT{ 48 };
+        constexpr int SPOT_SAMPLES{ 10 };
+
+        const double minSpotDistance =
+            std::max(pieRadius * holeProportion + (pieRadius * 0.04), pieRadius * 0.04);
+        const double maxSpotDistance = pieRadius * 0.94;
+        const double minSpotRadius = std::max(ScaleToScreenAndCanvas(1.0), pieRadius * 0.006);
+        const double maxSpotRadius = std::max(ScaleToScreenAndCanvas(2.5), pieRadius * 0.016);
+
+        auto& rng = GraphItems::ShapeRenderer::GetRNG();
+        std::uniform_real_distribution<double> angleDist{ 0.0, 360.0 };
+        // area-uniform, so spots don't bunch up in the middle
+        std::uniform_real_distribution<double> radiusAreaDist{ minSpotDistance * minSpotDistance,
+                                                               maxSpotDistance * maxSpotDistance };
+        std::uniform_real_distribution<double> sizeDist{ minSpotRadius, maxSpotRadius };
+        std::uniform_real_distribution<double> wobbleDist{ 0.75, 1.25 };
+        std::uniform_int_distribution<int> alphaDist{ 90, 170 };
+
+        for (int spotIndex = 0; spotIndex < SPOT_COUNT; ++spotIndex)
+            {
+            const double angleRadians = geometry::degrees_to_radians(angleDist(rng));
+            const double distance = std::sqrt(radiusAreaDist(rng));
+            const double spotX = centerX + (std::cos(angleRadians) * distance);
+            const double spotY = centerY + (std::sin(angleRadians) * distance);
+
+            const double baseRadius = sizeDist(rng);
+            // slightly oval, as if flecks of spice
+            const double stretch = wobbleDist(rng);
+
+            std::vector<wxPoint> spotPoints;
+            spotPoints.reserve(SPOT_SAMPLES);
+            for (int sample = 0; sample < SPOT_SAMPLES; ++sample)
+                {
+                const double sampleRadians =
+                    geometry::degrees_to_radians(safe_divide<double>(360.0 * sample, SPOT_SAMPLES));
+                const double wobble = wobbleDist(rng);
+                spotPoints.emplace_back(
+                    wxRound(spotX + (std::cos(sampleRadians) * baseRadius * stretch * wobble)),
+                    wxRound(spotY + (std::sin(sampleRadians) * baseRadius * wobble)));
+                }
+
+            AddObject(std::make_unique<GraphItems::Polygon>(
+                GraphItems::GraphItemInfo{}
+                    .Brush(wxBrush{
+                        wxColour{ 105, 52, 20, static_cast<unsigned char>(alphaDist(rng)) } })
+                    .Pen(wxNullPen)
+                    .Scaling(GetScaling())
+                    .DPIScaling(GetDPIScaleFactor())
+                    .Selectable(false),
+                spotPoints));
+            }
+        }
+
+    //----------------------------------------------------------------
+    void PieChart::AddPumpkinPieCrust(const DrawAreas& drawAreas)
+        {
+        // flutes (scalloped crimps) around the rim, with several samples per flute
+        constexpr int FLUTE_COUNT{ 44 };
+        constexpr int SAMPLES_PER_FLUTE{ 8 };
+        constexpr int SAMPLE_COUNT{ FLUTE_COUNT * SAMPLES_PER_FLUTE };
+
+        const double crustThickness{ ScaleToScreenAndCanvas(7) };
+        const double crustInflation{ ScaleToScreenAndCanvas(3) };
+        const double fluteDepth{ ScaleToScreenAndCanvas(3) };
+        const double wobbleAmplitude{ ScaleToScreenAndCanvas(0.8) };
+
+        constexpr uint32_t CRUST_SEED{ 0x9A11B1E5 };
+
+        const wxColour doughColor{ 238, 198, 130, 240 };
+        const wxColour toastedColor{ 200, 138, 66, 120 };
+        const wxColour ridgeColor{ 252, 232, 188, 130 };
+
+        const wxRect pieRect = drawAreas.m_pieDrawArea;
+        const double centerX = pieRect.GetX() + (pieRect.GetWidth() * math_constants::half);
+        const double centerY = pieRect.GetY() + (pieRect.GetHeight() * math_constants::half);
+        const double radiusX = pieRect.GetWidth() * math_constants::half;
+        const double radiusY = pieRect.GetHeight() * math_constants::half;
+
+        // distance of the rim's edge from the pie's edge at the given angle,
+        // where the pinched flutes are a series of rounded bumps with sharp creases between them
+        const auto rimOffset = [&](const double angleDegrees, const double fluteShift)
+        {
+            // the half-flute offset puts a crest on the first slice's start angle
+            const double cycles =
+                (angleDegrees * FLUTE_COUNT) / 360.0 + fluteShift + math_constants::half;
+            // wrap the index so that the last flute matches the first one at the seam
+            const auto fluteIndex =
+                static_cast<uint32_t>(std::max(0.0, std::floor(cycles))) % FLUTE_COUNT;
+            const double fluteSize =
+                0.8 + (0.4 * HashToUnitInterval(CRUST_SEED + fluteIndex * 977));
+            const double bump = std::abs(std::sin(geometry::degrees_to_radians(180.0 * cycles)));
+            return (crustInflation + (fluteDepth * fluteSize * (bump - math_constants::half)) +
+                    (wobbleAmplitude * RingIrregularity(angleDegrees, CRUST_SEED)));
+        };
+
+        const auto pointAtOffset = [&](const double angleDegrees, const double offset)
+        {
+            const double angleRadians = geometry::degrees_to_radians(angleDegrees);
+            return wxPoint{ wxRound(centerX + ((radiusX + offset) * std::cos(angleRadians))),
+                            wxRound(centerY + ((radiusY + offset) * std::sin(angleRadians))) };
+        };
+
+        // draws a band between two edges, each given as a distance in from the rim's outer edge
+        const auto addBand = [&](const double outerInset, const double innerInset,
+                                 const double fluteShift, const wxBrush& brush, const wxPen& pen)
+        {
+            std::vector<wxPoint> outerPoints;
+            std::vector<wxPoint> innerPoints;
+            outerPoints.reserve(SAMPLE_COUNT + 1);
+            innerPoints.reserve(SAMPLE_COUNT + 1);
+
+            for (int sample = 0; sample <= SAMPLE_COUNT; ++sample)
+                {
+                const auto angleDegrees = safe_divide<double>(360.0 * sample, SAMPLE_COUNT);
+                const double edgeOffset = rimOffset(angleDegrees, fluteShift);
+                outerPoints.push_back(pointAtOffset(angleDegrees, edgeOffset - outerInset));
+                innerPoints.push_back(pointAtOffset(angleDegrees, edgeOffset - innerInset));
+                }
+
+            std::vector<wxPoint> bandPoints;
+            bandPoints.reserve(outerPoints.size() + innerPoints.size());
+            bandPoints.insert(bandPoints.end(), outerPoints.begin(), outerPoints.end());
+            bandPoints.insert(bandPoints.end(), innerPoints.rbegin(), innerPoints.rend());
+
+            AddObject(std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo{}
+                                                                .Brush(brush)
+                                                                .Pen(pen)
+                                                                .Scaling(GetScaling())
+                                                                .DPIScaling(GetDPIScaleFactor())
+                                                                .Selectable(false),
+                                                            bandPoints));
+        };
+
+        // the dough itself
+        addBand(0.0, crustThickness, 0.0, wxBrush{ doughColor },
+                wxPen(wxColour(165, 115, 60, 120), ScaleToScreenAndCanvas(1), wxPENSTYLE_SOLID));
+        // browned along the outer edge
+        addBand(0.0, crustThickness * 0.4, 0.0, wxBrush{ toastedColor }, wxNullPen);
+        // lighter ridge, offset half a flute so that it follows the crimps
+        addBand(crustThickness * 0.45, crustThickness * 0.65, 0.5, wxBrush{ ridgeColor },
+                wxNullPen);
+        }
+
+    //----------------------------------------------------------------
     void PieChart::AddClockHands(const DrawAreas& drawAreas)
         {
         if (m_outerPie.size() <= 1)
@@ -3733,6 +3939,11 @@ namespace Wisteria::Graphs
                 sliceBrushToUse.SetColour(bagelColors[sliceCounter]);
                 sliceOutlinePen.SetColour(wxColour{ 150, 100, 55 });
                 }
+            else if (GetPieStyle() == PieStyle::PumpkinPie)
+                {
+                sliceBrushToUse.SetColour(GetPumpkinFillColor());
+                sliceOutlinePen.SetColour(GetPumpkinOutlineColor());
+                }
 
             currentParentSliceIndex = innerPie.m_parentSliceIndex;
 
@@ -3954,6 +4165,11 @@ namespace Wisteria::Graphs
                 {
                 sliceBrush.SetColour(bagelColors[i]);
                 sliceOutlinePen.SetColour(wxColour{ 150, 100, 55 });
+                }
+            else if (GetPieStyle() == PieStyle::PumpkinPie)
+                {
+                sliceBrush.SetColour(GetPumpkinFillColor());
+                sliceOutlinePen.SetColour(GetPumpkinOutlineColor());
                 }
             auto pSlice = std::make_unique<GraphItems::PieSlice>(
                 GraphItems::GraphItemInfo{ GetOuterPie().at(i).GetGroupLabel() }
@@ -5029,6 +5245,10 @@ namespace Wisteria::Graphs
             case PieStyle::Bagel:
                 label = isDonut ? _(L"A donut chart in the style of a bagel") :
                                   _(L"A pie chart in the style of a bagel");
+                break;
+            case PieStyle::PumpkinPie:
+                label = isDonut ? _(L"A donut chart in the style of a pumpkin pie") :
+                                  _(L"A pie chart in the style of a pumpkin pie");
                 break;
             default:
                 break;

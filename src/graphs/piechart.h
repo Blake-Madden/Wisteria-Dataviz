@@ -1366,6 +1366,24 @@ namespace Wisteria::Graphs
 
         void AddBagelSeeds(const DrawAreas& drawAreas);
 
+        // pumpkin pie styling
+        /// @returns The orange filling color at the center of the pie.
+        [[nodiscard]]
+        static wxColour GetPumpkinFillColor()
+            {
+            return wxColour{ 207, 105, 33 };
+            }
+
+        /// @returns The dark brown color for the slice outlines.
+        [[nodiscard]]
+        static wxColour GetPumpkinOutlineColor()
+            {
+            return wxColour{ 96, 44, 14 };
+            }
+
+        void AddPumpkinPieCrust(const DrawAreas& drawAreas);
+        void AddPumpkinPieSpots(const DrawAreas& drawAreas);
+
         /** @brief Computes a point on the perimeter of an ellipse defined by a rectangle.
 
             @details Given a bounding rectangle, treats the rectangle as the axis-aligned
