@@ -153,30 +153,43 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptPages()
       box.checked = activeLayers.has(box.dataset.layer);
     });
   }
+  function ensureCurrentVisible() {
+    const visible = visibleIndexes();
+    if (visible.length && visible.indexOf(current) < 0) {
+      const next = visible.find(function(i) { return i > current; });
+      current = next === undefined ? visible[visible.length - 1] : next;
+    }
+  }
   function toggleLayer(layer) {
     if (activeLayers.has(layer)) activeLayers.delete(layer);
     else activeLayers.add(layer);
     applyLayers();
     saveState();
     const visible = visibleIndexes();
-    if (visible.length && visible.indexOf(current) < 0) {
-      const next = visible.find(function(i) { return i > current; });
-      current = next === undefined ? visible[visible.length - 1] : next;
-    }
+    ensureCurrentVisible();
     renderView();
     revealCurrent('auto');
     announce(visible.length ? format(strings.pagesShown, visible.length, pages.length) :
                               strings.noPages);
   }
-  function readHash() {
+  function readHash(initial) {
     const params = new URLSearchParams(location.hash.slice(1));
-    if (pages.length > 1 && (savedState.view === 'gallery' || savedState.view === 'slides')) {
+    if (initial && pages.length > 1 &&
+        (savedState.view === 'gallery' || savedState.view === 'slides')) {
       view = savedState.view;
     }
     const wanted = params.get('view');
     if (pages.length > 1 && (wanted === 'gallery' || wanted === 'slides')) view = wanted;
     const index = parseInt(params.get('page'), 10);
-    if (!isNaN(index)) current = clampIndex(index);
+    if (!isNaN(index) && pages.length) {
+      current = clampIndex(index);
+      // a link to a page always shows that page, even if its layer was hidden
+      const target = pages[current];
+      if (target.layer && !activeLayers.has(target.layer)) {
+        activeLayers.add(target.layer);
+        saveState();
+      }
+    }
   }
   function writeHash() {
     try { history.replaceState(null, '', '#view=' + view + '&page=' + current); } catch (e) {}
@@ -1454,23 +1467,32 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
     document.querySelectorAll('.page-svg title').forEach(function(n) { n.remove(); });
     document.querySelectorAll('.page-svg > g[id^="page-content"] > desc').forEach(function(n) { n.remove(); });
     collectPages();
-    readHash();
+    readHash(true);
     applyColorMode();
     buildRail();
     buildGallery();
     bindControls();
     applyLayers();
+    ensureCurrentVisible();
     buildFilters();
     applyFilters();
     renderView();
     revealCurrent('auto');
+    window.addEventListener('hashchange', function() {
+      readHash(false);
+      applyLayers();
+      withTransition(function() {
+        renderView();
+        revealCurrent('auto');
+      });
+    });
     observeStory();
     // let the loading indicator paint before the heavy work starts
     window.requestAnimationFrame(function() {
       window.setTimeout(function() {
         assignInk();
         setupMotion();
-        if (!pages.length || !root.classList.contains('motion-ready')) markReady();
+        if (!visibleIndexes().length || !root.classList.contains('motion-ready')) markReady();
       }, 0);
     });
   });
