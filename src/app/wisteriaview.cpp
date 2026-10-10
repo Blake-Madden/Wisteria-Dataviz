@@ -1124,12 +1124,27 @@ void WisteriaView::OnPasteItem([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    std::shared_ptr<Wisteria::GraphItems::GraphItemBase> canvasItem{
-        Wisteria::Canvas::GetLabelClipboard()
-    };
-    if (canvasItem == nullptr)
+    // paste a fresh copy so that repeated pastes are independent objects
+    std::shared_ptr<Wisteria::GraphItems::GraphItemBase> canvasItem;
+    if (const auto& label = Wisteria::Canvas::GetLabelClipboard(); label != nullptr)
         {
-        canvasItem = Wisteria::Canvas::GetImageClipboard();
+        canvasItem = std::make_shared<Wisteria::GraphItems::Label>(*label);
+        }
+    else if (const auto& image = Wisteria::Canvas::GetImageClipboard(); image != nullptr)
+        {
+        canvasItem = std::make_shared<Wisteria::GraphItems::Image>(*image);
+        }
+    else if (const auto& shape = Wisteria::Canvas::GetShapeClipboard(); shape != nullptr)
+        {
+        if (shape->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::FillableShape)))
+            {
+            canvasItem = std::make_shared<Wisteria::GraphItems::FillableShape>(
+                *std::static_pointer_cast<Wisteria::GraphItems::FillableShape>(shape));
+            }
+        else
+            {
+            canvasItem = std::make_shared<Wisteria::GraphItems::Shape>(*shape);
+            }
         }
     if (canvasItem == nullptr)
         {
