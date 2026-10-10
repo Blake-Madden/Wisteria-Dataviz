@@ -894,7 +894,7 @@ namespace Wisteria
             const auto donutHoleNode = graphNode->GetProperty(L"donut-hole");
             if (donutHoleNode->IsOk())
                 {
-                pieChart->IncludeDonutHole(true);
+                pieChart->IncludeDonutHole(donutHoleNode->GetProperty(L"include")->AsBool());
                 const auto labelProperty = donutHoleNode->GetProperty(L"label");
                 if (labelProperty->IsOk())
                     {
