@@ -42,6 +42,24 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptState()
     } catch (e) {}
   }
 
+  const stateKey = 'wisteria-dashboard:{{DASHID}}';
+  function loadState() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(stateKey));
+      return saved && typeof saved === 'object' ? saved : {};
+    } catch (e) { return {}; }
+  }
+  function saveState() {
+    const hidden = layers.filter(function(layer) { return !activeLayers.has(layer); });
+    try {
+      localStorage.setItem(stateKey, JSON.stringify({ view: view, hiddenLayers: hidden }));
+    } catch (e) {}
+  }
+  const savedState = loadState();
+  if (Array.isArray(savedState.hiddenLayers)) {
+    savedState.hiddenLayers.forEach(function(layer) { activeLayers.delete(layer); });
+  }
+
   function schemeFor(value) {
     return value === 'auto' ? 'light dark' : value;
   }
@@ -139,6 +157,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptPages()
     if (activeLayers.has(layer)) activeLayers.delete(layer);
     else activeLayers.add(layer);
     applyLayers();
+    saveState();
     const visible = visibleIndexes();
     if (visible.length && visible.indexOf(current) < 0) {
       const next = visible.find(function(i) { return i > current; });
@@ -151,6 +170,9 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptPages()
   }
   function readHash() {
     const params = new URLSearchParams(location.hash.slice(1));
+    if (pages.length > 1 && (savedState.view === 'gallery' || savedState.view === 'slides')) {
+      view = savedState.view;
+    }
     const wanted = params.get('view');
     if (pages.length > 1 && (wanted === 'gallery' || wanted === 'slides')) view = wanted;
     const index = parseInt(params.get('page'), 10);
@@ -460,6 +482,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptNavigation()
   function setView(next) {
     withTransition(function() {
       view = next;
+      saveState();
       renderView();
       revealCurrent('auto');
     });
@@ -1663,6 +1686,26 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         }
     layersArray += L"]";
 
+    // identifies this dashboard so that saved viewer settings are not shared with others
+    uint32_t dashboardHash{ 2166136261U };
+    const auto hashText = [&dashboardHash](const wxString& text)
+    {
+        for (const auto ch : text)
+            {
+            dashboardHash ^= static_cast<uint32_t>(ch);
+            dashboardHash *= 16777619U;
+            }
+        dashboardHash ^= 0xFFU;
+        dashboardHash *= 16777619U;
+    };
+    hashText(options.m_title);
+    hashText(std::to_wstring(canvases.size()));
+    for (const auto& layer : distinctLayers)
+        {
+        hashText(layer);
+        }
+    const wxString dashboardId{ wxString::Format(L"%08x", dashboardHash) };
+
     wxString script{ GetDashboardScriptState() + GetDashboardScriptPages() +
                      GetDashboardScriptFilters() + GetDashboardScriptInk() +
                      GetDashboardScriptNavigation() + GetDashboardScriptCounters() +
@@ -1675,6 +1718,7 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
     script.Replace(L"{{COUNTUP}}", options.m_countUpNumbers ? L"true" : L"false");
     script.Replace(L"{{MODE}}", initialMode);
     script.Replace(L"{{VIEW}}", initialView);
+    script.Replace(L"{{DASHID}}", dashboardId);
     // user-derived text goes in last so that it is never scanned for placeholders
     script.Replace(L"{{STRINGS}}", stringsObject);
     script.Replace(L"{{LAYERS}}", layersArray);
