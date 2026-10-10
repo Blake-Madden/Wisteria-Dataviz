@@ -1508,6 +1508,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                 {
                 cellLabel->Offset(horizontalAlignmentOffset, verticalAlignmentOffset);
                 }
+            // clicking a cell selects the whole table
+            cellLabel->SetSelectable(false);
             AddObject(std::move(cellLabel));
             }
 
