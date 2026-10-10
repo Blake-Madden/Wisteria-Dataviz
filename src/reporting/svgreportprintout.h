@@ -61,7 +61,7 @@ namespace Wisteria
         /// @brief The background color for the overlay buttons and effects.
         /// @details This is the main color read from the theme's file by the caller.
         wxColour m_themeColor{ 103, 58, 183 };
-        /// @brief Uniform page size (in DIPs). If default, uses per-canvas paper sizes.
+        /// @brief Custom page size (in DIPs). If not set, uses the paper size.
         wxSize m_pageSize{ wxDefaultSize };
         /// @brief Whether to use the global print settings (paper size and orientation)
         ///     for the SVG dimensions.
@@ -228,8 +228,7 @@ namespace Wisteria
     /// @brief Exports a collection of canvases into a multipage SVG file.
     /// @details Each canvas is rendered into its own @c \<page\> element,
     ///     wrapped in a @c \<pageset\> inside a standard SVG document.
-    ///     The page dimensions are derived from the paper size stored in
-    ///     each canvas's printer settings.
+    ///     Every page uses the size from the export options.
     class SVGReportPrintout
         {
       public:
@@ -240,12 +239,6 @@ namespace Wisteria
         /// @param canvases The canvases (pages) to export.
         /// @param options Export options (interactivity, sizing, file path, etc.).
         SVGReportPrintout(const std::vector<Canvas*>& canvases, SVGReportOptions options);
-
-        /// @brief Retrieves the paper size (in DIPs) for the given canvas.
-        /// @param canvas The canvas whose paper size to query.
-        /// @returns The paper size as a wxSize.
-        [[nodiscard]]
-        static wxSize GetPaperSizeDIPs(const Canvas* canvas);
 
         /// @brief Retrieves the paper size (in DIPs) for the given paper type and orientation.
         /// @param paperId The paper type.

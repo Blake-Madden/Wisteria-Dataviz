@@ -84,34 +84,16 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             }
         }
 
-    // Collect per-canvas paper sizes for rendering.
-    // When using export's paper settings, use the export's paper size uniformly
-    // so the project canvases are not mutated.
-    std::vector<wxSize> pageSizes;
-    pageSizes.reserve(canvases.size());
-    if (options.m_useGlobalPrintSettings)
-        {
-        const wxSize exportSize = GetPaperSizeDIPs(options.m_paperId, options.m_paperOrientation);
-        for (const auto* canvas : canvases)
-            {
-            if (canvas == nullptr)
-                {
-                continue;
-                }
-            pageSizes.push_back(exportSize);
-            }
-        }
-    else
-        {
-        for (const auto* canvas : canvases)
-            {
-            if (canvas == nullptr)
-                {
-                continue;
-                }
-            pageSizes.push_back(GetPaperSizeDIPs(canvas));
-            }
-        }
+    // Every page uses the export's own size. That is the custom page size if one is set;
+    // otherwise, the export's paper size.
+    const bool useCustomSize{ !options.m_useGlobalPrintSettings &&
+                              options.m_pageSize.GetWidth() > 0 &&
+                              options.m_pageSize.GetHeight() > 0 };
+    const wxSize pageSize{ useCustomSize ?
+                               options.m_pageSize :
+                               GetPaperSizeDIPs(options.m_paperId, options.m_paperOrientation) };
+    const auto pageCount{ static_cast<size_t>(
+        std::ranges::count_if(canvases, [](const auto* canvas) { return canvas != nullptr; })) };
 
     // if only one page, then don't need duplex and such options
     if (canvases.size() < 2)
@@ -132,20 +114,12 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
         }
     const bool hasLayerControls = options.HasLayerControls(distinctLayers);
 
-    // the layout size controls the viewBox and page spacing;
-    // the rendering size (pageSizes) stays at each canvas's own paper size
-    const bool useOverrideSize =
-        !options.m_useGlobalPrintSettings && (options.m_pageSize != wxDefaultSize);
-    int maxWidth{ 0 };
+    const int maxWidth{ pageSize.GetWidth() };
     int totalHeight{ 0 };
-    for (size_t i = 0; i < pageSizes.size(); ++i)
+    for (size_t i = 0; i < pageCount; ++i)
         {
-        const auto& ps = pageSizes[i];
-        const int layoutWidth = useOverrideSize ? options.m_pageSize.GetWidth() : ps.GetWidth();
-        const int layoutHeight = useOverrideSize ? options.m_pageSize.GetHeight() : ps.GetHeight();
-        maxWidth = std::max(maxWidth, layoutWidth);
-        totalHeight += layoutHeight;
-        if (i < pageSizes.size() - 1)
+        totalHeight += pageSize.GetHeight();
+        if (i < pageCount - 1)
             {
             totalHeight += PAGE_GAP;
             }
@@ -187,11 +161,8 @@ Wisteria::SVGReportPrintout::SVGReportPrintout(const std::vector<Canvas*>& canva
             continue;
             }
 
-        const wxSize renderSize = pageSizes[pageIndex];
-        const int layoutWidth =
-            useOverrideSize ? options.m_pageSize.GetWidth() : renderSize.GetWidth();
-        const int layoutHeight =
-            useOverrideSize ? options.m_pageSize.GetHeight() : renderSize.GetHeight();
+        const int layoutWidth{ pageSize.GetWidth() };
+        const int layoutHeight{ pageSize.GetHeight() };
         ++pageIndex;
 
         const wxString pageSvg{ RenderCanvasToSvg(canvas, wxSize{ layoutWidth, layoutHeight }) };
@@ -966,19 +937,6 @@ wxString Wisteria::SVGReportPrintout::RenderCanvasToSvg(Canvas* canvas, const wx
     canvas->Refresh();
 
     return StripSvgTags(svgDC.GetSVGDocument());
-    }
-
-//------------------------------------------------------
-wxSize Wisteria::SVGReportPrintout::GetPaperSizeDIPs(const Canvas* canvas)
-    {
-    wxASSERT_MSG(canvas, L"Invalid canvas passed to SVGReportPrintout!");
-    if (canvas == nullptr)
-        {
-        return { 800, 600 };
-        }
-
-    const auto& printData = canvas->GetPrinterSettings();
-    return GetPaperSizeDIPs(printData.GetPaperId(), printData.GetOrientation());
     }
 
 //------------------------------------------------------
