@@ -222,6 +222,18 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
 
     // create the ribbon
     auto* sizer = new wxBoxSizer(wxVERTICAL);
+
+    // quick access toolbar
+    m_quickToolbar = new wxAuiToolBar(panel, wxID_ANY);
+    m_quickToolbar->AddTool(ID_SAVE_PROJECT, _(L"Save the project"),
+                            wxArtProvider::GetBitmapBundle(wxART_FILE_SAVE, wxART_BUTTON));
+    m_quickToolbar->AddTool(wxID_COPY, _(L"Copy selection"),
+                            wxArtProvider::GetBitmapBundle(wxART_COPY, wxART_BUTTON));
+    m_quickToolbar->AddTool(wxID_PRINT, _(L"Print the selected window"),
+                            wxArtProvider::GetBitmapBundle(wxART_PRINT, wxART_BUTTON));
+    m_quickToolbar->Realize();
+    sizer->Add(m_quickToolbar, wxSizerFlags{}.Expand());
+
     auto* ribbon = wxGetApp().CreateRibbon(panel, doc);
     sizer->Add(ribbon, wxSizerFlags{}.Expand());
 
@@ -2309,6 +2321,12 @@ void WisteriaView::UpdateGraphButtonStates() const
         m_objectsButtonBar->EnableButton(ID_EDIT_ITEM, IsCanvasItemSelected());
         m_objectsButtonBar->EnableButton(ID_DELETE_ITEM, IsCanvasItemSelected());
         m_objectsButtonBar->EnableButton(ID_GOTO_DATASOURCE, IsGraphSelected());
+        }
+
+    if (m_quickToolbar != nullptr)
+        {
+        m_quickToolbar->EnableTool(wxID_COPY, IsCanvasItemSelected());
+        m_quickToolbar->Refresh();
         }
 
     if (m_sourcesButtonBar != nullptr)

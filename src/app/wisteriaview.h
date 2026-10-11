@@ -16,6 +16,7 @@
 #include <functional>
 #include <optional>
 #include <vector>
+#include <wx/aui/auibar.h>
 #include <wx/docview.h>
 #include <wx/grid.h>
 #include <wx/menu.h>
@@ -128,6 +129,12 @@ class WisteriaView final : public wxView
     wxSplitterWindow* GetSplitter() noexcept
         {
         return m_splitter;
+        }
+
+    [[nodiscard]]
+    wxAuiToolBar* GetQuickToolbar() noexcept
+        {
+        return m_quickToolbar;
         }
 
     /// @brief Builds the project UI from @p filename.
@@ -444,6 +451,7 @@ class WisteriaView final : public wxView
 
     wxDocChildFrame* m_frame{ nullptr };
     wxSplitterWindow* m_splitter{ nullptr };
+    wxAuiToolBar* m_quickToolbar{ nullptr };
     Wisteria::UI::SideBar* m_sideBar{ nullptr };
     wxPanel* m_workArea{ nullptr };
     wxRibbonButtonBar* m_datasetButtonBar{ nullptr };
