@@ -1668,7 +1668,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
     void BarChart::PlaceEndOfBarLabel(Bar & bar, BarRenderInfo & barRenderInfo,
                                       BarBlockRenderInfo & barBlockRenderInfo)
         {
-        bar.GetLabel().SetScaling(GetScaling());
+        bar.GetLabel().SetScaling(GetBarAxis().GetAxisLabelScaling());
         bar.GetLabel().SetDPIScaleFactor(GetDPIScaleFactor());
         bar.GetLabel().SetShadowType(GetShadowType());
         bar.GetLabel().SetFontColor(GetBarAxis().GetFontColor());

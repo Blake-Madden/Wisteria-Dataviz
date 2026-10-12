@@ -264,7 +264,9 @@ int WisteriaApp::RunHeadlessExport()
         }
 #endif
 
-    // becomes the active log target, which wxWidgets owns
+    // the wxLogChain constructor makes this the active log target,
+    // which wxWidgets deletes during cleanup
+    // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
     const auto* headlessLog = new HeadlessLog;
 
     if (m_cmdLineProjectPath.empty())

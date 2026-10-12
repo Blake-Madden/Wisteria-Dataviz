@@ -5156,7 +5156,7 @@ namespace Wisteria::Graphs
     std::unique_ptr<GraphItems::Label>
     PieChart::CreateOuterPieLegend(const LegendCanvasPlacementHint hint)
         {
-        wxASSERT_MSG(GetOuterPie().size() > 1,
+        wxASSERT_MSG(GetOuterPie().size() >= 1,
                      L"Outer ring of pie chart empty, cannot create legend!");
         auto legend = std::make_unique<GraphItems::Label>(
             GraphItems::GraphItemInfo{}
