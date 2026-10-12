@@ -4021,11 +4021,9 @@ void WisteriaView::OnInsertCandlestickPlot([[maybe_unused]] wxCommandEvent& even
     try
         {
         auto plot = dlg.BuildCandlestickPlot();
-        canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
-
-        UpdateCanvas(canvas);
-
-        GetDocument()->Modify(true);
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                             Wisteria::UI::LegendPlacement::None);
         }
     catch (const std::exception& exc)
         {
@@ -4060,21 +4058,11 @@ void WisteriaView::EditCandlestickPlot(const Wisteria::Graphs::Graph2D& graph,
     try
         {
         auto plot = dlg.BuildCandlestickPlot(&graph);
-        if (pasteAsNew)
-            {
-            PlaceGraphWithLegend(
-                canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             pasteAsNew ? dlg.GetSelectedRow() : graphRow,
+                             pasteAsNew ? dlg.GetSelectedColumn() : graphCol,
+                             Wisteria::UI::LegendPlacement::None);
             }
-        else
-            {
-            canvas->SetFixedObject(graphRow, graphCol, plot);
-
-            UpdateCanvas(canvas);
-
-            GetDocument()->Modify(true);
-            }
-        }
     catch (const std::exception& exc)
         {
         wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
@@ -4101,11 +4089,9 @@ void WisteriaView::OnInsertSankeyDiagram([[maybe_unused]] wxCommandEvent& event)
         {
         auto plot = dlg.BuildSankeyDiagram();
 
-        canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
-
-        UpdateCanvas(canvas);
-
-        GetDocument()->Modify(true);
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                             Wisteria::UI::LegendPlacement::None);
         }
     catch (const std::exception& exc)
         {
@@ -4141,20 +4127,10 @@ void WisteriaView::EditSankeyDiagram(const Wisteria::Graphs::Graph2D& graph,
         {
         auto plot = dlg.BuildSankeyDiagram(&graph);
 
-        if (pasteAsNew)
-            {
-            PlaceGraphWithLegend(
-                canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
-            }
-        else
-            {
-            canvas->SetFixedObject(graphRow, graphCol, plot);
-
-            UpdateCanvas(canvas);
-
-            GetDocument()->Modify(true);
-            }
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             pasteAsNew ? dlg.GetSelectedRow() : graphRow,
+                             pasteAsNew ? dlg.GetSelectedColumn() : graphCol,
+                             Wisteria::UI::LegendPlacement::None);
         }
     catch (const std::exception& exc)
         {
@@ -5272,11 +5248,9 @@ void WisteriaView::OnInsertBulletChart([[maybe_unused]] wxCommandEvent& event)
     try
         {
         auto plot = dlg.BuildBulletChart();
-        canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
-
-        UpdateCanvas(canvas);
-
-        GetDocument()->Modify(true);
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                             Wisteria::UI::LegendPlacement::None);
         }
     catch (const std::exception& exc)
         {
@@ -5311,21 +5285,11 @@ void WisteriaView::EditBulletChart(const Wisteria::Graphs::Graph2D& graph, Wiste
     try
         {
         auto plot = dlg.BuildBulletChart(&graph);
-        if (pasteAsNew)
-            {
-            PlaceGraphWithLegend(
-                canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             pasteAsNew ? dlg.GetSelectedRow() : graphRow,
+                             pasteAsNew ? dlg.GetSelectedColumn() : graphCol,
+                             Wisteria::UI::LegendPlacement::None);
             }
-        else
-            {
-            canvas->SetFixedObject(graphRow, graphCol, plot);
-
-            UpdateCanvas(canvas);
-
-            GetDocument()->Modify(true);
-            }
-        }
     catch (const std::exception& exc)
         {
         wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
@@ -5351,11 +5315,9 @@ void WisteriaView::OnInsertWaterfallChart([[maybe_unused]] wxCommandEvent& event
     try
         {
         auto plot = dlg.BuildWaterfallChart();
-        canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
-
-        UpdateCanvas(canvas);
-
-        GetDocument()->Modify(true);
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                             Wisteria::UI::LegendPlacement::None);
         }
     catch (const std::exception& exc)
         {
@@ -5390,20 +5352,10 @@ void WisteriaView::EditWaterfallChart(const Wisteria::Graphs::Graph2D& graph,
     try
         {
         auto plot = dlg.BuildWaterfallChart(&graph);
-        if (pasteAsNew)
-            {
-            PlaceGraphWithLegend(
-                canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
-            }
-        else
-            {
-            canvas->SetFixedObject(graphRow, graphCol, plot);
-
-            UpdateCanvas(canvas);
-
-            GetDocument()->Modify(true);
-            }
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             pasteAsNew ? dlg.GetSelectedRow() : graphRow,
+                             pasteAsNew ? dlg.GetSelectedColumn() : graphCol,
+                             Wisteria::UI::LegendPlacement::None);
         }
     catch (const std::exception& exc)
         {
@@ -5430,11 +5382,9 @@ void WisteriaView::OnInsertFunnelChart([[maybe_unused]] wxCommandEvent& event)
     try
         {
         auto plot = dlg.BuildFunnelChart();
-        canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
-
-        UpdateCanvas(canvas);
-
-        GetDocument()->Modify(true);
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                             Wisteria::UI::LegendPlacement::None);
         }
     catch (const std::exception& exc)
         {
@@ -5469,20 +5419,10 @@ void WisteriaView::EditFunnelChart(const Wisteria::Graphs::Graph2D& graph, Wiste
     try
         {
         auto plot = dlg.BuildFunnelChart(&graph);
-        if (pasteAsNew)
-            {
-            PlaceGraphWithLegend(
-                canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
-            }
-        else
-            {
-            canvas->SetFixedObject(graphRow, graphCol, plot);
-
-            UpdateCanvas(canvas);
-
-            GetDocument()->Modify(true);
-            }
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             pasteAsNew ? dlg.GetSelectedRow() : graphRow,
+                             pasteAsNew ? dlg.GetSelectedColumn() : graphCol,
+                             Wisteria::UI::LegendPlacement::None);
         }
     catch (const std::exception& exc)
         {
@@ -5509,11 +5449,9 @@ void WisteriaView::OnInsertDuBoisSpiralChart([[maybe_unused]] wxCommandEvent& ev
     try
         {
         auto plot = dlg.BuildDuBoisSpiralChart();
-        canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
-
-        UpdateCanvas(canvas);
-
-        GetDocument()->Modify(true);
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                             Wisteria::UI::LegendPlacement::None);
         }
     catch (const std::exception& exc)
         {
@@ -5548,20 +5486,10 @@ void WisteriaView::EditDuBoisSpiralChart(const Wisteria::Graphs::Graph2D& graph,
     try
         {
         auto plot = dlg.BuildDuBoisSpiralChart(&graph);
-        if (pasteAsNew)
-            {
-            PlaceGraphWithLegend(
-                canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
-            }
-        else
-            {
-            canvas->SetFixedObject(graphRow, graphCol, plot);
-
-            UpdateCanvas(canvas);
-
-            GetDocument()->Modify(true);
-            }
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             pasteAsNew ? dlg.GetSelectedRow() : graphRow,
+                             pasteAsNew ? dlg.GetSelectedColumn() : graphCol,
+                             Wisteria::UI::LegendPlacement::None);
         }
     catch (const std::exception& exc)
         {
@@ -5588,11 +5516,9 @@ void WisteriaView::OnInsertDuelingPieChart([[maybe_unused]] wxCommandEvent& even
     try
         {
         auto plot = dlg.BuildDuelingPieChart();
-        canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
-
-        UpdateCanvas(canvas);
-
-        GetDocument()->Modify(true);
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                             Wisteria::UI::LegendPlacement::None);
         }
     catch (const std::exception& exc)
         {
@@ -5627,20 +5553,10 @@ void WisteriaView::EditDuelingPieChart(const Wisteria::Graphs::Graph2D& graph,
     try
         {
         auto plot = dlg.BuildDuelingPieChart(&graph);
-        if (pasteAsNew)
-            {
-            PlaceGraphWithLegend(
-                canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
-            }
-        else
-            {
-            canvas->SetFixedObject(graphRow, graphCol, plot);
-
-            UpdateCanvas(canvas);
-
-            GetDocument()->Modify(true);
-            }
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             pasteAsNew ? dlg.GetSelectedRow() : graphRow,
+                             pasteAsNew ? dlg.GetSelectedColumn() : graphCol,
+                             Wisteria::UI::LegendPlacement::None);
         }
     catch (const std::exception& exc)
         {
@@ -5667,11 +5583,9 @@ void WisteriaView::OnInsertPictograph([[maybe_unused]] wxCommandEvent& event)
     try
         {
         auto plot = dlg.BuildPictograph();
-        canvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
-
-        UpdateCanvas(canvas);
-
-        GetDocument()->Modify(true);
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                             Wisteria::UI::LegendPlacement::None);
         }
     catch (const std::exception& exc)
         {
@@ -5705,20 +5619,10 @@ void WisteriaView::EditPictograph(const Wisteria::Graphs::Graph2D& graph, Wister
     try
         {
         auto plot = dlg.BuildPictograph(&graph);
-        if (pasteAsNew)
-            {
-            PlaceGraphWithLegend(
-                canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
-            }
-        else
-            {
-            canvas->SetFixedObject(graphRow, graphCol, plot);
-
-            UpdateCanvas(canvas);
-
-            GetDocument()->Modify(true);
-            }
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             pasteAsNew ? dlg.GetSelectedRow() : graphRow,
+                             pasteAsNew ? dlg.GetSelectedColumn() : graphCol,
+                             Wisteria::UI::LegendPlacement::None);
         }
     catch (const std::exception& exc)
         {

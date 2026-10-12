@@ -266,7 +266,7 @@ int WisteriaApp::RunHeadlessExport()
 
     // the wxLogChain constructor makes this the active log target,
     // which wxWidgets deletes during cleanup
-    // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
+    // NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
     const auto* headlessLog = new HeadlessLog;
 
     if (m_cmdLineProjectPath.empty())
@@ -280,6 +280,7 @@ int WisteriaApp::RunHeadlessExport()
         wxLogError(_(L"No export was specified."));
         return 2;
         }
+    // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
 
     // canvases need a parent window, even though it is never shown
     auto* hiddenFrame = new wxFrame(nullptr, wxID_ANY, wxString{});
