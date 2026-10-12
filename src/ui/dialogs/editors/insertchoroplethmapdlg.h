@@ -63,6 +63,11 @@ namespace Wisteria::UI
         /// @private
         InsertChoroplethMapDlg& operator=(const InsertChoroplethMapDlg&) = delete;
 
+        /// @brief Shows the dialog, selecting and disabling the dataset
+        ///     locked by a ScopedDatasetLock (if any).
+        /// @returns The ID of the button that closed the dialog.
+        int ShowModal() override;
+
         /// @returns The path to the selected KML file.
         [[nodiscard]]
         wxString GetKMLPath() const;

@@ -290,6 +290,13 @@ html[data-view="slides"] .dash-progress
   max-width: var(--page-max-width);
   }
 
+/* a page's version for each value of its filterable graphs, one shown at a time */
+.page-variant
+  { display: contents; }
+
+.page-variant[hidden]
+  { display: none !important; }
+
 /* a page fits the viewport height as well as the width, using its own aspect ratio */
 .page-svg
   {

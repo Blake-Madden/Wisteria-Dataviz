@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "canvas.h"
+#include "../graphs/filterablegraph.h"
 #include "../graphs/graph2d.h"
 #include "../graphs/table.h"
 #include "../graphs/waffle_chart.h"
@@ -213,6 +214,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                         {
                         m_shapeClipboard = std::make_shared<GraphItems::Shape>(
                             *std::static_pointer_cast<GraphItems::Shape>(singleSelected));
+                        return;
+                        }
+                    if (singleSelected->IsKindOf(CLASSINFO(Graphs::FilterableGraph)))
+                        {
+                        wxMessageBox(_(L"Graphs with a data filter cannot be copied."),
+                                     _(L"Copy Item"), wxOK | wxICON_ERROR);
                         return;
                         }
                     if (singleSelected->IsKindOf(CLASSINFO(Graphs::Graph2D)))
@@ -470,7 +477,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     void Canvas::FillChartIds()
         {
         std::vector<Graphs::Graph2D*> allGraphs;
-        std::vector<Graphs::Graph2D*> unassignedGraphs;
+        std::vector<Graphs::FilterableGraph*> allFilterableGraphs;
+        std::vector<GraphItems::GraphItemBase*> unassignedGraphs;
         std::set<long> usedIds;
         std::set<const GraphItems::GraphItemBase*> liveObjects;
         for (auto& row : m_fixedObjects)
@@ -482,12 +490,22 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     continue;
                     }
                 liveObjects.insert(obj.get());
-                auto* graph = dynamic_cast<Graphs::Graph2D*>(obj.get());
+                GraphItems::GraphItemBase* graph{ nullptr };
+                if (auto* graph2D = dynamic_cast<Graphs::Graph2D*>(obj.get()); graph2D != nullptr)
+                    {
+                    allGraphs.push_back(graph2D);
+                    graph = graph2D;
+                    }
+                else if (auto* filterableGraph = dynamic_cast<Graphs::FilterableGraph*>(obj.get());
+                         filterableGraph != nullptr)
+                    {
+                    allFilterableGraphs.push_back(filterableGraph);
+                    graph = filterableGraph;
+                    }
                 if (graph == nullptr)
                     {
                     continue;
                     }
-                allGraphs.push_back(graph);
                 if (graph->GetId() == wxID_ANY)
                     {
                     unassignedGraphs.push_back(graph);
@@ -524,6 +542,32 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     }
                 }
             }
+        for (const auto* filterableGraph : allFilterableGraphs)
+            {
+            if (const auto legend = filterableGraph->GetLegend();
+                legend != nullptr && liveObjects.contains(legend.get()))
+                {
+                legend->SetId(filterableGraph->GetId());
+                }
+            }
+        }
+
+    //--------------------------------------------------
+    std::vector<std::shared_ptr<Graphs::FilterableGraph>> Canvas::GetFilterableGraphs() const
+        {
+        std::vector<std::shared_ptr<Graphs::FilterableGraph>> filterableGraphs;
+        for (const auto& row : GetFixedObjects())
+            {
+            for (const auto& obj : row)
+                {
+                if (auto filterableGraph = std::dynamic_pointer_cast<Graphs::FilterableGraph>(obj);
+                    filterableGraph != nullptr)
+                    {
+                    filterableGraphs.push_back(std::move(filterableGraph));
+                    }
+                }
+            }
+        return filterableGraphs;
         }
 
     //--------------------------------------------------
@@ -1835,6 +1879,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 {
                 graph->SetCanvas(this);
                 }
+            else if (const auto* filterableGraph =
+                         dynamic_cast<const Graphs::FilterableGraph*>(object.get());
+                     filterableGraph != nullptr)
+                {
+                for (const auto& filteredGraph : filterableGraph->GetVariants())
+                    {
+                    filteredGraph.m_graph->SetCanvas(this);
+                    }
+                }
             }
         // resize the grid, if necessary
         auto currentColumnCount = (GetFixedObjects().empty() ? 0 : GetFixedObjects().at(0).size());
@@ -2076,10 +2129,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                 auto* svgDc = dynamic_cast<wxSVGFileDC*>(&dc);
                 if (svgDc != nullptr && objectPtr->GetId() != wxID_ANY)
                     {
-                    const wxSVGAccessibleGroup chartScope{
-                        *svgDc,
-                        wxSVGAttributes{}.Add(L"data-chart-id", std::to_wstring(objectPtr->GetId()))
-                    };
+                    auto chartAttrs{ wxSVGAttributes{}.Add(L"data-chart-id",
+                                                           std::to_wstring(objectPtr->GetId())) };
+                    // a filterable graph is filtered by its own choices, not its parts
+                    if (objectPtr->IsKindOf(wxCLASSINFO(Graphs::FilterableGraph)))
+                        {
+                        chartAttrs.Add(L"data-filter-graph", L"1");
+                        }
+                    const wxSVGAccessibleGroup chartScope{ *svgDc, chartAttrs };
                     DrawWithAccessibility(dc, objectPtr.get());
                     }
                 else

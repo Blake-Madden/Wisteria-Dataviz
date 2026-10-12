@@ -300,6 +300,47 @@ class WisteriaView final : public wxView
                            size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void EditTable(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas, size_t graphRow,
                    size_t graphCol, bool pasteAsNew = false);
+    void OnInsertFilteredGraph(wxCommandEvent& event);
+    void EditFilterableGraph(Wisteria::Graphs::FilterableGraph& filterableGraph,
+                             Wisteria::Canvas* canvas, size_t graphRow, size_t graphCol);
+
+    /// @brief An edited graph (and its legend) and the cells that they were in.
+    struct FilterableGraphFallback
+        {
+        std::shared_ptr<Wisteria::GraphItems::GraphItemBase> m_graph;
+        std::pair<size_t, size_t> m_graphCell{ 0, 0 };
+        std::shared_ptr<Wisteria::GraphItems::GraphItemBase> m_legend;
+        std::optional<std::pair<size_t, size_t>> m_legendCell;
+        };
+
+    /// @brief Replaces the graph that the last insert or edit placed on the canvas
+    ///     with a filterable graph built from it (along with its legend).
+    /// @param canvas The canvas that the graph was placed on.
+    /// @param filterColumn The categorical column to filter on.
+    /// @param defaultValue The value whose graph is shown initially.
+    /// @param includeAll Whether to include a graph for the unfiltered data.
+    /// @param allLabel The label for the unfiltered data (empty for the default).
+    /// @param fallback The graph and legend to put back in their original cells
+    ///     if the filterable graph can't be built. If not set, the placed graph is removed.
+    void ReplaceWithFilterableGraph(
+        Wisteria::Canvas* canvas, const wxString& filterColumn, const wxString& defaultValue,
+        bool includeAll, const wxString& allLabel,
+        const std::optional<FilterableGraphFallback>& fallback = std::nullopt);
+
+    /// @brief A graph type that can be inserted as a filterable graph.
+    struct FilterableGraphType
+        {
+        /// @brief The command that inserts the graph type.
+        wxWindowID m_commandId{ wxID_ANY };
+        /// @brief The graph type's display name.
+        wxString m_label;
+        /// @brief The graph type's class.
+        const wxClassInfo* m_classInfo{ nullptr };
+        };
+
+    /// @returns The graph types that can be inserted as filterable graphs.
+    [[nodiscard]]
+    static const std::vector<FilterableGraphType>& GetFilterableGraphTypes();
     void PlaceGraphWithLegend(Wisteria::Canvas* canvas,
                               const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend,
@@ -465,6 +506,12 @@ class WisteriaView final : public wxView
     Wisteria::ReportBuilder m_reportBuilder;
     std::vector<Wisteria::Canvas*> m_pages;
     WindowContainer m_workWindows;
+
+    // the last graph placed by PlaceGraphWithLegend(), which a filterable graph replaces
+    mutable std::weak_ptr<Wisteria::GraphItems::GraphItemBase> m_lastPlacedGraph;
+    mutable Wisteria::UI::LegendPlacement m_lastPlacedLegendPlacement{
+        Wisteria::UI::LegendPlacement::None
+    };
 
     wxMenu m_dividerMenu;
     wxMenu m_basicGraphMenu;

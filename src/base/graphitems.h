@@ -58,6 +58,7 @@ namespace Wisteria::Graphs
     {
     class Graph2D;
     class PieChart;
+    class FilterableGraph;
     } // namespace Wisteria::Graphs
 
 /// @brief Classes for objects placed on graphs.
@@ -954,6 +955,7 @@ namespace Wisteria
             friend class Wisteria::CanvasItemScalingChanger;
             friend class Graphs::Graph2D;
             friend class Graphs::PieChart;
+            friend class Graphs::FilterableGraph;
 
           public:
             /// @private

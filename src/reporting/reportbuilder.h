@@ -29,6 +29,7 @@
 #include "../graphs/choroplethmap.h"
 #include "../graphs/duboisspiralchart.h"
 #include "../graphs/duelingpiechart.h"
+#include "../graphs/filterablegraph.h"
 #include "../graphs/funnelchart.h"
 #include "../graphs/ganttchart.h"
 #include "../graphs/heatmap.h"
@@ -89,6 +90,28 @@ namespace Wisteria
         /// @throws `std::runtime_error` If the graph's dataset or variables cannot be found.
         [[nodiscard]]
         std::shared_ptr<Graphs::Graph2D> LoadGraphDetached(const wxString& json, Canvas* parent);
+
+        /// @brief Builds a filterable graph from the serialized JSON of a graph with a
+        ///     @c filter property, without placing it (or its legend) on a canvas.
+        /// @details The dataset that the graph refers to must already be loaded.
+        /// @param json The JSON of a single graph (as written by a project save).
+        /// @param parent The canvas to use as the graphs' parent.
+        /// @returns The filterable graph, or @c nullptr if the JSON has no @c type.
+        /// @throws `std::runtime_error` If the dataset, filter column, or graph type is invalid.
+        [[nodiscard]]
+        std::shared_ptr<Graphs::FilterableGraph> LoadFilterableGraphDetached(const wxString& json,
+                                                                             Canvas* parent);
+
+        /** @brief Builds the type of legend that a graph is set up to use.
+            @details Chernoff faces plots set to use an enhanced legend and choropleth maps
+                with proportional symbols get their specialized legends.
+                Other graphs get their standard legend.
+            @param graph The graph to build the legend for.
+            @param options Options for how to build the legend.
+            @returns The legend, or @c nullptr if the graph has nothing to show in one.*/
+        [[nodiscard]]
+        static std::unique_ptr<GraphItems::GraphItemBase>
+        CreateGraphLegend(Graphs::Graph2D& graph, const Graphs::LegendOptions& options);
 
         /// @returns The map of color names and their respective colors.
         [[nodiscard]]
@@ -1035,6 +1058,27 @@ namespace Wisteria
         /// @todo many features still needed!
         void LoadGraph(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas, size_t& currentRow,
                        size_t& currentColumn, const std::shared_ptr<Graphs::Graph2D>& graph);
+        /** @brief Loads a graph node with a @c filter property as a filterable graph,
+                building the graph once for each value of the filter column.
+            @param graphNode The graph node to parse.
+            @param type The graph's type string (e.g., "pie-chart").
+            @param canvas The canvas to add the graph to.
+            @param[in,out] currentRow The row in the canvas where the graph will be placed.
+            @param[in,out] currentColumn The column in the canvas where the graph will be placed.
+            @returns The filterable graph that was added to the canvas.
+            @throws std::runtime_error If the dataset, filter column, or graph type is invalid.*/
+        std::shared_ptr<Graphs::FilterableGraph>
+        LoadFilterableGraph(const wxSimpleJSON::Ptr_t& graphNode, const wxString& type,
+                            Canvas* canvas, size_t& currentRow, size_t& currentColumn);
+        /// @returns A filterable graph built from a graph node with a @c filter property.
+        /// @param graphNode The graph node to parse.
+        /// @param type The graph's type string (e.g., "pie-chart").
+        /// @param canvas The canvas to use as the graphs' parent.
+        /// @throws std::runtime_error If the dataset, filter column, or graph type is invalid.
+        [[nodiscard]]
+        std::shared_ptr<Graphs::FilterableGraph>
+        BuildFilterableGraph(const wxSimpleJSON::Ptr_t& graphNode, const wxString& type,
+                             Canvas* canvas);
         /// @brief Loads a graph node by calling the loader that matches its type.
         /// @param graphNode The graph node to parse.
         /// @param type The graph's type string (e.g., "pie-chart").

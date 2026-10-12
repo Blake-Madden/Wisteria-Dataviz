@@ -62,6 +62,7 @@ SET(WISTERIA_SRC
     ../../src/graphs/danielsonbryan2plot.cpp
     ../../src/graphs/duboisspiralchart.cpp
     ../../src/graphs/duelingpiechart.cpp
+    ../../src/graphs/filterablegraph.cpp
     ../../src/graphs/fleschchart.cpp
     ../../src/graphs/funnelchart.cpp
     ../../src/graphs/ganttchart.cpp
@@ -138,6 +139,7 @@ SET(WISTERIA_SRC
     ../../src/ui/controls/thumbnail.cpp
     ../../src/ui/dialogs/archivedlg.cpp
     ../../src/ui/dialogs/datasetimportdlg.cpp
+    ../../src/ui/dialogs/editors/filterablegraphdlg.cpp
     ../../src/ui/dialogs/editors/joindlg.cpp
     ../../src/ui/dialogs/editors/pivotlongerdlg.cpp
     ../../src/ui/dialogs/editors/pivotwiderrdlg.cpp

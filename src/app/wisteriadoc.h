@@ -52,7 +52,28 @@ class WisteriaDoc final : public wxDocument
     wxString SerializeGraphToJson(const Wisteria::Graphs::Graph2D* graph,
                                   const Wisteria::Canvas* canvas) const;
 
+    /// @brief Serializes a graph's settings to a JSON string, along with a filter
+    ///     that builds the graph once for each value of a column.
+    /// @param graph The graph to serialize.
+    /// @param canvas The canvas that the graph belongs to.
+    /// @param filterColumn The categorical column to filter on.
+    /// @param defaultValue The value whose graph is shown initially.
+    /// @param includeAll Whether to include a graph for the unfiltered data.
+    /// @param allLabel The label for the unfiltered data (empty for the default).
+    /// @returns The graph's JSON, or an empty string if it could not be serialized.
+    [[nodiscard]]
+    wxString SerializeFilteredGraphToJson(const Wisteria::Graphs::Graph2D* graph,
+                                          const Wisteria::Canvas* canvas,
+                                          const wxString& filterColumn,
+                                          const wxString& defaultValue, bool includeAll,
+                                          const wxString& allLabel) const;
+
   private:
+    /// @returns The JSON for a graph's @c filter property.
+    [[nodiscard]]
+    static wxString FilterToJsonStr(const wxString& filterColumn, const wxString& defaultValue,
+                                    bool includeAll, const wxString& allLabel);
+
     bool OnNewDocument() override;
     bool OnOpenDocument(const wxString& filename) override;
     bool DoSaveDocument(const wxString& filename) override;
@@ -93,6 +114,10 @@ class WisteriaDoc final : public wxDocument
     [[nodiscard]]
     wxSimpleJSON::Ptr_t SaveGraphByType(const Wisteria::Graphs::Graph2D* graph,
                                         const Wisteria::Canvas* canvas) const;
+    [[nodiscard]]
+    wxSimpleJSON::Ptr_t
+    SaveFilterableGraph(const Wisteria::Graphs::FilterableGraph* filterableGraph,
+                        const Wisteria::Canvas* canvas) const;
 
     static void SaveDatasetImportOptions(
         const wxSimpleJSON::Ptr_t& dsNode,

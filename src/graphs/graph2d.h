@@ -141,6 +141,7 @@ namespace Wisteria::Graphs
         Graph2D() = default;
 
         friend class Wisteria::Canvas;
+        friend class FilterableGraph;
 
       public:
         /** @brief Constructor.
@@ -750,6 +751,9 @@ namespace Wisteria::Graphs
         /// @brief Sets the legend options used when the legend was created.
         /// @param options The legend options.
         void SetLegendInfo(const LegendOptions& options) { m_legendInfo = options; }
+
+        /// @brief Clears the legend options, marking the graph as not having a legend.
+        void ClearLegendInfo() noexcept { m_legendInfo.reset(); }
 
         /// @returns A label, truncated if it is more than 32 characters.
         /// @param variableName The variable name to truncate.

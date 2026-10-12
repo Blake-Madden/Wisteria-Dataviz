@@ -1154,6 +1154,11 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                           ReadSvgIcon(L"images/chart-sports.svg"),
                                           _(L"Sports graphs"));
         graphButtonBar->SetKeyTip(ID_INSERT_GRAPH_SPORTS, _DT(L"T"));
+
+        graphButtonBar->AddButton(ID_NEW_FILTERED_GRAPH, _(L"Filtered"),
+                                  ReadSvgIcon(L"images/filtered-graph.svg"),
+                                  _(L"Insert a graph that can be filtered by a column's values"));
+        graphButtonBar->SetKeyTip(ID_NEW_FILTERED_GRAPH, _DT(L"F"));
         }
     else
         {
@@ -2020,6 +2025,10 @@ wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase*
     if (item == nullptr)
         {
         return {};
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::FilterableGraph)))
+        {
+        return L"images/filtered-graph.svg";
         }
     // check most-derived types first
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BubblePlot)))

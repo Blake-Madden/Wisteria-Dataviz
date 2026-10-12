@@ -18,6 +18,7 @@
 #include "../../base/image.h"
 #include "../../base/label.h"
 #include "insertitemdlg.h"
+#include <optional>
 #include <wx/choice.h>
 #include <wx/clrpicker.h>
 #include <wx/editlbox.h>
@@ -113,6 +114,30 @@ namespace Wisteria::UI
         InsertGraphDlg(const InsertGraphDlg&) = delete;
         /// @private
         InsertGraphDlg& operator=(const InsertGraphDlg&) = delete;
+
+        /// @brief While this exists, graph dialogs that are shown have the given dataset
+        ///     selected and their dataset selector disabled.
+        class ScopedDatasetLock
+            {
+          public:
+            /// @brief Constructor.
+            /// @param datasetName The dataset to select and lock.
+            explicit ScopedDatasetLock(const wxString& datasetName)
+                {
+                GetLockedDataset() = datasetName;
+                }
+
+            /// @private
+            ~ScopedDatasetLock() { GetLockedDataset().reset(); }
+
+            /// @private
+            ScopedDatasetLock(const ScopedDatasetLock&) = delete;
+            /// @private
+            ScopedDatasetLock& operator=(const ScopedDatasetLock&) = delete;
+            };
+
+        /// @private
+        int ShowModal() override;
 
         /** @brief Applies the common graph options to a Graph2D object.
             @details Sets the title, subtitle, caption, background color,
@@ -492,6 +517,14 @@ namespace Wisteria::UI
         /// @brief Checks whether placing the graph would overwrite existing cells.
         /// @returns @c true if placement should proceed, @c false to cancel.
         bool ConfirmOverwrite() final;
+
+        /// @returns The dataset locked by a ScopedDatasetLock, if any.
+        [[nodiscard]]
+        static std::optional<wxString>& GetLockedDataset()
+            {
+            static std::optional<wxString> lockedDataset;
+            return lockedDataset;
+            }
 
       private:
         /// @brief The controls and state for editing one color scheme.

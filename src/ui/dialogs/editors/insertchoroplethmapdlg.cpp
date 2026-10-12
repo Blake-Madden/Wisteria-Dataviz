@@ -10,6 +10,7 @@
 #include "../../../data/geodataset.h"
 #include "../../../graphs/choroplethmap.h"
 #include "../variableselectdlg.h"
+#include <algorithm>
 #include <utility>
 #include <vector>
 #include <wx/filename.h>
@@ -59,6 +60,28 @@ namespace Wisteria::UI
         SetMinSize(GetSize());
 
         Centre();
+        }
+
+    //-------------------------------------------
+    int InsertChoroplethMapDlg::ShowModal()
+        {
+        if (const auto& lockedDataset = GetLockedDataset();
+            lockedDataset.has_value() && m_datasetChoice != nullptr)
+            {
+            if (GetSelectedDatasetName() != lockedDataset.value())
+                {
+                if (const auto foundPos = std::ranges::find(m_datasetNames, lockedDataset.value());
+                    foundPos != m_datasetNames.cend())
+                    {
+                    // index 0 is the "(none)" entry
+                    m_datasetChoice->SetSelection(
+                        static_cast<int>(std::distance(m_datasetNames.begin(), foundPos)) + 1);
+                    OnDatasetChanged();
+                    }
+                }
+            m_datasetChoice->Disable();
+            }
+        return InsertGraphDlg::ShowModal();
         }
 
     //-------------------------------------------

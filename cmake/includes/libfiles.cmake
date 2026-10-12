@@ -60,6 +60,7 @@ SET(WISTERIA_SRC
     src/graphs/danielsonbryan2plot.cpp
     src/graphs/duboisspiralchart.cpp
     src/graphs/duelingpiechart.cpp
+    src/graphs/filterablegraph.cpp
     src/graphs/fleschchart.cpp
     src/graphs/funnelchart.cpp
     src/graphs/ganttchart.cpp
@@ -117,6 +118,7 @@ SET(WISTERIA_SRC
     src/ui/controls/thumbnail.cpp
     src/ui/dialogs/editors/accessibilityoptionspanel.cpp
     src/ui/dialogs/editors/axisoptionspanel.cpp
+    src/ui/dialogs/editors/filterablegraphdlg.cpp
     src/ui/dialogs/editors/insert_bullet_chart_dlg.cpp
     src/ui/dialogs/editors/insert_nightingale_rose_chart_dlg.cpp
     src/ui/dialogs/editors/insert_waterfallchart_dlg.cpp

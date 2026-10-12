@@ -188,6 +188,155 @@ namespace Wisteria
         }
 
     //---------------------------------------------------
+    std::shared_ptr<Graphs::FilterableGraph>
+    ReportBuilder::LoadFilterableGraphDetached(const wxString& json, Canvas* parent)
+        {
+        if (parent == nullptr)
+            {
+            return nullptr;
+            }
+        const auto graphNode = wxSimpleJSON::Create(json, true);
+        if (graphNode == nullptr || !graphNode->IsOk())
+            {
+            return nullptr;
+            }
+        const auto typeNode = graphNode->GetProperty(L"type");
+        if (!typeNode->IsOk())
+            {
+            return nullptr;
+            }
+        return BuildFilterableGraph(graphNode, typeNode->AsString(), parent);
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::FilterableGraph>
+    ReportBuilder::BuildFilterableGraph(const wxSimpleJSON::Ptr_t& graphNode, const wxString& type,
+                                        Canvas* canvas)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->AsString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for filterable graph."), dsName)
+                    .ToUTF8());
+            }
+        const auto sourceData = foundPos->second;
+
+        const auto filterNode = graphNode->GetProperty(L"filter");
+        const wxString columnRaw = filterNode->GetProperty(L"column")->AsString();
+        const wxString allLabelRaw = filterNode->GetProperty(L"all-label")->AsString();
+
+        // each filter value's graph is loaded from the same node,
+        // with the dataset swapped for that value's subset
+        const auto loadFilteredGraph = [this, &graphNode, &type, &dsName, &sourceData,
+                                        canvas](const std::shared_ptr<const Data::Dataset>& subset)
+        {
+            const bool wasDetached{ m_detachedLoad };
+            const auto restore = [this, &dsName, &sourceData, wasDetached]()
+            {
+                m_datasets[dsName] = sourceData;
+                m_detachedLoad = wasDetached;
+            };
+            // the graph loaders only read from the dataset
+            m_datasets[dsName] = std::const_pointer_cast<Data::Dataset>(subset);
+            m_detachedLoad = true;
+            size_t row{ 0 };
+            size_t column{ 0 };
+            try
+                {
+                auto graph = LoadGraphByType(graphNode, type, canvas, row, column);
+                restore();
+                return graph;
+                }
+            catch (...)
+                {
+                restore();
+                throw;
+                }
+        };
+
+        auto filterableGraph = std::make_shared<Graphs::FilterableGraph>(
+            sourceData, ExpandConstants(columnRaw),
+            ExpandConstants(filterNode->GetProperty(L"default")->AsString()), loadFilteredGraph,
+            filterNode->GetProperty(L"include-all")->AsBool(false));
+        if (!allLabelRaw.empty())
+            {
+            filterableGraph->SetAllLabel(ExpandConstants(allLabelRaw));
+            }
+        // cache for round-tripping
+        filterableGraph->SetPropertyTemplate(L"filter.column", columnRaw);
+        filterableGraph->SetPropertyTemplate(L"filter.all-label", allLabelRaw);
+        return filterableGraph;
+        }
+
+    //---------------------------------------------------
+    std::unique_ptr<GraphItems::GraphItemBase>
+    ReportBuilder::CreateGraphLegend(Graphs::Graph2D& graph, const Graphs::LegendOptions& options)
+        {
+        if (auto* chernoffPlot = dynamic_cast<Graphs::ChernoffFacesPlot*>(&graph);
+            chernoffPlot != nullptr && graph.GetPropertyTemplate(L"enhanced-legend") == L"true")
+            {
+            return chernoffPlot->CreateEnhancedLegend(options);
+            }
+        if (auto* choroplethMap = dynamic_cast<Graphs::ChoroplethMap*>(&graph);
+            choroplethMap != nullptr && !choroplethMap->GetProportionalSymbolColumnName().empty())
+            {
+            return choroplethMap->CreateChoroplethLegend(options);
+            }
+        return graph.CreateLegend(options);
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::FilterableGraph>
+    ReportBuilder::LoadFilterableGraph(const wxSimpleJSON::Ptr_t& graphNode, const wxString& type,
+                                       Canvas* canvas, size_t& currentRow, size_t& currentColumn)
+        {
+        auto filterableGraph = BuildFilterableGraph(graphNode, type, canvas);
+
+        // the legend settings were loaded into each filter value's graph
+        const auto& legendInfo = filterableGraph->GetActiveGraph()->GetLegendInfo();
+        if (!legendInfo.has_value())
+            {
+            canvas->SetFixedObject(currentRow, currentColumn, filterableGraph);
+            return filterableGraph;
+            }
+        const Side side{ legendInfo->GetPlacement() };
+        const auto legend = filterableGraph->CreateLegend(
+            Graphs::LegendOptions{ legendInfo.value() }.PlacementHint(
+                (side == Side::Left) ? LegendCanvasPlacementHint::LeftOfGraph :
+                (side == Side::Top || side == Side::Bottom) ?
+                                       LegendCanvasPlacementHint::AboveOrBeneathGraph :
+                                       LegendCanvasPlacementHint::RightOfGraph),
+            &ReportBuilder::CreateGraphLegend);
+        if (legend == nullptr)
+            {
+            canvas->SetFixedObject(currentRow, currentColumn, filterableGraph);
+            }
+        else if (side == Side::Left)
+            {
+            canvas->SetFixedObject(currentRow, currentColumn + 1, filterableGraph);
+            canvas->SetFixedObject(currentRow, currentColumn++, legend);
+            }
+        else if (side == Side::Bottom)
+            {
+            canvas->SetFixedObject(currentRow, currentColumn, filterableGraph);
+            canvas->SetFixedObject(++currentRow, currentColumn, legend);
+            }
+        else if (side == Side::Top)
+            {
+            canvas->SetFixedObject(currentRow + 1, currentColumn, filterableGraph);
+            canvas->SetFixedObject(currentRow++, currentColumn, legend);
+            }
+        else
+            {
+            canvas->SetFixedObject(currentRow, currentColumn, filterableGraph);
+            canvas->SetFixedObject(currentRow, ++currentColumn, legend);
+            }
+        return filterableGraph;
+        }
+
+    //---------------------------------------------------
     std::vector<Canvas*> ReportBuilder::LoadConfigurationFile(const wxString& filePath,
                                                               wxWindow* parent)
         {
@@ -730,10 +879,16 @@ namespace Wisteria
                                                the canvas here though, as we know it will just be
                                                that one object.*/
                                             const auto typeName = typeProperty->AsString();
-                                            if (auto graph =
-                                                    LoadGraphByType(item, typeName, canvas,
+                                            // a graph built once for each value of a column
+                                            if (item->HasProperty(L"filter"))
+                                                {
+                                                LoadFilterableGraph(item, typeName, canvas,
                                                                     currentRow, currentColumn);
-                                                graph != nullptr)
+                                                }
+                                            else if (auto graph =
+                                                         LoadGraphByType(item, typeName, canvas,
+                                                                         currentRow, currentColumn);
+                                                     graph != nullptr)
                                                 {
                                                 embeddedGraphs.push_back(std::move(graph));
                                                 }

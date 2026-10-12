@@ -376,6 +376,9 @@ constexpr wxWindowID ID_NEW_LR_ROADMAP{ wxID_HIGHEST + 31 };
 // Sports graphs
 constexpr wxWindowID ID_NEW_WIN_LOSS_SPARKLINE{ wxID_HIGHEST + 32 };
 
+// a graph built once for each value of a column
+constexpr wxWindowID ID_NEW_FILTERED_GRAPH{ wxID_HIGHEST + 125 };
+
 // Pages
 constexpr wxWindowID ID_EDIT_PAGE{ wxID_HIGHEST + 34 };
 constexpr wxWindowID ID_DELETE_PAGE{ wxID_HIGHEST + 49 };

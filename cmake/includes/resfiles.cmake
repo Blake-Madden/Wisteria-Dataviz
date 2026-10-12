@@ -46,6 +46,7 @@ images/edit.svg
 images/equals.svg
 images/file-open.svg
 images/file-save.svg
+images/filtered-graph.svg
 images/find.svg
 images/funnel.svg
 images/gantt.svg

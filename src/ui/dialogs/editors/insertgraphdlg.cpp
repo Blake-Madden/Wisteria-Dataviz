@@ -49,6 +49,26 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    int InsertGraphDlg::ShowModal()
+        {
+        if (const auto& lockedDataset = GetLockedDataset();
+            lockedDataset.has_value() && m_datasetChoice != nullptr)
+            {
+            if (GetSelectedDatasetName() != lockedDataset.value())
+                {
+                SelectDataset(lockedDataset.value());
+                // let the dialog refresh anything that depends on the dataset
+                wxCommandEvent choiceEvent{ wxEVT_CHOICE, ID_DATASET_CHOICE };
+                choiceEvent.SetEventObject(m_datasetChoice);
+                choiceEvent.SetInt(m_datasetChoice->GetSelection());
+                m_datasetChoice->GetEventHandler()->ProcessEvent(choiceEvent);
+                }
+            m_datasetChoice->Disable();
+            }
+        return InsertItemDlg::ShowModal();
+        }
+
+    //-------------------------------------------
     void InsertGraphDlg::ApplyGraphOptions(Graphs::Graph2D& graph) const
         {
         ApplyAccessibilityOptions(graph);

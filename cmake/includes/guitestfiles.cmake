@@ -18,6 +18,7 @@ SET(TEST_SRC_FILES
     danielsonbryan2plotrendertests.cpp
     datatests.cpp
     fileutiltests.cpp
+    filterablegraphtests.cpp
     fleschchartrendertests.cpp
     ganttchartrendertests.cpp
     geodatasettests.cpp

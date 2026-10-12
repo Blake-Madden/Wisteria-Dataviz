@@ -13,6 +13,7 @@
 #include "../reporting/svgreportprintout.h"
 #include "../ui/controls/datasetgridtable.h"
 #include "../ui/dialogs/datasetimportdlg.h"
+#include "../ui/dialogs/editors/filterablegraphdlg.h"
 #include "../ui/dialogs/editors/insert_bullet_chart_dlg.h"
 #include "../ui/dialogs/editors/insert_nightingale_rose_chart_dlg.h"
 #include "../ui/dialogs/editors/insert_waterfallchart_dlg.h"
@@ -449,6 +450,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertCatBarChart, this, ID_NEW_BARCHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertScaleChart, this, ID_NEW_SCALE_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertTable, this, ID_NEW_TABLE);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertFilteredGraph, this,
+                  ID_NEW_FILTERED_GRAPH);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertLabel, this, ID_NEW_LABEL);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertKpiCard, this,
                   ID_NEW_KPI_CARD);
@@ -2239,7 +2242,8 @@ bool WisteriaView::IsGraphSelected() const noexcept
         }
 
     return (selectedCount == 1 && selectedItem != nullptr &&
-            selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Graph2D)));
+            (selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Graph2D)) ||
+             selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::FilterableGraph))));
     }
 
 //-------------------------------------------
@@ -2304,6 +2308,7 @@ void WisteriaView::UpdateGraphButtonStates() const
         m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_EDUCATION, true);
         m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SOCIAL, true);
         m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SPORTS, true);
+        m_graphButtonBar->EnableButton(ID_NEW_FILTERED_GRAPH, true);
         }
 
     // objects - insert always enabled
@@ -2667,6 +2672,8 @@ void WisteriaView::PlaceGraphWithLegend(
     const size_t graphCol, const Wisteria::UI::LegendPlacement legendPlacement) const
     {
     PlaceGraphAndLegendInGrid(canvas, plot, std::move(legend), graphRow, graphCol, legendPlacement);
+    m_lastPlacedGraph = plot;
+    m_lastPlacedLegendPlacement = legendPlacement;
 
     UpdateCanvas(canvas);
 
@@ -3061,6 +3068,15 @@ void WisteriaView::OnEditItem([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
+    // a graph built once for each value of a column wraps a regular graph
+    if (auto* filterableGraph =
+            dynamic_cast<Wisteria::Graphs::FilterableGraph*>(selectedItem.get());
+        filterableGraph != nullptr)
+        {
+        EditFilterableGraph(*filterableGraph, canvas, itemRow, itemCol);
+        return;
+        }
+
     if (!selectedItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Graph2D)))
         {
         return;
@@ -3216,6 +3232,334 @@ void WisteriaView::EditGraphByType(Wisteria::Graphs::Graph2D& graph, Wisteria::C
     }
 
 //-------------------------------------------
+const std::vector<WisteriaView::FilterableGraphType>& WisteriaView::GetFilterableGraphTypes()
+    {
+    using namespace Wisteria::Graphs;
+    static const std::vector<FilterableGraphType> graphTypes{
+        { ID_NEW_BARCHART, _(L"Bar Chart"), wxCLASSINFO(CategoricalBarChart) },
+        { ID_NEW_PIECHART, _(L"Pie Chart"), wxCLASSINFO(PieChart) },
+        { ID_NEW_LINEPLOT, _(L"Line Plot"), wxCLASSINFO(LinePlot) },
+        { ID_NEW_MULTI_SERIES_LINEPLOT, _(L"Multi-Series Line Plot"),
+          wxCLASSINFO(MultiSeriesLinePlot) },
+        { ID_NEW_SANKEY_DIAGRAM, _(L"Sankey Diagram"), wxCLASSINFO(SankeyDiagram) },
+        { ID_NEW_WAFFLE_CHART, _(L"Waffle Chart"), wxCLASSINFO(WaffleChart) },
+        { ID_NEW_RACETRACK_CHART, _(L"Race Track Chart"), wxCLASSINFO(RaceTrackChart) },
+        { ID_NEW_NIGHTINGALE_ROSE_CHART, _(L"Nightingale Rose Chart"),
+          wxCLASSINFO(NightingaleRoseChart) },
+        { ID_NEW_DUBOIS_SPIRAL_CHART, _(L"Du Bois Spiral Chart"), wxCLASSINFO(DuBoisSpiralChart) },
+        { ID_NEW_DUELING_PIE_CHART, _(L"Dueling Pie Chart"), wxCLASSINFO(DuelingPieChart) },
+        { ID_NEW_PICTOGRAPH, _(L"Pictograph"), wxCLASSINFO(Pictograph) },
+        { ID_NEW_CHOROPLETH_MAP, _(L"Choropleth Map"), wxCLASSINFO(ChoroplethMap) },
+        { ID_NEW_GANTT, _(L"Gantt Chart"), wxCLASSINFO(GanttChart) },
+        { ID_NEW_CANDLESTICK, _(L"Candlestick Plot"), wxCLASSINFO(CandlestickPlot) },
+        { ID_NEW_BULLET_CHART, _(L"Bullet Chart"), wxCLASSINFO(BulletChart) },
+        { ID_NEW_WATERFALL_CHART, _(L"Waterfall Chart"), wxCLASSINFO(WaterfallChart) },
+        { ID_NEW_FUNNEL_CHART, _(L"Funnel Chart"), wxCLASSINFO(FunnelChart) },
+        { ID_NEW_HISTOGRAM, _(L"Histogram"), wxCLASSINFO(Histogram) },
+        { ID_NEW_BOXPLOT, _(L"Box Plot"), wxCLASSINFO(BoxPlot) },
+        { ID_NEW_STEMANDLEAF, _(L"Stem-and-Leaf Plot"), wxCLASSINFO(StemAndLeafPlot) },
+        { ID_NEW_HEATMAP, _(L"Heat Map"), wxCLASSINFO(HeatMap) },
+        { ID_NEW_SCATTERPLOT, _(L"Scatter Plot"), wxCLASSINFO(ScatterPlot) },
+        { ID_NEW_BUBBLEPLOT, _(L"Bubble Plot"), wxCLASSINFO(BubblePlot) },
+        { ID_NEW_CHERNOFFPLOT, _(L"Chernoff Faces Plot"), wxCLASSINFO(ChernoffFacesPlot) },
+        { ID_NEW_WILMARTH_BRIDGE_PLOT, _(L"Wilmarth Bridge Plot"),
+          wxCLASSINFO(WilmarthBridgePlot) },
+        { ID_NEW_LIKERT, _(L"Likert Chart"), wxCLASSINFO(LikertChart) },
+        { ID_NEW_WORD_CLOUD, _(L"Word Cloud"), wxCLASSINFO(WordCloud) },
+        { ID_NEW_PROCON_ROADMAP, _(L"Pro & Con Roadmap"), wxCLASSINFO(ProConRoadmap) },
+        { ID_NEW_SCALE_CHART, _(L"Scale Chart"), wxCLASSINFO(ScaleChart) },
+        { ID_NEW_WCURVE, _(L"W-Curve Plot"), wxCLASSINFO(WCurvePlot) },
+        { ID_NEW_LR_ROADMAP, _(L"Linear Regression Roadmap"), wxCLASSINFO(LRRoadmap) },
+        { ID_NEW_WIN_LOSS_SPARKLINE, _(L"Win/Loss Sparkline"), wxCLASSINFO(WinLossSparkline) }
+    };
+    return graphTypes;
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertFilteredGraph([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = EnsureActivePage();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+    if (m_reportBuilder.GetDatasets().empty())
+        {
+        wxMessageBox(_(L"Please import a dataset before inserting a filtered graph."),
+                     _(L"No Datasets"), wxOK | wxICON_INFORMATION, m_frame);
+        return;
+        }
+
+    const auto& graphTypes = GetFilterableGraphTypes();
+    wxArrayString graphNames;
+    for (const auto& graphType : graphTypes)
+        {
+        graphNames.Add(graphType.m_label);
+        }
+
+    Wisteria::UI::FilterableGraphDlg filterDlg(&m_reportBuilder, graphNames, m_frame);
+    SetDialogIcon(filterDlg, L"images/filtered-graph.svg");
+    if (filterDlg.ShowModal() != wxID_OK || filterDlg.GetGraphType() < 0 ||
+        std::cmp_greater_equal(filterDlg.GetGraphType(), graphTypes.size()))
+        {
+        return;
+        }
+
+    // the graph type's own insert dialog builds the graph from the filter's dataset
+    m_lastPlacedGraph.reset();
+        {
+        const Wisteria::UI::InsertGraphDlg::ScopedDatasetLock datasetLock{
+            filterDlg.GetDatasetName()
+        };
+        wxCommandEvent insertEvent{ wxEVT_MENU, graphTypes[filterDlg.GetGraphType()].m_commandId };
+        insertEvent.SetEventObject(m_frame);
+        m_frame->GetEventHandler()->ProcessEvent(insertEvent);
+        }
+
+    ReplaceWithFilterableGraph(canvas, filterDlg.GetFilterColumn(), filterDlg.GetDefaultValue(),
+                               filterDlg.IsIncludingAll(), wxString{});
+    }
+
+//-------------------------------------------
+void WisteriaView::EditFilterableGraph(Wisteria::Graphs::FilterableGraph& filterableGraph,
+                                       Wisteria::Canvas* canvas, const size_t graphRow,
+                                       const size_t graphCol)
+    {
+    // the graph being shown holds the settings that every filter value's graph is built from
+    const auto activeGraph = filterableGraph.GetActiveGraph();
+    const auto& graphTypes = GetFilterableGraphTypes();
+    const auto graphType =
+        std::ranges::find_if(graphTypes, [&activeGraph](const auto& type)
+                             { return activeGraph->GetClassInfo() == type.m_classInfo; });
+    if (graphType == graphTypes.cend())
+        {
+        wxMessageBox(_(L"This type of filtered graph cannot be edited."), _(L"Edit"),
+                     wxOK | wxICON_INFORMATION, m_frame);
+        return;
+        }
+
+    wxArrayString graphNames;
+    for (const auto& type : graphTypes)
+        {
+        graphNames.Add(type.m_label);
+        }
+
+    const auto& filteredGraphs = filterableGraph.GetVariants();
+    const wxString allLabel{ filterableGraph.HasAllOption() ? filteredGraphs.front().m_label :
+                                                              wxString{} };
+    Wisteria::UI::FilterableGraphDlg filterDlg(&m_reportBuilder, graphNames, m_frame, true,
+                                               wxID_ANY, _(L"Edit Filtered Graph"));
+    SetDialogIcon(filterDlg, L"images/filtered-graph.svg");
+    filterDlg.SetFilter(
+        activeGraph->GetPropertyTemplate(L"dataset"), filterableGraph.GetFilterColumn(),
+        filteredGraphs.at(filterableGraph.GetActiveIndex()).m_label, filterableGraph.HasAllOption(),
+        static_cast<int>(std::distance(graphTypes.cbegin(), graphType)), allLabel);
+    if (filterDlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    // keep the column and unfiltered label as they were written (e.g., with constants)
+    const wxString columnTemplate{ filterableGraph.GetPropertyTemplate(L"filter.column") };
+    const wxString allLabelTemplate{ filterableGraph.GetPropertyTemplate(L"filter.all-label") };
+
+    // put back where they were if the edited graph can't be filtered
+    FilterableGraphFallback fallback{ .m_graph = canvas->GetFixedObject(graphRow, graphCol),
+                                      .m_graphCell = std::pair{ graphRow, graphCol },
+                                      .m_legend = filterableGraph.GetLegend() };
+    if (fallback.m_legend != nullptr)
+        {
+        const auto [gridRows, gridCols] = canvas->GetFixedObjectsGridSize();
+        for (size_t row = 0; row < gridRows && !fallback.m_legendCell.has_value(); ++row)
+            {
+            for (size_t col = 0; col < gridCols; ++col)
+                {
+                if (canvas->GetFixedObject(row, col) == fallback.m_legend)
+                    {
+                    fallback.m_legendCell = std::pair{ row, col };
+                    break;
+                    }
+                }
+            }
+        }
+
+    m_lastPlacedGraph.reset();
+        {
+        // every filter value's graph is a subset of this dataset, so it can't be changed
+        const Wisteria::UI::InsertGraphDlg::ScopedDatasetLock datasetLock{
+            activeGraph->GetPropertyTemplate(L"dataset")
+        };
+        EditGraphByType(*activeGraph, canvas, graphRow, graphCol);
+        }
+
+    // the graph's own dialog was canceled, so only the default value can have changed
+    if (m_lastPlacedGraph.expired())
+        {
+        if (filterableGraph.SetActiveValue(filterDlg.GetDefaultValue()))
+            {
+            UpdateCanvas(canvas);
+            GetDocument()->Modify(true);
+            }
+        return;
+        }
+
+    ReplaceWithFilterableGraph(
+        canvas, columnTemplate.empty() ? filterableGraph.GetFilterColumn() : columnTemplate,
+        filterDlg.GetDefaultValue(), filterableGraph.HasAllOption(),
+        allLabelTemplate.empty() ? allLabel : allLabelTemplate, fallback);
+    }
+
+//-------------------------------------------
+void WisteriaView::ReplaceWithFilterableGraph(
+    Wisteria::Canvas* canvas, const wxString& filterColumn, const wxString& defaultValue,
+    const bool includeAll, const wxString& allLabel,
+    const std::optional<FilterableGraphFallback>& fallback /*= std::nullopt*/)
+    {
+    const auto placedGraph = m_lastPlacedGraph.lock();
+    m_lastPlacedGraph.reset();
+    const auto legendPlacement = m_lastPlacedLegendPlacement;
+    // the graph type's dialog was canceled
+    auto* graph = dynamic_cast<Wisteria::Graphs::Graph2D*>(placedGraph.get());
+    const auto* doc = dynamic_cast<WisteriaDoc*>(GetDocument());
+    if (graph == nullptr || doc == nullptr)
+        {
+        return;
+        }
+
+    // find where the graph was placed
+    std::optional<std::pair<size_t, size_t>> graphCell;
+    const auto [gridRows, gridCols] = canvas->GetFixedObjectsGridSize();
+    for (size_t row = 0; row < gridRows && !graphCell.has_value(); ++row)
+        {
+        for (size_t col = 0; col < gridCols; ++col)
+            {
+            if (canvas->GetFixedObject(row, col) == placedGraph)
+                {
+                graphCell = std::pair{ row, col };
+                break;
+                }
+            }
+        }
+    if (!graphCell.has_value())
+        {
+        return;
+        }
+    const auto [graphRow, graphCol] = graphCell.value();
+
+    // the legend is rebuilt from whichever filter value's graph is shown
+    std::optional<Wisteria::Graphs::LegendOptions> legendOptions;
+    std::pair<size_t, size_t> legendCell{ graphRow, graphCol };
+    if (legendPlacement != Wisteria::UI::LegendPlacement::None)
+        {
+        const auto [side, hint] = GetLegendSideAndHint(legendPlacement);
+        const bool hasLegendCell{ (side == Wisteria::Side::Top && graphRow > 0) ||
+                                  (side == Wisteria::Side::Bottom && graphRow + 1 < gridRows) ||
+                                  (side == Wisteria::Side::Left && graphCol > 0) ||
+                                  (side == Wisteria::Side::Right && graphCol + 1 < gridCols) };
+        if (hasLegendCell)
+            {
+            legendCell = std::pair{ (side == Wisteria::Side::Top)    ? graphRow - 1 :
+                                    (side == Wisteria::Side::Bottom) ? graphRow + 1 :
+                                                                       graphRow,
+                                    (side == Wisteria::Side::Left)  ? graphCol - 1 :
+                                    (side == Wisteria::Side::Right) ? graphCol + 1 :
+                                                                      graphCol };
+            }
+        // only replace a legend that the graph actually placed next to itself
+        const auto legendItem = hasLegendCell ?
+                                    canvas->GetFixedObject(legendCell.first, legendCell.second) :
+                                    std::shared_ptr<Wisteria::GraphItems::GraphItemBase>{};
+        const auto* legendLabel = dynamic_cast<Wisteria::GraphItems::Label*>(legendItem.get());
+        const bool hasLegend{
+            (legendLabel != nullptr && legendLabel->IsLegend()) ||
+            (legendItem != nullptr &&
+             (legendItem->IsKindOf(
+                  wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot::ChernoffLegend)) ||
+              legendItem->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChoroplethLegend))))
+        };
+        if (hasLegend)
+            {
+            legendOptions =
+                Wisteria::Graphs::LegendOptions{ graph->GetLegendInfo().value_or(
+                                                     Wisteria::Graphs::LegendOptions{}) }
+                    .Placement(side)
+                    .PlacementHint(hint);
+            graph->SetLegendInfo(legendOptions.value());
+            }
+        }
+    if (!legendOptions.has_value())
+        {
+        graph->ClearLegendInfo();
+        }
+
+    // puts back the graph that was being edited, or removes the unfiltered graph that was inserted
+    const auto undoPlacement = [&, graphRow, graphCol](const wxString& errorMessage)
+    {
+        canvas->SetFixedObject(graphRow, graphCol, nullptr);
+        if (legendOptions.has_value())
+            {
+            canvas->SetFixedObject(legendCell.first, legendCell.second, nullptr);
+            }
+        if (fallback.has_value())
+            {
+            canvas->SetFixedObject(fallback->m_graphCell.first, fallback->m_graphCell.second,
+                                   fallback->m_graph);
+            if (fallback->m_legendCell.has_value())
+                {
+                canvas->SetFixedObject(fallback->m_legendCell->first,
+                                       fallback->m_legendCell->second, fallback->m_legend);
+                }
+            }
+        else
+            {
+            canvas->RemoveEmptyOuterCells();
+            }
+        UpdateCanvas(canvas);
+        wxMessageBox(errorMessage + L"\n\n" +
+                         (fallback.has_value() ? _(L"The graph was not changed.") :
+                                                 _(L"The graph was not inserted.")),
+                     _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+    };
+
+    std::shared_ptr<Wisteria::Graphs::FilterableGraph> filterableGraph;
+    try
+        {
+        filterableGraph = m_reportBuilder.LoadFilterableGraphDetached(
+            doc->SerializeFilteredGraphToJson(graph, canvas, filterColumn, defaultValue, includeAll,
+                                              allLabel),
+            canvas);
+        }
+    catch (const std::exception& exc)
+        {
+        undoPlacement(wxString::FromUTF8(exc.what()));
+        return;
+        }
+    if (filterableGraph == nullptr)
+        {
+        undoPlacement(_(L"This type of graph cannot be filtered."));
+        return;
+        }
+
+    canvas->SetFixedObject(graphRow, graphCol, filterableGraph);
+    if (legendOptions.has_value())
+        {
+        auto legend = filterableGraph->CreateLegend(legendOptions.value(),
+                                                    &Wisteria::ReportBuilder::CreateGraphLegend);
+        // the graph's description already explains what the legend shows
+        // (except for the enhanced Chernoff legend, which describes more than the plot can)
+        if (legend != nullptr && filterableGraph->GetActiveGraph()->IsUsingAutoAccessibility() &&
+            !legend->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot::ChernoffLegend)))
+            {
+            legend->GetAutoAccessibilityAttributes() = wxSVGAttributes{}.AriaHidden();
+            }
+        canvas->SetFixedObject(legendCell.first, legendCell.second, legend);
+        }
+
+    UpdateCanvas(canvas);
+    GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
 void WisteriaView::OnDeleteItem([[maybe_unused]] wxCommandEvent& event)
     {
     auto* canvas = GetActiveCanvas();
@@ -3292,7 +3636,14 @@ void WisteriaView::OnDeleteItem([[maybe_unused]] wxCommandEvent& event)
         }
 
     // if the item is a graph with a legend, clear the legend cell too
-    auto* graph = dynamic_cast<Wisteria::Graphs::Graph2D*>(selectedItem.get());
+    // (a filterable graph's legend is placed per the graph that it is showing)
+    const auto* graph = dynamic_cast<const Wisteria::Graphs::Graph2D*>(selectedItem.get());
+    if (const auto* filterableGraph =
+            dynamic_cast<const Wisteria::Graphs::FilterableGraph*>(selectedItem.get());
+        filterableGraph != nullptr)
+        {
+        graph = filterableGraph->GetActiveGraph().get();
+        }
     if (graph != nullptr)
         {
         const auto& legendInfo = graph->GetLegendInfo();
@@ -3357,17 +3708,23 @@ void WisteriaView::OnGoToDatasource([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
+    wxString dsName;
     auto* graph = dynamic_cast<Wisteria::Graphs::Graph2D*>(selectedItem.get());
-    if (graph == nullptr)
+    // a filterable graph's graphs are built from subsets of the dataset that it was loaded with
+    if (const auto* filterableGraph =
+            dynamic_cast<const Wisteria::Graphs::FilterableGraph*>(selectedItem.get());
+        filterableGraph != nullptr)
+        {
+        dsName = filterableGraph->GetActiveGraph()->GetPropertyTemplate(L"dataset");
+        }
+    else if (graph == nullptr)
         {
         return;
         }
-
-    wxString dsName;
     // choropleths' dataset is optional, can be used to simply show
     // a map and its features
-    if (auto* choropleth = dynamic_cast<Wisteria::Graphs::ChoroplethMap*>(graph);
-        choropleth != nullptr)
+    else if (auto* choropleth = dynamic_cast<Wisteria::Graphs::ChoroplethMap*>(graph);
+             choropleth != nullptr)
         {
         dsName = choropleth->GetDataSourceName();
         }
@@ -4062,7 +4419,7 @@ void WisteriaView::EditCandlestickPlot(const Wisteria::Graphs::Graph2D& graph,
                              pasteAsNew ? dlg.GetSelectedRow() : graphRow,
                              pasteAsNew ? dlg.GetSelectedColumn() : graphCol,
                              Wisteria::UI::LegendPlacement::None);
-            }
+        }
     catch (const std::exception& exc)
         {
         wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
@@ -5289,7 +5646,7 @@ void WisteriaView::EditBulletChart(const Wisteria::Graphs::Graph2D& graph, Wiste
                              pasteAsNew ? dlg.GetSelectedRow() : graphRow,
                              pasteAsNew ? dlg.GetSelectedColumn() : graphCol,
                              Wisteria::UI::LegendPlacement::None);
-            }
+        }
     catch (const std::exception& exc)
         {
         wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);

@@ -13,6 +13,7 @@
 #define WISTERIA_HTML_DASHBOARD_PRINTOUT_H
 
 #include "../base/canvas.h"
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -261,12 +262,27 @@ namespace Wisteria
         /// @returns The script managing color mode, view, and layer state.
         [[nodiscard]]
         static wxString GetDashboardScriptState();
-        /// @returns The script building the page rail and gallery cards.
+        /// @returns The script switching between the versions of a page with filterable graphs.
+        [[nodiscard]]
+        static wxString GetDashboardScriptChoices();
+        /// @returns The script showing a page's selected filter choice.
+        [[nodiscard]]
+        static wxString GetDashboardScriptChoiceSwitch();
+        /// @returns The script handling page visibility, layers, and the URL hash.
         [[nodiscard]]
         static wxString GetDashboardScriptPages();
-        /// @returns The script building the Filters menu and showing/hiding tagged graph items.
+        /// @returns The script building the gallery cards and rendering the current view.
+        [[nodiscard]]
+        static wxString GetDashboardScriptGallery();
+        /// @returns The script showing/hiding tagged graph items.
         [[nodiscard]]
         static wxString GetDashboardScriptFilters();
+        /// @returns The script gathering a page's filterable items into sections.
+        [[nodiscard]]
+        static wxString GetDashboardScriptFilterSections();
+        /// @returns The script building the Filters menu.
+        [[nodiscard]]
+        static wxString GetDashboardScriptFilterMenu();
         /// @returns The script tagging shapes so their painted color survives dark mode.
         [[nodiscard]]
         static wxString GetDashboardScriptInk();
@@ -276,9 +292,15 @@ namespace Wisteria
         /// @returns The script counting up large numbers when a page is revealed.
         [[nodiscard]]
         static wxString GetDashboardScriptCounters();
-        /// @returns The script revealing pages and highlighting shared colors on hover.
+        /// @returns The script preparing a page's marks for animation.
         [[nodiscard]]
         static wxString GetDashboardScriptMotion();
+        /// @returns The script highlighting shared colors on hover.
+        [[nodiscard]]
+        static wxString GetDashboardScriptSpotlight();
+        /// @returns The script revealing pages as they scroll into view.
+        [[nodiscard]]
+        static wxString GetDashboardScriptReveal();
         /// @returns The script for zooming and panning a page with ctrl+wheel/pinch and drag.
         [[nodiscard]]
         static wxString GetDashboardScriptZoom();
@@ -291,6 +313,9 @@ namespace Wisteria
         /// @returns The script saving the current page as a standalone SVG or PNG file.
         [[nodiscard]]
         static wxString GetDashboardScriptSave();
+        /// @returns The script for the Save button's menu.
+        [[nodiscard]]
+        static wxString GetDashboardScriptSaveMenu();
         /// @returns The script printing the current page in its viewed orientation.
         [[nodiscard]]
         static wxString GetDashboardScriptPrint();
@@ -303,15 +328,71 @@ namespace Wisteria
         /// @returns The script wiring up the theme button and menu items.
         [[nodiscard]]
         static wxString GetDashboardScriptTheme();
-        /// @returns The script wiring up controls and the initial page load.
+        /// @returns The script wiring up controls and keyboard navigation.
         [[nodiscard]]
         static wxString GetDashboardScriptEvents();
+        /// @returns The script performing the initial page load.
+        [[nodiscard]]
+        static wxString GetDashboardScriptLoad();
 
       private:
+        using FilterableGraphs = std::vector<std::shared_ptr<Graphs::FilterableGraph>>;
+
+        /// @brief How a filterable graph was shown on the canvas before exporting.
+        struct FilterState
+            {
+            size_t m_activeIndex{ 0 };
+            bool m_shown{ true };
+            bool m_legendShown{ true };
+            };
+
         [[nodiscard]]
         wxString BuildLogo(HtmlDashboardOptions options);
         [[nodiscard]]
         wxString BuildKeyboardTip();
+
+        /// @returns The filterable graphs on a page that are switched together.
+        /// @param canvas The page.
+        [[nodiscard]]
+        static FilterableGraphs GetPageFilters(const Canvas& canvas);
+        /// @returns @c true if any of the filters includes an unfiltered choice.
+        /// @param pageFilters The page's filterable graphs.
+        [[nodiscard]]
+        static bool HasAllChoice(const FilterableGraphs& pageFilters);
+        /// @returns The page's filter choices, with the unfiltered choice first (if included).
+        /// @param pageFilters The page's filterable graphs.
+        [[nodiscard]]
+        static std::vector<wxString> GetFilterChoices(const FilterableGraphs& pageFilters);
+        /// @returns The index of the choice being shown on the canvas.
+        /// @param pageFilters The page's filterable graphs.
+        /// @param choices The page's filter choices.
+        [[nodiscard]]
+        static size_t GetDefaultFilterChoice(const FilterableGraphs& pageFilters,
+                                             const std::vector<wxString>& choices);
+        /** @brief Shows a filter choice on all of a page's filterable graphs.
+            @details Graphs that don't have the choice (and their legends) are left blank.
+            @param pageFilters The page's filterable graphs.
+            @param originalStates How the graphs were originally shown.
+            @param choice The filter value to show.
+            @param isAllChoice @c true if showing the unfiltered choice.*/
+        static void ShowFilterChoice(const FilterableGraphs& pageFilters,
+                                     const std::vector<FilterState>& originalStates,
+                                     const wxString& choice, bool isAllChoice);
+        /** @brief Makes the element IDs in a rendered page unique within the dashboard.
+            @details The SVG DC numbers its IDs (gradients, clip paths, etc.) from zero for
+                every render and reuses hatch pattern names, so each ID is prefixed with
+                @c scope (and numbered if repeated). References point to the most recent
+                definition before them.
+            @param svg The rendered SVG content.
+            @param scope A prefix unique to this render.
+            @returns The SVG content with scoped IDs.*/
+        [[nodiscard]]
+        static wxString ScopeSvgIds(const wxString& svg, const wxString& scope);
+        /// @brief Restores how a page's filterable graphs were originally shown.
+        /// @param pageFilters The page's filterable graphs.
+        /// @param originalStates How the graphs were originally shown.
+        static void RestoreFilterStates(const FilterableGraphs& pageFilters,
+                                        const std::vector<FilterState>& originalStates);
         };
     } // namespace Wisteria
 

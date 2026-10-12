@@ -586,6 +586,9 @@ namespace Wisteria
         /// @param itemId The ID of the object to look for.
         [[nodiscard]]
         std::shared_ptr<GraphItems::GraphItemBase> FindFixedObject(long itemId) noexcept;
+        /// @returns The filterable graphs on the canvas, in row and column order.
+        [[nodiscard]]
+        std::vector<std::shared_ptr<Graphs::FilterableGraph>> GetFilterableGraphs() const;
 
         /** @brief Whether to align the content of items across each row.
             @details For example, this will set the Y axes of the plots

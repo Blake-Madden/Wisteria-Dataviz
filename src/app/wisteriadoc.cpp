@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "wisteriadoc.h"
+#include "../graphs/filterablegraph.h"
 #include "wisteriaapp.h"
 #include "wisteriaview.h"
 #include <cmath>
@@ -461,6 +462,28 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
         return false;
         }
     return true;
+    }
+
+//-------------------------------------------
+wxString WisteriaDoc::SerializeFilteredGraphToJson(const Wisteria::Graphs::Graph2D* graph,
+                                                   const Wisteria::Canvas* canvas,
+                                                   const wxString& filterColumn,
+                                                   const wxString& defaultValue,
+                                                   const bool includeAll,
+                                                   const wxString& allLabel) const
+    {
+    if (graph == nullptr || canvas == nullptr)
+        {
+        return {};
+        }
+    const auto graphNode = SaveGraphByType(graph, canvas);
+    if (graphNode == nullptr || !graphNode->IsOk())
+        {
+        return {};
+        }
+    graphNode->Add(L"filter", wxSimpleJSON::Create(FilterToJsonStr(filterColumn, defaultValue,
+                                                                   includeAll, allLabel)));
+    return graphNode->Print(false);
     }
 
 //-------------------------------------------
@@ -5370,6 +5393,54 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
     }
 
 //-------------------------------------------
+wxSimpleJSON::Ptr_t
+WisteriaDoc::SaveFilterableGraph(const Wisteria::Graphs::FilterableGraph* filterableGraph,
+                                 const Wisteria::Canvas* canvas) const
+    {
+    // saved as the graph being shown, plus the filter that builds the other values' graphs
+    auto node = SaveGraphByType(filterableGraph->GetActiveGraph().get(), canvas);
+    if (node == nullptr || !node->IsOk())
+        {
+        return node;
+        }
+
+    const wxString columnTemplate{ filterableGraph->GetPropertyTemplate(L"filter.column") };
+    const auto& filteredGraphs = filterableGraph->GetVariants();
+    wxString allLabel;
+    if (filterableGraph->HasAllOption())
+        {
+        const wxString allLabelTemplate{ filterableGraph->GetPropertyTemplate(
+            L"filter.all-label") };
+        allLabel = allLabelTemplate.empty() ? filteredGraphs.front().m_label : allLabelTemplate;
+        }
+    node->Add(L"filter",
+              wxSimpleJSON::Create(FilterToJsonStr(
+                  columnTemplate.empty() ? filterableGraph->GetFilterColumn() : columnTemplate,
+                  filteredGraphs.at(filterableGraph->GetActiveIndex()).m_label,
+                  filterableGraph->HasAllOption(), allLabel)));
+    return node;
+    }
+
+//-------------------------------------------
+wxString WisteriaDoc::FilterToJsonStr(const wxString& filterColumn, const wxString& defaultValue,
+                                      const bool includeAll, const wxString& allLabel)
+    {
+    wxString filterObj = L"{\"column\": \"" + EscapeJsonStr(filterColumn) + L"\", \"default\": \"" +
+                         EscapeJsonStr(defaultValue) + L"\"";
+    if (includeAll)
+        {
+        filterObj += L", \"include-all\": true";
+        if (!allLabel.empty() &&
+            allLabel != Wisteria::Graphs::FilterableGraph::GetDefaultAllLabel())
+            {
+            filterObj += L", \"all-label\": \"" + EscapeJsonStr(allLabel) + L"\"";
+            }
+        }
+    filterObj += L"}";
+    return filterObj;
+    }
+
+//-------------------------------------------
 wxSimpleJSON::Ptr_t WisteriaDoc::SavePageItem(const Wisteria::GraphItems::GraphItemBase* item,
                                               const Wisteria::Canvas* canvas) const
     {
@@ -5382,6 +5453,11 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SavePageItem(const Wisteria::GraphItems::GraphI
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::Graph2D)))
         {
         return SaveGraphByType(dynamic_cast<const Wisteria::Graphs::Graph2D*>(item), canvas);
+        }
+    if (const auto* filterableGraph = dynamic_cast<const Wisteria::Graphs::FilterableGraph*>(item);
+        filterableGraph != nullptr)
+        {
+        return SaveFilterableGraph(filterableGraph, canvas);
         }
 
     // (FillableShape before Shape since it derives from Shape)
