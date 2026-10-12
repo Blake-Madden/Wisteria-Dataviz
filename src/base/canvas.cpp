@@ -1968,7 +1968,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     //-------------------------------------------
     void Canvas::DrawWithAccessibility(wxDC & dc, const GraphItems::GraphItemBase* item)
         {
-        if (item == nullptr)
+        // a hidden item draws nothing, so it shouldn't describe anything to screen readers
+        if (item == nullptr || !item->IsShown())
             {
             return;
             }

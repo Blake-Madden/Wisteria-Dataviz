@@ -258,6 +258,12 @@ namespace Wisteria::Graphs
             }
 
         /// @private
+        void UnregisterCreatedLegend(const GraphItems::GraphItemBase* legend)
+            {
+            std::erase(m_createdLegends, legend);
+            }
+
+        /// @private
         [[nodiscard]]
         const std::vector<GraphItems::GraphItemBase*>& GetCreatedLegends() const noexcept
             {
