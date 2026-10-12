@@ -775,12 +775,9 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptCounters()
     }
 
 //------------------------------------------------------
-wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptMotion()
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptMarks()
     {
     return LR"JS(
-  const shapeSelector = 'circle, ellipse, rect, path, polygon, polyline, line';
-  const maxAnimatedMarks = 2500;
-
   function rgbKey(text) {
     const m = /rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/.exec(text);
     return m ? m[1] + ',' + m[2] + ',' + m[3] : '';
@@ -826,6 +823,16 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptMotion()
     if (!scope.spot.has(key)) scope.spot.set(key, []);
     scope.spot.get(key).push(el);
   }
+)JS";
+    }
+
+//------------------------------------------------------
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptMotion()
+    {
+    return LR"JS(
+  const shapeSelector = 'circle, ellipse, rect, path, polygon, polyline, line';
+  const maxAnimatedMarks = 2500;
+
   function prepareMarks(page) {
     if (page.prepared) return;
     page.prepared = true;
@@ -1215,7 +1222,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptHelp()
     }
 
 //------------------------------------------------------
-wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSave()
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSaveCopy()
     {
     return LR"JS(
   let saveOpen = false;
@@ -1275,6 +1282,13 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSave()
     }
     return clone;
   }
+)JS";
+    }
+
+//------------------------------------------------------
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSave()
+    {
+    return LR"JS(
   function savePageAsSvg(page) {
     const clone = clonePageSvg(page, pageContentSize(visibleSvg(page)));
     if (!clone) return;
@@ -1550,7 +1564,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptTheme()
     }
 
 //------------------------------------------------------
-wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptKeys()
     {
     return LR"JS(
   function onKeyDown(e) {
@@ -1580,6 +1594,62 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
       togglePresenting();
     }
   }
+  function bindMenu(btnSelector, menuId, wrapperSelector) {
+    const btn = document.querySelector(btnSelector);
+    const menu = document.getElementById(menuId);
+    if (!btn || !menu) return;
+    const setMenu = function(open) {
+      menu.hidden = !open;
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
+    btn.addEventListener('click', function() { setMenu(menu.hidden); });
+    const menuBoxes = function() {
+      return Array.prototype.filter.call(
+        menu.querySelectorAll('input[type="checkbox"], input[type="radio"]'),
+        function(box) { return box.offsetParent !== null; });
+    };
+    // up and down arrows move through the checkboxes and radio buttons,
+    // and Enter toggles the focused one
+    const onMenuArrow = function(ev) {
+      if (menu.hidden || (ev.key !== 'ArrowDown' && ev.key !== 'ArrowUp')) return;
+      const boxes = menuBoxes();
+      if (!boxes.length) return;
+      const at = boxes.indexOf(document.activeElement);
+      let next;
+      if (at < 0) {
+        next = ev.key === 'ArrowDown' ? 0 : boxes.length - 1;
+      } else {
+        next = (at + (ev.key === 'ArrowDown' ? 1 : boxes.length - 1)) % boxes.length;
+      }
+      ev.preventDefault();
+      boxes[next].focus();
+    };
+    btn.addEventListener('keydown', onMenuArrow);
+    menu.addEventListener('keydown', function(ev) {
+      onMenuArrow(ev);
+      if (ev.key === 'Enter' &&
+          ev.target.matches('input[type="checkbox"], input[type="radio"]')) {
+        ev.preventDefault();
+        ev.target.click();
+      }
+    });
+    document.addEventListener('click', function(ev) {
+      if (!menu.hidden && !ev.target.closest(wrapperSelector)) setMenu(false);
+    });
+    document.addEventListener('keydown', function(ev) {
+      if (ev.key === 'Escape' && !menu.hidden) {
+        setMenu(false);
+        btn.focus();
+      }
+    });
+  }
+)JS";
+    }
+
+//------------------------------------------------------
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
+    {
+    return LR"JS(
   function bindControls() {
     document.querySelectorAll('.dash-views button').forEach(function(btn) {
       btn.addEventListener('click', function() { setView(btn.dataset.view); });
@@ -1587,55 +1657,6 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
     document.querySelectorAll('.dash-layers input[data-layer]').forEach(function(box) {
       box.addEventListener('change', function() { toggleLayer(box.dataset.layer); });
     });
-    const bindMenu = function(btnSelector, menuId, wrapperSelector) {
-      const btn = document.querySelector(btnSelector);
-      const menu = document.getElementById(menuId);
-      if (!btn || !menu) return;
-      const setMenu = function(open) {
-        menu.hidden = !open;
-        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      };
-      btn.addEventListener('click', function() { setMenu(menu.hidden); });
-      const menuBoxes = function() {
-        return Array.prototype.filter.call(
-          menu.querySelectorAll('input[type="checkbox"], input[type="radio"]'),
-          function(box) { return box.offsetParent !== null; });
-      };
-      // up and down arrows move through the checkboxes and radio buttons,
-      // and Enter toggles the focused one
-      const onMenuArrow = function(ev) {
-        if (menu.hidden || (ev.key !== 'ArrowDown' && ev.key !== 'ArrowUp')) return;
-        const boxes = menuBoxes();
-        if (!boxes.length) return;
-        const at = boxes.indexOf(document.activeElement);
-        let next;
-        if (at < 0) {
-          next = ev.key === 'ArrowDown' ? 0 : boxes.length - 1;
-        } else {
-          next = (at + (ev.key === 'ArrowDown' ? 1 : boxes.length - 1)) % boxes.length;
-        }
-        ev.preventDefault();
-        boxes[next].focus();
-      };
-      btn.addEventListener('keydown', onMenuArrow);
-      menu.addEventListener('keydown', function(ev) {
-        onMenuArrow(ev);
-        if (ev.key === 'Enter' &&
-            ev.target.matches('input[type="checkbox"], input[type="radio"]')) {
-          ev.preventDefault();
-          ev.target.click();
-        }
-      });
-      document.addEventListener('click', function(ev) {
-        if (!menu.hidden && !ev.target.closest(wrapperSelector)) setMenu(false);
-      });
-      document.addEventListener('keydown', function(ev) {
-        if (ev.key === 'Escape' && !menu.hidden) {
-          setMenu(false);
-          btn.focus();
-        }
-      });
-    };
     bindMenu('.dash-layers-btn', 'dash-layers-menu', '.dash-layers');
     bindMenu('.dash-filters-btn', 'dash-filters-menu', '.dash-filters');
     document.addEventListener('keydown', onKeyDown);
@@ -2142,10 +2163,11 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         GetDashboardScriptPages() + GetDashboardScriptGallery() + GetDashboardScriptFilters() +
         GetDashboardScriptFilterSections() + GetDashboardScriptFilterMenu() +
         GetDashboardScriptInk() + GetDashboardScriptNavigation() + GetDashboardScriptCounters() +
-        GetDashboardScriptMotion() + GetDashboardScriptSpotlight() + GetDashboardScriptReveal() +
-        GetDashboardScriptZoom() + GetDashboardScriptTooltips() + GetDashboardScriptHelp() +
-        GetDashboardScriptSave() + GetDashboardScriptSaveMenu() + GetDashboardScriptPrint() +
-        GetDashboardScriptPresent() + GetDashboardScriptThemeMenu() + GetDashboardScriptTheme() +
+        GetDashboardScriptMarks() + GetDashboardScriptMotion() + GetDashboardScriptSpotlight() +
+        GetDashboardScriptReveal() + GetDashboardScriptZoom() + GetDashboardScriptTooltips() +
+        GetDashboardScriptHelp() + GetDashboardScriptSaveCopy() + GetDashboardScriptSave() +
+        GetDashboardScriptSaveMenu() + GetDashboardScriptPrint() + GetDashboardScriptPresent() +
+        GetDashboardScriptThemeMenu() + GetDashboardScriptTheme() + GetDashboardScriptKeys() +
         GetDashboardScriptEvents() + GetDashboardScriptLoad()
     };
     script.Replace(L"{{TOGGLE}}", options.m_includeColorModeToggle ? L"true" : L"false");

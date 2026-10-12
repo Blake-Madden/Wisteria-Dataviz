@@ -292,6 +292,9 @@ namespace Wisteria
         /// @returns The script counting up large numbers when a page is revealed.
         [[nodiscard]]
         static wxString GetDashboardScriptCounters();
+        /// @returns The script classifying and keying a page's marks.
+        [[nodiscard]]
+        static wxString GetDashboardScriptMarks();
         /// @returns The script preparing a page's marks for animation.
         [[nodiscard]]
         static wxString GetDashboardScriptMotion();
@@ -310,6 +313,9 @@ namespace Wisteria
         /// @returns The script opening and closing the keyboard and mouse shortcuts panel.
         [[nodiscard]]
         static wxString GetDashboardScriptHelp();
+        /// @returns The script making a standalone copy of a page's SVG.
+        [[nodiscard]]
+        static wxString GetDashboardScriptSaveCopy();
         /// @returns The script saving the current page as a standalone SVG or PNG file.
         [[nodiscard]]
         static wxString GetDashboardScriptSave();
@@ -328,7 +334,10 @@ namespace Wisteria
         /// @returns The script wiring up the theme button and menu items.
         [[nodiscard]]
         static wxString GetDashboardScriptTheme();
-        /// @returns The script wiring up controls and keyboard navigation.
+        /// @returns The script handling keyboard navigation and drop-down menus.
+        [[nodiscard]]
+        static wxString GetDashboardScriptKeys();
+        /// @returns The script wiring up controls.
         [[nodiscard]]
         static wxString GetDashboardScriptEvents();
         /// @returns The script performing the initial page load.
