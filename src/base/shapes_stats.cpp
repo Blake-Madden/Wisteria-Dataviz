@@ -25,25 +25,12 @@ namespace Wisteria::GraphItems
 
         rect.Deflate(ScaleToScreenAndCanvas(2));
 
-        const GraphicsContextFallback gcf{ &dc, rect };
-        auto* gc = gcf.GetGraphicsContext();
-        if (gc == nullptr)
-            {
-            return;
-            }
-
         // drawing any sort of outline
         if (GetGraphItemInfo().GetBrush().IsOk() || GetGraphItemInfo().GetPen().IsOk())
             {
-            if (GetGraphItemInfo().GetPen().IsOk())
-                {
-                gc->SetPen(GetGraphItemInfo().GetPen());
-                }
-            if (GetGraphItemInfo().GetBrush().IsOk())
-                {
-                gc->SetBrush(GetGraphItemInfo().GetBrush());
-                }
-            gc->DrawRoundedRectangle(wxRect2DDouble{ rect }, Settings::GetBoxRoundedCornerRadius());
+            DCPenChangerIfDifferent penGuard2{ dc, GetGraphItemInfo().GetPen() };
+            DCBrushChangerIfDifferent brushGuard2{ dc, GetGraphItemInfo().GetBrush() };
+            dc.DrawRoundedRectangle(rect, Settings::GetBoxRoundedCornerRadius());
             }
 
         //--------------------------------------
@@ -94,8 +81,8 @@ namespace Wisteria::GraphItems
 
             const auto drawBar = [&](const wxColour color, const int penWidth)
             {
-                gc->SetPen(wxPen{ color, penWidth });
-                gc->SetBrush(wxBrush{ color });
+                DCPenChangerIfDifferent penGuard2{ dc, wxPen{ color, penWidth } };
+                DCBrushChangerIfDifferent brushGuard2{ dc, wxBrush{ color } };
 
                 // dot radius (smaller)
                 const double dotRadius = r.GetHeight() * (0.075 / 3);
@@ -110,9 +97,9 @@ namespace Wisteria::GraphItems
                 //--------------------------------------
                 // draw bar + dots
                 //--------------------------------------
-                gc->StrokeLine(x1, cy, x2, cy);
-                gc->DrawEllipse(x1 - dotRadius, cy - dotRadius, dotRadius * 2, dotRadius * 2);
-                gc->DrawEllipse(x2 - dotRadius, cy - dotRadius, dotRadius * 2, dotRadius * 2);
+                dc.DrawLine(x1, cy, x2, cy);
+                dc.DrawEllipse(x1 - dotRadius, cy - dotRadius, dotRadius * 2, dotRadius * 2);
+                dc.DrawEllipse(x2 - dotRadius, cy - dotRadius, dotRadius * 2, dotRadius * 2);
             };
 
             const auto lineScaling =
