@@ -441,10 +441,7 @@ namespace Wisteria::UI
         const std::optional<wxString> groupCol =
             GetGroupVariable().empty() ? std::nullopt : std::optional<wxString>(GetGroupVariable());
         plot->SetData(GetSelectedDataset(), GetYVariable(), GetXVariable(), groupCol);
-        if (oldGraph != nullptr)
-            {
-            ApplyAxisOverrides(*plot);
-            }
+        ApplyAxisOverrides(*plot);
 
         plot->SetTimeIntervalLabel(GetTimeIntervalLabel());
         plot->SetGhostOpacity(GetGhostOpacity());

@@ -779,6 +779,9 @@ namespace Wisteria::UI
 
         UpdateVariableLabels();
         ResetAxisOptions();
+        // tasks are drawn horizontally, so the dates are on the bottom (scaling) axis
+        SetAxisIsDate(AxisType::BottomXAxis,
+                      !m_startDateVariable.empty() || !m_endDateVariable.empty());
         }
 
     //-------------------------------------------
@@ -1229,10 +1232,10 @@ namespace Wisteria::UI
             plot->ShowcaseBars(GetShowcasedLabels(), HideLabelsOnGhostedBars());
             }
 
+        ApplyAxisOverrides(*plot);
+
         if (oldGraph != nullptr)
             {
-            ApplyAxisOverrides(*plot);
-
             // the dialog's variable/dataset getters return expanded values, so the
             // old value passed to CarryForwardProperty must also be expanded for
             // the "did the user change this" comparison to be meaningful

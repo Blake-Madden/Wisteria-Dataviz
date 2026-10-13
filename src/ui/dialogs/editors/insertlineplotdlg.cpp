@@ -443,10 +443,10 @@ namespace Wisteria::UI
             plot->ShowcaseLines(GetShowcaseLines());
             }
 
+        ApplyAxisOverrides(*plot);
+
         if (oldGraph != nullptr)
             {
-            ApplyAxisOverrides(*plot);
-
             const auto* oldLine = dynamic_cast<const Graphs::LinePlot*>(oldGraph);
 
             WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",

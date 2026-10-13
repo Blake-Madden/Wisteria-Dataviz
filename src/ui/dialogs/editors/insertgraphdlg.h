@@ -150,6 +150,7 @@ namespace Wisteria::UI
             @details Call this after SetData() since SetData() rebuilds axes,
                 discarding titles, brackets, pens, custom labels, etc.
                 Flushes any pending per-axis control values before applying.
+                For a new graph, only the axis settings that the user changed are applied.
             @param graph The graph to apply the saved axis state to.*/
         void ApplyAxisOverrides(Graphs::Graph2D& graph);
 
@@ -408,6 +409,17 @@ namespace Wisteria::UI
                 so axis settings from the previous variable selection are not carried
                 over to the newly selected variables.*/
         void ResetAxisOptions();
+
+        /// @returns @c true if the axis options hold the axes loaded from the graph being edited,
+        ///     or if there is no axis options panel.
+        [[nodiscard]]
+        bool HasLoadedAxisOptions() const;
+
+        /** @brief Hints that an axis carries date values, so its range uses date controls.
+            @details Call this after ResetAxisOptions().
+            @param axisType The axis type.
+            @param isDate @c true if the axis represents date values.*/
+        void SetAxisIsDate(AxisType axisType, bool isDate);
 
         /// @brief Returns the suggested dataset name for dataset-driven brackets.
         /// @details Subclasses can override to preselect the dataset.

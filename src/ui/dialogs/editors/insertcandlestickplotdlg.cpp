@@ -252,6 +252,7 @@ namespace Wisteria::UI
 
         UpdateVariableLabels();
         ResetAxisOptions();
+        SetAxisIsDate(AxisType::BottomXAxis, !m_dateVariable.empty());
         }
 
     //-------------------------------------------
@@ -346,10 +347,10 @@ namespace Wisteria::UI
         plot->SetData(GetSelectedDataset(), GetDateVariable(), GetOpenVariable(), GetHighVariable(),
                       GetLowVariable(), GetCloseVariable());
 
+        ApplyAxisOverrides(*plot);
+
         if (oldGraph != nullptr)
             {
-            ApplyAxisOverrides(*plot);
-
             const auto oldExpanded = [this, oldGraph](const wxString& prop)
             {
                 return (GetReportBuilder() != nullptr) ? GetReportBuilder()->ExpandConstants(

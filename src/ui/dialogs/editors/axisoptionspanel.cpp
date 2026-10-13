@@ -8,9 +8,11 @@
 
 #include "axisoptionspanel.h"
 #include "../../app/wisteriaapp.h"
+#include "../../graphs/graph2d.h"
 #include "../../reporting/reportenumconvert.h"
 #include "insertitemdlg.h"
 #include "insertlabeldlg.h"
+#include <wx/dateevt.h>
 #include <wx/gbsizer.h>
 #include <wx/valgen.h>
 
@@ -55,6 +57,10 @@ namespace Wisteria::UI
         editTitleBtn->Bind(wxEVT_BUTTON,
                            [this](wxCommandEvent&)
                            {
+                               if (m_savedAxes.count(m_currentAxisType) == 0)
+                                   {
+                                   return;
+                                   }
                                auto& axis = m_savedAxes.at(m_currentAxisType);
                                GraphItems::Label label = axis.GetTitle();
                                InsertLabelDlg dlg(
@@ -64,10 +70,7 @@ namespace Wisteria::UI
                                    label.GetText().empty() ? InsertItemDlg::EditMode::Insert :
                                                              InsertItemDlg::EditMode::Edit,
                                    LabelDlgIncludeLabelAndShapeOptions);
-                               if (!label.GetText().empty())
-                                   {
-                                   dlg.LoadFromLabel(label);
-                                   }
+                               dlg.LoadFromLabel(label);
                                if (dlg.ShowModal() == wxID_OK)
                                    {
                                    dlg.ApplyToLabel(axis.GetTitle());
@@ -75,6 +78,11 @@ namespace Wisteria::UI
                                    // (possibly to blank), so it round-trips through JSON
                                    // instead of reverting to the dataset's variable name
                                    axis.SetPropertyTemplate(L"title.user-defined", L"true");
+                                   MarkEdited(AxisEdit::Title);
+                                   if (axis.GetTitle().GetText() != label.GetText())
+                                       {
+                                       MarkEdited(AxisEdit::TitleText);
+                                       }
                                    }
                            });
         titleGrid->Add(editTitleBtn);
@@ -85,6 +93,10 @@ namespace Wisteria::UI
         editHeaderBtn->Bind(wxEVT_BUTTON,
                             [this](wxCommandEvent&)
                             {
+                                if (m_savedAxes.count(m_currentAxisType) == 0)
+                                    {
+                                    return;
+                                    }
                                 auto& axis = m_savedAxes.at(m_currentAxisType);
                                 GraphItems::Label label = axis.GetHeader();
                                 InsertLabelDlg dlg(
@@ -94,13 +106,11 @@ namespace Wisteria::UI
                                     label.GetText().empty() ? InsertItemDlg::EditMode::Insert :
                                                               InsertItemDlg::EditMode::Edit,
                                     LabelDlgIncludeLabelAndShapeOptions);
-                                if (!label.GetText().empty())
-                                    {
-                                    dlg.LoadFromLabel(label);
-                                    }
+                                dlg.LoadFromLabel(label);
                                 if (dlg.ShowModal() == wxID_OK)
                                     {
                                     dlg.ApplyToLabel(axis.GetHeader());
+                                    MarkEdited(AxisEdit::Header);
                                     }
                             });
         titleGrid->Add(editHeaderBtn);
@@ -111,6 +121,10 @@ namespace Wisteria::UI
         editFooterBtn->Bind(wxEVT_BUTTON,
                             [this](wxCommandEvent&)
                             {
+                                if (m_savedAxes.count(m_currentAxisType) == 0)
+                                    {
+                                    return;
+                                    }
                                 auto& axis = m_savedAxes.at(m_currentAxisType);
                                 GraphItems::Label label = axis.GetFooter();
                                 InsertLabelDlg dlg(
@@ -120,13 +134,11 @@ namespace Wisteria::UI
                                     label.GetText().empty() ? InsertItemDlg::EditMode::Insert :
                                                               InsertItemDlg::EditMode::Edit,
                                     LabelDlgIncludeLabelAndShapeOptions);
-                                if (!label.GetText().empty())
-                                    {
-                                    dlg.LoadFromLabel(label);
-                                    }
+                                dlg.LoadFromLabel(label);
                                 if (dlg.ShowModal() == wxID_OK)
                                     {
                                     dlg.ApplyToLabel(axis.GetFooter());
+                                    MarkEdited(AxisEdit::Footer);
                                     }
                             });
         titleGrid->Add(editFooterBtn);
@@ -434,6 +446,244 @@ namespace Wisteria::UI
                        wxSizerFlags::GetDefaultBorder());
 
         axisSizer->Add(gridSizer, wxSizerFlags{ 1 }.Expand());
+
+        BindEditTracking();
+        ResetAxes();
+        }
+
+    //-------------------------------------------
+    void AxisOptionsPanel::BindEditTracking()
+        {
+        // record which setting groups the user changes, then let the event continue
+        // on to any other handlers bound to the control
+        const auto track = [this](wxEvtHandler* ctrl, const auto& eventType, const AxisEdit edit)
+        {
+            ctrl->Bind(eventType,
+                       [this, edit](auto& evt)
+                       {
+                           MarkEdited(edit);
+                           evt.Skip();
+                       });
+        };
+
+        track(m_axisLineColorPicker, wxEVT_COLOURPICKER_CHANGED, AxisEdit::AxisLineColor);
+        track(m_axisLineWidthSpin, wxEVT_SPINCTRL, AxisEdit::AxisLineWidth);
+        track(m_axisLineStyleChoice, wxEVT_CHOICE, AxisEdit::AxisLineStyle);
+        track(m_axisCapStyleChoice, wxEVT_CHOICE, AxisEdit::CapStyle);
+        track(m_axisReverseCheck, wxEVT_CHECKBOX, AxisEdit::Reverse);
+
+        track(m_gridlineColorPicker, wxEVT_COLOURPICKER_CHANGED, AxisEdit::GridlineColor);
+        track(m_gridlineWidthSpin, wxEVT_SPINCTRL, AxisEdit::GridlineWidth);
+        track(m_gridlineStyleChoice, wxEVT_CHOICE, AxisEdit::GridlineStyle);
+
+        track(m_tickmarkDisplayChoice, wxEVT_CHOICE, AxisEdit::Tickmarks);
+
+        track(m_labelDisplayChoice, wxEVT_CHOICE, AxisEdit::LabelDisplay);
+        track(m_numberDisplayChoice, wxEVT_CHOICE, AxisEdit::NumberDisplay);
+        track(m_labelOrientationChoice, wxEVT_CHOICE, AxisEdit::LabelOrientation);
+        track(m_perpAlignmentChoice, wxEVT_CHOICE, AxisEdit::PerpendicularAlignment);
+        track(m_precisionSpin, wxEVT_SPINCTRL, AxisEdit::Precision);
+        track(m_doubleSidedCheck, wxEVT_CHECKBOX, AxisEdit::DoubleSidedLabels);
+        track(m_showOuterLabelsCheck, wxEVT_CHECKBOX, AxisEdit::OuterLabels);
+        track(m_stackLabelsCheck, wxEVT_CHECKBOX, AxisEdit::StackLabels);
+        track(m_labelLineLengthSpin, wxEVT_SPINCTRL, AxisEdit::LabelLineLength);
+
+        track(m_autoRangeRadio, wxEVT_RADIOBUTTON, AxisEdit::Range);
+        track(m_userRangeRadio, wxEVT_RADIOBUTTON, AxisEdit::Range);
+        track(m_rangeStartSpin, wxEVT_SPINCTRLDOUBLE, AxisEdit::Range);
+        track(m_rangeEndSpin, wxEVT_SPINCTRLDOUBLE, AxisEdit::Range);
+        track(m_rangeIntervalSpin, wxEVT_SPINCTRLDOUBLE, AxisEdit::Range);
+        track(m_rangeDisplayIntervalSpin, wxEVT_SPINCTRL, AxisEdit::Range);
+        track(m_rangeStartDate, wxEVT_DATE_CHANGED, AxisEdit::Range);
+        track(m_rangeEndDate, wxEVT_DATE_CHANGED, AxisEdit::Range);
+        track(m_dateIntervalChoice, wxEVT_CHOICE, AxisEdit::Range);
+        }
+
+    //-------------------------------------------
+    void AxisOptionsPanel::ApplyEditedProperties(Graphs::Graph2D& graph)
+        {
+        if (m_savedAxes.count(m_currentAxisType) > 0)
+            {
+            WriteControlsToAxis(m_savedAxes.at(m_currentAxisType));
+            }
+
+        // changes only the pen fields that the user edited, keeping the rest of the graph's pen
+        const auto applyPenEdits = [](wxPen& destPen, const wxPen& srcPen, const bool colorEdited,
+                                      const bool widthEdited, const bool styleEdited)
+        {
+            if (!colorEdited && !widthEdited && !styleEdited)
+                {
+                return;
+                }
+            // an invalid source pen means the user chose the "None" style
+            if (!srcPen.IsOk())
+                {
+                if (styleEdited)
+                    {
+                    destPen = wxNullPen;
+                    }
+                return;
+                }
+            // the graph has no pen to change, so use the edited pen
+            if (!destPen.IsOk())
+                {
+                destPen = srcPen;
+                return;
+                }
+            if (colorEdited)
+                {
+                destPen.SetColour(srcPen.GetColour());
+                }
+            if (widthEdited)
+                {
+                destPen.SetWidth(srcPen.GetWidth());
+                }
+            if (styleEdited)
+                {
+                destPen.SetStyle(srcPen.GetStyle());
+                }
+        };
+
+        for (const auto& [axisType, edits] : m_editedProperties)
+            {
+            const auto savedPos = m_savedAxes.find(axisType);
+            if (savedPos == m_savedAxes.cend())
+                {
+                continue;
+                }
+            const auto& src = savedPos->second;
+            auto& dest = graph.GetAxis(axisType);
+
+            applyPenEdits(dest.GetAxisLinePen(), src.GetAxisLinePen(),
+                          edits.contains(AxisEdit::AxisLineColor),
+                          edits.contains(AxisEdit::AxisLineWidth),
+                          edits.contains(AxisEdit::AxisLineStyle));
+            applyPenEdits(dest.GetGridlinePen(), src.GetGridlinePen(),
+                          edits.contains(AxisEdit::GridlineColor),
+                          edits.contains(AxisEdit::GridlineWidth),
+                          edits.contains(AxisEdit::GridlineStyle));
+
+            for (const auto edit : edits)
+                {
+                switch (edit)
+                    {
+                case AxisEdit::Title:
+                    {
+                    // keep the title text that the graph built from its data
+                    // (e.g., the variable name) unless the user changed the text
+                    const wxString builtText{ dest.GetTitle().GetText() };
+                    dest.GetTitle() = src.GetTitle();
+                    if (edits.contains(AxisEdit::TitleText))
+                        {
+                        dest.SetPropertyTemplate(L"title.user-defined", L"true");
+                        }
+                    else
+                        {
+                        dest.GetTitle().SetText(builtText);
+                        }
+                    }
+                    break;
+                case AxisEdit::TitleText:
+                    // applied along with AxisEdit::Title
+                    break;
+                case AxisEdit::Header:
+                    dest.GetHeader() = src.GetHeader();
+                    break;
+                case AxisEdit::Footer:
+                    dest.GetFooter() = src.GetFooter();
+                    break;
+                case AxisEdit::AxisLineColor:
+                    [[fallthrough]];
+                case AxisEdit::AxisLineWidth:
+                    [[fallthrough]];
+                case AxisEdit::AxisLineStyle:
+                    [[fallthrough]];
+                case AxisEdit::GridlineColor:
+                    [[fallthrough]];
+                case AxisEdit::GridlineWidth:
+                    [[fallthrough]];
+                case AxisEdit::GridlineStyle:
+                    // applied above by applyPenEdits
+                    break;
+                case AxisEdit::CapStyle:
+                    dest.SetCapStyle(src.GetCapStyle());
+                    break;
+                case AxisEdit::Reverse:
+                    dest.Reverse(src.IsReversed());
+                    break;
+                case AxisEdit::Tickmarks:
+                    dest.SetTickMarkDisplay(src.GetTickMarkDisplay());
+                    break;
+                case AxisEdit::LabelDisplay:
+                    dest.SetLabelDisplay(src.GetLabelDisplay());
+                    break;
+                case AxisEdit::NumberDisplay:
+                    dest.SetNumberDisplay(src.GetNumberDisplay());
+                    break;
+                case AxisEdit::LabelOrientation:
+                    dest.SetAxisLabelOrientation(src.GetAxisLabelOrientation());
+                    break;
+                case AxisEdit::PerpendicularAlignment:
+                    dest.SetPerpendicularLabelAxisAlignment(
+                        src.GetPerpendicularLabelAxisAlignment());
+                    break;
+                case AxisEdit::Precision:
+                    dest.SetPrecision(src.GetPrecision());
+                    break;
+                case AxisEdit::DoubleSidedLabels:
+                    dest.SetDoubleSidedAxisLabels(src.HasDoubleSidedAxisLabels());
+                    break;
+                case AxisEdit::OuterLabels:
+                    dest.ShowOuterLabels(src.IsShowingOuterLabels());
+                    break;
+                case AxisEdit::StackLabels:
+                    dest.StackLabels(src.IsStackingLabels());
+                    break;
+                case AxisEdit::LabelLineLength:
+                    dest.SetLabelLineLength(src.GetLabelLineLength());
+                    break;
+                case AxisEdit::Range:
+                    if (src.GetPropertyTemplate(L"range.user-defined") == L"true")
+                        {
+                        const bool isDate =
+                            m_axisIsDate.count(axisType) > 0 && m_axisIsDate.at(axisType);
+                        if (isDate)
+                            {
+                            const auto [startDate, endDate] = src.GetRangeDates();
+                            dest.SetDateRange(startDate, endDate, src.GetDateDisplayInterval(),
+                                              FiscalYear::Education);
+                            }
+                        else
+                            {
+                            // use the graph's precision, which AxisEdit::Precision (applied
+                            // before this) has already updated if the user changed it
+                            const auto [rStart, rEnd] = src.GetRange();
+                            dest.SetRange(rStart, rEnd, dest.GetPrecision(), src.GetInterval(),
+                                          src.GetDisplayInterval());
+                            }
+                        dest.SetPropertyTemplate(L"range.user-defined", L"true");
+                        }
+                    break;
+                case AxisEdit::Brackets:
+                    dest.ClearBrackets();
+                    for (const auto& bracket : src.GetBrackets())
+                        {
+                        dest.AddBracket(bracket);
+                        }
+                    dest.SetBracketsAreDynamic(false);
+                    if (src.AreBracketsSimplified())
+                        {
+                        dest.SimplifyBrackets();
+                        }
+                    for (const auto* const tmplKey :
+                         { L"brackets.dataset", L"bracket.label", L"bracket.value" })
+                        {
+                        dest.SetPropertyTemplate(tmplKey, src.GetPropertyTemplate(tmplKey));
+                        }
+                    break;
+                    }
+                }
+            }
         }
 
     //-------------------------------------------
@@ -463,6 +713,13 @@ namespace Wisteria::UI
     void AxisOptionsPanel::SetAxes(const std::map<AxisType, GraphItems::Axis>& axes)
         {
         m_savedAxes = axes;
+        m_axesLoaded = true;
+        m_editedProperties.clear();
+        // detect date axes from the loaded axes rather than from any placeholder read earlier
+        for (const auto& [axisType, axis] : m_savedAxes)
+            {
+            m_axisIsDate.erase(axisType);
+            }
         if (m_savedAxes.count(m_currentAxisType) > 0)
             {
             ReadControlsFromAxis(m_savedAxes.at(m_currentAxisType));
@@ -538,6 +795,17 @@ namespace Wisteria::UI
             {
             m_dateRangePanel->Hide();
             }
+
+        // start from default axes so that the controls are editable before a graph
+        // exists, and only apply what the user changes (see ApplyEditedProperties())
+        m_axesLoaded = false;
+        m_editedProperties.clear();
+        for (const auto axisType : { AxisType::BottomXAxis, AxisType::TopXAxis, AxisType::LeftYAxis,
+                                     AxisType::RightYAxis })
+            {
+            m_savedAxes.emplace(axisType, GraphItems::Axis{ axisType });
+            }
+        ReadControlsFromAxis(m_savedAxes.at(m_currentAxisType));
 
         RefreshBracketList();
         Layout();
@@ -1055,6 +1323,7 @@ namespace Wisteria::UI
             wxPen(colorPicker->GetColour(), widthSpin->GetValue()), bracketStyle);
         axis.AddBracket(std::move(bracket));
         axis.SetBracketsAreDynamic(false);
+        MarkEdited(AxisEdit::Brackets);
         RefreshBracketList();
         }
 
@@ -1169,6 +1438,7 @@ namespace Wisteria::UI
         brackets[sel] = GraphItems::Axis::AxisBracket(
             startPos, endPos, labelPos, labelCtrl->GetValue(),
             wxPen(colorPicker->GetColour(), widthSpin->GetValue()), bracketStyle);
+        MarkEdited(AxisEdit::Brackets);
         RefreshBracketList();
         }
 
@@ -1188,6 +1458,7 @@ namespace Wisteria::UI
             return;
             }
         brackets.erase(brackets.begin() + sel);
+        MarkEdited(AxisEdit::Brackets);
         RefreshBracketList();
         }
 
@@ -1425,6 +1696,7 @@ namespace Wisteria::UI
             axis.SimplifyBrackets();
             }
 
+        MarkEdited(AxisEdit::Brackets);
         RefreshBracketList();
         }
 

@@ -129,11 +129,12 @@ namespace Wisteria::UI
         // seed the axis options panel with a default axis of the selected type
         const auto axisType = GetAxisType();
         auto currentAxes = m_axisOptionsPanel->GetAxes();
-        if (currentAxes.count(axisType) == 0)
+        const bool hasLoadedAxes = m_axisOptionsPanel->HasLoadedAxes();
+        if (!hasLoadedAxes || currentAxes.count(axisType) == 0)
             {
             // preserve any existing axis state if only the type is being changed
             GraphItems::Axis defaultAxis(axisType);
-            if (!currentAxes.empty())
+            if (hasLoadedAxes && !currentAxes.empty())
                 {
                 defaultAxis = currentAxes.begin()->second;
                 }

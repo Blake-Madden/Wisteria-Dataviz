@@ -13,6 +13,7 @@
 #include "../../base/canvas.h"
 #include "../../reporting/reportbuilder.h"
 #include <map>
+#include <set>
 #include <wx/choice.h>
 #include <wx/clrpicker.h>
 #include <wx/datectrl.h>
@@ -20,6 +21,11 @@
 #include <wx/spinctrl.h>
 #include <wx/valgen.h>
 #include <wx/wx.h>
+
+namespace Wisteria::Graphs
+    {
+    class Graph2D;
+    } // namespace Wisteria::Graphs
 
 namespace Wisteria::UI
     {
@@ -76,9 +82,9 @@ namespace Wisteria::UI
             }
 
         /** @brief Hints that a given axis carries date values (for range control display).
-            @details Call this before SetAxes() when inserting a new graph so the Range
-                group shows date pickers instead of numeric spinners. In edit mode the
-                panel auto-detects date axes from the stored axis state.
+            @details Call this when inserting a new graph so the Range group shows date
+                pickers instead of numeric spinners. SetAxes() replaces this with
+                auto-detection from the loaded axes, so call this after SetAxes().
             @param axisType The axis type.
             @param isDate @c true if the axis represents date values.*/
         void SetAxisIsDate(AxisType axisType, bool isDate);
@@ -89,7 +95,53 @@ namespace Wisteria::UI
                 changes so stale axis settings from the previous dataset are discarded.*/
         void ResetAxes();
 
+        /// @returns @c true if the axes were loaded from an existing graph via SetAxes().
+        [[nodiscard]]
+        bool HasLoadedAxes() const noexcept
+            {
+            return m_axesLoaded;
+            }
+
+        /** @brief Applies only the axis settings that the user changed to a graph.
+            @details Use this when the axes were not loaded from an existing graph,
+                so that the graph keeps the axis settings built from its data.
+            @param graph The graph to apply the changed settings to.*/
+        void ApplyEditedProperties(Graphs::Graph2D& graph);
+
       private:
+        /// @brief Groups of axis settings that are tracked as user edits.
+        enum class AxisEdit
+            {
+            Title,
+            TitleText,
+            Header,
+            Footer,
+            AxisLineColor,
+            AxisLineWidth,
+            AxisLineStyle,
+            CapStyle,
+            Reverse,
+            GridlineColor,
+            GridlineWidth,
+            GridlineStyle,
+            Tickmarks,
+            LabelDisplay,
+            NumberDisplay,
+            LabelOrientation,
+            PerpendicularAlignment,
+            Precision,
+            DoubleSidedLabels,
+            OuterLabels,
+            StackLabels,
+            LabelLineLength,
+            Range,
+            Brackets
+            };
+
+        void MarkEdited(const AxisEdit edit) { m_editedProperties[m_currentAxisType].insert(edit); }
+
+        void BindEditTracking();
+
         void OnAxisSelectionChanged();
         void ReadControlsFromAxis(const GraphItems::Axis& axis);
         void WriteControlsToAxis(GraphItems::Axis& axis);
@@ -114,6 +166,8 @@ namespace Wisteria::UI
         AxisType m_currentAxisType{ AxisType::BottomXAxis };
         std::map<AxisType, GraphItems::Axis> m_savedAxes;
         std::map<AxisType, bool> m_axisIsDate;
+        std::map<AxisType, std::set<AxisEdit>> m_editedProperties;
+        bool m_axesLoaded{ false };
 
         // controls
         wxChoice* m_axisSelector{ nullptr };

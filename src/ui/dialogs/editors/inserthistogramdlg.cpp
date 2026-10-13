@@ -554,10 +554,10 @@ namespace Wisteria::UI
             plot->ShowcaseBars(GetShowcasedBars(), HideLabelsOnGhostedBars());
             }
 
+        ApplyAxisOverrides(*plot);
+
         if (oldGraph != nullptr)
             {
-            ApplyAxisOverrides(*plot);
-
             const auto* oldHistogram = dynamic_cast<const Graphs::Histogram*>(oldGraph);
             WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
                                                GetSelectedDatasetName(),

@@ -2562,13 +2562,36 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    bool InsertGraphDlg::HasLoadedAxisOptions() const
+        {
+        return m_axisOptionsPanel == nullptr || m_axisOptionsPanel->HasLoadedAxes();
+        }
+
+    //-------------------------------------------
+    void InsertGraphDlg::SetAxisIsDate(const AxisType axisType, const bool isDate)
+        {
+        if (m_axisOptionsPanel != nullptr)
+            {
+            m_axisOptionsPanel->SetAxisIsDate(axisType, isDate);
+            }
+        }
+
+    //-------------------------------------------
     void InsertGraphDlg::ApplyAxisOverrides(Graphs::Graph2D& graph)
         {
         if (m_axisOptionsPanel != nullptr)
             {
-            m_savedAxes = m_axisOptionsPanel->GetAxes();
             m_mirrorXAxis = m_axisOptionsPanel->GetMirrorX();
             m_mirrorYAxis = m_axisOptionsPanel->GetMirrorY();
+            // axes not loaded from a graph (i.e., a new graph or new variables) are
+            // placeholders, so only apply the settings that the user changed
+            if (!m_axisOptionsPanel->HasLoadedAxes())
+                {
+                m_savedAxes.clear();
+                m_axisOptionsPanel->ApplyEditedProperties(graph);
+                return;
+                }
+            m_savedAxes = m_axisOptionsPanel->GetAxes();
             }
 
         for (const auto& [axisType, saved] : m_savedAxes)

@@ -352,10 +352,10 @@ namespace Wisteria::UI
         plot->SetData(GetSelectedDataset(), GetYVariable(), GetXVariable(), GetSizeVariable(),
                       groupCol);
 
+        ApplyAxisOverrides(*plot);
+
         if (oldGraph != nullptr)
             {
-            ApplyAxisOverrides(*plot);
-
             const auto* oldBubble = dynamic_cast<const Graphs::BubblePlot*>(oldGraph);
             WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
                                                GetSelectedDatasetName(),

@@ -2025,13 +2025,13 @@ namespace Wisteria::UI
             std::remove_cvref_t<decltype(plot->GetBarAxis().GetCustomLabels())>::mapped_type;
         std::map<wxString, FormattedLabel> rawToFormatted;
 
+        // ApplyAxisOverrides must come before any SortBars call so that the sort's
+        // custom axis labels are not overwritten by the stale labels saved from the
+        // original chart.
+        ApplyAxisOverrides(*plot);
+
         if (oldGraph != nullptr)
             {
-            // ApplyAxisOverrides must come before any SortBars call so that the sort's
-            // custom axis labels are not overwritten by the stale labels saved from the
-            // original chart.
-            ApplyAxisOverrides(*plot);
-
             // Pair raw bar labels with their formatted custom axis labels using the
             // chart being edited, whose bars and axis labels share the same (sorted)
             // positions. The new chart's bars are still at their categorical-code
@@ -2056,7 +2056,7 @@ namespace Wisteria::UI
         if (HasCustomBarSort())
             {
             plot->SetPropertyTemplate(L"bar-sort", L"true");
-            if (oldGraph != nullptr)
+            if (oldGraph != nullptr && HasLoadedAxisOptions())
                 {
                 // SortBars() always clears brackets and resets custom labels to raw
                 // data strings; both are restored after the call below.
@@ -2091,6 +2091,16 @@ namespace Wisteria::UI
                 }
             else
                 {
+                // SortBars() clears brackets. Brackets from a dataset are rebuilt from the
+                // sorted bar labels below. Other brackets are positioned against the
+                // unsorted bars, so they are dropped.
+                const auto& unsortedBrackets = plot->GetBarAxis().GetBrackets();
+                const std::optional<GraphItems::Axis::AxisBracket> bracketStyleSource =
+                    unsortedBrackets.empty() ?
+                        std::nullopt :
+                        std::optional<GraphItems::Axis::AxisBracket>{ unsortedBrackets.front() };
+                const bool bracketsSimplified = plot->GetBarAxis().AreBracketsSimplified();
+
                 if (GetBarSortComparison().has_value())
                     {
                     plot->SortBars(GetBarSortComparison().value(), GetBarSortDirection());
@@ -2098,6 +2108,56 @@ namespace Wisteria::UI
                 else if (!GetBarSortLabels().empty())
                     {
                     plot->SortBars(GetBarSortLabels(), GetBarSortDirection());
+                    }
+
+                auto& barAxis = plot->GetBarAxis();
+                const wxString bracketDatasetName =
+                    barAxis.GetPropertyTemplate(L"brackets.dataset");
+                bool bracketsRebuilt{ false };
+                if (bracketStyleSource.has_value() && !bracketDatasetName.empty() &&
+                    GetReportBuilder() != nullptr)
+                    {
+                    const auto& datasets = GetReportBuilder()->GetDatasets();
+                    const auto datasetPos = datasets.find(bracketDatasetName);
+                    if (datasetPos != datasets.cend() && datasetPos->second != nullptr)
+                        {
+                        std::map<wxString, double> labelPositions;
+                        for (const auto& [pos, label] : barAxis.GetCustomLabels())
+                            {
+                            labelPositions[label.GetText()] = pos;
+                            }
+                        try
+                            {
+                            barAxis.AddBrackets(
+                                datasetPos->second, barAxis.GetPropertyTemplate(L"bracket.label"),
+                                barAxis.GetPropertyTemplate(L"bracket.value"), labelPositions);
+                            for (auto& bracket : barAxis.GetBrackets())
+                                {
+                                bracket.GetLinePen() = bracketStyleSource->GetLinePen();
+                                bracket.SetBracketLineStyle(
+                                    bracketStyleSource->GetBracketLineStyle());
+                                }
+                            barAxis.SetBracketsAreDynamic(false);
+                            if (bracketsSimplified)
+                                {
+                                barAxis.SimplifyBrackets();
+                                }
+                            bracketsRebuilt = true;
+                            }
+                        catch (const std::exception&)
+                            {
+                            barAxis.ClearBrackets();
+                            }
+                        }
+                    }
+                // don't save a dataset bracket source for brackets that were not rebuilt
+                if (!bracketsRebuilt)
+                    {
+                    for (const auto* const tmplKey :
+                         { L"brackets.dataset", L"bracket.label", L"bracket.value" })
+                        {
+                        barAxis.SetPropertyTemplate(tmplKey, wxString{});
+                        }
                     }
                 }
             }

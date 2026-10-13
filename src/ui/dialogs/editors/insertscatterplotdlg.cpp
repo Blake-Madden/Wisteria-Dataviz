@@ -302,10 +302,10 @@ namespace Wisteria::UI
             GetGroupVariable().empty() ? std::nullopt : std::optional<wxString>(GetGroupVariable());
         plot->SetData(GetSelectedDataset(), GetYVariable(), GetXVariable(), groupCol);
 
+        ApplyAxisOverrides(*plot);
+
         if (oldGraph != nullptr)
             {
-            ApplyAxisOverrides(*plot);
-
             const auto* oldScatter = dynamic_cast<const Graphs::ScatterPlot*>(oldGraph);
             WisteriaView::CarryForwardProperty(*oldGraph, *plot, L"dataset",
                                                GetSelectedDatasetName(),
