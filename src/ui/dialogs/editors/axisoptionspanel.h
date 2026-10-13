@@ -45,6 +45,11 @@ namespace Wisteria::UI
             @param axisType The axis type to select.*/
         void SelectAxis(AxisType axisType);
 
+        /** @brief Shows or hides the axis selector.
+            @details Hide it when the parent dialog chooses the axis to edit.
+            @param show @c true to show the selector, @c false to hide it.*/
+        void ShowAxisSelector(bool show);
+
         /** @brief Sets the axes to be edited.
             @param axes A map of axis types to axis objects.*/
         void SetAxes(const std::map<AxisType, GraphItems::Axis>& axes);

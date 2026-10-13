@@ -81,6 +81,8 @@ namespace Wisteria::UI
         //-------------
         m_axisOptionsPanel =
             new AxisOptionsPanel(GetSideBarBook(), GetCanvas(), GetReportBuilder());
+        // the axis type choice on the Common Axis page selects the axis to edit
+        m_axisOptionsPanel->ShowAxisSelector(false);
         GetSideBarBook()->AddPage(m_axisOptionsPanel, _(L"Axis"), ID_AXIS_OPTIONS_SECTION, true);
 
         // initialize the axis panel with a default axis for the selected type
@@ -136,12 +138,23 @@ namespace Wisteria::UI
             GraphItems::Axis defaultAxis(axisType);
             if (hasLoadedAxes && !currentAxes.empty())
                 {
-                defaultAxis = currentAxes.begin()->second;
+                const auto& previousAxis = currentAxes.begin()->second;
+                const auto titleOrientation = defaultAxis.GetTitle().GetTextOrientation();
+                const auto labelOrientation = defaultAxis.GetAxisLabelOrientation();
+                CopyAxisSettings(previousAxis, defaultAxis);
+                // keep the new axis's own orientations when switching between X and Y
+                if (previousAxis.IsVertical() != defaultAxis.IsVertical())
+                    {
+                    defaultAxis.GetTitle().SetTextOrientation(titleOrientation);
+                    defaultAxis.SetAxisLabelOrientation(labelOrientation);
+                    }
                 }
             currentAxes.clear();
             currentAxes.emplace(axisType, std::move(defaultAxis));
             m_axisOptionsPanel->SetAxes(currentAxes);
             }
+        // point the panel's controls at the common axis
+        m_axisOptionsPanel->SelectAxis(axisType);
         }
 
     //-------------------------------------------
@@ -203,6 +216,46 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    void InsertCommonAxisDlg::CopyAxisSettings(const GraphItems::Axis& src, GraphItems::Axis& dest)
+        {
+        dest.GetAxisLinePen() = src.GetAxisLinePen();
+        dest.SetCapStyle(src.GetCapStyle());
+        dest.Reverse(src.IsReversed());
+        dest.GetGridlinePen() = src.GetGridlinePen();
+        dest.SetTickMarkDisplay(src.GetTickMarkDisplay());
+        dest.SetLabelDisplay(src.GetLabelDisplay());
+        dest.SetNumberDisplay(src.GetNumberDisplay());
+        dest.SetAxisLabelOrientation(src.GetAxisLabelOrientation());
+        dest.SetPerpendicularLabelAxisAlignment(src.GetPerpendicularLabelAxisAlignment());
+        dest.SetPrecision(src.GetPrecision());
+        dest.SetDoubleSidedAxisLabels(src.HasDoubleSidedAxisLabels());
+        dest.ShowOuterLabels(src.IsShowingOuterLabels());
+        dest.StackLabels(src.IsStackingLabels());
+        dest.SetLabelLineLength(src.GetLabelLineLength());
+        dest.GetTitle() = src.GetTitle();
+        dest.GetHeader() = src.GetHeader();
+        dest.GetFooter() = src.GetFooter();
+        for (const auto& bracket : src.GetBrackets())
+            {
+            dest.AddBracket(bracket);
+            }
+        dest.SetBracketsAreDynamic(src.AreBracketsDynamic());
+        for (const auto* const tmplKey :
+             { L"brackets.dataset", L"bracket.label", L"bracket.value" })
+            {
+            const auto tmplValue = src.GetPropertyTemplate(tmplKey);
+            if (!tmplValue.empty())
+                {
+                dest.SetPropertyTemplate(tmplKey, tmplValue);
+                }
+            }
+        if (src.AreBracketsSimplified())
+            {
+            dest.SimplifyBrackets();
+            }
+        }
+
+    //-------------------------------------------
     std::unique_ptr<GraphItems::Axis> InsertCommonAxisDlg::BuildCommonAxis()
         {
         const auto childIds = GetChildGraphIds();
@@ -247,49 +300,7 @@ namespace Wisteria::UI
         const auto axisIt = axesMap.find(axisType);
         if (axisIt != axesMap.end())
             {
-            const auto& edited = axisIt->second;
-            commonAxis->GetAxisLinePen() = edited.GetAxisLinePen();
-            commonAxis->SetCapStyle(edited.GetCapStyle());
-            commonAxis->Reverse(edited.IsReversed());
-            commonAxis->GetGridlinePen() = edited.GetGridlinePen();
-            commonAxis->SetTickMarkDisplay(edited.GetTickMarkDisplay());
-            commonAxis->SetLabelDisplay(edited.GetLabelDisplay());
-            commonAxis->SetNumberDisplay(edited.GetNumberDisplay());
-            commonAxis->SetAxisLabelOrientation(edited.GetAxisLabelOrientation());
-            commonAxis->SetPerpendicularLabelAxisAlignment(
-                edited.GetPerpendicularLabelAxisAlignment());
-            commonAxis->SetPrecision(edited.GetPrecision());
-            commonAxis->SetDoubleSidedAxisLabels(edited.HasDoubleSidedAxisLabels());
-            commonAxis->ShowOuterLabels(edited.IsShowingOuterLabels());
-            commonAxis->StackLabels(edited.IsStackingLabels());
-            commonAxis->SetLabelLineLength(edited.GetLabelLineLength());
-            commonAxis->GetTitle() = edited.GetTitle();
-            commonAxis->GetHeader() = edited.GetHeader();
-            commonAxis->GetFooter() = edited.GetFooter();
-            for (const auto& bracket : edited.GetBrackets())
-                {
-                commonAxis->AddBracket(bracket);
-                }
-            commonAxis->SetBracketsAreDynamic(edited.AreBracketsDynamic());
-            const auto bracketDs = edited.GetPropertyTemplate(L"brackets.dataset");
-            if (!bracketDs.empty())
-                {
-                commonAxis->SetPropertyTemplate(L"brackets.dataset", bracketDs);
-                }
-            const auto bracketLabel = edited.GetPropertyTemplate(L"bracket.label");
-            if (!bracketLabel.empty())
-                {
-                commonAxis->SetPropertyTemplate(L"bracket.label", bracketLabel);
-                }
-            const auto bracketValue = edited.GetPropertyTemplate(L"bracket.value");
-            if (!bracketValue.empty())
-                {
-                commonAxis->SetPropertyTemplate(L"bracket.value", bracketValue);
-                }
-            if (edited.AreBracketsSimplified())
-                {
-                commonAxis->SimplifyBrackets();
-                }
+            CopyAxisSettings(axisIt->second, *commonAxis);
             }
 
         ApplyPageOptions(*commonAxis);

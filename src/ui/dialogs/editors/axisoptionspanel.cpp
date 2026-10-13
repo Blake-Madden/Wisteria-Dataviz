@@ -710,6 +710,17 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    void AxisOptionsPanel::ShowAxisSelector(const bool show)
+        {
+        auto* selectorSizer = m_axisSelector->GetContainingSizer();
+        if (selectorSizer != nullptr)
+            {
+            selectorSizer->ShowItems(show);
+            Layout();
+            }
+        }
+
+    //-------------------------------------------
     void AxisOptionsPanel::SetAxes(const std::map<AxisType, GraphItems::Axis>& axes)
         {
         m_savedAxes = axes;

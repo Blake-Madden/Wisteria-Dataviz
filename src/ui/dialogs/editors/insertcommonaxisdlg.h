@@ -96,6 +96,11 @@ namespace Wisteria::UI
         void PopulateGraphChecklist();
         void OnAxisTypeChanged();
 
+        /// @brief Copies the display settings that the axis options panel edits.
+        /// @param src The axis to copy the settings from.
+        /// @param dest The axis to copy the settings to.
+        static void CopyAxisSettings(const GraphItems::Axis& src, GraphItems::Axis& dest);
+
         constexpr static wxWindowID ID_COMMON_AXIS_SECTION{ wxID_HIGHEST + 5 };
         constexpr static wxWindowID ID_AXIS_OPTIONS_SECTION{ wxID_HIGHEST + 6 };
 
