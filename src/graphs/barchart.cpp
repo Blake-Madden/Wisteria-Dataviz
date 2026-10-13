@@ -963,27 +963,36 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                                        bar.GetAxisPosition() - halfWidth, lowerPointOfBar);
                 GetPhysicalCoordinates(barBlock.GetLength(), bar.GetAxisPosition() + halfWidth,
                                        upperPointOfBar);
-                return (lowerPointOfBar.y - upperPointOfBar.y);
                 }
-            GetPhysicalCoordinates(bar.GetAxisPosition() - halfWidth,
-                                   barBlock.GetLength() /* offset doesn't matter here */,
-                                   lowerPointOfBar);
-            GetPhysicalCoordinates(bar.GetAxisPosition() + halfWidth, barBlock.GetLength(),
-                                   upperPointOfBar);
-            return ((upperPointOfBar.x - lowerPointOfBar.x) - barRenderInfo.m_barSpacing);
+            else
+                {
+                GetPhysicalCoordinates(bar.GetAxisPosition() - halfWidth,
+                                       barBlock.GetLength() /* offset doesn't matter here */,
+                                       lowerPointOfBar);
+                GetPhysicalCoordinates(bar.GetAxisPosition() + halfWidth, barBlock.GetLength(),
+                                       upperPointOfBar);
+                }
+            const double slotWidth{ static_cast<double>(
+                isHorizontal ? std::abs(lowerPointOfBar.y - upperPointOfBar.y) :
+                               std::abs(upperPointOfBar.x - lowerPointOfBar.x)) };
+            // spacing can take up to half of the slot
+            return slotWidth - std::min<double>(barRenderInfo.m_barSpacing,
+                                                safe_divide<double>(slotWidth, 2.0));
             }
 
-        const size_t barSlots = GetBarSlotCount();
-        const size_t overallBarSpacing = (barRenderInfo.m_barSpacing * (barSlots - 1));
-        // the plot area, minus the cumulative spaces between the bars
-        // (unless the spacing is too aggressive)
-        const auto plotExtent = isHorizontal ? GetPlotAreaBoundingBox().GetHeight() :
-                                               GetPlotAreaBoundingBox().GetWidth();
+        const auto barSlots{ static_cast<double>(GetBarSlotCount()) };
+        const double plotExtent{ static_cast<double>(isHorizontal ?
+                                                         GetPlotAreaBoundingBox().GetHeight() :
+                                                         GetPlotAreaBoundingBox().GetWidth()) };
         // add an "extra" bar to account for the half bar space
         // around the first and last bars
-        return safe_divide<double>(
-            plotExtent - (overallBarSpacing < plotExtent + barSlots ? overallBarSpacing : 0),
-            (barSlots + 1));
+        const double slotWidth{ safe_divide<double>(plotExtent, barSlots + 1) };
+        // spacing can take up to half of the slot
+        const double barSpacing{ std::min<double>(barRenderInfo.m_barSpacing,
+                                                  safe_divide<double>(slotWidth, 2.0)) };
+        // the plot area, minus the cumulative spaces between the bars
+        return safe_divide<double>(plotExtent - (barSpacing * std::max(barSlots - 1, 0.0)),
+                                   barSlots + 1);
         }
 
     //-----------------------------------
@@ -1448,7 +1457,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
             }
 
         // if the box is really thin, then don't use the outline pen on its narrow sides
-        if (DownscaleFromScreenAndCanvas(barRenderInfo.m_barRect.GetWidth()) < 5)
+        if (DownscaleFromScreenAndCanvas(isHorizontal ? barRenderInfo.m_barRect.GetHeight() :
+                                                        barRenderInfo.m_barRect.GetWidth()) < 5)
             {
             box->GetGraphItemInfo().Outline(isHorizontal, !isHorizontal, isHorizontal,
                                             !isHorizontal);
