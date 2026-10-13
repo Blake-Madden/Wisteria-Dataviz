@@ -1230,25 +1230,12 @@ namespace Wisteria::UI
         sizer->AddGrowableCol(1, 1);
 
         sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Label:")), wxSizerFlags{}.CenterVertical());
-        auto* labelCombo = new wxComboBox(&dlg, wxID_ANY);
-        const auto& customLabels = axis.GetCustomLabels();
-        for (const auto& [value, label] : customLabels)
-            {
-            if (!label.GetText().empty())
-                {
-                labelCombo->Append(label.GetText(),
-                                   new wxStringClientData(wxString::Format(L"%g", value)));
-                }
-            }
-        for (const auto& point : std::as_const(axis).GetAxisPoints())
-            {
-            if (point.IsShown() && !point.GetDisplayValue().empty())
-                {
-                labelCombo->Append(point.GetDisplayValue(), new wxStringClientData(wxString::Format(
-                                                                L"%g", point.GetValue())));
-                }
-            }
-        sizer->Add(labelCombo, wxSizerFlags{}.Expand());
+        auto* labelCtrl = new wxTextCtrl(&dlg, wxID_ANY, wxString{}, wxDefaultPosition,
+                                         wxDefaultSize, wxTE_MULTILINE | wxTE_RICH2);
+#if wxUSE_SPELLCHECK
+        labelCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
+#endif
+        sizer->Add(labelCtrl, wxSizerFlags{}.Expand());
 
         sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start:")), wxSizerFlags{}.CenterVertical());
         auto* startSpin = new wxSpinCtrlDouble(&dlg, wxID_ANY, wxString{}, wxDefaultPosition,
@@ -1279,26 +1266,6 @@ namespace Wisteria::UI
         styleChoice->SetSelection(4);
         sizer->Add(styleChoice, wxSizerFlags{}.Expand());
 
-        labelCombo->Bind(wxEVT_COMBOBOX,
-                         [labelCombo, startSpin, endSpin](wxCommandEvent&)
-                         {
-                             const int sel = labelCombo->GetSelection();
-                             if (sel != wxNOT_FOUND)
-                                 {
-                                 const auto* data = dynamic_cast<wxStringClientData*>(
-                                     labelCombo->GetClientObject(sel));
-                                 if (data != nullptr)
-                                     {
-                                     double val = 0;
-                                     if (data->GetData().ToDouble(&val))
-                                         {
-                                         startSpin->SetValue(val);
-                                         endSpin->SetValue(val);
-                                         }
-                                     }
-                                 }
-                         });
-
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
         mainSizer->Add(sizer, wxSizerFlags{ 1 }.Expand().Border());
         mainSizer->Add(dlg.CreateStdDialogButtonSizer(wxOK | wxCANCEL),
@@ -1310,7 +1277,7 @@ namespace Wisteria::UI
             return;
             }
 
-        const wxString labelText = labelCombo->GetValue();
+        const wxString labelText = labelCtrl->GetValue();
         if (labelText.empty())
             {
             return;
