@@ -61,7 +61,7 @@ namespace Wisteria::GraphItems
             }
         if (m_topShape.has_value() && !m_topShape.value().empty())
             {
-            shapeSize = ScaleToScreenAndCanvas(m_topShape.value().front().GetSizeDIPs());
+            shapeSize = ScaleTopShapeSize(m_topShape.value().front().GetSizeDIPs());
             }
         const auto maxWidth = ((imageSize.IsFullySpecified() && shapeSize.IsFullySpecified()) ?
                                    std::max(imageSize.GetWidth(), shapeSize.GetWidth()) :
@@ -219,7 +219,7 @@ namespace Wisteria::GraphItems
         // it adds to width. Subtract that space before passing to CalcLeftImageSize so the
         // left image scales against the text area only, not the whole label.
         const auto topImgSpace =
-            std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - m_topImageOffset, 0);
+            std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - CalcTopImageOffset(), 0);
         // left image
         auto measureWidthNoSideImages =
             ((GetTextOrientation() == Orientation::Horizontal) ?
@@ -499,7 +499,7 @@ namespace Wisteria::GraphItems
                 width = std::max<double>(width, topBottomOutlineWidth);
                 }
             width += CalcLeftImageSize(height).GetWidth();
-            height += std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - m_topImageOffset, 0);
+            height += std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - CalcTopImageOffset(), 0);
             }
         else
             {
@@ -558,7 +558,7 @@ namespace Wisteria::GraphItems
                 width = std::max<double>(width, leftRightOutlineWidth);
                 }
             height += CalcLeftImageSize(width).GetWidth();
-            width += std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - m_topImageOffset, 0);
+            width += std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - CalcTopImageOffset(), 0);
             }
 
         // reserve room above or beneath the text for the word balloon's tail
@@ -1280,7 +1280,7 @@ namespace Wisteria::GraphItems
                 // subtract top-image space so the left image is sized against the text
                 // area height, not the whole label (which may include a tall top image)
                 const auto topImgSpace =
-                    std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - m_topImageOffset, 0);
+                    std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - CalcTopImageOffset(), 0);
                 const auto bmp = m_leftImage.GetBitmap(
                     CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight() - topImgSpace));
                 // center vertically in the text area (below the top image)
@@ -1311,21 +1311,21 @@ namespace Wisteria::GraphItems
             {
             for (const auto& shpInfo : m_topShape.value())
                 {
-                const auto scaledSize = ScaleToScreenAndCanvas(shpInfo.GetSizeDIPs());
+                const auto scaledSize = ScaleTopShapeSize(shpInfo.GetSizeDIPs());
                 auto leftCorner{ GetCachedContentBoundingBox().GetTopLeft() };
                 leftCorner.x += safe_divide(GetCachedContentBoundingBox().GetWidth(), 2) -
                                 safe_divide(scaledSize.GetWidth(), 2);
                 // ensure shape doesn't go below (and outside) the text
                 leftCorner.y = std::min(leftCorner.y, GetCachedContentBoundingBox().GetBottom() -
                                                           scaledSize.GetHeight()) +
-                               m_topImageOffset;
+                               CalcTopImageOffset();
 
                 if (shpInfo.GetFillPercent() < 1.0)
                     {
                     const FillableShape shp{ GraphItemInfo{ shpInfo.GetText() }
                                                  .AnchorPoint(leftCorner)
                                                  .Anchoring(Anchoring::TopLeftCorner)
-                                                 .Scaling(GetScaling())
+                                                 .Scaling(GetFontScaling())
                                                  .DPIScaling(GetDPIScaleFactor())
                                                  .Pen(shpInfo.GetPen())
                                                  .Brush(shpInfo.GetBrush()),
@@ -1338,7 +1338,7 @@ namespace Wisteria::GraphItems
                     const Shape shp{ GraphItemInfo{ shpInfo.GetText() }
                                          .AnchorPoint(leftCorner)
                                          .Anchoring(Anchoring::TopLeftCorner)
-                                         .Scaling(GetScaling())
+                                         .Scaling(GetFontScaling())
                                          .DPIScaling(GetDPIScaleFactor())
                                          .Pen(shpInfo.GetPen())
                                          .Brush(shpInfo.GetBrush()),
@@ -1839,7 +1839,7 @@ namespace Wisteria::GraphItems
         // vertical orientation: top-image space is in the width dimension, so subtract
         // before passing to CalcLeftImageSize
         const auto topImgSpaceForLeft =
-            std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - m_topImageOffset, 0);
+            std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - CalcTopImageOffset(), 0);
         fullTextSz.SetHeight(
             fullTextSz.GetHeight() -
             CalcLeftImageSize(GetCachedContentBoundingBox().GetWidth() - topImgSpaceForLeft)
@@ -1997,7 +1997,7 @@ namespace Wisteria::GraphItems
                 dc.SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
                 }
             const auto xOffset =
-                std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - m_topImageOffset, 0);
+                std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - CalcTopImageOffset(), 0);
             // vertical orientation: subtract top-image space (in width dim) before
             // passing to CalcLeftImageSize
             const auto currentLineOffset =
@@ -2091,7 +2091,7 @@ namespace Wisteria::GraphItems
         // horizontal orientation: top-image space is in the height dimension, so subtract
         // before passing to CalcLeftImageSize
         const auto topImgSpaceForLeft =
-            std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - m_topImageOffset, 0);
+            std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - CalcTopImageOffset(), 0);
         fullTextSz.SetWidth(
             fullTextSz.GetWidth() -
             CalcLeftImageSize(GetCachedContentBoundingBox().GetHeight() - topImgSpaceForLeft)
@@ -2255,7 +2255,7 @@ namespace Wisteria::GraphItems
                 dc.SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
                 }
             const auto yOffset =
-                std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - m_topImageOffset, 0);
+                std::max<wxCoord>(CalcTopGraphicSize().GetHeight() - CalcTopImageOffset(), 0);
             // horizontal orientation: subtract top-image space (in height dim) before
             // passing to CalcLeftImageSize
             const auto currentLineOffset =

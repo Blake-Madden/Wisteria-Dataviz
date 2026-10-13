@@ -672,6 +672,34 @@ namespace Wisteria::GraphItems
             return IsBoundingBoxScalingLocked() ? (GetScaling() * m_parentScaling) : GetScaling();
             }
 
+        /** @returns The top shape's size, scaled to the screen, canvas, and
+                (if bounding box scaling is locked) the parent scaling.
+            @param sizeDIPs The shape's size in DIPs.*/
+        [[nodiscard]]
+        wxSize ScaleTopShapeSize(const wxSize sizeDIPs) const
+            {
+            return { static_cast<int>(ScaleTopGraphicValue(sizeDIPs.GetWidth())),
+                     static_cast<int>(ScaleTopGraphicValue(sizeDIPs.GetHeight())) };
+            }
+
+        /// @returns The top image/shape offset, scaled the same as the top shape.
+        [[nodiscard]]
+        wxCoord CalcTopImageOffset() const
+            {
+            return static_cast<wxCoord>(
+                ScaleTopGraphicValue(static_cast<double>(m_topImageOffset)));
+            }
+
+        /** @returns A value scaled to the screen, canvas, and
+                (if bounding box scaling is locked) the parent scaling.
+            @param valueDIPs The value in DIPs.*/
+        [[nodiscard]]
+        double ScaleTopGraphicValue(const double valueDIPs) const
+            {
+            const double parentScaling{ IsBoundingBoxScalingLocked() ? m_parentScaling : 1.0 };
+            return ScaleToScreenAndCanvas(valueDIPs) * parentScaling;
+            }
+
         /// @returns @c true if the label's box is drawn as a word balloon.
         [[nodiscard]]
         bool IsWordBalloon() const noexcept
