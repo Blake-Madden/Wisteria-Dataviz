@@ -90,11 +90,6 @@ namespace Wisteria::UI
 
         mainSizer->Add(gridSizer, wxSizerFlags{}.Expand().Border());
 
-        auto* includeAllCheck =
-            new wxCheckBox(this, wxID_ANY, _(L"Include a choice for all values"));
-        includeAllCheck->SetValidator(wxGenericValidator{ &m_includeAll });
-        mainSizer->Add(includeAllCheck, wxSizerFlags{}.Border());
-
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
                        wxSizerFlags{}.Expand().Border());
 
@@ -104,15 +99,12 @@ namespace Wisteria::UI
             datasetChoice->Disable();
             m_columnChoice->Disable();
             graphChoice->Disable();
-            includeAllCheck->Disable();
             }
 
         datasetChoice->Bind(wxEVT_CHOICE,
                             [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
         m_columnChoice->Bind(wxEVT_CHOICE,
                              [this]([[maybe_unused]] wxCommandEvent&) { OnColumnChanged(); });
-        includeAllCheck->Bind(wxEVT_CHECKBOX,
-                              [this]([[maybe_unused]] wxCommandEvent&) { OnIncludeAllChanged(); });
 
         SetSizerAndFit(mainSizer);
         }
@@ -153,11 +145,8 @@ namespace Wisteria::UI
     void FilterableGraphDlg::FillDefaultValues()
         {
         m_defaultValues.clear();
-        if (m_includeAll)
-            {
-            m_defaultValues.push_back(
-                m_allLabel.empty() ? Graphs::FilterableGraph::GetDefaultAllLabel() : m_allLabel);
-            }
+        m_defaultValues.push_back(
+            m_allLabel.empty() ? Graphs::FilterableGraph::GetDefaultAllLabel() : m_allLabel);
         if (m_reportBuilder != nullptr)
             {
             const auto& datasets = m_reportBuilder->GetDatasets();
@@ -199,24 +188,8 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void FilterableGraphDlg::OnIncludeAllChanged()
-        {
-        TransferDataFromWindow();
-        // keep the same value selected
-        const wxString defaultValue{ GetDefaultValue() };
-        FillDefaultValues();
-        if (const auto foundPos = std::ranges::find(m_defaultValues, defaultValue);
-            foundPos != m_defaultValues.cend())
-            {
-            m_defaultIndex = static_cast<int>(std::distance(m_defaultValues.begin(), foundPos));
-            }
-        TransferDataToWindow();
-        }
-
-    //-------------------------------------------
     void FilterableGraphDlg::SetFilter(const wxString& datasetName, const wxString& filterColumn,
-                                       const wxString& defaultValue, const bool includeAll,
-                                       const int graphType,
+                                       const wxString& defaultValue, const int graphType,
                                        const wxString& allLabel /*= wxString{}*/)
         {
         m_allLabel = allLabel;
@@ -230,7 +203,6 @@ namespace Wisteria::UI
         };
 
         m_datasetIndex = findIndex(m_datasetNames, datasetName);
-        m_includeAll = includeAll;
         m_graphType = graphType;
         FillColumns();
         m_columnIndex = findIndex(m_columnNames, filterColumn);
@@ -274,7 +246,8 @@ namespace Wisteria::UI
                          _(L"No Filter Column"), wxOK | wxICON_WARNING, this);
             return;
             }
-        if (GetDefaultValue().empty())
+        // the first value is the choice for all values
+        if (m_defaultValues.size() < 2)
             {
             wxMessageBox(_(L"The selected column does not contain any values to filter by."),
                          _(L"No Filter Values"), wxOK | wxICON_WARNING, this);

@@ -3339,7 +3339,7 @@ void WisteriaView::OnInsertFilteredGraph([[maybe_unused]] wxCommandEvent& event)
         }
 
     ReplaceWithFilterableGraph(canvas, filterDlg.GetFilterColumn(), filterDlg.GetDefaultValue(),
-                               filterDlg.IsIncludingAll(), wxString{});
+                               wxString{});
     }
 
 //-------------------------------------------
@@ -3367,15 +3367,14 @@ void WisteriaView::EditFilterableGraph(Wisteria::Graphs::FilterableGraph& filter
         }
 
     const auto& filteredGraphs = filterableGraph.GetVariants();
-    const wxString allLabel{ filterableGraph.HasAllOption() ? filteredGraphs.front().m_label :
-                                                              wxString{} };
+    const wxString allLabel{ filteredGraphs.front().m_label };
     Wisteria::UI::FilterableGraphDlg filterDlg(&m_reportBuilder, graphNames, m_frame, true,
                                                wxID_ANY, _(L"Edit Filtered Graph"));
     SetDialogIcon(filterDlg, L"images/filtered-graph.svg");
-    filterDlg.SetFilter(
-        activeGraph->GetPropertyTemplate(L"dataset"), filterableGraph.GetFilterColumn(),
-        filteredGraphs.at(filterableGraph.GetActiveIndex()).m_label, filterableGraph.HasAllOption(),
-        static_cast<int>(std::distance(graphTypes.cbegin(), graphType)), allLabel);
+    filterDlg.SetFilter(activeGraph->GetPropertyTemplate(L"dataset"),
+                        filterableGraph.GetFilterColumn(),
+                        filteredGraphs.at(filterableGraph.GetActiveIndex()).m_label,
+                        static_cast<int>(std::distance(graphTypes.cbegin(), graphType)), allLabel);
     if (filterDlg.ShowModal() != wxID_OK)
         {
         return;
@@ -3428,14 +3427,14 @@ void WisteriaView::EditFilterableGraph(Wisteria::Graphs::FilterableGraph& filter
 
     ReplaceWithFilterableGraph(
         canvas, columnTemplate.empty() ? filterableGraph.GetFilterColumn() : columnTemplate,
-        filterDlg.GetDefaultValue(), filterableGraph.HasAllOption(),
-        allLabelTemplate.empty() ? allLabel : allLabelTemplate, fallback);
+        filterDlg.GetDefaultValue(), allLabelTemplate.empty() ? allLabel : allLabelTemplate,
+        fallback);
     }
 
 //-------------------------------------------
 void WisteriaView::ReplaceWithFilterableGraph(
     Wisteria::Canvas* canvas, const wxString& filterColumn, const wxString& defaultValue,
-    const bool includeAll, const wxString& allLabel,
+    const wxString& allLabel,
     const std::optional<FilterableGraphFallback>& fallback /*= std::nullopt*/)
     {
     const auto placedGraph = m_lastPlacedGraph.lock();
@@ -3447,9 +3446,9 @@ void WisteriaView::ReplaceWithFilterableGraph(
         return;
         }
 
-    const auto errorMessage = PlaceFilterableGraphInGrid(
-        canvas, m_reportBuilder, *doc, placedGraph, m_lastPlacedLegendPlacement, filterColumn,
-        defaultValue, includeAll, allLabel, fallback);
+    const auto errorMessage = PlaceFilterableGraphInGrid(canvas, m_reportBuilder, *doc, placedGraph,
+                                                         m_lastPlacedLegendPlacement, filterColumn,
+                                                         defaultValue, allLabel, fallback);
     UpdateCanvas(canvas);
     if (errorMessage.has_value())
         {
@@ -3464,7 +3463,7 @@ std::optional<wxString> WisteriaView::PlaceFilterableGraphInGrid(
     Wisteria::Canvas* canvas, Wisteria::ReportBuilder& reportBuilder, const WisteriaDoc& doc,
     const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& placedGraph,
     const Wisteria::UI::LegendPlacement legendPlacement, const wxString& filterColumn,
-    const wxString& defaultValue, const bool includeAll, const wxString& allLabel,
+    const wxString& defaultValue, const wxString& allLabel,
     const std::optional<FilterableGraphFallback>& fallback /*= std::nullopt*/)
     {
     wxASSERT_MSG(canvas != nullptr, L"Canvas must be provided for a filterable graph!");
@@ -3575,8 +3574,7 @@ std::optional<wxString> WisteriaView::PlaceFilterableGraphInGrid(
     try
         {
         filterableGraph = reportBuilder.LoadFilterableGraphDetached(
-            doc.SerializeFilteredGraphToJson(graph, canvas, filterColumn, defaultValue, includeAll,
-                                             allLabel),
+            doc.SerializeFilteredGraphToJson(graph, canvas, filterColumn, defaultValue, allLabel),
             canvas);
         }
     catch (const std::exception& exc)

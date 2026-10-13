@@ -342,7 +342,6 @@ class WisteriaView final : public wxView
     /// @param legendPlacement Where the graph's legend was placed.
     /// @param filterColumn The categorical column to filter on.
     /// @param defaultValue The value whose graph is shown initially.
-    /// @param includeAll Whether to include a graph for the unfiltered data.
     /// @param allLabel The label for the unfiltered data (empty for the default).
     /// @param fallback The graph and legend to put back in their original cells
     ///     if the filterable graph can't be built. If not set, the placed graph is removed.
@@ -352,7 +351,7 @@ class WisteriaView final : public wxView
         Wisteria::Canvas* canvas, Wisteria::ReportBuilder& reportBuilder, const WisteriaDoc& doc,
         const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& placedGraph,
         Wisteria::UI::LegendPlacement legendPlacement, const wxString& filterColumn,
-        const wxString& defaultValue, bool includeAll, const wxString& allLabel,
+        const wxString& defaultValue, const wxString& allLabel,
         const std::optional<FilterableGraphFallback>& fallback = std::nullopt);
 
   private:
@@ -361,13 +360,12 @@ class WisteriaView final : public wxView
     /// @param canvas The canvas that the graph was placed on.
     /// @param filterColumn The categorical column to filter on.
     /// @param defaultValue The value whose graph is shown initially.
-    /// @param includeAll Whether to include a graph for the unfiltered data.
     /// @param allLabel The label for the unfiltered data (empty for the default).
     /// @param fallback The graph and legend to put back in their original cells
     ///     if the filterable graph can't be built. If not set, the placed graph is removed.
     void ReplaceWithFilterableGraph(
         Wisteria::Canvas* canvas, const wxString& filterColumn, const wxString& defaultValue,
-        bool includeAll, const wxString& allLabel,
+        const wxString& allLabel,
         const std::optional<FilterableGraphFallback>& fallback = std::nullopt);
 
     void PlaceGraphWithLegend(Wisteria::Canvas* canvas,

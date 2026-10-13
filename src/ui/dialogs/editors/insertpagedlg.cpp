@@ -2058,8 +2058,7 @@ namespace Wisteria::UI
 
         const auto errorMessage = WisteriaView::PlaceFilterableGraphInGrid(
             stagingCanvas, *m_reportBuilder, *m_doc, placedGraph, legendPlacement,
-            filterDlg.GetFilterColumn(), filterDlg.GetDefaultValue(), filterDlg.IsIncludingAll(),
-            wxString{});
+            filterDlg.GetFilterColumn(), filterDlg.GetDefaultValue(), wxString{});
         if (errorMessage.has_value())
             {
             wxMessageBox(errorMessage.value(), _(L"Error"), wxOK | wxICON_ERROR, this);

@@ -58,21 +58,19 @@ class WisteriaDoc final : public wxDocument
     /// @param canvas The canvas that the graph belongs to.
     /// @param filterColumn The categorical column to filter on.
     /// @param defaultValue The value whose graph is shown initially.
-    /// @param includeAll Whether to include a graph for the unfiltered data.
     /// @param allLabel The label for the unfiltered data (empty for the default).
     /// @returns The graph's JSON, or an empty string if it could not be serialized.
     [[nodiscard]]
-    wxString SerializeFilteredGraphToJson(const Wisteria::Graphs::Graph2D* graph,
-                                          const Wisteria::Canvas* canvas,
-                                          const wxString& filterColumn,
-                                          const wxString& defaultValue, bool includeAll,
-                                          const wxString& allLabel) const;
+    wxString
+    SerializeFilteredGraphToJson(const Wisteria::Graphs::Graph2D* graph,
+                                 const Wisteria::Canvas* canvas, const wxString& filterColumn,
+                                 const wxString& defaultValue, const wxString& allLabel) const;
 
   private:
     /// @returns The JSON for a graph's @c filter property.
     [[nodiscard]]
     static wxString FilterToJsonStr(const wxString& filterColumn, const wxString& defaultValue,
-                                    bool includeAll, const wxString& allLabel);
+                                    const wxString& allLabel);
 
     bool OnNewDocument() override;
     bool OnOpenDocument(const wxString& filename) override;

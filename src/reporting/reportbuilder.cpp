@@ -258,8 +258,7 @@ namespace Wisteria
 
         auto filterableGraph = std::make_shared<Graphs::FilterableGraph>(
             sourceData, ExpandConstants(columnRaw),
-            ExpandConstants(filterNode->GetProperty(L"default")->AsString()), loadFilteredGraph,
-            filterNode->GetProperty(L"include-all")->AsBool(false));
+            ExpandConstants(filterNode->GetProperty(L"default")->AsString()), loadFilteredGraph);
         if (!allLabelRaw.empty())
             {
             filterableGraph->SetAllLabel(ExpandConstants(allLabelRaw));

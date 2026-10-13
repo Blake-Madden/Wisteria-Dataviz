@@ -74,15 +74,13 @@ namespace Wisteria::Graphs
             @param defaultValue The value whose graph is shown initially.
                 If not found, the first variant is used.
             @param factory Builds a graph from a filtered dataset.
-            @param includeAllOption @c true to also include a variant built from
-                the unfiltered dataset.
             @throws std::runtime_error If the column isn't found or the factory
                 doesn't return a graph.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         FilterableGraph(const std::shared_ptr<const Data::Dataset>& data,
                         const wxString& filterColumn, const wxString& defaultValue,
-                        const GraphFactory& factory, bool includeAllOption = false);
+                        const GraphFactory& factory);
         /// @private
         FilterableGraph(const FilterableGraph&) = delete;
         /// @private
@@ -110,15 +108,7 @@ namespace Wisteria::Graphs
             return m_filterColumn;
             }
 
-        /// @returns @c true if a variant for the unfiltered data is included.
-        /// @note If included, it is the first variant.
-        [[nodiscard]]
-        bool HasAllOption() const noexcept
-            {
-            return m_includeAll;
-            }
-
-        /// @brief Sets the label for the unfiltered variant.
+        /// @brief Sets the label for the unfiltered variant (always the first variant).
         /// @param label The label to display.
         void SetAllLabel(const wxString& label);
 
@@ -238,7 +228,6 @@ namespace Wisteria::Graphs
             }
 
         wxString m_filterColumn;
-        bool m_includeAll{ true };
         std::vector<Variant> m_variants;
         size_t m_activeIndex{ 0 };
 

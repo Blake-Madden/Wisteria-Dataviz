@@ -469,7 +469,6 @@ wxString WisteriaDoc::SerializeFilteredGraphToJson(const Wisteria::Graphs::Graph
                                                    const Wisteria::Canvas* canvas,
                                                    const wxString& filterColumn,
                                                    const wxString& defaultValue,
-                                                   const bool includeAll,
                                                    const wxString& allLabel) const
     {
     if (graph == nullptr || canvas == nullptr)
@@ -481,8 +480,8 @@ wxString WisteriaDoc::SerializeFilteredGraphToJson(const Wisteria::Graphs::Graph
         {
         return {};
         }
-    graphNode->Add(L"filter", wxSimpleJSON::Create(FilterToJsonStr(filterColumn, defaultValue,
-                                                                   includeAll, allLabel)));
+    graphNode->Add(L"filter",
+                   wxSimpleJSON::Create(FilterToJsonStr(filterColumn, defaultValue, allLabel)));
     return graphNode->Print(false);
     }
 
@@ -5417,35 +5416,24 @@ WisteriaDoc::SaveFilterableGraph(const Wisteria::Graphs::FilterableGraph* filter
 
     const wxString columnTemplate{ filterableGraph->GetPropertyTemplate(L"filter.column") };
     const auto& filteredGraphs = filterableGraph->GetVariants();
-    wxString allLabel;
-    if (filterableGraph->HasAllOption())
-        {
-        const wxString allLabelTemplate{ filterableGraph->GetPropertyTemplate(
-            L"filter.all-label") };
-        allLabel = allLabelTemplate.empty() ? filteredGraphs.front().m_label : allLabelTemplate;
-        }
+    const wxString allLabelTemplate{ filterableGraph->GetPropertyTemplate(L"filter.all-label") };
     node->Add(L"filter",
               wxSimpleJSON::Create(FilterToJsonStr(
                   columnTemplate.empty() ? filterableGraph->GetFilterColumn() : columnTemplate,
                   filteredGraphs.at(filterableGraph->GetActiveIndex()).m_label,
-                  filterableGraph->HasAllOption(), allLabel)));
+                  allLabelTemplate.empty() ? filteredGraphs.front().m_label : allLabelTemplate)));
     return node;
     }
 
 //-------------------------------------------
 wxString WisteriaDoc::FilterToJsonStr(const wxString& filterColumn, const wxString& defaultValue,
-                                      const bool includeAll, const wxString& allLabel)
+                                      const wxString& allLabel)
     {
     wxString filterObj = L"{\"column\": \"" + EscapeJsonStr(filterColumn) + L"\", \"default\": \"" +
                          EscapeJsonStr(defaultValue) + L"\"";
-    if (includeAll)
+    if (!allLabel.empty() && allLabel != Wisteria::Graphs::FilterableGraph::GetDefaultAllLabel())
         {
-        filterObj += L", \"include-all\": true";
-        if (!allLabel.empty() &&
-            allLabel != Wisteria::Graphs::FilterableGraph::GetDefaultAllLabel())
-            {
-            filterObj += L", \"all-label\": \"" + EscapeJsonStr(allLabel) + L"\"";
-            }
+        filterObj += L", \"all-label\": \"" + EscapeJsonStr(allLabel) + L"\"";
         }
     filterObj += L"}";
     return filterObj;

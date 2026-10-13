@@ -52,11 +52,10 @@ namespace Wisteria::UI
             @param datasetName The graph's dataset.
             @param filterColumn The column being filtered on.
             @param defaultValue The value shown by default.
-            @param includeAll Whether a choice for all values is included.
             @param graphType The index of the graph's type.
             @param allLabel The label of the choice for all values (empty for the default).*/
         void SetFilter(const wxString& datasetName, const wxString& filterColumn,
-                       const wxString& defaultValue, bool includeAll, int graphType,
+                       const wxString& defaultValue, int graphType,
                        const wxString& allLabel = wxString{});
 
         /// @returns The name of the selected dataset.
@@ -70,13 +69,6 @@ namespace Wisteria::UI
         /// @returns The selected value to show by default.
         [[nodiscard]]
         wxString GetDefaultValue() const;
-
-        /// @returns Whether to include a choice for all values.
-        [[nodiscard]]
-        bool IsIncludingAll() const noexcept
-            {
-            return m_includeAll;
-            }
 
         /// @returns The index of the selected graph type.
         [[nodiscard]]
@@ -95,7 +87,6 @@ namespace Wisteria::UI
         void FillDefaultValues();
         void OnDatasetChanged();
         void OnColumnChanged();
-        void OnIncludeAllChanged();
         void OnOK([[maybe_unused]] wxCommandEvent& event);
 
         [[nodiscard]]
@@ -114,7 +105,6 @@ namespace Wisteria::UI
         int m_columnIndex{ 0 };
         int m_defaultIndex{ 0 };
         int m_graphType{ 0 };
-        bool m_includeAll{ true };
 
         wxChoice* m_columnChoice{ nullptr };
         wxChoice* m_defaultChoice{ nullptr };

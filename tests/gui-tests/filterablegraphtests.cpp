@@ -79,26 +79,26 @@ TEST_CASE("FilterableGraph builds a sorted variant per filter value", "[filterab
     const FilterableGraph filterableGraph{ MakeRegionDataset(), L"Region", L"North",
                                            MakePieFactory(canvas) };
 
-    REQUIRE(filterableGraph.GetVariants().size() == 3);
-    CHECK(filterableGraph.GetVariants()[0].m_label == L"East");
-    CHECK(filterableGraph.GetVariants()[1].m_label == L"North");
-    CHECK(filterableGraph.GetVariants()[2].m_label == L"West");
-    CHECK_FALSE(filterableGraph.HasAllOption());
+    REQUIRE(filterableGraph.GetVariants().size() == 4);
+    CHECK(filterableGraph.GetVariants()[0].m_label == L"(All)");
+    CHECK(filterableGraph.GetVariants()[1].m_label == L"East");
+    CHECK(filterableGraph.GetVariants()[2].m_label == L"North");
+    CHECK(filterableGraph.GetVariants()[3].m_label == L"West");
     CHECK(filterableGraph.GetFilterColumn() == L"Region");
 
-    CHECK(filterableGraph.GetVariants()[0].m_graph->GetDataset()->GetRowCount() == 3);
-    CHECK(filterableGraph.GetVariants()[1].m_graph->GetDataset()->GetRowCount() == 4);
-    CHECK(filterableGraph.GetVariants()[2].m_graph->GetDataset()->GetRowCount() == 3);
+    CHECK(filterableGraph.GetVariants()[0].m_graph->GetDataset()->GetRowCount() == 10);
+    CHECK(filterableGraph.GetVariants()[1].m_graph->GetDataset()->GetRowCount() == 3);
+    CHECK(filterableGraph.GetVariants()[2].m_graph->GetDataset()->GetRowCount() == 4);
+    CHECK(filterableGraph.GetVariants()[3].m_graph->GetDataset()->GetRowCount() == 3);
     }
 
 TEST_CASE("FilterableGraph unfiltered option", "[filterablegraph]")
     {
     auto* canvas = MakeCanvas();
     FilterableGraph filterableGraph{ MakeRegionDataset(), L"Region", L"(All)",
-                                     MakePieFactory(canvas), true };
+                                     MakePieFactory(canvas) };
 
     REQUIRE(filterableGraph.GetVariants().size() == 4);
-    CHECK(filterableGraph.HasAllOption());
     CHECK(filterableGraph.GetVariants()[0].m_label == L"(All)");
     CHECK(filterableGraph.GetActiveIndex() == 0);
     CHECK(ActiveRowCount(filterableGraph) == 10);
@@ -116,15 +116,16 @@ TEST_CASE("FilterableGraph default and active values", "[filterablegraph]")
         {
         const FilterableGraph filterableGraph{ MakeRegionDataset(), L"Region", L"north",
                                                MakePieFactory(canvas) };
-        CHECK(filterableGraph.GetActiveIndex() == 1);
+        CHECK(filterableGraph.GetActiveIndex() == 2);
         CHECK(ActiveRowCount(filterableGraph) == 4);
         }
 
-    SECTION("Missing default value falls back to the first variant")
+    SECTION("Missing default value falls back to the unfiltered variant")
         {
         const FilterableGraph filterableGraph{ MakeRegionDataset(), L"Region", L"South",
                                                MakePieFactory(canvas) };
         CHECK(filterableGraph.GetActiveIndex() == 0);
+        CHECK(ActiveRowCount(filterableGraph) == 10);
         }
 
     SECTION("Changing the active value")
@@ -133,15 +134,15 @@ TEST_CASE("FilterableGraph default and active values", "[filterablegraph]")
                                          MakePieFactory(canvas) };
         const auto firstGraph = filterableGraph.GetActiveGraph();
         CHECK(filterableGraph.SetActiveValue(L"West"));
-        CHECK(filterableGraph.GetActiveIndex() == 2);
+        CHECK(filterableGraph.GetActiveIndex() == 3);
         CHECK(filterableGraph.GetActiveGraph() != firstGraph);
 
         CHECK_FALSE(filterableGraph.SetActiveValue(L"South"));
-        CHECK(filterableGraph.GetActiveIndex() == 2);
+        CHECK(filterableGraph.GetActiveIndex() == 3);
 
         // out of range is ignored
         filterableGraph.SetActiveIndex(10);
-        CHECK(filterableGraph.GetActiveIndex() == 2);
+        CHECK(filterableGraph.GetActiveIndex() == 3);
         }
     }
 
@@ -266,8 +267,8 @@ TEST_CASE("FilterableGraph dashboard export", "[filterablegraph][dashboard]")
     {
     wxLogNull noLog;
     auto* canvas = MakeCanvas();
-    auto filterableGraph = std::make_shared<FilterableGraph>(
-        MakeRegionDataset(), L"Region", L"North", MakePieFactory(canvas), true);
+    auto filterableGraph = std::make_shared<FilterableGraph>(MakeRegionDataset(), L"Region",
+                                                             L"North", MakePieFactory(canvas));
     canvas->SetFixedObjectsGridSize(1, 1);
     canvas->SetFixedObject(0, 0, filterableGraph);
 
@@ -334,7 +335,7 @@ TEST_CASE("FilterableGraph dashboard export blanks graphs without the choice",
             chart->GetTitle().SetText(L"SecondGraphTitle");
             return chart;
         });
-    REQUIRE(secondGraph->GetVariants().size() == 2);
+    REQUIRE(secondGraph->GetVariants().size() == 3);
     canvas->SetFixedObjectsGridSize(1, 2);
     canvas->SetFixedObject(0, 0, firstGraph);
     canvas->SetFixedObject(0, 1, secondGraph);
@@ -370,8 +371,8 @@ TEST_CASE("FilterableGraph dashboard export blanks graphs without the choice",
 
     // the canvas is restored after exporting
     CHECK(secondGraph->IsShown());
-    CHECK(secondGraph->GetActiveIndex() == 0);
-    CHECK(firstGraph->GetActiveIndex() == 0);
+    CHECK(secondGraph->GetActiveIndex() == 1);
+    CHECK(firstGraph->GetActiveIndex() == 1);
     }
 
 TEST_CASE("FilterableGraph from a report configuration", "[filterablegraph][reportbuilder]")
@@ -414,7 +415,6 @@ TEST_CASE("FilterableGraph from a report configuration", "[filterablegraph][repo
               "filter": {
                 "column": "Region",
                 "default": "North",
-                "include-all": true,
                 "all-label": "Everywhere"
               }
             }
@@ -438,7 +438,6 @@ TEST_CASE("FilterableGraph from a report configuration", "[filterablegraph][repo
 
     CHECK(filterableGraph->GetFilterColumn() == L"Region");
     CHECK(filterableGraph->GetPropertyTemplate(L"filter.column") == L"Region");
-    CHECK(filterableGraph->HasAllOption());
     REQUIRE(filterableGraph->GetVariants().size() == 4);
     CHECK(filterableGraph->GetVariants()[0].m_label == L"Everywhere");
     CHECK(filterableGraph->GetVariants()[filterableGraph->GetActiveIndex()].m_label == L"North");

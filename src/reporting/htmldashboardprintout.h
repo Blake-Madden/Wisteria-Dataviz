@@ -364,11 +364,7 @@ namespace Wisteria
         /// @param canvas The page.
         [[nodiscard]]
         static FilterableGraphs GetPageFilters(const Canvas& canvas);
-        /// @returns @c true if any of the filters includes an unfiltered choice.
-        /// @param pageFilters The page's filterable graphs.
-        [[nodiscard]]
-        static bool HasAllChoice(const FilterableGraphs& pageFilters);
-        /// @returns The page's filter choices, with the unfiltered choice first (if included).
+        /// @returns The page's filter choices, with the unfiltered choice first.
         /// @param pageFilters The page's filterable graphs.
         [[nodiscard]]
         static std::vector<wxString> GetFilterChoices(const FilterableGraphs& pageFilters);

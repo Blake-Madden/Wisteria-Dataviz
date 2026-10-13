@@ -17,9 +17,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FilterableGraph, Wisteria::GraphItem
     //----------------------------------------------------------------
     FilterableGraph::FilterableGraph(const std::shared_ptr<const Data::Dataset>& data,
                                      const wxString& filterColumn, const wxString& defaultValue,
-                                     const GraphFactory& factory,
-                                     const bool includeAllOption /*= false*/)
-        : m_filterColumn(filterColumn), m_includeAll(includeAllOption)
+                                     const GraphFactory& factory)
+        : m_filterColumn(filterColumn)
         {
         if (data == nullptr || !factory)
             {
@@ -33,6 +32,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FilterableGraph, Wisteria::GraphItem
                 _(L"'%s': filter column not found for graph.").ToUTF8(), filterColumn));
             }
         const std::vector<wxString> labels{ GetFilterValues(*data, filterColumn) };
+        if (labels.empty())
+            {
+            throw std::runtime_error(wxString::Format(
+                _(L"'%s': filter column does not contain any values.").ToUTF8(), filterColumn));
+            }
 
         const auto buildGraph =
             [&factory](const std::shared_ptr<const Data::Dataset>& subset, const wxString& label)
@@ -46,23 +50,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FilterableGraph, Wisteria::GraphItem
             return graph;
         };
 
-        if (m_includeAll)
-            {
-            const wxString allLabel{ GetDefaultAllLabel() };
-            m_variants.push_back(Variant{ allLabel, buildGraph(data, allLabel) });
-            }
+        const wxString allLabel{ GetDefaultAllLabel() };
+        m_variants.push_back(Variant{ allLabel, buildGraph(data, allLabel) });
         for (const auto& label : labels)
             {
             Data::Subset dataSubset;
             const auto subset = dataSubset.SubsetSimple(
                 data, Data::ColumnFilterInfo{ filterColumn, Comparison::Equals, { label } });
             m_variants.push_back(Variant{ label, buildGraph(subset, label) });
-            }
-
-        if (m_variants.empty())
-            {
-            throw std::runtime_error(wxString::Format(
-                _(L"'%s': filter column does not contain any values.").ToUTF8(), filterColumn));
             }
 
         m_activeIndex = FindVariant(defaultValue).value_or(0);
@@ -103,7 +98,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FilterableGraph, Wisteria::GraphItem
     //----------------------------------------------------------------
     void FilterableGraph::SetAllLabel(const wxString& label)
         {
-        if (m_includeAll && !m_variants.empty())
+        if (!m_variants.empty())
             {
             m_variants.front().m_label = label;
             }

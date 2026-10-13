@@ -1858,33 +1858,19 @@ Wisteria::HtmlDashboardPrintout::GetPageFilters(const Canvas& canvas)
     }
 
 //------------------------------------------------------
-bool Wisteria::HtmlDashboardPrintout::HasAllChoice(const FilterableGraphs& pageFilters)
-    {
-    return std::ranges::any_of(pageFilters, [](const auto& filterableGraph)
-                               { return filterableGraph->HasAllOption(); });
-    }
-
-//------------------------------------------------------
 std::vector<wxString>
 Wisteria::HtmlDashboardPrintout::GetFilterChoices(const FilterableGraphs& pageFilters)
     {
-    std::optional<wxString> allLabel;
     std::vector<wxString> choices;
     for (const auto& filterableGraph : pageFilters)
         {
+        // the first variant is the unfiltered one, which is added at the front afterward
         const auto& filteredGraphs = filterableGraph->GetVariants();
-        for (size_t i = 0; i < filteredGraphs.size(); ++i)
+        for (size_t i = 1; i < filteredGraphs.size(); ++i)
             {
             const wxString& label{ filteredGraphs[i].m_label };
-            if (filterableGraph->HasAllOption() && i == 0)
-                {
-                if (!allLabel.has_value())
-                    {
-                    allLabel = label;
-                    }
-                }
-            else if (std::ranges::none_of(choices, [&label](const auto& existing)
-                                          { return existing.CmpNoCase(label) == 0; }))
+            if (std::ranges::none_of(choices, [&label](const auto& existing)
+                                     { return existing.CmpNoCase(label) == 0; }))
                 {
                 choices.push_back(label);
                 }
@@ -1892,10 +1878,7 @@ Wisteria::HtmlDashboardPrintout::GetFilterChoices(const FilterableGraphs& pageFi
         }
     std::ranges::sort(choices,
                       [](const auto& lhv, const auto& rhv) { return lhv.CmpNoCase(rhv) < 0; });
-    if (allLabel.has_value())
-        {
-        choices.insert(choices.begin(), allLabel.value());
-        }
+    choices.insert(choices.begin(), pageFilters.front()->GetVariants().front().m_label);
     return choices;
     }
 
@@ -1904,7 +1887,7 @@ size_t Wisteria::HtmlDashboardPrintout::GetDefaultFilterChoice(const FilterableG
                                                                const std::vector<wxString>& choices)
     {
     const auto& firstFilter = pageFilters.front();
-    if (firstFilter->HasAllOption() && firstFilter->GetActiveIndex() == 0)
+    if (firstFilter->GetActiveIndex() == 0)
         {
         return 0;
         }
@@ -1926,11 +1909,9 @@ void Wisteria::HtmlDashboardPrintout::ShowFilterChoice(
     for (size_t i = 0; i < pageFilters.size(); ++i)
         {
         const auto& filterableGraph = pageFilters[i];
-        const std::optional<size_t> choiceIndex{
-            isAllChoice ?
-                (filterableGraph->HasAllOption() ? std::optional<size_t>{ 0 } : std::nullopt) :
-                filterableGraph->FindVariant(choice)
-        };
+        const std::optional<size_t> choiceIndex{ isAllChoice ?
+                                                     std::optional<size_t>{ 0 } :
+                                                     filterableGraph->FindVariant(choice) };
         // undo any blanking from the previous choice before switching
         filterableGraph->Show(originalStates[i].m_shown);
         if (const auto legend = filterableGraph->GetLegend(); legend != nullptr)
@@ -2063,7 +2044,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetFilterCaption(const Canvas& canvas)
             continue;
             }
         const wxString description{
-            (filterableGraph->HasAllOption() && filterableGraph->GetActiveIndex() == 0) ?
+            (filterableGraph->GetActiveIndex() == 0) ?
                 wxString::Format(_(L"%s unfiltered"), filterableGraph->GetFilterColumn()) :
                 wxString::Format(_(L"%s filtered by %s"), filterableGraph->GetFilterColumn(),
                                  filteredGraphs[filterableGraph->GetActiveIndex()].m_label)
@@ -2500,7 +2481,6 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
                                                       (legend == nullptr || legend->IsShown()) });
                 }
             const std::vector<wxString> choices{ GetFilterChoices(pageFilters) };
-            const bool hasAllChoice{ HasAllChoice(pageFilters) };
             // the page opens on the choice being shown on the canvas
             const size_t defaultChoice{ GetDefaultFilterChoice(pageFilters, choices) };
 
@@ -2508,7 +2488,7 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
                 {
                 const bool isDefault{ choiceIndex == defaultChoice };
                 ShowFilterChoice(pageFilters, originalStates, choices[choiceIndex],
-                                 hasAllChoice && choiceIndex == 0);
+                                 choiceIndex == 0);
                 // the choice shown first keeps the page's plain IDs
                 const wxString idSuffix{ isDefault ? wxString{} :
                                                      wxString::Format(L"-v%zu", choiceIndex) };
