@@ -11,6 +11,7 @@
 #include "../../app/wisteriadoc.h"
 #include "../../app/wisteriaview.h"
 #include "../../graphs/graph2d.h"
+#include "filterablegraphdlg.h"
 #include "insert_bullet_chart_dlg.h"
 #include "insert_nightingale_rose_chart_dlg.h"
 #include "insert_waterfallchart_dlg.h"
@@ -57,7 +58,7 @@ namespace Wisteria::UI
     {
     //-------------------------------------------
     InsertPageDlg::InsertPageDlg(Canvas* canvas, const wxArrayString& pageNames,
-                                 const Wisteria::ReportBuilder* reportBuilder, WisteriaDoc* doc,
+                                 Wisteria::ReportBuilder* reportBuilder, WisteriaDoc* doc,
                                  wxWindow* parent, const wxWindowID id, const wxString& caption,
                                  const wxPoint& pos, const wxSize& size, const long style,
                                  EditMode editMode)
@@ -827,7 +828,8 @@ namespace Wisteria::UI
             }
 
         m_galleryPanel->EnableItem(Wisteria::GalleryItemType::Axis, graphCount >= 2,
-                                   _(L"Requires two or more graphs already on this page"));
+                                   _(L"Requires two or more graphs (not filtered graphs) "
+                                     L"already on this page"));
         }
 
     //-------------------------------------------
@@ -838,148 +840,7 @@ namespace Wisteria::UI
 
         auto* stagingCanvas = CreateStagingCanvas();
 
-        bool placed{ false };
-        switch (event.GetItemType())
-            {
-        case Wisteria::GalleryItemType::Label:
-            placed = DropLabel(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::KpiCard:
-            placed = DropKpiCard(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::Spacer:
-            placed = DropSpacer(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::DividerHorizontalSingle:
-            placed =
-                DropDivider(stagingCanvas, row, col, Wisteria::DividerType::HorizontalSingleLine);
-            break;
-        case Wisteria::GalleryItemType::DividerHorizontalDouble:
-            placed =
-                DropDivider(stagingCanvas, row, col, Wisteria::DividerType::HorizontalDoubleLine);
-            break;
-        case Wisteria::GalleryItemType::DividerVerticalSingle:
-            placed =
-                DropDivider(stagingCanvas, row, col, Wisteria::DividerType::VerticalSingleLine);
-            break;
-        case Wisteria::GalleryItemType::DividerVerticalDouble:
-            placed =
-                DropDivider(stagingCanvas, row, col, Wisteria::DividerType::VerticalDoubleLine);
-            break;
-        case Wisteria::GalleryItemType::Shape:
-            placed = DropShape(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::Image:
-            placed = DropImage(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::Axis:
-            placed = DropAxis(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::Histogram:
-            placed = DropHistogram(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::BoxPlot:
-            placed = DropBoxPlot(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::StemAndLeafPlot:
-            placed = DropStemAndLeaf(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::HeatMap:
-            placed = DropHeatMap(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::ScatterPlot:
-            placed = DropScatterPlot(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::BubblePlot:
-            placed = DropBubblePlot(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::ChernoffFacesPlot:
-            placed = DropChernoffFacesPlot(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::WilmarthBridgePlot:
-            placed = DropWilmarthBridgePlot(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::WinLossSparkline:
-            placed = DropWinLossSparkline(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::GanttChart:
-            placed = DropGanttChart(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::CandlestickPlot:
-            placed = DropCandlestickPlot(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::ScaleChart:
-            placed = DropScaleChart(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::WCurvePlot:
-            placed = DropWCurvePlot(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::LRRoadmap:
-            placed = DropLRRoadmap(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::LikertChart:
-            placed = DropLikertChart(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::WordCloud:
-            placed = DropWordCloud(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::ProConRoadmap:
-            placed = DropProConRoadmap(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::BarChart:
-            placed = DropBarChart(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::PieChart:
-            placed = DropPieChart(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::LinePlot:
-            placed = DropLinePlot(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::MultiSeriesLinePlot:
-            placed = DropMultiSeriesLinePlot(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::Table:
-            placed = DropTable(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::ChoroplethMap:
-            placed = DropChoroplethMap(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::SankeyDiagram:
-            placed = DropSankeyDiagram(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::WaffleChart:
-            placed = DropWaffleChart(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::RaceTrackChart:
-            placed = DropRaceTrackChart(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::NightingaleRoseChart:
-            placed = DropNightingaleRoseChart(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::BulletChart:
-            placed = DropBulletChart(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::WaterfallChart:
-            placed = DropWaterfallChart(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::FunnelChart:
-            placed = DropFunnelChart(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::DuBoisSpiralChart:
-            placed = DropDuBoisSpiralChart(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::DuelingPieChart:
-            placed = DropDuelingPieChart(stagingCanvas, row, col);
-            break;
-        case Wisteria::GalleryItemType::Pictograph:
-            placed = DropPictograph(stagingCanvas, row, col);
-            break;
-        default:
-            // remaining graph types are not wired up yet
-            break;
-            }
-
-        if (placed)
+        if (DropItem(event.GetItemType(), stagingCanvas, row, col))
             {
             SyncFromCanvas(stagingCanvas);
             SelectCell(row, col);
@@ -987,7 +848,131 @@ namespace Wisteria::UI
             m_previewPanel->Refresh();
             }
 
+        m_lastPlacedGraph.reset();
+        m_lastPlacedLegendPlacement.reset();
         stagingCanvas->Destroy();
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropItem(const Wisteria::GalleryItemType itemType, Canvas* stagingCanvas,
+                                 const size_t row, const size_t col)
+        {
+        switch (itemType)
+            {
+        case Wisteria::GalleryItemType::Label:
+            return DropLabel(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::KpiCard:
+            return DropKpiCard(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::Spacer:
+            return DropSpacer(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::DividerHorizontalSingle:
+            return DropDivider(stagingCanvas, row, col,
+                               Wisteria::DividerType::HorizontalSingleLine);
+        case Wisteria::GalleryItemType::DividerHorizontalDouble:
+            return DropDivider(stagingCanvas, row, col,
+                               Wisteria::DividerType::HorizontalDoubleLine);
+        case Wisteria::GalleryItemType::DividerVerticalSingle:
+            return DropDivider(stagingCanvas, row, col, Wisteria::DividerType::VerticalSingleLine);
+        case Wisteria::GalleryItemType::DividerVerticalDouble:
+            return DropDivider(stagingCanvas, row, col, Wisteria::DividerType::VerticalDoubleLine);
+        case Wisteria::GalleryItemType::Shape:
+            return DropShape(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::Image:
+            return DropImage(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::Axis:
+            return DropAxis(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::Histogram:
+            return DropHistogram(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::BoxPlot:
+            return DropBoxPlot(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::StemAndLeafPlot:
+            return DropStemAndLeaf(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::HeatMap:
+            return DropHeatMap(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::ScatterPlot:
+            return DropScatterPlot(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::BubblePlot:
+            return DropBubblePlot(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::ChernoffFacesPlot:
+            return DropChernoffFacesPlot(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::WilmarthBridgePlot:
+            return DropWilmarthBridgePlot(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::WinLossSparkline:
+            return DropWinLossSparkline(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::GanttChart:
+            return DropGanttChart(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::CandlestickPlot:
+            return DropCandlestickPlot(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::ScaleChart:
+            return DropScaleChart(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::WCurvePlot:
+            return DropWCurvePlot(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::LRRoadmap:
+            return DropLRRoadmap(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::LikertChart:
+            return DropLikertChart(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::WordCloud:
+            return DropWordCloud(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::ProConRoadmap:
+            return DropProConRoadmap(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::BarChart:
+            return DropBarChart(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::PieChart:
+            return DropPieChart(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::LinePlot:
+            return DropLinePlot(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::MultiSeriesLinePlot:
+            return DropMultiSeriesLinePlot(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::Table:
+            return DropTable(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::ChoroplethMap:
+            return DropChoroplethMap(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::SankeyDiagram:
+            return DropSankeyDiagram(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::WaffleChart:
+            return DropWaffleChart(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::RaceTrackChart:
+            return DropRaceTrackChart(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::NightingaleRoseChart:
+            return DropNightingaleRoseChart(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::BulletChart:
+            return DropBulletChart(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::WaterfallChart:
+            return DropWaterfallChart(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::FunnelChart:
+            return DropFunnelChart(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::DuBoisSpiralChart:
+            return DropDuBoisSpiralChart(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::DuelingPieChart:
+            return DropDuelingPieChart(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::Pictograph:
+            return DropPictograph(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::FilteredGraph:
+            return DropFilteredGraph(stagingCanvas, row, col);
+            }
+        return false;
+        }
+
+    //-------------------------------------------
+    void InsertPageDlg::PlaceGraphInGrid(
+        Canvas* stagingCanvas, const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
+        std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend, const size_t graphRow,
+        const size_t graphCol, const LegendPlacement legendPlacement)
+        {
+        WisteriaView::PlaceGraphAndLegendInGrid(stagingCanvas, plot, std::move(legend), graphRow,
+                                                graphCol, legendPlacement);
+        m_lastPlacedGraph = plot;
+        m_lastPlacedLegendPlacement = legendPlacement;
+        }
+
+    //-------------------------------------------
+    void InsertPageDlg::PlaceGraphInCell(
+        Canvas* stagingCanvas, const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
+        const size_t graphRow, const size_t graphCol)
+        {
+        stagingCanvas->SetFixedObject(graphRow, graphCol, plot);
+        m_lastPlacedGraph = plot;
+        m_lastPlacedLegendPlacement = LegendPlacement::None;
         }
 
     //-------------------------------------------
@@ -1163,9 +1148,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildHistogram();
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1189,9 +1174,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildBoxPlot(m_doc);
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1215,9 +1200,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildStemAndLeafPlot();
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1241,9 +1226,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildHeatMap();
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1267,9 +1252,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildScatterPlot();
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1293,9 +1278,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildBubblePlot();
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1331,9 +1316,8 @@ namespace Wisteria::UI
                                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
                                    plot->CreateLegend(options));
                 });
-            WisteriaView::PlaceGraphAndLegendInGrid(stagingCanvas, plot, std::move(legend),
-                                                    dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
-                                                    legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot, std::move(legend), dlg.GetSelectedRow(),
+                             dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1358,9 +1342,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildWilmarthBridgePlot();
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1385,9 +1369,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildWinLossSparkline();
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1411,9 +1395,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildGanttChart();
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1437,7 +1421,7 @@ namespace Wisteria::UI
         try
             {
             auto plot = dlg.BuildCandlestickPlot();
-            stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+            PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
             return true;
             }
         catch (const std::exception&)
@@ -1461,9 +1445,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildScaleChart();
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1487,9 +1471,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildWCurvePlot();
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1513,9 +1497,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildLRRoadmap();
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1539,9 +1523,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildLikertChart();
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1565,7 +1549,7 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildWordCloud();
             // word clouds do not support legends
-            WisteriaView::PlaceGraphAndLegendInGrid(
+            PlaceGraphInGrid(
                 stagingCanvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                 dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
             return true;
@@ -1591,9 +1575,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildProConRoadmap();
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1617,9 +1601,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildCatBarChart(m_doc);
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1643,9 +1627,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildPieChart(m_doc);
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1669,9 +1653,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildLinePlot();
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1696,9 +1680,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildMultiSeriesLinePlot();
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1722,7 +1706,7 @@ namespace Wisteria::UI
             {
             auto table = dlg.BuildTable();
             // tables do not support legends
-            WisteriaView::PlaceGraphAndLegendInGrid(
+            PlaceGraphInGrid(
                 stagingCanvas, table, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                 dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
             return true;
@@ -1764,9 +1748,8 @@ namespace Wisteria::UI
                                std::unique_ptr<Wisteria::GraphItems::GraphItemBase>(
                                    plot->CreateChoroplethLegend(options));
                 });
-            WisteriaView::PlaceGraphAndLegendInGrid(stagingCanvas, plot, std::move(legend),
-                                                    dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
-                                                    legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot, std::move(legend), dlg.GetSelectedRow(),
+                             dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1790,7 +1773,7 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildSankeyDiagram();
             // Sankey diagrams do not support legends
-            stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+            PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
             return true;
             }
         catch (const std::exception&)
@@ -1814,9 +1797,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildWaffleChart();
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1841,7 +1824,7 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildRaceTrackChart();
             // race track charts do not support legends
-            WisteriaView::PlaceGraphAndLegendInGrid(
+            PlaceGraphInGrid(
                 stagingCanvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                 dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
             return true;
@@ -1868,9 +1851,9 @@ namespace Wisteria::UI
             {
             auto plot = dlg.BuildNightingaleRoseChart();
             const auto legendPlacement = dlg.GetLegendPlacement();
-            WisteriaView::PlaceGraphAndLegendInGrid(
-                stagingCanvas, plot, WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
-                dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1893,7 +1876,7 @@ namespace Wisteria::UI
         try
             {
             auto plot = dlg.BuildBulletChart();
-            stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+            PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
             return true;
             }
         catch (const std::exception&)
@@ -1917,7 +1900,7 @@ namespace Wisteria::UI
         try
             {
             auto plot = dlg.BuildWaterfallChart();
-            stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+            PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
             return true;
             }
         catch (const std::exception&)
@@ -1940,7 +1923,7 @@ namespace Wisteria::UI
         try
             {
             auto plot = dlg.BuildFunnelChart();
-            stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+            PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
             return true;
             }
         catch (const std::exception&)
@@ -1964,7 +1947,7 @@ namespace Wisteria::UI
         try
             {
             auto plot = dlg.BuildDuBoisSpiralChart();
-            stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+            PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
             return true;
             }
         catch (const std::exception&)
@@ -1988,7 +1971,7 @@ namespace Wisteria::UI
         try
             {
             auto plot = dlg.BuildDuelingPieChart();
-            stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+            PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
             return true;
             }
         catch (const std::exception&)
@@ -2011,12 +1994,77 @@ namespace Wisteria::UI
         try
             {
             auto plot = dlg.BuildPictograph();
-            stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), plot);
+            PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
             return true;
             }
         catch (const std::exception&)
             {
             return false;
             }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropFilteredGraph(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        if (m_reportBuilder == nullptr || m_doc == nullptr)
+            {
+            return false;
+            }
+        if (m_reportBuilder->GetDatasets().empty())
+            {
+            wxMessageBox(_(L"Please import a dataset before inserting a filtered graph."),
+                         _(L"No Datasets"), wxOK | wxICON_INFORMATION, this);
+            return false;
+            }
+
+        const auto& graphTypes = WisteriaView::GetFilterableGraphTypes();
+        wxArrayString graphNames;
+        for (const auto& graphType : graphTypes)
+            {
+            graphNames.Add(graphType.m_label);
+            }
+
+        Wisteria::UI::FilterableGraphDlg filterDlg(m_reportBuilder, graphNames, this);
+        WisteriaView::SetDialogIcon(filterDlg, L"images/filtered-graph.svg");
+        if (filterDlg.ShowModal() != wxID_OK || filterDlg.GetGraphType() < 0 ||
+            std::cmp_greater_equal(filterDlg.GetGraphType(), graphTypes.size()))
+            {
+            return false;
+            }
+
+        // the graph type's own insert dialog builds the graph from the filter's dataset
+        m_lastPlacedGraph.reset();
+        m_lastPlacedLegendPlacement.reset();
+            {
+            const Wisteria::UI::InsertGraphDlg::ScopedDatasetLock datasetLock{
+                filterDlg.GetDatasetName()
+            };
+            if (!DropItem(graphTypes[filterDlg.GetGraphType()].m_galleryType, stagingCanvas, row,
+                          col))
+                {
+                return false;
+                }
+            }
+
+        const auto placedGraph = m_lastPlacedGraph.lock();
+        const auto legendPlacement =
+            m_lastPlacedLegendPlacement.value_or(Wisteria::UI::LegendPlacement::None);
+        m_lastPlacedGraph.reset();
+        m_lastPlacedLegendPlacement.reset();
+        if (placedGraph == nullptr)
+            {
+            return false;
+            }
+
+        const auto errorMessage = WisteriaView::PlaceFilterableGraphInGrid(
+            stagingCanvas, *m_reportBuilder, *m_doc, placedGraph, legendPlacement,
+            filterDlg.GetFilterColumn(), filterDlg.GetDefaultValue(), filterDlg.IsIncludingAll(),
+            wxString{});
+        if (errorMessage.has_value())
+            {
+            wxMessageBox(errorMessage.value(), _(L"Error"), wxOK | wxICON_ERROR, this);
+            return false;
+            }
+        return true;
         }
     } // namespace Wisteria::UI

@@ -16,6 +16,8 @@
 #include "../../controls/objectgallery.h"
 #include "../../controls/thumbnail.h"
 #include "../dialogwithhelp.h"
+#include <memory>
+#include <optional>
 #include <utility>
 #include <wx/clrpicker.h>
 #include <wx/spinctrl.h>
@@ -30,6 +32,8 @@ namespace Wisteria
 
 namespace Wisteria::UI
     {
+    enum class LegendPlacement;
+
     /// @brief Dialog for inserting a new page (canvas) into a project.
     class InsertPageDlg final : public DialogWithHelp
         {
@@ -56,7 +60,7 @@ namespace Wisteria::UI
             @param style The window style (i.e., decorations and flags).
             @param editMode Whether the page is being inserted or edited.*/
         explicit InsertPageDlg(Canvas* canvas, const wxArrayString& pageNames,
-                               const Wisteria::ReportBuilder* reportBuilder, WisteriaDoc* doc,
+                               Wisteria::ReportBuilder* reportBuilder, WisteriaDoc* doc,
                                wxWindow* parent, wxWindowID id = wxID_ANY,
                                const wxString& caption = _(L"Insert Page"),
                                const wxPoint& pos = wxDefaultPosition,
@@ -219,6 +223,17 @@ namespace Wisteria::UI
         void UpdateAxisGalleryState();
 
         void OnGalleryItemDropped(Wisteria::UI::ObjectGalleryItemDroppedEvent& event);
+        bool DropItem(Wisteria::GalleryItemType itemType, Canvas* stagingCanvas, size_t row,
+                      size_t col);
+        /// @brief Places a graph and its legend into the staging canvas and records them.
+        void PlaceGraphInGrid(Canvas* stagingCanvas,
+                              const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
+                              std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend,
+                              size_t graphRow, size_t graphCol, LegendPlacement legendPlacement);
+        /// @brief Places a graph without a legend into a staging canvas's cell and records it.
+        void PlaceGraphInCell(Canvas* stagingCanvas,
+                              const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
+                              size_t graphRow, size_t graphCol);
         bool DropLabel(Canvas* stagingCanvas, size_t row, size_t col);
         bool DropKpiCard(Canvas* stagingCanvas, size_t row, size_t col);
         bool DropSpacer(Canvas* stagingCanvas, size_t row, size_t col);
@@ -259,9 +274,10 @@ namespace Wisteria::UI
         bool DropDuBoisSpiralChart(Canvas* stagingCanvas, size_t row, size_t col);
         bool DropDuelingPieChart(Canvas* stagingCanvas, size_t row, size_t col);
         bool DropPictograph(Canvas* stagingCanvas, size_t row, size_t col);
+        bool DropFilteredGraph(Canvas* stagingCanvas, size_t row, size_t col);
 
         Canvas* m_canvas{ nullptr };
-        const Wisteria::ReportBuilder* m_reportBuilder{ nullptr };
+        Wisteria::ReportBuilder* m_reportBuilder{ nullptr };
         WisteriaDoc* m_doc{ nullptr };
         wxPanel* m_previewPanel{ nullptr };
         Wisteria::UI::ObjectGalleryCtrl* m_galleryPanel{ nullptr };
@@ -284,6 +300,9 @@ namespace Wisteria::UI
         // committed back to the canvas via ApplyGridEdits().
         std::vector<std::vector<std::shared_ptr<Wisteria::GraphItems::GraphItemBase>>>
             m_fixedObjectsGrid;
+        // the last graph placed by a gallery drop, which a filterable graph replaces
+        std::weak_ptr<Wisteria::GraphItems::GraphItemBase> m_lastPlacedGraph;
+        std::optional<LegendPlacement> m_lastPlacedLegendPlacement;
         // drag-and-drop state for moving an item from one cell to another in the preview panel
         bool m_isDraggingItem{ false };
         size_t m_dragSourceRow{ 0 };

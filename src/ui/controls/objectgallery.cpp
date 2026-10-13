@@ -238,6 +238,8 @@ namespace Wisteria::UI
             return L"dueling-pie";
         case GalleryItemType::Pictograph:
             return L"pictograph";
+        case GalleryItemType::FilteredGraph:
+            return L"filtered-graph";
             }
         return {};
         }

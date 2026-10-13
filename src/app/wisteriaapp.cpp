@@ -2261,6 +2261,8 @@ const std::vector<Wisteria::GalleryItemInfo>& WisteriaApp::GetGalleryItemCatalog
           GalleryGroup::Basic },
         { GalleryItemType::ChoroplethMap, _(L"Choropleth Map"), L"images/choropleth.svg",
           GalleryGroup::Basic },
+        { GalleryItemType::FilteredGraph, _(L"Filtered Graph"), L"images/filtered-graph.svg",
+          GalleryGroup::Basic },
         // Business
         { GalleryItemType::GanttChart, _(L"Gantt Chart"), L"images/gantt.svg",
           GalleryGroup::Business },

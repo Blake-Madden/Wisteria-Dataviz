@@ -3235,42 +3235,64 @@ void WisteriaView::EditGraphByType(Wisteria::Graphs::Graph2D& graph, Wisteria::C
 const std::vector<WisteriaView::FilterableGraphType>& WisteriaView::GetFilterableGraphTypes()
     {
     using namespace Wisteria::Graphs;
+    using Wisteria::GalleryItemType;
     static const std::vector<FilterableGraphType> graphTypes{
-        { ID_NEW_BARCHART, _(L"Bar Chart"), wxCLASSINFO(CategoricalBarChart) },
-        { ID_NEW_PIECHART, _(L"Pie Chart"), wxCLASSINFO(PieChart) },
-        { ID_NEW_LINEPLOT, _(L"Line Plot"), wxCLASSINFO(LinePlot) },
-        { ID_NEW_MULTI_SERIES_LINEPLOT, _(L"Multi-Series Line Plot"),
-          wxCLASSINFO(MultiSeriesLinePlot) },
-        { ID_NEW_SANKEY_DIAGRAM, _(L"Sankey Diagram"), wxCLASSINFO(SankeyDiagram) },
-        { ID_NEW_WAFFLE_CHART, _(L"Waffle Chart"), wxCLASSINFO(WaffleChart) },
-        { ID_NEW_RACETRACK_CHART, _(L"Race Track Chart"), wxCLASSINFO(RaceTrackChart) },
-        { ID_NEW_NIGHTINGALE_ROSE_CHART, _(L"Nightingale Rose Chart"),
-          wxCLASSINFO(NightingaleRoseChart) },
-        { ID_NEW_DUBOIS_SPIRAL_CHART, _(L"Du Bois Spiral Chart"), wxCLASSINFO(DuBoisSpiralChart) },
-        { ID_NEW_DUELING_PIE_CHART, _(L"Dueling Pie Chart"), wxCLASSINFO(DuelingPieChart) },
-        { ID_NEW_PICTOGRAPH, _(L"Pictograph"), wxCLASSINFO(Pictograph) },
-        { ID_NEW_CHOROPLETH_MAP, _(L"Choropleth Map"), wxCLASSINFO(ChoroplethMap) },
-        { ID_NEW_GANTT, _(L"Gantt Chart"), wxCLASSINFO(GanttChart) },
-        { ID_NEW_CANDLESTICK, _(L"Candlestick Plot"), wxCLASSINFO(CandlestickPlot) },
-        { ID_NEW_BULLET_CHART, _(L"Bullet Chart"), wxCLASSINFO(BulletChart) },
-        { ID_NEW_WATERFALL_CHART, _(L"Waterfall Chart"), wxCLASSINFO(WaterfallChart) },
-        { ID_NEW_FUNNEL_CHART, _(L"Funnel Chart"), wxCLASSINFO(FunnelChart) },
-        { ID_NEW_HISTOGRAM, _(L"Histogram"), wxCLASSINFO(Histogram) },
-        { ID_NEW_BOXPLOT, _(L"Box Plot"), wxCLASSINFO(BoxPlot) },
-        { ID_NEW_STEMANDLEAF, _(L"Stem-and-Leaf Plot"), wxCLASSINFO(StemAndLeafPlot) },
-        { ID_NEW_HEATMAP, _(L"Heat Map"), wxCLASSINFO(HeatMap) },
-        { ID_NEW_SCATTERPLOT, _(L"Scatter Plot"), wxCLASSINFO(ScatterPlot) },
-        { ID_NEW_BUBBLEPLOT, _(L"Bubble Plot"), wxCLASSINFO(BubblePlot) },
-        { ID_NEW_CHERNOFFPLOT, _(L"Chernoff Faces Plot"), wxCLASSINFO(ChernoffFacesPlot) },
-        { ID_NEW_WILMARTH_BRIDGE_PLOT, _(L"Wilmarth Bridge Plot"),
-          wxCLASSINFO(WilmarthBridgePlot) },
-        { ID_NEW_LIKERT, _(L"Likert Chart"), wxCLASSINFO(LikertChart) },
-        { ID_NEW_WORD_CLOUD, _(L"Word Cloud"), wxCLASSINFO(WordCloud) },
-        { ID_NEW_PROCON_ROADMAP, _(L"Pro & Con Roadmap"), wxCLASSINFO(ProConRoadmap) },
-        { ID_NEW_SCALE_CHART, _(L"Scale Chart"), wxCLASSINFO(ScaleChart) },
-        { ID_NEW_WCURVE, _(L"W-Curve Plot"), wxCLASSINFO(WCurvePlot) },
-        { ID_NEW_LR_ROADMAP, _(L"Linear Regression Roadmap"), wxCLASSINFO(LRRoadmap) },
-        { ID_NEW_WIN_LOSS_SPARKLINE, _(L"Win/Loss Sparkline"), wxCLASSINFO(WinLossSparkline) }
+        { ID_NEW_BARCHART, GalleryItemType::BarChart, _(L"Bar Chart"),
+          wxCLASSINFO(CategoricalBarChart) },
+        { ID_NEW_PIECHART, GalleryItemType::PieChart, _(L"Pie Chart"), wxCLASSINFO(PieChart) },
+        { ID_NEW_LINEPLOT, GalleryItemType::LinePlot, _(L"Line Plot"), wxCLASSINFO(LinePlot) },
+        { ID_NEW_MULTI_SERIES_LINEPLOT, GalleryItemType::MultiSeriesLinePlot,
+          _(L"Multi-Series Line Plot"), wxCLASSINFO(MultiSeriesLinePlot) },
+        { ID_NEW_SANKEY_DIAGRAM, GalleryItemType::SankeyDiagram, _(L"Sankey Diagram"),
+          wxCLASSINFO(SankeyDiagram) },
+        { ID_NEW_WAFFLE_CHART, GalleryItemType::WaffleChart, _(L"Waffle Chart"),
+          wxCLASSINFO(WaffleChart) },
+        { ID_NEW_RACETRACK_CHART, GalleryItemType::RaceTrackChart, _(L"Race Track Chart"),
+          wxCLASSINFO(RaceTrackChart) },
+        { ID_NEW_NIGHTINGALE_ROSE_CHART, GalleryItemType::NightingaleRoseChart,
+          _(L"Nightingale Rose Chart"), wxCLASSINFO(NightingaleRoseChart) },
+        { ID_NEW_DUBOIS_SPIRAL_CHART, GalleryItemType::DuBoisSpiralChart,
+          _(L"Du Bois Spiral Chart"), wxCLASSINFO(DuBoisSpiralChart) },
+        { ID_NEW_DUELING_PIE_CHART, GalleryItemType::DuelingPieChart, _(L"Dueling Pie Chart"),
+          wxCLASSINFO(DuelingPieChart) },
+        { ID_NEW_PICTOGRAPH, GalleryItemType::Pictograph, _(L"Pictograph"),
+          wxCLASSINFO(Pictograph) },
+        { ID_NEW_CHOROPLETH_MAP, GalleryItemType::ChoroplethMap, _(L"Choropleth Map"),
+          wxCLASSINFO(ChoroplethMap) },
+        { ID_NEW_GANTT, GalleryItemType::GanttChart, _(L"Gantt Chart"), wxCLASSINFO(GanttChart) },
+        { ID_NEW_CANDLESTICK, GalleryItemType::CandlestickPlot, _(L"Candlestick Plot"),
+          wxCLASSINFO(CandlestickPlot) },
+        { ID_NEW_BULLET_CHART, GalleryItemType::BulletChart, _(L"Bullet Chart"),
+          wxCLASSINFO(BulletChart) },
+        { ID_NEW_WATERFALL_CHART, GalleryItemType::WaterfallChart, _(L"Waterfall Chart"),
+          wxCLASSINFO(WaterfallChart) },
+        { ID_NEW_FUNNEL_CHART, GalleryItemType::FunnelChart, _(L"Funnel Chart"),
+          wxCLASSINFO(FunnelChart) },
+        { ID_NEW_HISTOGRAM, GalleryItemType::Histogram, _(L"Histogram"), wxCLASSINFO(Histogram) },
+        { ID_NEW_BOXPLOT, GalleryItemType::BoxPlot, _(L"Box Plot"), wxCLASSINFO(BoxPlot) },
+        { ID_NEW_STEMANDLEAF, GalleryItemType::StemAndLeafPlot, _(L"Stem-and-Leaf Plot"),
+          wxCLASSINFO(StemAndLeafPlot) },
+        { ID_NEW_HEATMAP, GalleryItemType::HeatMap, _(L"Heat Map"), wxCLASSINFO(HeatMap) },
+        { ID_NEW_SCATTERPLOT, GalleryItemType::ScatterPlot, _(L"Scatter Plot"),
+          wxCLASSINFO(ScatterPlot) },
+        { ID_NEW_BUBBLEPLOT, GalleryItemType::BubblePlot, _(L"Bubble Plot"),
+          wxCLASSINFO(BubblePlot) },
+        { ID_NEW_CHERNOFFPLOT, GalleryItemType::ChernoffFacesPlot, _(L"Chernoff Faces Plot"),
+          wxCLASSINFO(ChernoffFacesPlot) },
+        { ID_NEW_WILMARTH_BRIDGE_PLOT, GalleryItemType::WilmarthBridgePlot,
+          _(L"Wilmarth Bridge Plot"), wxCLASSINFO(WilmarthBridgePlot) },
+        { ID_NEW_LIKERT, GalleryItemType::LikertChart, _(L"Likert Chart"),
+          wxCLASSINFO(LikertChart) },
+        { ID_NEW_WORD_CLOUD, GalleryItemType::WordCloud, _(L"Word Cloud"), wxCLASSINFO(WordCloud) },
+        { ID_NEW_PROCON_ROADMAP, GalleryItemType::ProConRoadmap, _(L"Pro & Con Roadmap"),
+          wxCLASSINFO(ProConRoadmap) },
+        { ID_NEW_SCALE_CHART, GalleryItemType::ScaleChart, _(L"Scale Chart"),
+          wxCLASSINFO(ScaleChart) },
+        { ID_NEW_WCURVE, GalleryItemType::WCurvePlot, _(L"W-Curve Plot"), wxCLASSINFO(WCurvePlot) },
+        { ID_NEW_LR_ROADMAP, GalleryItemType::LRRoadmap, _(L"Linear Regression Roadmap"),
+          wxCLASSINFO(LRRoadmap) },
+        { ID_NEW_WIN_LOSS_SPARKLINE, GalleryItemType::WinLossSparkline, _(L"Win/Loss Sparkline"),
+          wxCLASSINFO(WinLossSparkline) }
     };
     return graphTypes;
     }
@@ -3418,13 +3440,42 @@ void WisteriaView::ReplaceWithFilterableGraph(
     {
     const auto placedGraph = m_lastPlacedGraph.lock();
     m_lastPlacedGraph.reset();
-    const auto legendPlacement = m_lastPlacedLegendPlacement;
-    // the graph type's dialog was canceled
-    auto* graph = dynamic_cast<Wisteria::Graphs::Graph2D*>(placedGraph.get());
     const auto* doc = dynamic_cast<WisteriaDoc*>(GetDocument());
-    if (graph == nullptr || doc == nullptr)
+    // the graph type's dialog was canceled
+    if (dynamic_cast<Wisteria::Graphs::Graph2D*>(placedGraph.get()) == nullptr || doc == nullptr)
         {
         return;
+        }
+
+    const auto errorMessage = PlaceFilterableGraphInGrid(
+        canvas, m_reportBuilder, *doc, placedGraph, m_lastPlacedLegendPlacement, filterColumn,
+        defaultValue, includeAll, allLabel, fallback);
+    UpdateCanvas(canvas);
+    if (errorMessage.has_value())
+        {
+        wxMessageBox(errorMessage.value(), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        return;
+        }
+    GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+std::optional<wxString> WisteriaView::PlaceFilterableGraphInGrid(
+    Wisteria::Canvas* canvas, Wisteria::ReportBuilder& reportBuilder, const WisteriaDoc& doc,
+    const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& placedGraph,
+    const Wisteria::UI::LegendPlacement legendPlacement, const wxString& filterColumn,
+    const wxString& defaultValue, const bool includeAll, const wxString& allLabel,
+    const std::optional<FilterableGraphFallback>& fallback /*= std::nullopt*/)
+    {
+    wxASSERT_MSG(canvas != nullptr, L"Canvas must be provided for a filterable graph!");
+    if (canvas == nullptr)
+        {
+        return _(L"The graph could not be found on the page.");
+        }
+    auto* graph = dynamic_cast<Wisteria::Graphs::Graph2D*>(placedGraph.get());
+    if (graph == nullptr)
+        {
+        return _(L"This type of graph cannot be filtered.");
         }
 
     // find where the graph was placed
@@ -3443,7 +3494,7 @@ void WisteriaView::ReplaceWithFilterableGraph(
         }
     if (!graphCell.has_value())
         {
-        return;
+        return _(L"The graph could not be found on the page.");
         }
     const auto [graphRow, graphCol] = graphCell.value();
 
@@ -3515,30 +3566,26 @@ void WisteriaView::ReplaceWithFilterableGraph(
             {
             canvas->RemoveEmptyOuterCells();
             }
-        UpdateCanvas(canvas);
-        wxMessageBox(errorMessage + L"\n\n" +
-                         (fallback.has_value() ? _(L"The graph was not changed.") :
-                                                 _(L"The graph was not inserted.")),
-                     _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        return errorMessage + L"\n\n" +
+               (fallback.has_value() ? _(L"The graph was not changed.") :
+                                       _(L"The graph was not inserted."));
     };
 
     std::shared_ptr<Wisteria::Graphs::FilterableGraph> filterableGraph;
     try
         {
-        filterableGraph = m_reportBuilder.LoadFilterableGraphDetached(
-            doc->SerializeFilteredGraphToJson(graph, canvas, filterColumn, defaultValue, includeAll,
-                                              allLabel),
+        filterableGraph = reportBuilder.LoadFilterableGraphDetached(
+            doc.SerializeFilteredGraphToJson(graph, canvas, filterColumn, defaultValue, includeAll,
+                                             allLabel),
             canvas);
         }
     catch (const std::exception& exc)
         {
-        undoPlacement(wxString::FromUTF8(exc.what()));
-        return;
+        return undoPlacement(wxString::FromUTF8(exc.what()));
         }
     if (filterableGraph == nullptr)
         {
-        undoPlacement(_(L"This type of graph cannot be filtered."));
-        return;
+        return undoPlacement(_(L"This type of graph cannot be filtered."));
         }
 
     canvas->SetFixedObject(graphRow, graphCol, filterableGraph);
@@ -3556,8 +3603,7 @@ void WisteriaView::ReplaceWithFilterableGraph(
         canvas->SetFixedObject(legendCell.first, legendCell.second, legend);
         }
 
-    UpdateCanvas(canvas);
-    GetDocument()->Modify(true);
+    return std::nullopt;
     }
 
 //-------------------------------------------

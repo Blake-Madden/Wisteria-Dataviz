@@ -31,6 +31,8 @@ namespace Wisteria::UI
     class DatasetGridTable;
     }
 
+class WisteriaDoc;
+
 /// @brief View class for Wisteria Dataviz projects.
 class WisteriaView final : public wxView
     {
@@ -304,6 +306,7 @@ class WisteriaView final : public wxView
     void EditFilterableGraph(Wisteria::Graphs::FilterableGraph& filterableGraph,
                              Wisteria::Canvas* canvas, size_t graphRow, size_t graphCol);
 
+  public:
     /// @brief An edited graph (and its legend) and the cells that they were in.
     struct FilterableGraphFallback
         {
@@ -313,6 +316,46 @@ class WisteriaView final : public wxView
         std::optional<std::pair<size_t, size_t>> m_legendCell{ std::nullopt };
         };
 
+    /// @brief A graph type that can be inserted as a filterable graph.
+    struct FilterableGraphType
+        {
+        /// @brief The command that inserts the graph type.
+        wxWindowID m_commandId{ wxID_ANY };
+        /// @brief The graph type's object gallery item.
+        Wisteria::GalleryItemType m_galleryType{ Wisteria::GalleryItemType::BarChart };
+        /// @brief The graph type's display name.
+        wxString m_label;
+        /// @brief The graph type's class.
+        const wxClassInfo* m_classInfo{ nullptr };
+        };
+
+    /// @returns The graph types that can be inserted as filterable graphs.
+    [[nodiscard]]
+    static const std::vector<FilterableGraphType>& GetFilterableGraphTypes();
+
+    /// @brief Replaces a graph on a canvas with a filterable graph built from it
+    ///     (along with its legend).
+    /// @param canvas The canvas that the graph was placed on.
+    /// @param reportBuilder The report builder that builds the filterable graph.
+    /// @param doc The document that serializes the graph.
+    /// @param placedGraph The graph to replace.
+    /// @param legendPlacement Where the graph's legend was placed.
+    /// @param filterColumn The categorical column to filter on.
+    /// @param defaultValue The value whose graph is shown initially.
+    /// @param includeAll Whether to include a graph for the unfiltered data.
+    /// @param allLabel The label for the unfiltered data (empty for the default).
+    /// @param fallback The graph and legend to put back in their original cells
+    ///     if the filterable graph can't be built. If not set, the placed graph is removed.
+    /// @returns An error message if the filterable graph couldn't be built.
+    [[nodiscard]]
+    static std::optional<wxString> PlaceFilterableGraphInGrid(
+        Wisteria::Canvas* canvas, Wisteria::ReportBuilder& reportBuilder, const WisteriaDoc& doc,
+        const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& placedGraph,
+        Wisteria::UI::LegendPlacement legendPlacement, const wxString& filterColumn,
+        const wxString& defaultValue, bool includeAll, const wxString& allLabel,
+        const std::optional<FilterableGraphFallback>& fallback = std::nullopt);
+
+  private:
     /// @brief Replaces the graph that the last insert or edit placed on the canvas
     ///     with a filterable graph built from it (along with its legend).
     /// @param canvas The canvas that the graph was placed on.
@@ -327,20 +370,6 @@ class WisteriaView final : public wxView
         bool includeAll, const wxString& allLabel,
         const std::optional<FilterableGraphFallback>& fallback = std::nullopt);
 
-    /// @brief A graph type that can be inserted as a filterable graph.
-    struct FilterableGraphType
-        {
-        /// @brief The command that inserts the graph type.
-        wxWindowID m_commandId{ wxID_ANY };
-        /// @brief The graph type's display name.
-        wxString m_label;
-        /// @brief The graph type's class.
-        const wxClassInfo* m_classInfo{ nullptr };
-        };
-
-    /// @returns The graph types that can be inserted as filterable graphs.
-    [[nodiscard]]
-    static const std::vector<FilterableGraphType>& GetFilterableGraphTypes();
     void PlaceGraphWithLegend(Wisteria::Canvas* canvas,
                               const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend,
