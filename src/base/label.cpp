@@ -429,7 +429,7 @@ namespace Wisteria::GraphItems
             ((tokenizer.CountTokens() == 0) ?
                  0 :
                  (tokenizer.CountTokens() - 1) *
-                     std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
+                     std::ceil(ScaleToScreenAndCanvasAllowNegative(GetLineSpacing())));
 
         if (GetTextOrientation() == Orientation::Horizontal)
             {
@@ -652,8 +652,8 @@ namespace Wisteria::GraphItems
                 wxCoord lineTop{ 0 };
                 for (size_t i = 0; i < currentIndex; ++i)
                     {
-                    lineTop +=
-                        lineHeightAt(i) + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
+                    lineTop += lineHeightAt(i) +
+                               std::ceil(ScaleToScreenAndCanvasAllowNegative(GetLineSpacing()));
                     }
                 const wxCoord thisLineHeight = lineHeightAt(currentIndex);
                 wxCoord middleOfCurrentRow = lineTop + safe_divide<wxCoord>(thisLineHeight, 2) +
@@ -665,7 +665,8 @@ namespace Wisteria::GraphItems
                 // the text vertically
                 const wxCoord yOffset =
                     (GetHeaderInfo().IsEnabled() ?
-                         topLineHeight + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())) :
+                         topLineHeight +
+                             std::ceil(ScaleToScreenAndCanvasAllowNegative(GetLineSpacing())) :
                          0);
                 middleOfCurrentRow += yOffset;
                 const wxRect boxRect{ wxRect(contentBoundingBox.GetTopLeft() +
@@ -773,8 +774,8 @@ namespace Wisteria::GraphItems
         std::vector<wxCoord> rulePositions;
         if (GetLabelStyle() != LabelStyle::NoLabelStyle)
             {
-            const auto lineSpacing =
-                static_cast<wxCoord>(std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
+            const auto lineSpacing = static_cast<wxCoord>(
+                std::ceil(ScaleToScreenAndCanvasAllowNegative(GetLineSpacing())));
             const wxCoord boxExtent = (GetTextOrientation() == Orientation::Horizontal) ?
                                           boundingBox.GetHeight() :
                                           boundingBox.GetWidth();
@@ -1492,8 +1493,9 @@ namespace Wisteria::GraphItems
                     wxStringTokenizer gaugeTokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
                     while (gaugeTokenizer.HasMoreTokens())
                         {
-                        drawnHeight += dc.GetTextExtent(gaugeTokenizer.GetNextToken()).GetHeight() +
-                                       std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
+                        drawnHeight +=
+                            dc.GetTextExtent(gaugeTokenizer.GetNextToken()).GetHeight() +
+                            std::ceil(ScaleToScreenAndCanvasAllowNegative(GetLineSpacing()));
                         ++drawnLines;
                         }
                     const Label infoLabel(GraphItemInfo{
@@ -1740,7 +1742,7 @@ namespace Wisteria::GraphItems
                 // if the next line will make this too tall, then show the current line
                 // being truncated with an ellipsis and stop
                 if ((totalHeight + textHeight +
-                     std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) >
+                     std::ceil(ScaleToScreenAndCanvasAllowNegative(GetLineSpacing()))) >
                     boundingBoxSize.GetHeight())
                     {
                     if (!text.empty())
@@ -1750,7 +1752,8 @@ namespace Wisteria::GraphItems
                     break;
                     }
                 text += "\n" + currentLine;
-                totalHeight += textHeight + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
+                totalHeight +=
+                    textHeight + std::ceil(ScaleToScreenAndCanvasAllowNegative(GetLineSpacing()));
                 // start the next line with the word that made the previous line too wide
                 currentLine = nextToken;
                 }
@@ -1769,7 +1772,8 @@ namespace Wisteria::GraphItems
         // add any trailing line
         dc.GetTextExtent(currentLine, &textWidth, &textHeight);
         if ((static_cast<double>(totalHeight + textHeight) +
-             std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()))) > boundingBoxSize.GetHeight())
+             std::ceil(ScaleToScreenAndCanvasAllowNegative(GetLineSpacing()))) >
+            boundingBoxSize.GetHeight())
             {
             if (!text.empty())
                 {
@@ -1794,7 +1798,7 @@ namespace Wisteria::GraphItems
             }
 
         const wxCoord spaceBetweenLines =
-            (GetLineCount() - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
+            (GetLineCount() - 1) * std::ceil(ScaleToScreenAndCanvasAllowNegative(GetLineSpacing()));
 
         pt.y += GetCachedContentBoundingBox().GetHeight() +
                 // if drawing outline, then calculate that also in case the pen width is large
@@ -2014,7 +2018,7 @@ namespace Wisteria::GraphItems
             dc.DrawRotatedText(token, pt.x + xOffset, pt.y - offset - currentLineOffset,
                                90 + m_tiltAngle.value_or(0));
             // move over for next line
-            pt.x += (lineY + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
+            pt.x += (lineY + std::ceil(ScaleToScreenAndCanvasAllowNegative(GetLineSpacing())));
             ++currentLineNumber;
             }
         }
@@ -2027,7 +2031,7 @@ namespace Wisteria::GraphItems
             return;
             }
         const wxCoord spaceBetweenLines =
-            (GetLineCount() - 1) * std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
+            (GetLineCount() - 1) * std::ceil(ScaleToScreenAndCanvasAllowNegative(GetLineSpacing()));
 
         // For tilted multiline text, pre-adjust the starting position so that
         // the visual center of the text block (not the first line) is centered.
@@ -2039,7 +2043,8 @@ namespace Wisteria::GraphItems
             // Estimate line advance using font height plus spacing
             wxCoord estLineX{ 0 }, estLineY{ 0 };
             dc.GetTextExtent(L"Aq", &estLineX, &estLineY);
-            const auto lineAdvance = estLineY + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
+            const auto lineAdvance =
+                estLineY + std::ceil(ScaleToScreenAndCanvasAllowNegative(GetLineSpacing()));
             const auto totalHorizontalShift =
                 (GetLineCount() - 1) * lineAdvance * std::sin(angleRad);
             // Shift starting position by half the total shift in opposite direction
@@ -2306,7 +2311,7 @@ namespace Wisteria::GraphItems
                                    m_tiltAngle.value());
                 // move perpendicular to tilt direction for next line
                 const auto lineAdvance =
-                    lineY + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing()));
+                    lineY + std::ceil(ScaleToScreenAndCanvasAllowNegative(GetLineSpacing()));
                 pt.x += lineAdvance * std::sin(angleRad);
                 pt.y += lineAdvance * std::cos(angleRad);
                 }
@@ -2318,13 +2323,13 @@ namespace Wisteria::GraphItems
                                  wxPoint{ pt.x + offset + currentLineOffset, pt.y + yOffset },
                                  baseFont);
                 // move down for next line
-                pt.y += (lineY + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
+                pt.y += (lineY + std::ceil(ScaleToScreenAndCanvasAllowNegative(GetLineSpacing())));
                 }
             else
                 {
                 dc.DrawText(token, pt.x + offset + currentLineOffset, pt.y + yOffset);
                 // move down for next line
-                pt.y += (lineY + std::ceil(ScaleToScreenAndCanvas(GetLineSpacing())));
+                pt.y += (lineY + std::ceil(ScaleToScreenAndCanvasAllowNegative(GetLineSpacing())));
                 }
             ++currentLineNumber;
             }

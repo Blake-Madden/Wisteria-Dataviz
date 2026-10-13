@@ -2113,6 +2113,21 @@ namespace Wisteria
                 }
 
             /// @brief Apply screen DPI and parent canvas scaling to a value.
+            /// @param value The value (e.g., pen width) to scale.
+            /// @returns The scaled value.
+            /// @note This version will all negative scaling, which is only useful
+            ///     for oddities like negative line spacing in labels.
+            /// @warning This should be used to rescale pixel values used for line
+            ///     widths and point sizes. It should *not* be used with font point sizes
+            ///     because DPI scaling is handled by the OS for those.
+            ///     Instead, font sizes should only be scaled to the canvas's scaling.
+            [[nodiscard]]
+            double ScaleToScreenAndCanvasAllowNegative(const double value) const
+                {
+                return value * GetScaling() * GetDPIScaleFactor();
+                }
+
+            /// @brief Apply screen DPI and parent canvas scaling to a value.
             /// @param sz The size to be scaled.
             /// @note Negative (i.e., invalid) dimensions will return a zero size.
             /// @returns The scaled size.
