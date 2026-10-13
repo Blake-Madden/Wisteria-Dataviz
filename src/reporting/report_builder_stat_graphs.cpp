@@ -572,6 +572,13 @@ namespace Wisteria
             bridgePlot->SetFadeEffect(fadeEffect.value());
             }
 
+        if (const auto anonymize = ReportEnumConvert::ConvertWilmarthBridgeAnonymize(
+                graphNode->GetProperty(L"anonymize")->AsString());
+            anonymize.has_value())
+            {
+            bridgePlot->SetAnonymize(anonymize.value());
+            }
+
         if (const auto survivalDisplay = ReportEnumConvert::ConvertWilmarthBridgeSurvivalDisplay(
                 graphNode->GetProperty(L"survival-display")->AsString());
             survivalDisplay.has_value())

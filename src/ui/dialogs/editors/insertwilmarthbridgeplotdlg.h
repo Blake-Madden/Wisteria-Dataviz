@@ -26,8 +26,8 @@ namespace Wisteria::UI
             - A "Variables..." button that opens a VariableSelectDlg
               for selecting the label, exit, entry, status, and intermediate event columns.
             - Labels showing the current variable selections.
-            - Display options (fade effect, survival statistics, censored markers,
-              intermediate event color).*/
+            - Display options (fade effect, cell display, survival statistics,
+              censored markers, intermediate event color).*/
     class InsertWilmarthBridgePlotDlg final : public InsertGraphDlg
         {
       public:
@@ -97,6 +97,10 @@ namespace Wisteria::UI
         [[nodiscard]]
         Graphs::WilmarthBridgePlot::FadeEffect GetFadeEffect() const noexcept;
 
+        /// @returns How each observation's cells are drawn.
+        [[nodiscard]]
+        Graphs::WilmarthBridgePlot::Anonymize GetAnonymize() const noexcept;
+
         /// @returns What survival statistics to display alongside the grid.
         [[nodiscard]]
         Graphs::WilmarthBridgePlot::SurvivalDisplay GetSurvivalDisplay() const noexcept;
@@ -156,6 +160,7 @@ namespace Wisteria::UI
         wxString m_statusVariable;
         wxString m_intermediateEventVariable;
         int m_fadeEffectSelection{ 0 }; // 0 = None, 1 = RemainingLifetime, 2 = ElapsedTime
+        int m_anonymizeSelection{ 0 };  // 0 = None, 1 = Dots
         int m_survivalDisplaySelection{
             0
         }; // 0 = None, 1 = AtRiskCount, 2 = SurvivalPercent, 3 = Both

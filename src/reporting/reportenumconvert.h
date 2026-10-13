@@ -782,6 +782,22 @@ namespace Wisteria
 
         //---------------------------------------------------
         [[nodiscard]]
+        static std::optional<Graphs::WilmarthBridgePlot::Anonymize>
+        ConvertWilmarthBridgeAnonymize(const wxString& value)
+            {
+            using Anonymize = Graphs::WilmarthBridgePlot::Anonymize;
+            static const std::map<std::wstring_view, Anonymize> anonymizeValues = {
+                { L"none", Anonymize::None }, { L"dots", Anonymize::Dots }
+            };
+
+            const auto foundValue = anonymizeValues.find(value.Lower().ToStdWstring());
+            return ((foundValue != anonymizeValues.cend()) ?
+                        std::optional<Anonymize>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
         static std::optional<Perimeter> ConvertPerimeter(const wxString& value)
             {
             static const std::map<std::wstring_view, Perimeter> peris = {
@@ -1932,6 +1948,23 @@ namespace Wisteria
                 { SurvivalDisplay::SurvivalPercent, L"survival-percent" },
                 { SurvivalDisplay::Both, L"both" }
             };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a WilmarthBridgePlot::Anonymize enum to its JSON string
+        ///     representation.
+        /// @param value The anonymize enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertWilmarthBridgeAnonymizeToString(Graphs::WilmarthBridgePlot::Anonymize value)
+            {
+            using Anonymize = Graphs::WilmarthBridgePlot::Anonymize;
+            static const std::map<Anonymize, wxString> values = { { Anonymize::None, L"none" },
+                                                                  { Anonymize::Dots, L"dots" } };
 
             const auto foundValue = values.find(value);
             return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :

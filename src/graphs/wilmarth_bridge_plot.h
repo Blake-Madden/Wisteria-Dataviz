@@ -161,6 +161,15 @@ namespace Wisteria::Graphs
             Both             /*!< Both the at-risk count and the survival percent.*/
             };
 
+        /// @brief How each observation's cells are drawn.
+        enum class Anonymize
+            {
+            None, /*!< Each cell shows the observation's label, as it appears in the
+                       label column.*/
+            Dots  /*!< Each cell shows a generic dot, which saves space and hides the
+                       observations' identities.*/
+            };
+
         /** @brief Constructor.
             @param canvas The canvas to draw the plot on.*/
         explicit WilmarthBridgePlot(Canvas* canvas);
@@ -210,6 +219,18 @@ namespace Wisteria::Graphs
         /// @param effect The fade effect to use (default is @c FadeEffect::None,
         ///     matching the constant ink of the printed plate).
         void SetFadeEffect(const FadeEffect effect) noexcept { m_fadeEffect = effect; }
+
+        /// @returns How each observation's cells are drawn.
+        [[nodiscard]]
+        Anonymize GetAnonymize() const noexcept
+            {
+            return m_anonymize;
+            }
+
+        /// @brief Sets how each observation's cells are drawn.
+        /// @param anonymize The cell display to use (default is @c Anonymize::None,
+        ///     which shows each observation's label).
+        void SetAnonymize(const Anonymize anonymize) noexcept { m_anonymize = anonymize; }
 
         /// @returns What survival statistics are being displayed alongside the grid.
         [[nodiscard]]
@@ -408,6 +429,7 @@ namespace Wisteria::Graphs
         wxString m_intermediateEventColumnName;
 
         FadeEffect m_fadeEffect{ FadeEffect::None };
+        Anonymize m_anonymize{ Anonymize::None };
         SurvivalDisplay m_survivalDisplay{ SurvivalDisplay::None };
         bool m_showCensoredMarkers{ true };
         wxString m_terminalRowLabel;

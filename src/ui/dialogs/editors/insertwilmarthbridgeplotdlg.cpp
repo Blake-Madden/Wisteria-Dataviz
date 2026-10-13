@@ -93,6 +93,15 @@ namespace Wisteria::UI
                                        fadeChoices, 0,
                                        wxGenericValidator{ &m_fadeEffectSelection }));
 
+        displaySizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Cell display:")),
+                          wxSizerFlags{}.CenterVertical());
+        wxArrayString anonymizeChoices;
+        anonymizeChoices.Add(_(L"Labels"));
+        anonymizeChoices.Add(_(L"Dots (anonymized)"));
+        displaySizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                       anonymizeChoices, 0,
+                                       wxGenericValidator{ &m_anonymizeSelection }));
+
         displaySizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Survival statistics:")),
                           wxSizerFlags{}.CenterVertical());
         wxArrayString survivalChoices;
@@ -286,6 +295,13 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    Graphs::WilmarthBridgePlot::Anonymize InsertWilmarthBridgePlotDlg::GetAnonymize() const noexcept
+        {
+        return (m_anonymizeSelection == 1) ? Graphs::WilmarthBridgePlot::Anonymize::Dots :
+                                             Graphs::WilmarthBridgePlot::Anonymize::None;
+        }
+
+    //-------------------------------------------
     Graphs::WilmarthBridgePlot::SurvivalDisplay
     InsertWilmarthBridgePlotDlg::GetSurvivalDisplay() const noexcept
         {
@@ -370,6 +386,9 @@ namespace Wisteria::UI
             break;
             }
 
+        m_anonymizeSelection =
+            (bridgePlot->GetAnonymize() == Graphs::WilmarthBridgePlot::Anonymize::Dots) ? 1 : 0;
+
         switch (bridgePlot->GetSurvivalDisplay())
             {
         case Graphs::WilmarthBridgePlot::SurvivalDisplay::AtRiskCount:
@@ -417,6 +436,7 @@ namespace Wisteria::UI
                            std::optional<wxString>(GetIntermediateEventVariable())));
 
         plot->SetFadeEffect(GetFadeEffect());
+        plot->SetAnonymize(GetAnonymize());
         plot->SetSurvivalDisplay(GetSurvivalDisplay());
         plot->ShowCensoredMarkers(IsShowingCensoredMarkers());
         plot->ShowTerminalRow(GetTerminalRowLabel());

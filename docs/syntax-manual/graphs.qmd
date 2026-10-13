@@ -1427,6 +1427,10 @@ Properties for `"wilmarth-bridge-plot"` nodes:
   - `"none"`: Constant ink, as in the printed plate (the default).
   - `"remaining-lifetime"`: An observation is palest during the period just before it exits the study.
   - `"elapsed-time"`: Every row is fainter than the one above it, so the whole grid washes out from top to bottom.
+- `"anonymize"`: A string specifying how each observation's cells are drawn. \
+  Available options are:
+  - `"none"`: Each cell shows the observation's label, as it appears in the label column (the default).
+  - `"dots"`: Each cell shows a generic dot, which saves space and hides the observations' identities.
 - `"survival-display"`: A string specifying what survival statistics to display alongside the grid. \
   Available options are:
   - `"none"`: Do not display any survival statistics (the default).

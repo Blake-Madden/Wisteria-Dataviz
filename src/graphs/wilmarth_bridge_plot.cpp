@@ -540,6 +540,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
         };
         const wxColour baseFontColor = GetLeftYAxis().GetFontColor();
 
+        // a medium-sized dot, shrunk if needed to fit within its cell
+        constexpr size_t mediumDotRadiusDIPs{ 4 };
+        const auto dotRadiusDIPs = std::clamp<size_t>(
+            static_cast<size_t>(DownscaleFromScreenAndCanvas(
+                std::min(paddedCellSize.GetWidth(), paddedCellSize.GetHeight()) / 2)),
+            1, mediumDotRadiusDIPs);
+
         double smallestTextScaling{ std::numeric_limits<double>::max() };
         std::vector<std::unique_ptr<GraphItems::Label>> cellLabels;
         std::vector<wxPoint> censorShapePts;
@@ -565,6 +572,20 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
                                                           obs.m_intermediateEventPeriod.value())) ?
                             m_intermediateEventColor :
                             baseFontColor;
+                    if (m_anonymize == Anonymize::Dots)
+                        {
+                        const wxColour dotColor = FadeColor(cellBaseColor, obs, period);
+                        AddObject(std::make_unique<GraphItems::Point2D>(
+                            GraphItems::GraphItemInfo{}
+                                .Pen(wxPen{ dotColor })
+                                .Brush(wxBrush{ dotColor })
+                                .Scaling(GetScaling())
+                                .DPIScaling(GetDPIScaleFactor())
+                                .AnchorPoint(pt),
+                            dotRadiusDIPs, Icons::IconShape::Circle));
+                        lastActivePeriodIndex = periodIdx;
+                        continue;
+                        }
                     auto cellLabel = std::make_unique<GraphItems::Label>(
                         GraphItems::GraphItemInfo{ obs.m_label }
                             .Scaling(GetScaling())

@@ -4756,6 +4756,16 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                 node->Add(L"fade-effect", feStr.value());
                 }
             }
+        if (bridgePlot->GetAnonymize() != Wisteria::Graphs::WilmarthBridgePlot::Anonymize::None)
+            {
+            const auto anonStr =
+                Wisteria::ReportEnumConvert::ConvertWilmarthBridgeAnonymizeToString(
+                    bridgePlot->GetAnonymize());
+            if (anonStr.has_value())
+                {
+                node->Add(L"anonymize", anonStr.value());
+                }
+            }
         if (bridgePlot->GetSurvivalDisplay() !=
             Wisteria::Graphs::WilmarthBridgePlot::SurvivalDisplay::None)
             {
@@ -4772,7 +4782,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             node->Add(L"show-censored-markers", false);
             }
         if (bridgePlot->GetIntermediateEventColor() !=
-            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Firebrick))
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Emerald))
             {
             node->Add(L"intermediate-event-color",
                       ColorToStr(bridgePlot->GetIntermediateEventColor()));
