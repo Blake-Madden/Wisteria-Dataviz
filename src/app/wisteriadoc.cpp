@@ -3339,7 +3339,8 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
 
     auto node =
         wxSimpleJSON::Create(L"{\"type\": \"" + typeStr +
-                             L"\", \"canvas-margins\": [], \"padding\": [], \"outline\": []}");
+                                 L"\", \"canvas-margins\": [], \"padding\": [], \"outline\": []}",
+                             true);
 
     SaveGraph(graph, node, canvas);
 

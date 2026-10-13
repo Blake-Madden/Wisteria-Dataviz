@@ -310,7 +310,7 @@ class WisteriaView final : public wxView
         std::shared_ptr<Wisteria::GraphItems::GraphItemBase> m_graph;
         std::pair<size_t, size_t> m_graphCell{ 0, 0 };
         std::shared_ptr<Wisteria::GraphItems::GraphItemBase> m_legend;
-        std::optional<std::pair<size_t, size_t>> m_legendCell;
+        std::optional<std::pair<size_t, size_t>> m_legendCell{ std::nullopt };
         };
 
     /// @brief Replaces the graph that the last insert or edit placed on the canvas

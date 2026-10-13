@@ -3366,7 +3366,8 @@ void WisteriaView::EditFilterableGraph(Wisteria::Graphs::FilterableGraph& filter
     // put back where they were if the edited graph can't be filtered
     FilterableGraphFallback fallback{ .m_graph = canvas->GetFixedObject(graphRow, graphCol),
                                       .m_graphCell = std::pair{ graphRow, graphCol },
-                                      .m_legend = filterableGraph.GetLegend() };
+                                      .m_legend = filterableGraph.GetLegend(),
+                                      .m_legendCell = std::nullopt };
     if (fallback.m_legend != nullptr)
         {
         const auto [gridRows, gridCols] = canvas->GetFixedObjectsGridSize();
