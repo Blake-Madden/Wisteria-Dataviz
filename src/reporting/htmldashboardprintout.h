@@ -402,6 +402,11 @@ namespace Wisteria
         /// @param originalStates How the graphs were originally shown.
         static void RestoreFilterStates(const FilterableGraphs& pageFilters,
                                         const std::vector<FilterState>& originalStates);
+        /// @returns The caption describing the filters shown on a page,
+        ///     or an empty string if it has none.
+        /// @param canvas The page.
+        [[nodiscard]]
+        static wxString GetFilterCaption(const Canvas& canvas);
         };
     } // namespace Wisteria
 

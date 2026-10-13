@@ -295,6 +295,12 @@ TEST_CASE("FilterableGraph dashboard export", "[filterablegraph][dashboard]")
     CHECK(html.Contains(L"data-variant-label=\"North\" data-variant-default>"));
     CHECK(html.Contains(L"data-variant-label=\"(All)\" hidden>"));
 
+    // each choice is captioned below the graph, in room added to the page
+    CHECK(html.Contains(L"Filters: Region filtered by North</text>"));
+    CHECK(html.Contains(L"Filters: Region unfiltered</text>"));
+    CHECK(html.Contains(L"--page-w:1280;--page-h:748"));
+    CHECK(html.Contains(L"viewBox=\"0 0 1280 748\""));
+
     // every filter choice is a separate render, but element IDs must still be unique
     std::set<wxString> elementIds;
     const wxString idAttr{ L" id=\"" };

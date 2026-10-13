@@ -22,6 +22,7 @@
 #include <wx/image.h>
 #include <wx/msgdlg.h>
 #include <wx/mstream.h>
+#include <wx/settings.h>
 
 //------------------------------------------------------
 wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptState()
@@ -2038,6 +2039,47 @@ void Wisteria::HtmlDashboardPrintout::RestoreFilterStates(
     }
 
 //------------------------------------------------------
+wxString Wisteria::HtmlDashboardPrintout::GetFilterCaption(const Canvas& canvas)
+    {
+    std::vector<wxString> descriptions;
+    for (const auto& filterableGraph : canvas.GetFilterableGraphs())
+        {
+        const auto& filteredGraphs = filterableGraph->GetVariants();
+        if (!filterableGraph->IsShown() ||
+            filterableGraph->GetActiveIndex() >= filteredGraphs.size())
+            {
+            continue;
+            }
+        const wxString description{
+            (filterableGraph->HasAllOption() && filterableGraph->GetActiveIndex() == 0) ?
+                wxString::Format(_(L"%s unfiltered"), filterableGraph->GetFilterColumn()) :
+                wxString::Format(_(L"%s filtered by %s"), filterableGraph->GetFilterColumn(),
+                                 filteredGraphs[filterableGraph->GetActiveIndex()].m_label)
+        };
+        // graphs switched together by the same value are only described once
+        if (std::ranges::none_of(descriptions, [&description](const auto& existing)
+                                 { return existing.CmpNoCase(description) == 0; }))
+            {
+            descriptions.push_back(description);
+            }
+        }
+    if (descriptions.empty())
+        {
+        return {};
+        }
+    wxString joined;
+    for (const auto& description : descriptions)
+        {
+        if (!joined.empty())
+            {
+            joined += L", ";
+            }
+        joined += description;
+        }
+    return wxString::Format(_(L"Filters: %s"), joined);
+    }
+
+//------------------------------------------------------
 Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*>& canvases,
                                                        HtmlDashboardOptions options)
     {
@@ -2079,6 +2121,16 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
     const bool dualOrientations{ options.m_dualOrientations &&
                                  pageSize.GetWidth() != pageSize.GetHeight() };
     const wxSize swappedSize{ pageSize.GetHeight(), pageSize.GetWidth() };
+
+    // every page sets aside room below its graphs for a filter caption,
+    // so that all pages stay the same size
+    const bool hasFilterCaptions{ std::ranges::any_of(
+        canvases, [](const auto* canvas)
+        { return canvas != nullptr && !canvas->GetFilterableGraphs().empty(); }) };
+    constexpr static int CAPTION_FONT_SIZE{ 14 };
+    const int captionHeight{ hasFilterCaptions ? CAPTION_FONT_SIZE * 2 : 0 };
+    const wxString captionFont{ SVGReportPrintout::EscapeXmlAttr(
+        wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName()) };
 
     wxString css{ options.m_css };
     // keep the CSS from ending the <style> element
@@ -2354,7 +2406,7 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         SVGReportPrintout::EscapeXmlText(loadingText));
 
     html += wxString::Format(L"<main class=\"dash-pages\" style=\"--page-w:%d;--page-h:%d\">\n",
-                             pageSize.GetWidth(), pageSize.GetHeight());
+                             pageSize.GetWidth(), pageSize.GetHeight() + captionHeight);
     size_t pageIndex{ 0 };
     for (size_t canvasIndex = 0; canvasIndex < canvases.size(); ++canvasIndex)
         {
@@ -2371,28 +2423,39 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
             {
             pageTitle = wxString::Format(_(L"Page %zu"), pageIndex + 1);
             }
-        const auto renderPageSvg =
-            [canvas, dualOrientations, pageIndex](const wxSize& size, const bool isSwapped,
+        const auto renderPageSvg = [canvas, dualOrientations, pageIndex, captionHeight,
+                                    &captionFont](const wxSize& size, const bool isSwapped,
                                                   const wxString& idSuffix = wxString{})
         {
             // every render (page, orientation and filter choice) gets its own element IDs
             const wxString content{ ScopeSvgIds(
                 SVGReportPrintout::RenderCanvasToSvg(canvas, size),
                 wxString::Format(L"p%zu%s%s", pageIndex, isSwapped ? L"-alt" : L"", idSuffix)) };
+            const int fullHeight{ size.GetHeight() + captionHeight };
             wxString orientAttrs;
             if (dualOrientations)
                 {
                 orientAttrs = wxString::Format(
                     L" data-orient=\"%s\" style=\"--svg-w:%d;--svg-h:%d\"",
                     (size.GetWidth() < size.GetHeight()) ? L"portrait" : L"landscape",
-                    size.GetWidth(), size.GetHeight());
+                    size.GetWidth(), fullHeight);
+                }
+            wxString caption;
+            if (const wxString captionText{ GetFilterCaption(*canvas) }; !captionText.empty())
+                {
+                caption = wxString::Format(
+                    L"<text class=\"page-filter-caption\" x=\"%d\" y=\"%d\" "
+                    "dominant-baseline=\"central\" fill=\"#000000\" font-family=\"%s\" "
+                    "font-size=\"%d\">%s</text>\n",
+                    CAPTION_FONT_SIZE, size.GetHeight() + (captionHeight / 2), captionFont,
+                    CAPTION_FONT_SIZE, SVGReportPrintout::EscapeXmlText(captionText));
                 }
             return wxString::Format(
                 L"<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"page-svg\"%s "
                 "viewBox=\"0 0 %d %d\" preserveAspectRatio=\"xMidYMid meet\">\n"
-                "<g id=\"page-content-%s%zu%s\">\n%s\n</g>\n</svg>\n",
-                orientAttrs, size.GetWidth(), size.GetHeight(), isSwapped ? L"alt-" : L"",
-                pageIndex, idSuffix, content);
+                "<g id=\"page-content-%s%zu%s\">\n%s\n%s</g>\n</svg>\n",
+                orientAttrs, size.GetWidth(), fullHeight, isSwapped ? L"alt-" : L"", pageIndex,
+                idSuffix, content, caption);
         };
 
         const FilterableGraphs pageFilters{ GetPageFilters(*canvas) };
