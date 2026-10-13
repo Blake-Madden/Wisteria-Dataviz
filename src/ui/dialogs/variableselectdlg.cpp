@@ -445,23 +445,53 @@ namespace Wisteria::UI
                 });
             }
 
-        // double-clicking var in the main list will move it to the first list on
-        // the right that doesn't have anything in it (will do nothing if all have
-        // something already)
-        m_mainVarlist->Bind(wxEVT_LEFT_DCLICK,
-                            [&, this]([[maybe_unused]] wxMouseEvent&)
-                            {
-                                for (const auto& varList : m_varLists)
-                                    {
-                                    if (varList.m_list->GetItemCount() == 0)
-                                        {
-                                        MoveSelectedVariablesBetweenLists(m_mainVarlist,
-                                                                          varList.m_list);
-                                        UpdateButtonStates();
-                                        break;
-                                        }
-                                    }
-                            });
+        // double-clicking var in the main list will move it to the first empty list on
+        // the right that accepts the selected variables' types (will do nothing if
+        // no such list is available)
+        m_mainVarlist->Bind(
+            wxEVT_LEFT_DCLICK,
+            [&, this]([[maybe_unused]] wxMouseEvent&)
+            {
+                std::vector<Data::Dataset::ColumnImportType> selectedTypes;
+                for (const auto& selItem : GetSelectedVariablesInList(m_mainVarlist))
+                    {
+                    const wxString varName{ selItem.GetText() };
+                    const auto colIt =
+                        std::ranges::find_if(m_columnInfo, [&varName](const auto& col)
+                                             { return col.m_name == varName; });
+                    if (colIt != m_columnInfo.cend())
+                        {
+                        selectedTypes.push_back(colIt->m_type);
+                        }
+                    }
+                if (selectedTypes.empty())
+                    {
+                    return;
+                    }
+
+                for (const auto& varList : m_varLists)
+                    {
+                    if (varList.m_list->GetItemCount() != 0)
+                        {
+                        continue;
+                        }
+                    const bool acceptsAll =
+                        varList.m_acceptedTypes.empty() ||
+                        std::ranges::all_of(selectedTypes,
+                                            [&varList](const auto colType)
+                                            {
+                                                return std::ranges::find(varList.m_acceptedTypes,
+                                                                         colType) !=
+                                                       varList.m_acceptedTypes.cend();
+                                            });
+                    if (acceptsAll)
+                        {
+                        MoveSelectedVariablesBetweenLists(m_mainVarlist, varList.m_list);
+                        UpdateButtonStates();
+                        break;
+                        }
+                    }
+            });
 
         // pre-populate sub-lists with any default variables,
         // removing them from the main list
