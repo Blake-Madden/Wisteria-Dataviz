@@ -1599,10 +1599,22 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptKeys()
     const btn = document.querySelector(btnSelector);
     const menu = document.getElementById(menuId);
     if (!btn || !menu) return;
+    // a menu too wide for the room right of its button shifts left to stay in the window
+    const fitMenu = function() {
+      menu.style.left = '';
+      if (menu.hidden || getComputedStyle(menu).position !== 'absolute') return;
+      const rect = menu.getBoundingClientRect();
+      const overflow = rect.right - (document.documentElement.clientWidth - 8);
+      if (overflow > 0) {
+        menu.style.left = -Math.min(overflow, Math.max(0, rect.left - 8)) + 'px';
+      }
+    };
     const setMenu = function(open) {
       menu.hidden = !open;
       btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      fitMenu();
     };
+    window.addEventListener('resize', fitMenu);
     btn.addEventListener('click', function() { setMenu(menu.hidden); });
     const menuBoxes = function() {
       return Array.prototype.filter.call(
