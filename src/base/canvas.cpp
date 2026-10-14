@@ -1132,8 +1132,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             wxASSERT_MSG(std::cmp_less(currentRowIndex, m_rowsInfo.size()),
                          L"Canvas row out of range!");
 
-            const size_t rowHeightGridArea =
-                fixedObjectRect.GetHeight() * GetRowInfo(currentRowIndex).GetHeightProportion();
+            // round up rows sized to their content so that rounding never cuts into it
+            const bool isRowFitToContent{ std::ranges::any_of(
+                std::as_const(currentRow), [](const auto& obj) noexcept
+                { return obj != nullptr && obj->IsFittingCanvasRowHeightToContent(); }) };
+            const double rowHeightGridAreaRaw{ fixedObjectRect.GetHeight() *
+                                               GetRowInfo(currentRowIndex).GetHeightProportion() };
+            const auto rowHeightGridArea = static_cast<size_t>(
+                isRowFitToContent ? std::ceil(rowHeightGridAreaRaw) : rowHeightGridAreaRaw);
             const size_t rowHeightFullCanvas =
                 (GetCanvasRect(dc).GetHeight() *
                  GetRowInfo(currentRowIndex).GetHeightProportion()) +

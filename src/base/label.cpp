@@ -138,19 +138,33 @@ namespace Wisteria::GraphItems
     //-------------------------------------------
     wxCoord Label::CalcPageVerticalOffset() const
         {
-        return !GetMinimumUserHeightDIPs() ?
-                   0 : // if no min height, then no offset needed
-                   (ScaleToScreenAndCanvas(GetMinimumUserHeightDIPs().value()) <=
-                    GetCachedContentBoundingBox().GetHeight()) ?
-                   0 :
-               (GetPageVerticalAlignment() == PageVerticalAlignment::TopAligned) ?
+        // if no min height, then no offset needed
+        if (!GetMinimumUserHeightDIPs())
+            {
+            return 0;
+            }
+        const wxCoord boxHeight = ScaleToScreenAndCanvas(GetMinimumUserHeightDIPs().value());
+        const wxCoord contentHeight = GetCachedContentBoundingBox().GetHeight();
+        if (boxHeight <= contentHeight)
+            {
+            // A locked label can't shrink to fit its box,
+            // so split any overflow evenly above and below.
+            // (A box that grows to fit its content has no overflow.)
+            if (!IsBoundingBoxScalingLocked() ||
+                (GetBoundingBoxToContentAdjustment() &
+                 LabelBoundingBoxContentAdjustment::ContentAdjustHeight) != 0)
+                {
+                return 0;
+                }
+            const wxCoord actualBoxHeight =
+                GetCachedBoundingBox().IsEmpty() ? boxHeight : GetCachedBoundingBox().GetHeight();
+            return std::min<wxCoord>(0, (actualBoxHeight - contentHeight) / 2);
+            }
+        return (GetPageVerticalAlignment() == PageVerticalAlignment::TopAligned) ?
                    0 :
                (GetPageVerticalAlignment() == PageVerticalAlignment::Centered) ?
-                   (ScaleToScreenAndCanvas(GetMinimumUserHeightDIPs().value()) -
-                    GetCachedContentBoundingBox().GetHeight()) /
-                       2 :
-                   (ScaleToScreenAndCanvas(GetMinimumUserHeightDIPs().value()) -
-                    GetCachedContentBoundingBox().GetHeight());
+                   (boxHeight - contentHeight) / 2 :
+                   (boxHeight - contentHeight);
         }
 
     //-------------------------------------------
