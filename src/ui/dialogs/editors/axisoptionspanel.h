@@ -13,7 +13,9 @@
 #include "../../base/canvas.h"
 #include "../../reporting/reportbuilder.h"
 #include <map>
+#include <optional>
 #include <set>
+#include <vector>
 #include <wx/choice.h>
 #include <wx/clrpicker.h>
 #include <wx/datectrl.h>
@@ -159,6 +161,30 @@ namespace Wisteria::UI
         void OnRemoveBracket();
         void OnAddBracketsFromDataset();
         void RefreshBracketList();
+
+        /// @brief Start and end controls in the Add/Edit Bracket dialogs.
+        struct BracketRangeControls
+            {
+            std::vector<double> m_labelPositions;
+            wxChoice* m_startChoice{ nullptr };
+            wxChoice* m_endChoice{ nullptr };
+            wxSpinCtrlDouble* m_startSpin{ nullptr };
+            wxSpinCtrlDouble* m_endSpin{ nullptr };
+
+            /// @returns The selected start and end positions, with start <= end.
+            [[nodiscard]]
+            std::pair<double, double> GetRange() const;
+            };
+
+        /// @brief Adds the Start and End rows to a bracket dialog.
+        /// @param parent The dialog.
+        /// @param sizer The dialog's label/control grid.
+        /// @param axis The axis whose custom labels (if at least two) are the choices.
+        /// @param range The bracket's current start and end, or @c std::nullopt for a new one.
+        /// @returns The created controls.
+        static BracketRangeControls
+        AddBracketRangeControls(wxWindow* parent, wxSizer* sizer, const GraphItems::Axis& axis,
+                                const std::optional<std::pair<double, double>>& range);
 
         Canvas* m_canvas{ nullptr };
         const ReportBuilder* m_reportBuilder{ nullptr };

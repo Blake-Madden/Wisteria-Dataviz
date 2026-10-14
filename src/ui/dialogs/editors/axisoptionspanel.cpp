@@ -1237,15 +1237,7 @@ namespace Wisteria::UI
 #endif
         sizer->Add(labelCtrl, wxSizerFlags{}.Expand());
 
-        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start:")), wxSizerFlags{}.CenterVertical());
-        auto* startSpin = new wxSpinCtrlDouble(&dlg, wxID_ANY, wxString{}, wxDefaultPosition,
-                                               wxDefaultSize, wxSP_ARROW_KEYS, -1e9, 1e9, 0, 0.1);
-        sizer->Add(startSpin, wxSizerFlags{}.Expand());
-
-        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"End:")), wxSizerFlags{}.CenterVertical());
-        auto* endSpin = new wxSpinCtrlDouble(&dlg, wxID_ANY, wxString{}, wxDefaultPosition,
-                                             wxDefaultSize, wxSP_ARROW_KEYS, -1e9, 1e9, 0, 0.1);
-        sizer->Add(endSpin, wxSizerFlags{}.Expand());
+        const auto rangeControls = AddBracketRangeControls(&dlg, sizer, axis, std::nullopt);
 
         sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Color:")), wxSizerFlags{}.CenterVertical());
         auto* colorPicker = new wxColourPickerCtrl(&dlg, wxID_ANY, *wxBLACK);
@@ -1292,8 +1284,7 @@ namespace Wisteria::UI
                 bracketStyles[styleChoice->GetSelection()] :
                 BracketLineStyle::CurlyBraces;
 
-        const double startPos = startSpin->GetValue();
-        const double endPos = endSpin->GetValue();
+        const auto [startPos, endPos] = rangeControls.GetRange();
         const double labelPos = (startPos + endPos) / 2.0;
 
         GraphItems::Axis::AxisBracket bracket(
@@ -1303,6 +1294,86 @@ namespace Wisteria::UI
         axis.SetBracketsAreDynamic(false);
         MarkEdited(AxisEdit::Brackets);
         RefreshBracketList();
+        }
+
+    //-------------------------------------------
+    std::pair<double, double> AxisOptionsPanel::BracketRangeControls::GetRange() const
+        {
+        const double startPos{ (m_startChoice != nullptr) ?
+                                   m_labelPositions[m_startChoice->GetSelection()] :
+                                   m_startSpin->GetValue() };
+        const double endPos{ (m_endChoice != nullptr) ?
+                                 m_labelPositions[m_endChoice->GetSelection()] :
+                                 m_endSpin->GetValue() };
+        return { std::min(startPos, endPos), std::max(startPos, endPos) };
+        }
+
+    //-------------------------------------------
+    AxisOptionsPanel::BracketRangeControls
+    AxisOptionsPanel::AddBracketRangeControls(wxWindow* parent, wxSizer* sizer,
+                                              const GraphItems::Axis& axis,
+                                              const std::optional<std::pair<double, double>>& range)
+        {
+        BracketRangeControls controls;
+
+        wxArrayString labelNames;
+        for (const auto& [value, label] : axis.GetCustomLabels())
+            {
+            if (!label.GetText().empty())
+                {
+                controls.m_labelPositions.push_back(value);
+                labelNames.Add(label.GetText());
+                }
+            }
+
+        wxWindow* startCtrl{ nullptr };
+        wxWindow* endCtrl{ nullptr };
+        if (controls.m_labelPositions.size() >= 2)
+            {
+            // index of the custom label closest to the given axis position
+            const auto findNearestLabel = [&controls](const double pos)
+            {
+                size_t nearest{ 0 };
+                for (size_t i = 1; i < controls.m_labelPositions.size(); ++i)
+                    {
+                    if (std::abs(controls.m_labelPositions[i] - pos) <
+                        std::abs(controls.m_labelPositions[nearest] - pos))
+                        {
+                        nearest = i;
+                        }
+                    }
+                return static_cast<int>(nearest);
+            };
+
+            controls.m_startChoice =
+                new wxChoice(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, labelNames);
+            controls.m_endChoice =
+                new wxChoice(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, labelNames);
+            controls.m_startChoice->SetSelection(range ? findNearestLabel(range->first) : 0);
+            controls.m_endChoice->SetSelection(range ? findNearestLabel(range->second) :
+                                                       static_cast<int>(labelNames.size()) - 1);
+            startCtrl = controls.m_startChoice;
+            endCtrl = controls.m_endChoice;
+            }
+        else
+            {
+            controls.m_startSpin =
+                new wxSpinCtrlDouble(parent, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
+                                     wxSP_ARROW_KEYS, -1e9, 1e9, range ? range->first : 0, 0.1);
+            controls.m_endSpin =
+                new wxSpinCtrlDouble(parent, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
+                                     wxSP_ARROW_KEYS, -1e9, 1e9, range ? range->second : 0, 0.1);
+            startCtrl = controls.m_startSpin;
+            endCtrl = controls.m_endSpin;
+            }
+
+        sizer->Add(new wxStaticText(parent, wxID_ANY, _(L"Start:")),
+                   wxSizerFlags{}.CenterVertical());
+        sizer->Add(startCtrl, wxSizerFlags{}.Expand());
+        sizer->Add(new wxStaticText(parent, wxID_ANY, _(L"End:")), wxSizerFlags{}.CenterVertical());
+        sizer->Add(endCtrl, wxSizerFlags{}.Expand());
+
+        return controls;
         }
 
     //-------------------------------------------
@@ -1338,17 +1409,8 @@ namespace Wisteria::UI
 #endif
         sizer->Add(labelCtrl, wxSizerFlags{}.Expand());
 
-        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Start:")), wxSizerFlags{}.CenterVertical());
-        auto* startSpin =
-            new wxSpinCtrlDouble(&dlg, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
-                                 wxSP_ARROW_KEYS, -1e9, 1e9, bracket.GetStartPosition(), 0.1);
-        sizer->Add(startSpin, wxSizerFlags{}.Expand());
-
-        sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"End:")), wxSizerFlags{}.CenterVertical());
-        auto* endSpin =
-            new wxSpinCtrlDouble(&dlg, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
-                                 wxSP_ARROW_KEYS, -1e9, 1e9, bracket.GetEndPosition(), 0.1);
-        sizer->Add(endSpin, wxSizerFlags{}.Expand());
+        const auto rangeControls = AddBracketRangeControls(
+            &dlg, sizer, axis, std::pair{ bracket.GetStartPosition(), bracket.GetEndPosition() });
 
         sizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Color:")), wxSizerFlags{}.CenterVertical());
         auto* colorPicker =
@@ -1409,8 +1471,7 @@ namespace Wisteria::UI
                 bracketStyles[styleChoice->GetSelection()] :
                 BracketLineStyle::CurlyBraces;
 
-        const double startPos = startSpin->GetValue();
-        const double endPos = endSpin->GetValue();
+        const auto [startPos, endPos] = rangeControls.GetRange();
         const double labelPos = (startPos + endPos) / 2.0;
 
         brackets[sel] = GraphItems::Axis::AxisBracket(
