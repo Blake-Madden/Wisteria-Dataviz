@@ -732,15 +732,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
             return GetBoundingBox(dc);
             }
 
-        if (GetClippingRect())
-            {
-            dc.SetClippingRegion(GetClippingRect().value());
-            }
-
         // if the size or scaling has changed, then rescale from
         // the original image to maintain fidelity
         const wxSize scaledSize(GetImageSize().GetWidth() * GetScaling(),
                                 GetImageSize().GetHeight() * GetScaling());
+        if (scaledSize.GetWidth() <= 0 || scaledSize.GetHeight() <= 0)
+            {
+            return {};
+            }
+
+        if (GetClippingRect())
+            {
+            dc.SetClippingRegion(GetClippingRect().value());
+            }
 
         // for print/PDF output, keep the source bitmap at full resolution and
         // fit it to the layout via the DC's user scale — this embeds a high-DPI
