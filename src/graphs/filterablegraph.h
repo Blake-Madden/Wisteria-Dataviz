@@ -101,6 +101,13 @@ namespace Wisteria::Graphs
             return _(L"(All)");
             }
 
+        /// @returns The dataset being filtered.
+        [[nodiscard]]
+        const std::shared_ptr<const Data::Dataset>& GetData() const noexcept
+            {
+            return m_data;
+            }
+
         /// @returns The name of the column being filtered on.
         [[nodiscard]]
         const wxString& GetFilterColumn() const noexcept
@@ -227,6 +234,7 @@ namespace Wisteria::Graphs
             return *m_variants.at(m_activeIndex).m_graph;
             }
 
+        std::shared_ptr<const Data::Dataset> m_data;
         wxString m_filterColumn;
         std::vector<Variant> m_variants;
         size_t m_activeIndex{ 0 };

@@ -18,7 +18,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FilterableGraph, Wisteria::GraphItem
     FilterableGraph::FilterableGraph(const std::shared_ptr<const Data::Dataset>& data,
                                      const wxString& filterColumn, const wxString& defaultValue,
                                      const GraphFactory& factory)
-        : m_filterColumn(filterColumn)
+        : m_data(data), m_filterColumn(filterColumn)
         {
         if (data == nullptr || !factory)
             {

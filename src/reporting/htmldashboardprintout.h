@@ -14,6 +14,7 @@
 
 #include "../base/canvas.h"
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -268,6 +269,10 @@ namespace Wisteria
         /// @returns The script showing a page's selected filter choice.
         [[nodiscard]]
         static wxString GetDashboardScriptChoiceSwitch();
+        /// @returns The script selecting filter choices (on linked pages too)
+        ///     and building their menu.
+        [[nodiscard]]
+        static wxString GetDashboardScriptChoiceMenu();
         /// @returns The script handling page visibility, layers, and the URL hash.
         [[nodiscard]]
         static wxString GetDashboardScriptPages();
@@ -334,9 +339,12 @@ namespace Wisteria
         /// @returns The script wiring up the theme button and menu items.
         [[nodiscard]]
         static wxString GetDashboardScriptTheme();
-        /// @returns The script handling keyboard navigation and drop-down menus.
+        /// @returns The script handling keyboard navigation.
         [[nodiscard]]
         static wxString GetDashboardScriptKeys();
+        /// @returns The script handling drop-down menus.
+        [[nodiscard]]
+        static wxString GetDashboardScriptMenus();
         /// @returns The script wiring up controls.
         [[nodiscard]]
         static wxString GetDashboardScriptEvents();
@@ -355,28 +363,76 @@ namespace Wisteria
             bool m_legendShown{ true };
             };
 
+        /// @brief Filterable graphs on a page that filter the same dataset by the same column.
+        struct FilterGroup
+            {
+            FilterableGraphs m_graphs;
+            std::vector<FilterState> m_originalStates;
+            std::vector<wxString> m_choices;
+            size_t m_defaultChoice{ 0 };
+            std::optional<size_t> m_link;
+            };
+
+        /// @brief The choice that a set of linked filter groups open on.
+        struct LinkedChoice
+            {
+            wxString m_label;
+            bool m_isAll{ false };
+            wxString m_pageTitle;
+            };
+
         [[nodiscard]]
         wxString BuildLogo(HtmlDashboardOptions options);
         [[nodiscard]]
         wxString BuildKeyboardTip();
 
-        /// @returns The filterable graphs on a page that are switched together.
+        /// @returns The filterable graphs on a page, grouped by the dataset and column
+        ///     they filter. The graphs in a group are switched together.
         /// @param canvas The page.
         [[nodiscard]]
-        static FilterableGraphs GetPageFilters(const Canvas& canvas);
-        /// @returns The page's filter choices, with the unfiltered choice first.
-        /// @param pageFilters The page's filterable graphs.
+        static std::vector<FilterableGraphs> GetPageFilters(const Canvas& canvas);
+        /// @returns For each page, the link ID of each of its filter groups,
+        ///     or @c std::nullopt for a group that isn't linked.
+        /// @details Filter groups on different pages are linked if they filter
+        ///     the same dataset by the same column.
+        /// @param canvases The pages.
+        [[nodiscard]]
+        static std::vector<std::vector<std::optional<size_t>>>
+        GetFilterLinks(const std::vector<Canvas*>& canvases);
+        /// @returns A page's filter groups, with their choices and how they were shown.
+        /// @param canvas The page.
+        /// @param groupLinks The link ID of each of the page's filter groups.
+        [[nodiscard]]
+        static std::vector<FilterGroup>
+        GetFilterGroups(const Canvas& canvas, const std::vector<std::optional<size_t>>& groupLinks);
+        /** @brief Opens a linked filter group on the same choice as the first group
+                in its link, logging a warning if that changes its choice.
+            @param filterGroup The filter group.
+            @param firstChoice The choice of the first group in the link.
+            @param pageTitle The title of the filter group's page.*/
+        static void ApplyLinkedChoice(FilterGroup& filterGroup, const LinkedChoice& firstChoice,
+                                      const wxString& pageTitle);
+        /// @returns The heading for a filter group in the filter menu.
+        /// @details If another group on the page filters a column with the same name,
+        ///     the dataset's name (or the group's number) is included.
+        /// @param filterGroups The page's filter groups.
+        /// @param groupIndex The index of the filter group.
+        [[nodiscard]]
+        static wxString GetFilterGroupTitle(const std::vector<FilterGroup>& filterGroups,
+                                            size_t groupIndex);
+        /// @returns The filter group's choices, with the unfiltered choice first.
+        /// @param pageFilters The filter group's graphs.
         [[nodiscard]]
         static std::vector<wxString> GetFilterChoices(const FilterableGraphs& pageFilters);
         /// @returns The index of the choice being shown on the canvas.
-        /// @param pageFilters The page's filterable graphs.
-        /// @param choices The page's filter choices.
+        /// @param pageFilters The filter group's graphs.
+        /// @param choices The filter group's choices.
         [[nodiscard]]
         static size_t GetDefaultFilterChoice(const FilterableGraphs& pageFilters,
                                              const std::vector<wxString>& choices);
-        /** @brief Shows a filter choice on all of a page's filterable graphs.
+        /** @brief Shows a filter choice on all of a filter group's graphs.
             @details Graphs that don't have the choice (and their legends) are left blank.
-            @param pageFilters The page's filterable graphs.
+            @param pageFilters The filter group's graphs.
             @param originalStates How the graphs were originally shown.
             @param choice The filter value to show.
             @param isAllChoice @c true if showing the unfiltered choice.*/

@@ -20,6 +20,7 @@
 #include <wx/file.h>
 #include <wx/filename.h>
 #include <wx/image.h>
+#include <wx/log.h>
 #include <wx/msgdlg.h>
 #include <wx/mstream.h>
 #include <wx/settings.h>
@@ -58,10 +59,12 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptState()
   }
   function saveState() {
     const hidden = layers.filter(function(layer) { return !activeLayers.has(layer); });
-    // the filter choice shown on each page with a filterable graph
+    // the choice shown in each filter group of each page with filterable graphs
     const choices = {};
     pages.forEach(function(page, i) {
-      if (page.choices) choices[i] = page.choices[page.choiceIndex].label;
+      if (page.filters) {
+        choices[i] = page.filters.map(function(filter) { return filter.labels[filter.index]; });
+      }
     });
     try {
       localStorage.setItem(stateKey,
@@ -131,23 +134,34 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptChoices()
         layer: el.getAttribute('data-layer') || '',
         title: el.getAttribute('aria-label') || format(strings.page, i + 1)
       };
-      // a page with a filterable graph has a version of itself for each filter value
+      // a page with filterable graphs has a version of itself for each
+      // combination of its filter groups' choices
       const choiceEls = el.querySelectorAll(':scope > .page-variant');
       if (!choiceEls.length) {
         Object.assign(page, svgState(page, el));
         return page;
       }
-      page.column = el.getAttribute('data-variant-column') || '';
+      page.filters = Array.from(el.querySelectorAll(':scope > .page-filter')).map(function(f) {
+        return {
+          column: f.getAttribute('data-column') || '',
+          link: f.getAttribute('data-link') || '',
+          labels: Array.from(f.children).map(function(span) { return span.textContent; }),
+          index: 0
+        };
+      });
       page.choices = Array.from(choiceEls).map(function(choiceEl) {
         return {
           el: choiceEl,
-          label: choiceEl.getAttribute('data-variant-label') || '',
+          key: choiceEl.getAttribute('data-variant-choices') || '',
           state: svgState(page, choiceEl)
         };
       });
       page.choiceIndex = Math.max(0, page.choices.findIndex(function(choice) {
         return choice.el.hasAttribute('data-variant-default');
       }));
+      page.choices[page.choiceIndex].key.split('-').forEach(function(value, i) {
+        if (page.filters[i]) page.filters[i].index = parseInt(value, 10) || 0;
+      });
       Object.assign(page, page.choices[page.choiceIndex].state);
       return page;
     });
@@ -159,8 +173,18 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptChoices()
 wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptChoiceSwitch()
     {
     return LR"JS(
-  function setPageChoice(page, index) {
-    if (!page.choices || index === page.choiceIndex || !page.choices[index]) return;
+  // shows the version of a page matching its filter groups' choices
+  function showPageChoice(page) {
+    if (!page.filters) return;
+    page.filters.forEach(function(filter) {
+      if (!filter.group) return;
+      filter.group.querySelectorAll('input[type="radio"]').forEach(function(radio, i) {
+        radio.checked = i === filter.index;
+      });
+    });
+    const wanted = page.filters.map(function(filter) { return filter.index; }).join('-');
+    const index = page.choices.findIndex(function(choice) { return choice.key === wanted; });
+    if (index < 0 || index === page.choiceIndex) return;
     const outgoing = page.choices[page.choiceIndex];
     choiceKeys.forEach(function(key) { outgoing.state[key] = page[key]; });
     outgoing.el.hidden = true;
@@ -168,11 +192,6 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptChoiceSwitch()
     choiceKeys.forEach(function(key) { page[key] = incoming.state[key]; });
     incoming.el.hidden = false;
     page.choiceIndex = index;
-    if (page.choiceGroup) {
-      page.choiceGroup.querySelectorAll('input[type="radio"]').forEach(function(radio, i) {
-        radio.checked = i === index;
-      });
-    }
     if (page.card && page.svg) {
       const use = page.card.querySelector('use');
       const group = page.svg.querySelector('g[id^="page-content-"]');
@@ -185,6 +204,35 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptChoiceSwitch()
       void page.el.offsetWidth;
       revealPage(page);
     }
+  }
+)JS";
+    }
+
+//------------------------------------------------------
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptChoiceMenu()
+    {
+    return LR"JS(
+  function setPageChoice(page, filterIndex, labelIndex) {
+    const filter = page.filters && page.filters[filterIndex];
+    if (!filter || labelIndex === filter.index || labelIndex >= filter.labels.length) return;
+    const label = filter.labels[labelIndex].toLowerCase();
+    filter.index = labelIndex;
+    showPageChoice(page);
+    // filter groups on other pages for the same data and column show the same choice
+    if (filter.link) {
+      pages.forEach(function(other) {
+        if (other === page || !other.filters) return;
+        other.filters.forEach(function(otherFilter) {
+          if (otherFilter.link !== filter.link) return;
+          // the unfiltered choice is always first
+          const otherIndex = labelIndex === 0 ? 0 : otherFilter.labels.findIndex(function(text) {
+            return text.toLowerCase() === label;
+          });
+          if (otherIndex >= 0) otherFilter.index = otherIndex;
+        });
+        showPageChoice(other);
+      });
+    }
     applyFilters();
     saveState();
   }
@@ -192,38 +240,43 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptChoiceSwitch()
     const saved = savedState.choices;
     if (!saved || typeof saved !== 'object') return;
     pages.forEach(function(page, i) {
-      if (!page.choices || typeof saved[i] !== 'string') return;
-      const index = page.choices.findIndex(function(choice) { return choice.label === saved[i]; });
-      if (index >= 0) setPageChoice(page, index);
+      if (!page.filters || !Array.isArray(saved[i])) return;
+      saved[i].forEach(function(label, filterIndex) {
+        const filter = page.filters[filterIndex];
+        const index = filter ? filter.labels.indexOf(label) : -1;
+        if (index >= 0) setPageChoice(page, filterIndex, index);
+      });
     });
   }
-  // the filter values of a page's filterable graphs, of which one is shown at a time
-  function buildChoiceGroup(menu, page, pageIndex) {
-    const title = page.column || strings.filter;
-    const group = document.createElement('div');
-    group.className = 'dash-filters-group';
-    group.dataset.page = String(pageIndex);
-    group.setAttribute('role', 'radiogroup');
-    group.setAttribute('aria-label', title);
-    const heading = document.createElement('div');
-    heading.className = 'dash-filters-heading';
-    heading.textContent = title;
-    group.appendChild(heading);
-    page.choices.forEach(function(choice, choiceIndex) {
-      const row = document.createElement('label');
-      const radio = document.createElement('input');
-      radio.type = 'radio';
-      radio.name = 'dash-choice-' + pageIndex;
-      radio.checked = choiceIndex === page.choiceIndex;
-      radio.addEventListener('change', function() {
-        if (radio.checked) setPageChoice(page, choiceIndex);
+  // each filter group's values, of which one is shown at a time
+  function buildChoiceGroups(menu, page, pageIndex) {
+    page.filters.forEach(function(filter, filterIndex) {
+      const title = filter.column || strings.filter;
+      const group = document.createElement('div');
+      group.className = 'dash-filters-group';
+      group.dataset.page = String(pageIndex);
+      group.setAttribute('role', 'radiogroup');
+      group.setAttribute('aria-label', title);
+      const heading = document.createElement('div');
+      heading.className = 'dash-filters-heading';
+      heading.textContent = title;
+      group.appendChild(heading);
+      filter.labels.forEach(function(label, labelIndex) {
+        const row = document.createElement('label');
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'dash-choice-' + pageIndex + '-' + filterIndex;
+        radio.checked = labelIndex === filter.index;
+        radio.addEventListener('change', function() {
+          if (radio.checked) setPageChoice(page, filterIndex, labelIndex);
+        });
+        row.appendChild(radio);
+        row.appendChild(document.createTextNode(label));
+        group.appendChild(row);
       });
-      row.appendChild(radio);
-      row.appendChild(document.createTextNode(choice.label));
-      group.appendChild(row);
+      menu.appendChild(group);
+      filter.group = group;
     });
-    menu.appendChild(group);
-    page.choiceGroup = group;
   }
 )JS";
     }
@@ -520,7 +573,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptFilterMenu()
     if (!menu) return;
     pages.forEach(function(page, pageIndex) {
       if (!page.svg) return;
-      if (page.choices) buildChoiceGroup(menu, page, pageIndex);
+      if (page.filters) buildChoiceGroups(menu, page, pageIndex);
       const found = collectFilterSections(page);
       found.sections.forEach(function(section) {
         appendFilterGroup(menu, section, found.chartIds, pageIndex);
@@ -1595,6 +1648,13 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptKeys()
       togglePresenting();
     }
   }
+)JS";
+    }
+
+//------------------------------------------------------
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptMenus()
+    {
+    return LR"JS(
   function bindMenu(btnSelector, menuId, wrapperSelector) {
     const btn = document.querySelector(btnSelector);
     const menu = document.getElementById(menuId);
@@ -1839,22 +1899,164 @@ wxString Wisteria::HtmlDashboardPrintout::BuildKeyboardTip()
     }
 
 //------------------------------------------------------
-Wisteria::HtmlDashboardPrintout::FilterableGraphs
+std::vector<Wisteria::HtmlDashboardPrintout::FilterableGraphs>
 Wisteria::HtmlDashboardPrintout::GetPageFilters(const Canvas& canvas)
     {
-    // graphs sharing the first one's column are switched together,
-    // the others stay at their current values
-    FilterableGraphs pageFilters;
+    std::vector<FilterableGraphs> filterGroups;
     for (const auto& filterableGraph : canvas.GetFilterableGraphs())
         {
-        if (filterableGraph->GetVariants().size() > 1 &&
-            (pageFilters.empty() || filterableGraph->GetFilterColumn().CmpNoCase(
-                                        pageFilters.front()->GetFilterColumn()) == 0))
+        if (filterableGraph->GetVariants().size() < 2)
             {
-            pageFilters.push_back(filterableGraph);
+            continue;
+            }
+        const auto foundGroup = std::ranges::find_if(
+            filterGroups,
+            [&filterableGraph](const auto& filterGroup)
+            {
+                return filterGroup.front()->GetData() == filterableGraph->GetData() &&
+                       filterGroup.front()->GetFilterColumn().CmpNoCase(
+                           filterableGraph->GetFilterColumn()) == 0;
+            });
+        if (foundGroup == filterGroups.end())
+            {
+            filterGroups.push_back(FilterableGraphs{ filterableGraph });
+            }
+        else
+            {
+            foundGroup->push_back(filterableGraph);
             }
         }
-    return pageFilters;
+    return filterGroups;
+    }
+
+//------------------------------------------------------
+std::vector<std::vector<std::optional<size_t>>>
+Wisteria::HtmlDashboardPrintout::GetFilterLinks(const std::vector<Canvas*>& canvases)
+    {
+    // each filter group is keyed by the dataset and column it filters
+    std::vector<std::pair<const Data::Dataset*, wxString>> linkKeys;
+    std::vector<size_t> pageCounts;
+    std::vector<std::vector<std::optional<size_t>>> pageLinks(canvases.size());
+    for (size_t i = 0; i < canvases.size(); ++i)
+        {
+        if (canvases[i] == nullptr)
+            {
+            continue;
+            }
+        for (const auto& filterGroup : GetPageFilters(*canvases[i]))
+            {
+            const Data::Dataset* groupData{ filterGroup.front()->GetData().get() };
+            const wxString& column{ filterGroup.front()->GetFilterColumn() };
+            const auto foundKey = std::ranges::find_if(
+                linkKeys, [groupData, &column](const auto& linkKey)
+                { return linkKey.first == groupData && linkKey.second.CmpNoCase(column) == 0; });
+            if (foundKey == linkKeys.cend())
+                {
+                pageLinks[i].emplace_back(linkKeys.size());
+                linkKeys.emplace_back(groupData, column);
+                pageCounts.push_back(1);
+                }
+            else
+                {
+                const auto keyIndex{ static_cast<size_t>(
+                    std::distance(linkKeys.begin(), foundKey)) };
+                pageLinks[i].emplace_back(keyIndex);
+                ++pageCounts[keyIndex];
+                }
+            }
+        }
+    // a filter group that isn't shared with another page isn't linked
+    for (auto& groupLinks : pageLinks)
+        {
+        for (auto& groupLink : groupLinks)
+            {
+            if (groupLink.has_value() && pageCounts[groupLink.value()] < 2)
+                {
+                groupLink.reset();
+                }
+            }
+        }
+    return pageLinks;
+    }
+
+//------------------------------------------------------
+std::vector<Wisteria::HtmlDashboardPrintout::FilterGroup>
+Wisteria::HtmlDashboardPrintout::GetFilterGroups(
+    const Canvas& canvas, const std::vector<std::optional<size_t>>& groupLinks)
+    {
+    std::vector<FilterGroup> filterGroups;
+    for (auto& pageFilters : GetPageFilters(canvas))
+        {
+        FilterGroup filterGroup;
+        for (const auto& filterableGraph : pageFilters)
+            {
+            const auto legend = filterableGraph->GetLegend();
+            filterGroup.m_originalStates.push_back(
+                FilterState{ filterableGraph->GetActiveIndex(), filterableGraph->IsShown(),
+                             (legend == nullptr || legend->IsShown()) });
+            }
+        filterGroup.m_choices = GetFilterChoices(pageFilters);
+        // the group opens on the choice being shown on the canvas
+        filterGroup.m_defaultChoice = GetDefaultFilterChoice(pageFilters, filterGroup.m_choices);
+        if (filterGroups.size() < groupLinks.size())
+            {
+            filterGroup.m_link = groupLinks[filterGroups.size()];
+            }
+        filterGroup.m_graphs = std::move(pageFilters);
+        filterGroups.push_back(std::move(filterGroup));
+        }
+    return filterGroups;
+    }
+
+//------------------------------------------------------
+void Wisteria::HtmlDashboardPrintout::ApplyLinkedChoice(FilterGroup& filterGroup,
+                                                        const LinkedChoice& firstChoice,
+                                                        const wxString& pageTitle)
+    {
+    const auto& choices{ filterGroup.m_choices };
+    // the unfiltered choice is always first, but its label may differ
+    const auto linkedPos =
+        firstChoice.m_isAll ?
+            choices.cbegin() :
+            std::ranges::find_if(choices, [&firstChoice](const auto& label)
+                                 { return label.CmpNoCase(firstChoice.m_label) == 0; });
+    if (linkedPos == choices.cend())
+        {
+        return;
+        }
+    const auto linkedIndex{ static_cast<size_t>(std::distance(choices.cbegin(), linkedPos)) };
+    if (linkedIndex != filterGroup.m_defaultChoice)
+        {
+        wxLogWarning(L"The '%s' filter on page '%s' opens on '%s' instead of '%s' "
+                     "to match the linked filter on page '%s'.",
+                     filterGroup.m_graphs.front()->GetFilterColumn(), pageTitle, *linkedPos,
+                     choices[filterGroup.m_defaultChoice], firstChoice.m_pageTitle);
+        filterGroup.m_defaultChoice = linkedIndex;
+        }
+    }
+
+//------------------------------------------------------
+wxString
+Wisteria::HtmlDashboardPrintout::GetFilterGroupTitle(const std::vector<FilterGroup>& filterGroups,
+                                                     const size_t groupIndex)
+    {
+    const auto& firstGraph = filterGroups[groupIndex].m_graphs.front();
+    const wxString& column{ firstGraph->GetFilterColumn() };
+    const bool hasSharedColumn{
+        std::ranges::count_if(
+            filterGroups, [&column](const auto& filterGroup)
+            { return filterGroup.m_graphs.front()->GetFilterColumn().CmpNoCase(column) == 0; }) > 1
+    };
+    if (!hasSharedColumn)
+        {
+        return column;
+        }
+    const wxString datasetName{ (firstGraph->GetData() != nullptr) ?
+                                    wxString{ firstGraph->GetData()->GetName() } :
+                                    wxString{} };
+    return wxString::Format(L"%s (%s)", column,
+                            datasetName.empty() ? wxString::Format(L"%zu", groupIndex + 1) :
+                                                  datasetName);
     }
 
 //------------------------------------------------------
@@ -2205,15 +2407,16 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
     // the state script opens the enclosing function and the load script closes it
     wxString script{
         GetDashboardScriptState() + GetDashboardScriptChoices() + GetDashboardScriptChoiceSwitch() +
-        GetDashboardScriptPages() + GetDashboardScriptGallery() + GetDashboardScriptFilters() +
-        GetDashboardScriptFilterSections() + GetDashboardScriptFilterMenu() +
-        GetDashboardScriptInk() + GetDashboardScriptNavigation() + GetDashboardScriptCounters() +
-        GetDashboardScriptMarks() + GetDashboardScriptMotion() + GetDashboardScriptSpotlight() +
-        GetDashboardScriptReveal() + GetDashboardScriptZoom() + GetDashboardScriptTooltips() +
-        GetDashboardScriptHelp() + GetDashboardScriptSaveCopy() + GetDashboardScriptSave() +
-        GetDashboardScriptSaveMenu() + GetDashboardScriptPrint() + GetDashboardScriptPresent() +
-        GetDashboardScriptThemeMenu() + GetDashboardScriptTheme() + GetDashboardScriptKeys() +
-        GetDashboardScriptEvents() + GetDashboardScriptLoad()
+        GetDashboardScriptChoiceMenu() + GetDashboardScriptPages() + GetDashboardScriptGallery() +
+        GetDashboardScriptFilters() + GetDashboardScriptFilterSections() +
+        GetDashboardScriptFilterMenu() + GetDashboardScriptInk() + GetDashboardScriptNavigation() +
+        GetDashboardScriptCounters() + GetDashboardScriptMarks() + GetDashboardScriptMotion() +
+        GetDashboardScriptSpotlight() + GetDashboardScriptReveal() + GetDashboardScriptZoom() +
+        GetDashboardScriptTooltips() + GetDashboardScriptHelp() + GetDashboardScriptSaveCopy() +
+        GetDashboardScriptSave() + GetDashboardScriptSaveMenu() + GetDashboardScriptPrint() +
+        GetDashboardScriptPresent() + GetDashboardScriptThemeMenu() + GetDashboardScriptTheme() +
+        GetDashboardScriptKeys() + GetDashboardScriptMenus() + GetDashboardScriptEvents() +
+        GetDashboardScriptLoad()
     };
     script.Replace(L"{{TOGGLE}}", options.m_includeColorModeToggle ? L"true" : L"false");
     script.Replace(L"{{COUNTUP}}", options.m_countUpNumbers ? L"true" : L"false");
@@ -2400,6 +2603,9 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
 
     html += wxString::Format(L"<main class=\"dash-pages\" style=\"--page-w:%d;--page-h:%d\">\n",
                              pageSize.GetWidth(), pageSize.GetHeight() + captionHeight);
+    // linked filter groups open on the choice of the first group in their link
+    const std::vector<std::vector<std::optional<size_t>>> filterLinks{ GetFilterLinks(canvases) };
+    std::map<size_t, LinkedChoice> linkedChoices;
     size_t pageIndex{ 0 };
     for (size_t canvasIndex = 0; canvasIndex < canvases.size(); ++canvasIndex)
         {
@@ -2451,18 +2657,14 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
                 idSuffix, content, caption);
         };
 
-        const FilterableGraphs pageFilters{ GetPageFilters(*canvas) };
+        std::vector<FilterGroup> filterGroups{ GetFilterGroups(*canvas, filterLinks[canvasIndex]) };
 
         html += wxString::Format(
             L"<section class=\"page\" id=\"page-%zu\" data-index=\"%zu\" data-layer=\"%s\" "
-            "aria-label=\"%s\"%s tabindex=\"-1\">\n",
+            "aria-label=\"%s\" tabindex=\"-1\">\n",
             pageIndex, pageIndex, SVGReportPrintout::EscapeXmlAttr(canvas->GetLayer()),
-            SVGReportPrintout::EscapeXmlAttr(pageTitle),
-            pageFilters.empty() ? wxString{} :
-                                  wxString::Format(L" data-variant-column=\"%s\"",
-                                                   SVGReportPrintout::EscapeXmlAttr(
-                                                       pageFilters.front()->GetFilterColumn())));
-        if (pageFilters.empty())
+            SVGReportPrintout::EscapeXmlAttr(pageTitle));
+        if (filterGroups.empty())
             {
             html += renderPageSvg(pageSize, false);
             if (dualOrientations)
@@ -2472,39 +2674,83 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
             }
         else
             {
-            std::vector<FilterState> originalStates;
-            for (const auto& filterableGraph : pageFilters)
+            // each filter group is described for the filter menu
+            for (size_t groupIndex = 0; groupIndex < filterGroups.size(); ++groupIndex)
                 {
-                const auto legend = filterableGraph->GetLegend();
-                originalStates.push_back(FilterState{ filterableGraph->GetActiveIndex(),
-                                                      filterableGraph->IsShown(),
-                                                      (legend == nullptr || legend->IsShown()) });
+                auto& filterGroup = filterGroups[groupIndex];
+                if (filterGroup.m_link.has_value())
+                    {
+                    if (const auto linkedChoice = linkedChoices.find(filterGroup.m_link.value());
+                        linkedChoice != linkedChoices.cend())
+                        {
+                        ApplyLinkedChoice(filterGroup, linkedChoice->second, pageTitle);
+                        }
+                    else
+                        {
+                        linkedChoices.try_emplace(
+                            filterGroup.m_link.value(),
+                            LinkedChoice{ filterGroup.m_choices[filterGroup.m_defaultChoice],
+                                          filterGroup.m_defaultChoice == 0, pageTitle });
+                        }
+                    }
+                html += wxString::Format(
+                    L"<div class=\"page-filter\" data-column=\"%s\" data-link=\"%s\" hidden>",
+                    SVGReportPrintout::EscapeXmlAttr(GetFilterGroupTitle(filterGroups, groupIndex)),
+                    filterGroup.m_link.has_value() ?
+                        wxString::Format(L"%zu", filterGroup.m_link.value()) :
+                        wxString{});
+                for (const auto& choice : filterGroup.m_choices)
+                    {
+                    html += L"<span>" + SVGReportPrintout::EscapeXmlText(choice) + L"</span>";
+                    }
+                html += L"</div>\n";
                 }
-            const std::vector<wxString> choices{ GetFilterChoices(pageFilters) };
-            // the page opens on the choice being shown on the canvas
-            const size_t defaultChoice{ GetDefaultFilterChoice(pageFilters, choices) };
 
-            for (size_t choiceIndex = 0; choiceIndex < choices.size(); ++choiceIndex)
+            // a version of the page for every combination of the groups' choices
+            std::vector<size_t> combination(filterGroups.size(), 0);
+            while (true)
                 {
-                const bool isDefault{ choiceIndex == defaultChoice };
-                ShowFilterChoice(pageFilters, originalStates, choices[choiceIndex],
-                                 choiceIndex == 0);
-                // the choice shown first keeps the page's plain IDs
-                const wxString idSuffix{ isDefault ? wxString{} :
-                                                     wxString::Format(L"-v%zu", choiceIndex) };
-                html +=
-                    wxString::Format(L"<div class=\"page-variant\" data-variant-label=\"%s\"%s>\n",
-                                     SVGReportPrintout::EscapeXmlAttr(choices[choiceIndex]),
-                                     isDefault ? L" data-variant-default" : L" hidden");
+                bool isDefault{ true };
+                wxString choiceIndexes;
+                for (size_t i = 0; i < filterGroups.size(); ++i)
+                    {
+                    const auto& filterGroup = filterGroups[i];
+                    ShowFilterChoice(filterGroup.m_graphs, filterGroup.m_originalStates,
+                                     filterGroup.m_choices[combination[i]], combination[i] == 0);
+                    isDefault = isDefault && (combination[i] == filterGroup.m_defaultChoice);
+                    choiceIndexes +=
+                        wxString::Format(L"%s%zu", (i == 0) ? L"" : L"-", combination[i]);
+                    }
+                // the version shown first keeps the page's plain IDs
+                const wxString idSuffix{ isDefault ? wxString{} : L"-v" + choiceIndexes };
+                html += wxString::Format(
+                    L"<div class=\"page-variant\" data-variant-choices=\"%s\"%s>\n", choiceIndexes,
+                    isDefault ? L" data-variant-default" : L" hidden");
                 html += renderPageSvg(pageSize, false, idSuffix);
                 if (dualOrientations)
                     {
                     html += renderPageSvg(swappedSize, true, idSuffix);
                     }
                 html += L"</div>\n";
+
+                // step to the next combination, the first group's choice changing fastest
+                size_t groupIndex{ 0 };
+                while (groupIndex < combination.size() &&
+                       ++combination[groupIndex] == filterGroups[groupIndex].m_choices.size())
+                    {
+                    combination[groupIndex] = 0;
+                    ++groupIndex;
+                    }
+                if (groupIndex == combination.size())
+                    {
+                    break;
+                    }
                 }
 
-            RestoreFilterStates(pageFilters, originalStates);
+            for (const auto& filterGroup : filterGroups)
+                {
+                RestoreFilterStates(filterGroup.m_graphs, filterGroup.m_originalStates);
+                }
                 // lay out the canvas again for the graphs it was showing before exporting
                 {
                 wxGCDC gdc{ canvas };

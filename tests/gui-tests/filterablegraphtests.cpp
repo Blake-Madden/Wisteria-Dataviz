@@ -292,9 +292,11 @@ TEST_CASE("FilterableGraph dashboard export", "[filterablegraph][dashboard]")
         ++choiceCount;
         }
     CHECK(choiceCount == 4);
-    CHECK(html.Contains(L"data-variant-column=\"Region\""));
-    CHECK(html.Contains(L"data-variant-label=\"North\" data-variant-default>"));
-    CHECK(html.Contains(L"data-variant-label=\"(All)\" hidden>"));
+    CHECK(html.Contains(L"<div class=\"page-filter\" data-column=\"Region\" data-link=\"\" "
+                        "hidden><span>(All)</span><span>East</span><span>North</span>"
+                        "<span>West</span></div>"));
+    CHECK(html.Contains(L"data-variant-choices=\"2\" data-variant-default>"));
+    CHECK(html.Contains(L"data-variant-choices=\"0\" hidden>"));
 
     // each choice is captioned below the graph, in room added to the page
     CHECK(html.Contains(L"Filters: Region filtered by North</text>"));
@@ -318,7 +320,7 @@ TEST_CASE("FilterableGraph dashboard export", "[filterablegraph][dashboard]")
     CHECK(filterableGraph->GetActiveIndex() == 2);
     }
 
-TEST_CASE("FilterableGraph dashboard export blanks graphs without the choice",
+TEST_CASE("FilterableGraph dashboard export keeps different datasets in separate groups",
           "[filterablegraph][dashboard]")
     {
     wxLogNull noLog;
@@ -351,28 +353,98 @@ TEST_CASE("FilterableGraph dashboard export blanks graphs without the choice",
     htmlFile.Close();
     wxRemoveFile(filePath);
 
-    const auto getChoiceMarkup = [&html](const wxString& label)
-    {
-        const size_t startPos{ html.find(L"data-variant-label=\"" + label + L"\"") };
-        if (startPos == wxString::npos)
-            {
-            return wxString{};
-            }
-        const size_t endPos{ html.find(L"</div>", startPos) };
-        return html.substr(startPos, endPos - startPos);
-    };
+    // the graphs filter the same column of different datasets, so each has its own group
+    CHECK(html.Contains(L"<div class=\"page-filter\" data-column=\"Region (1)\" data-link=\"\" "
+                        "hidden><span>(All)</span><span>East</span><span>North</span>"
+                        "<span>West</span></div>"));
+    CHECK(html.Contains(L"<div class=\"page-filter\" data-column=\"Region (2)\" data-link=\"\" "
+                        "hidden><span>(All)</span><span>East</span><span>North</span></div>"));
 
-    CHECK(getChoiceMarkup(L"East").Contains(L"SecondGraphTitle"));
-    CHECK(getChoiceMarkup(L"North").Contains(L"SecondGraphTitle"));
-    // West must not show the second graph's East (or North) data
-    const wxString westMarkup{ getChoiceMarkup(L"West") };
-    REQUIRE_FALSE(westMarkup.empty());
-    CHECK_FALSE(westMarkup.Contains(L"SecondGraphTitle"));
+    // a version of the page for every combination of the two groups' choices
+    size_t choiceCount{ 0 };
+    for (size_t pos = html.find(L"class=\"page-variant\""); pos != wxString::npos;
+         pos = html.find(L"class=\"page-variant\"", pos + 1))
+        {
+        ++choiceCount;
+        }
+    CHECK(choiceCount == 12);
+    CHECK(html.Contains(L"data-variant-choices=\"1-1\" data-variant-default>"));
+
+    // the second graph is shown with West chosen in the first group
+    const size_t westPos{ html.find(L"data-variant-choices=\"3-1\"") };
+    REQUIRE(westPos != wxString::npos);
+    CHECK(html.substr(westPos, html.find(L"</div>", westPos) - westPos)
+              .Contains(L"SecondGraphTitle"));
 
     // the canvas is restored after exporting
     CHECK(secondGraph->IsShown());
     CHECK(secondGraph->GetActiveIndex() == 1);
     CHECK(firstGraph->GetActiveIndex() == 1);
+    }
+
+TEST_CASE("FilterableGraph dashboard export links pages filtering the same data",
+          "[filterablegraph][dashboard]")
+    {
+    wxLogNull noLog;
+    const auto sharedData = MakeRegionDataset();
+    auto* firstCanvas = MakeCanvas();
+    auto* secondCanvas = MakeCanvas();
+    auto* thirdCanvas = MakeCanvas();
+    auto firstGraph = std::make_shared<FilterableGraph>(sharedData, L"Region", L"North",
+                                                        MakePieFactory(firstCanvas));
+    // a different default than the page it is linked to
+    auto secondGraph = std::make_shared<FilterableGraph>(sharedData, L"Region", L"West",
+                                                         MakePieFactory(secondCanvas));
+    // the same column, but of a different dataset
+    auto thirdGraph = std::make_shared<FilterableGraph>(MakeRegionDataset(), L"Region", L"East",
+                                                        MakePieFactory(thirdCanvas));
+    firstCanvas->SetFixedObjectsGridSize(1, 1);
+    firstCanvas->SetFixedObject(0, 0, firstGraph);
+    secondCanvas->SetFixedObjectsGridSize(1, 1);
+    secondCanvas->SetFixedObject(0, 0, secondGraph);
+    thirdCanvas->SetFixedObjectsGridSize(1, 1);
+    thirdCanvas->SetFixedObject(0, 0, thirdGraph);
+
+    const wxString filePath{ wxFileName::CreateTempFileName(L"wisteria-dashboard") };
+    HtmlDashboardOptions options{ filePath };
+    const HtmlDashboardPrintout printout{
+        std::vector<Canvas*>{ firstCanvas, secondCanvas, thirdCanvas }, options
+    };
+
+    wxString html;
+    wxFile htmlFile{ filePath };
+    REQUIRE(htmlFile.IsOpened());
+    REQUIRE(htmlFile.ReadAll(&html, wxConvUTF8));
+    htmlFile.Close();
+    wxRemoveFile(filePath);
+
+    const auto getPageMarkup = [&html](const size_t pageIndex)
+    {
+        const size_t startPos{ html.find(wxString::Format(L"id=\"page-%zu\"", pageIndex)) };
+        if (startPos == wxString::npos)
+            {
+            return wxString{};
+            }
+        const size_t endPos{ html.find(L"</section>", startPos) };
+        return html.substr(startPos, endPos - startPos);
+    };
+
+    const wxString firstPage{ getPageMarkup(0) };
+    const wxString secondPage{ getPageMarkup(1) };
+    const wxString thirdPage{ getPageMarkup(2) };
+    CHECK(firstPage.Contains(L"data-column=\"Region\" data-link=\"0\""));
+    CHECK(secondPage.Contains(L"data-column=\"Region\" data-link=\"0\""));
+    CHECK(thirdPage.Contains(L"data-column=\"Region\" data-link=\"\""));
+
+    // the linked page opens on the first page's choice (North), not its own (West)
+    CHECK(firstPage.Contains(L"data-variant-choices=\"2\" data-variant-default>"));
+    CHECK(secondPage.Contains(L"data-variant-choices=\"2\" data-variant-default>"));
+    CHECK(secondPage.Contains(L"data-variant-choices=\"3\" hidden>"));
+    // the unlinked page keeps its own choice (East)
+    CHECK(thirdPage.Contains(L"data-variant-choices=\"1\" data-variant-default>"));
+
+    // the canvas is left showing the variant it had before exporting
+    CHECK(secondGraph->GetActiveIndex() == 3);
     }
 
 TEST_CASE("FilterableGraph from a report configuration", "[filterablegraph][reportbuilder]")
