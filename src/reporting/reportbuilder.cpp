@@ -1305,7 +1305,8 @@ namespace Wisteria
                 const auto brackets = bracketsNode->AsNodes();
                 for (const auto& bracket : brackets)
                     {
-                    LoadPen(bracket->GetProperty(L"pen"), bracketPen);
+                    wxPen itemPen{ bracketPen };
+                    LoadPen(bracket->GetProperty(L"pen"), itemPen);
 
                     const auto foundBracketStyle = ReportEnumConvert::ConvertBracketLineStyle(
                         bracket->GetProperty(L"style")->AsString());
@@ -1320,7 +1321,7 @@ namespace Wisteria
                         axis.AddBracket(GraphItems::Axis::AxisBracket(
                             axisPos1.value(), axisPos2.value(),
                             safe_divide<double>(axisPos1.value() + axisPos2.value(), 2),
-                            bracket->GetProperty(L"label")->AsString(), bracketPen,
+                            bracket->GetProperty(L"label")->AsString(), itemPen,
                             foundBracketStyle.value_or(BracketLineStyle::CurlyBraces)));
                         }
                     }

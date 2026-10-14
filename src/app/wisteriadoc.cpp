@@ -2891,6 +2891,13 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
                         axisObj +=
                             L", \"label\": \"" + EscapeJsonStr(b.GetLabel().GetText()) + L"\"";
                         }
+                    const auto& bPen = b.GetLinePen();
+                    if (bPen.IsOk() && bPen != wxNullPen &&
+                        !(bPen.GetColour() == *wxBLACK && bPen.GetWidth() <= 2 &&
+                          bPen.GetStyle() == wxPENSTYLE_SOLID))
+                        {
+                        axisObj += L", \"pen\": " + SavePenToStr(bPen);
+                        }
                     const auto bsStr = Wisteria::ReportEnumConvert::ConvertBracketLineStyleToString(
                         b.GetBracketLineStyle());
                     if (bsStr.has_value() &&
