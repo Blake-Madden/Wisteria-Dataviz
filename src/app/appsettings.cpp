@@ -176,6 +176,9 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
             m_htmlExportOptions.m_includePrint =
                 child->GetAttribute(L"include-print",
                                     m_htmlExportOptions.m_includePrint ? L"1" : L"0") == L"1";
+            m_htmlExportOptions.m_includeCopy =
+                child->GetAttribute(L"include-copy",
+                                    m_htmlExportOptions.m_includeCopy ? L"1" : L"0") == L"1";
             long val{ 0 };
             if (child->GetAttribute(L"page-width").ToLong(&val) && val > 0)
                 {
@@ -433,6 +436,7 @@ bool AppSettings::SaveSettingsFile(const wxString& filePath)
                            m_htmlExportOptions.m_dualOrientations ? L"1" : L"0");
     htmlNode->AddAttribute(L"include-save", m_htmlExportOptions.m_includeSave ? L"1" : L"0");
     htmlNode->AddAttribute(L"include-print", m_htmlExportOptions.m_includePrint ? L"1" : L"0");
+    htmlNode->AddAttribute(L"include-copy", m_htmlExportOptions.m_includeCopy ? L"1" : L"0");
     htmlNode->AddAttribute(L"page-width",
                            std::to_wstring(std::max(0, m_htmlExportOptions.m_pageSize.GetWidth())));
     htmlNode->AddAttribute(

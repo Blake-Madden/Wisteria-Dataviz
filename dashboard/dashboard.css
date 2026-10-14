@@ -227,7 +227,8 @@ html[data-view="slides"] .dash-progress
   }
 
 .dash-views button, .dash-layers-btn, .dash-filters-btn,
-.dash-help-btn, .dash-save-btn, .dash-theme-btn, .dash-print-btn, .dash-full-btn
+.dash-help-btn, .dash-save-btn, .dash-theme-btn, .dash-print-btn, .dash-copy-btn,
+.dash-full-btn
   {
   padding: 4px 12px;
   border: 1px solid var(--border-color);
@@ -241,13 +242,13 @@ html[data-view="slides"] .dash-progress
 
 .dash-views button:hover, .dash-layers-btn:hover, .dash-filters-btn:hover,
 .dash-help-btn:hover, .dash-save-btn:hover, .dash-theme-btn:hover, .dash-print-btn:hover,
-.dash-full-btn:hover
+.dash-copy-btn:hover, .dash-full-btn:hover
   { border-color: var(--accent); }
 
 .dash-views button[aria-pressed="true"],
 .dash-layers-btn[aria-expanded="true"], .dash-filters-btn[aria-expanded="true"],
 .dash-help-btn[aria-expanded="true"], .dash-save-btn[aria-expanded="true"],
-.dash-theme-btn[aria-expanded="true"]
+.dash-copy-btn[aria-expanded="true"], .dash-theme-btn[aria-expanded="true"]
   {
   background-color: var(--accent);
   border-color: var(--accent);
@@ -258,7 +259,7 @@ html[data-view="slides"] .dash-progress
 .dash-layers-btn:focus-visible, .dash-filters-btn:focus-visible,
 .dash-rail button:focus-visible, .dash-card:focus-visible, .dash-help-btn:focus-visible,
 .dash-save-btn:focus-visible, .dash-theme-btn:focus-visible, .dash-print-btn:focus-visible,
-.dash-full-btn:focus-visible
+.dash-copy-btn:focus-visible, .dash-full-btn:focus-visible
   {
   outline: 2px solid Highlight;
   outline-offset: 2px;
@@ -861,6 +862,12 @@ html.motion-ready .page:not(.is-revealed) .page-svg
   margin: 0;
   }
 
+@media not (any-pointer: coarse)
+  {
+  .dash-help-list .dash-touch-only
+    { display: none; }
+  }
+
 .dash-help-list kbd
   {
   padding: 1px 6px;
@@ -915,7 +922,7 @@ html.motion-ready .page:not(.is-revealed) .page-svg
   font-size: 0.8em;
   }
 
-.dash-save-btn, .dash-print-btn, .dash-full-btn
+.dash-save-btn, .dash-print-btn, .dash-copy-btn, .dash-full-btn
   {
   display: inline-flex;
   align-items: center;

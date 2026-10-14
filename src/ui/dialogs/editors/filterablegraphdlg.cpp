@@ -90,6 +90,14 @@ namespace Wisteria::UI
 
         mainSizer->Add(gridSizer, wxSizerFlags{}.Expand().Border());
 
+        auto* noteLabel = new wxStaticText(
+            this, wxID_STATIC,
+            _(L"The default value is what you see in the program and in most exports. "
+              "(Filtering only works in HTML dashboards.) "
+              "Filtered graphs that use the same dataset and column are linked together."));
+        noteLabel->Wrap(FromDIP(350));
+        mainSizer->Add(noteLabel, wxSizerFlags{}.Expand().Border());
+
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
                        wxSizerFlags{}.Expand().Border());
 

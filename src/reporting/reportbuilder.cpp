@@ -544,6 +544,12 @@ namespace Wisteria
                 m_htmlExportOptions.m_includePrint =
                     printNode->AsBool(m_htmlExportOptions.m_includePrint);
                 }
+            if (const auto copyNode = htmlExportNode->GetProperty(L"include-copy");
+                copyNode->IsOk())
+                {
+                m_htmlExportOptions.m_includeCopy =
+                    copyNode->AsBool(m_htmlExportOptions.m_includeCopy);
+                }
             if (const auto widthNode = htmlExportNode->GetProperty(L"page-width");
                 widthNode->IsOk() && widthNode->AsDouble(-1) > 0)
                 {

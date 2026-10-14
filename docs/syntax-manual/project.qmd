@@ -15,7 +15,7 @@ The following properties are available:
   - `"view"`: How the pages are initially presented. \
     Available options:
     - `"gallery"` (default): Small page cards across the top, with the selected page shown below.
-    - `"story"`: All pages stacked in a scrolling storyline.
+    - `"slides"`: All pages stacked in a scrolling slideshow.
   - `"color-mode"`: The initial light/dark mode. \
     Available options:
     - `"auto"` (default): Follows the browser's setting.
@@ -33,6 +33,12 @@ The following properties are available:
     The browser then shows whichever orientation best fits its window. \
     For example, with a page size of 1280 x 720, a portrait (720 x 1280) copy of each page is included. \
     If the width is less than the height, the swapped copy is the landscape one.
+  - `"include-save"`: Whether to include the Save button, which saves the current page as an SVG or PNG file. \
+    The default is `true`.
+  - `"include-print"`: Whether to include the Print button, which prints the current page. \
+    The default is `true`.
+  - `"include-copy"`: Whether to include the Copy button, which copies the current page as an image or a link to it. \
+    The default is `true`.
 
 ### Examples {-}
 

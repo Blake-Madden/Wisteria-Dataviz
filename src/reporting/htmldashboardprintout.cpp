@@ -16,6 +16,7 @@
 #include <string_view>
 #include <wx/app.h>
 #include <wx/base64.h>
+#include <wx/datetime.h>
 #include <wx/dcgraph.h>
 #include <wx/file.h>
 #include <wx/filename.h>
@@ -42,6 +43,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptState()
   let view = '{{VIEW}}';
   let current = 0;
   let pages = [];
+  const baseTitle = document.title;
 
   if (hasModeToggle) {
     try {
@@ -443,6 +445,8 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptGallery()
     updateProgress();
     measureChrome();
     writeHash();
+    document.title = pages.length > 1 && pages[current] ?
+      pages[current].title + ' - ' + baseTitle : baseTitle;
   }
 )JS";
     }
@@ -1350,10 +1354,14 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSave()
       new XMLSerializer().serializeToString(clone);
     downloadBlob(new Blob([xml], { type: 'image/svg+xml' }), slugify(page.title) + '.svg');
   }
-  function savePageAsPng(page) {
+  // calls done with the page as a PNG blob, or null if it couldn't be drawn
+  function renderPagePng(page, done) {
     const size = pageContentSize(visibleSvg(page));
     const clone = clonePageSvg(page, size);
-    if (!clone) return;
+    if (!clone) {
+      done(null);
+      return;
+    }
     const xml = new XMLSerializer().serializeToString(clone);
     const scale = window.devicePixelRatio || 1;
     const img = new Image();
@@ -1363,12 +1371,16 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSave()
       canvas.height = Math.round(size.height * scale);
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob(function(blob) {
-        if (blob) downloadBlob(blob, slugify(page.title) + '.png');
-      }, 'image/png');
+      canvas.toBlob(done, 'image/png');
     };
+    img.onerror = function() { done(null); };
     img.src = 'data:image/svg+xml;charset=utf-8;base64,' +
       btoa(unescape(encodeURIComponent(xml)));
+  }
+  function savePageAsPng(page) {
+    renderPagePng(page, function(blob) {
+      if (blob) downloadBlob(blob, slugify(page.title) + '.png');
+    });
   }
 )JS";
     }
@@ -1377,10 +1389,12 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSave()
 wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSaveMenu()
     {
     return LR"JS(
-  function bindSave() {
-    const btn = document.getElementById('dash-save');
-    const menu = document.getElementById('dash-save-menu');
-    if (!btn || !menu) return;
+  // a toolbar button's drop-down menu of actions, returning the function that closes it
+  function bindActionMenu(btnId, menuId, setOpen) {
+    const btn = document.getElementById(btnId);
+    const menu = document.getElementById(menuId);
+    if (!btn || !menu) return null;
+    let isOpen = false;
     function positionMenu() {
       const rect = btn.getBoundingClientRect();
       const menuRect = menu.getBoundingClientRect();
@@ -1390,7 +1404,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSaveMenu()
       menu.style.top = (rect.bottom + 8) + 'px';
     }
     function onOutsidePointerDown(e) {
-      if (menu.contains(e.target) || e.target === btn) return;
+      if (menu.contains(e.target) || btn.contains(e.target)) return;
       closeMenu(false);
     }
     function onMenuKeyDown(e) {
@@ -1407,7 +1421,8 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSaveMenu()
       }
     }
     function openMenu() {
-      saveOpen = true;
+      isOpen = true;
+      setOpen(true);
       menu.hidden = false;
       positionMenu();
       window.requestAnimationFrame(function() { menu.classList.add('is-open'); });
@@ -1419,19 +1434,27 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSaveMenu()
       if (first) first.focus();
     }
     function closeMenu(returnFocus) {
-      saveOpen = false;
+      if (!isOpen) return;
+      isOpen = false;
+      setOpen(false);
       menu.classList.remove('is-open');
       btn.setAttribute('aria-expanded', 'false');
       document.removeEventListener('keydown', onMenuKeyDown);
       document.removeEventListener('pointerdown', onOutsidePointerDown, true);
       window.removeEventListener('resize', positionMenu);
-      window.setTimeout(function() { menu.hidden = true; }, 150);
+      window.setTimeout(function() { if (!isOpen) menu.hidden = true; }, 150);
       if (returnFocus) btn.focus();
     }
     btn.addEventListener('click', function() {
-      if (menu.hidden) openMenu(); else closeMenu(true);
+      if (isOpen) closeMenu(true); else openMenu();
     });
-    menu.querySelectorAll('button[data-format]').forEach(function(item) {
+    return closeMenu;
+  }
+  function bindSave() {
+    const closeMenu = bindActionMenu('dash-save', 'dash-save-menu',
+                                     function(open) { saveOpen = open; });
+    if (!closeMenu) return;
+    document.querySelectorAll('#dash-save-menu button[data-format]').forEach(function(item) {
       item.addEventListener('click', function() {
         closeMenu(true);
         const page = pages[current];
@@ -1622,8 +1645,16 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptKeys()
     {
     return LR"JS(
   function onKeyDown(e) {
+    // F1 opens and closes the shortcuts panel instead of the browser's help
+    if (e.key === 'F1' && !e.defaultPrevented && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      const helpBtn = document.getElementById('dash-help');
+      if (!helpBtn) return;
+      e.preventDefault();
+      if (!saveOpen && !copyOpen && !themeOpen) helpBtn.click();
+      return;
+    }
     if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || !pages.length ||
-        helpOpen || saveOpen || themeOpen) {
+        helpOpen || saveOpen || copyOpen || themeOpen) {
       return;
     }
     const tag = e.target && e.target.tagName;
@@ -1646,6 +1677,92 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptKeys()
     } else if (e.key === 'f' || e.key === 'F') {
       e.preventDefault();
       togglePresenting();
+    } else if ((e.key === 'g' || e.key === 'G') && document.querySelector('.dash-views')) {
+      e.preventDefault();
+      setView(view === 'gallery' ? 'slides' : 'gallery');
+    } else if (e.key >= '1' && e.key <= '9' && e.key.length === 1) {
+      const target = visibleIndexes()[Number(e.key) - 1];
+      if (target !== undefined) {
+        e.preventDefault();
+        goTo(target, true);
+      }
+    }
+  }
+)JS";
+    }
+
+//------------------------------------------------------
+wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptTouch()
+    {
+    return LR"JS(
+  function bindSwipe() {
+    const container = document.querySelector('.dash-pages');
+    if (!container) return;
+    let startX = 0;
+    let startY = 0;
+    let tracking = false;
+    container.addEventListener('touchstart', function(e) {
+      const svg = e.target.closest ? e.target.closest('.page-svg') : null;
+      // dragging a zoomed-in page pans it instead
+      tracking = view === 'slides' && e.touches.length === 1 &&
+        !(svg && svg.classList.contains('is-zoomed'));
+      if (!tracking) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    }, { passive: true });
+    container.addEventListener('touchmove', function(e) {
+      if (e.touches.length > 1) tracking = false;
+    }, { passive: true });
+    container.addEventListener('touchend', function(e) {
+      if (!tracking || !e.changedTouches.length) return;
+      tracking = false;
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = e.changedTouches[0].clientY - startY;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > 1.5 * Math.abs(dy)) stepPage(dx < 0 ? 1 : -1);
+    }, { passive: true });
+  }
+  let copyOpen = false;
+  // briefly shows on a menu item that its copy worked, then calls done
+  function flashCopied(item, text, done) {
+    const original = item.textContent;
+    item.textContent = text;
+    announce(text);
+    window.setTimeout(function() {
+      item.textContent = original;
+      done();
+    }, 1200);
+  }
+  function bindCopy() {
+    const closeMenu = bindActionMenu('dash-copy', 'dash-copy-menu',
+                                     function(open) { copyOpen = open; });
+    if (!closeMenu) return;
+    const finish = function() { closeMenu(true); };
+    const imageItem = document.querySelector('#dash-copy-menu [data-copy="png"]');
+    if (imageItem && (!navigator.clipboard || !navigator.clipboard.write ||
+                      !window.ClipboardItem)) {
+      imageItem.remove();
+    } else if (imageItem) {
+      imageItem.addEventListener('click', function() {
+        const page = pages[current];
+        if (!page) return;
+        // the clipboard item is made during the click and gets its image once it is drawn
+        const png = new Promise(function(resolve, reject) {
+          renderPagePng(page, function(blob) { if (blob) resolve(blob); else reject(); });
+        });
+        navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]).then(
+          function() { flashCopied(imageItem, strings.imageCopied, finish); }, finish);
+      });
+    }
+    const linkItem = document.querySelector('#dash-copy-menu [data-copy="link"]');
+    if (linkItem) {
+      linkItem.addEventListener('click', function() {
+        if (!navigator.clipboard) {
+          finish();
+          return;
+        }
+        navigator.clipboard.writeText(location.href).then(
+          function() { flashCopied(linkItem, strings.linkCopied, finish); }, finish);
+      });
     }
   }
 )JS";
@@ -1738,9 +1855,11 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptEvents()
     bindTooltips();
     bindHelp();
     bindSave();
+    bindCopy();
     bindPrint();
     bindPresent();
     bindTheme();
+    bindSwipe();
   }
 )JS";
     }
@@ -1861,8 +1980,30 @@ wxString Wisteria::HtmlDashboardPrintout::BuildLogo(HtmlDashboardOptions options
     }
 
 //------------------------------------------------------
-wxString Wisteria::HtmlDashboardPrintout::BuildKeyboardTip()
+wxString Wisteria::HtmlDashboardPrintout::BuildKeyboardTip(const bool singlePage)
     {
+    // a lone page has no other pages or gallery view to go to
+    const wxString pageRows{
+        singlePage ?
+            wxString{} :
+            wxString::Format(
+                L"<dt><kbd>&larr;</kbd> <kbd>&rarr;</kbd></dt><dd>%s</dd>\n"
+                "<dt><kbd>Home</kbd> <kbd>End</kbd></dt><dd>%s</dd>\n"
+                "<dt><kbd>1</kbd> &ndash; <kbd>9</kbd></dt><dd>%s</dd>\n"
+                "<dt><kbd>G</kbd></dt><dd>%s</dd>\n",
+                SVGReportPrintout::EscapeXmlText(_(L"Go to the previous or next page")),
+                SVGReportPrintout::EscapeXmlText(_(L"Jump to the first or last page")),
+                SVGReportPrintout::EscapeXmlText(_(L"Jump to a page")),
+                SVGReportPrintout::EscapeXmlText(_(L"Switch between gallery and slideshow")))
+    };
+    const wxString swipeRow{
+        singlePage ? wxString{} :
+                     wxString::Format(L"<dt class=\"dash-touch-only\">%s</dt>"
+                                      "<dd class=\"dash-touch-only\">%s</dd>\n",
+                                      SVGReportPrintout::EscapeXmlText(_(L"Swipe")),
+                                      SVGReportPrintout::EscapeXmlText(
+                                          _(L"Go to the previous or next page (touch screens)")))
+    };
     return wxString::Format(
         L"<div id=\"dash-help-panel\" class=\"dash-help-panel no-print\" role=\"dialog\" "
         "aria-modal=\"false\" aria-labelledby=\"dash-help-title\" hidden>\n"
@@ -1871,8 +2012,7 @@ wxString Wisteria::HtmlDashboardPrintout::BuildKeyboardTip()
         "<button type=\"button\" id=\"dash-help-close\" aria-label=\"%s\">&times;</button>\n"
         "</div>\n"
         "<dl class=\"dash-help-list\">\n"
-        "<dt><kbd>&larr;</kbd> <kbd>&rarr;</kbd></dt><dd>%s</dd>\n"
-        "<dt><kbd>Home</kbd> <kbd>End</kbd></dt><dd>%s</dd>\n"
+        "%s"
         "<dt><kbd>F</kbd></dt><dd>%s</dd>\n"
         "<dt><kbd>&uarr;</kbd> <kbd>&darr;</kbd></dt><dd>%s</dd>\n"
         "<dt><kbd>Space</kbd> <kbd>Enter</kbd></dt><dd>%s</dd>\n"
@@ -1880,12 +2020,11 @@ wxString Wisteria::HtmlDashboardPrintout::BuildKeyboardTip()
         "<dt>%s</dt><dd>%s</dd>\n"
         "<dt>%s</dt><dd>%s</dd>\n"
         "<dt>%s</dt><dd>%s</dd>\n"
+        "%s"
         "</dl>\n"
         "</div>\n",
         SVGReportPrintout::EscapeXmlText(_(L"Keyboard & mouse shortcuts")),
-        SVGReportPrintout::EscapeXmlAttr(_(L"Close")),
-        SVGReportPrintout::EscapeXmlText(_(L"Go to the previous or next page")),
-        SVGReportPrintout::EscapeXmlText(_(L"Jump to the first or last page")),
+        SVGReportPrintout::EscapeXmlAttr(_(L"Close")), pageRows,
         SVGReportPrintout::EscapeXmlText(_(L"Enter or leave fullscreen presentation mode")),
         SVGReportPrintout::EscapeXmlText(_(L"Move through the items of a menu (Tab also works)")),
         SVGReportPrintout::EscapeXmlText(_(L"Check or uncheck the selected item in a menu")),
@@ -1895,7 +2034,7 @@ wxString Wisteria::HtmlDashboardPrintout::BuildKeyboardTip()
         SVGReportPrintout::EscapeXmlText(_(L"Drag")),
         SVGReportPrintout::EscapeXmlText(_(L"Pan around a zoomed-in page")),
         SVGReportPrintout::EscapeXmlText(_(L"Double-click")),
-        SVGReportPrintout::EscapeXmlText(_(L"Reset zoom")));
+        SVGReportPrintout::EscapeXmlText(_(L"Reset zoom")), swipeRow);
     }
 
 //------------------------------------------------------
@@ -2245,11 +2384,20 @@ wxString Wisteria::HtmlDashboardPrintout::GetFilterCaption(const Canvas& canvas)
             {
             continue;
             }
+        const wxString columnName{
+            L"<tspan font-weight=\"bold\">" +
+            SVGReportPrintout::EscapeXmlText(filterableGraph->GetFilterColumn()) + L"</tspan>"
+        };
         const wxString description{
             (filterableGraph->GetActiveIndex() == 0) ?
-                wxString::Format(_(L"%s unfiltered"), filterableGraph->GetFilterColumn()) :
-                wxString::Format(_(L"%s filtered by %s"), filterableGraph->GetFilterColumn(),
-                                 filteredGraphs[filterableGraph->GetActiveIndex()].m_label)
+                wxString::Format(SVGReportPrintout::EscapeXmlText(_(L"%s unfiltered")),
+                                 columnName) :
+                wxString::Format(
+                    SVGReportPrintout::EscapeXmlText(_(L"%s filtered by %s")), columnName,
+                    L"<tspan font-style=\"italic\">" +
+                        SVGReportPrintout::EscapeXmlText(
+                            filteredGraphs[filterableGraph->GetActiveIndex()].m_label) +
+                        L"</tspan>")
         };
         // graphs switched together by the same value are only described once
         if (std::ranges::none_of(descriptions, [&description](const auto& existing)
@@ -2271,7 +2419,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetFilterCaption(const Canvas& canvas)
             }
         joined += description;
         }
-    return wxString::Format(_(L"Filters: %s"), joined);
+    return wxString::Format(SVGReportPrintout::EscapeXmlText(_(L"Filters: %s")), joined);
     }
 
 //------------------------------------------------------
@@ -2352,11 +2500,12 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
 
     // user-facing text used by the script
     const std::vector<std::pair<wxString, wxString>> scriptStrings{
-        { L"gallery", _(L"Gallery") },        { L"slides", _(L"Slideshow") },
-        { L"page", _(L"Page {0}") },          { L"pageOf", _(L"Page {0} of {1}") },
-        { L"goTo", _(L"Go to {0}") },         { L"pagesShown", _(L"{0} of {1} pages shown") },
-        { L"noPages", _(L"No pages shown") }, { L"chart", _(L"Chart {0}") },
-        { L"filter", _(L"Filter") }
+        { L"gallery", _(L"Gallery") },         { L"slides", _(L"Slideshow") },
+        { L"page", _(L"Page {0}") },           { L"pageOf", _(L"Page {0} of {1}") },
+        { L"goTo", _(L"Go to {0}") },          { L"pagesShown", _(L"{0} of {1} pages shown") },
+        { L"noPages", _(L"No pages shown") },  { L"chart", _(L"Chart {0}") },
+        { L"filter", _(L"Filter") },           { L"linkCopied", _(L"Link copied") },
+        { L"imageCopied", _(L"Image copied") }
     };
     wxString stringsObject{ L"{" };
     for (const auto& [key, value] : scriptStrings)
@@ -2415,8 +2564,8 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         GetDashboardScriptTooltips() + GetDashboardScriptHelp() + GetDashboardScriptSaveCopy() +
         GetDashboardScriptSave() + GetDashboardScriptSaveMenu() + GetDashboardScriptPrint() +
         GetDashboardScriptPresent() + GetDashboardScriptThemeMenu() + GetDashboardScriptTheme() +
-        GetDashboardScriptKeys() + GetDashboardScriptMenus() + GetDashboardScriptEvents() +
-        GetDashboardScriptLoad()
+        GetDashboardScriptKeys() + GetDashboardScriptTouch() + GetDashboardScriptMenus() +
+        GetDashboardScriptEvents() + GetDashboardScriptLoad()
     };
     script.Replace(L"{{TOGGLE}}", options.m_includeColorModeToggle ? L"true" : L"false");
     script.Replace(L"{{COUNTUP}}", options.m_countUpNumbers ? L"true" : L"false");
@@ -2442,15 +2591,22 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         html += wxString::Format(L"<meta name=\"generator\" content=\"%s\">\n",
                                  SVGReportPrintout::EscapeXmlAttr(wxTheApp->GetAppDisplayName()));
         }
+    html += wxString::Format(L"<meta name=\"dcterms.created\" content=\"%s\">\n",
+                             wxDateTime::Now().FormatISOCombined());
     html += wxString::Format(L"<title>%s</title>\n", SVGReportPrintout::EscapeXmlText(title));
+    // optional logo, embedded as a data URI
+    const wxString logoUri{ BuildLogo(options) };
+    if (!logoUri.empty())
+        {
+        html += wxString::Format(L"<link rel=\"icon\" href=\"%s\">\n", logoUri);
+        }
     html += L"<style>\n" + css + L"\n</style>\n";
     html += L"<script>" + script + L"</script>\n";
     html += L"</head>\n<body>\n";
 
     html += L"<header class=\"dash-toolbar no-print\">\n";
     html += L"<div class=\"dash-brand\">\n";
-    // optional logo, embedded as a data URI
-    if (const wxString logoUri = BuildLogo(options); !logoUri.empty())
+    if (!logoUri.empty())
         {
         html += wxString::Format(L"<img class=\"dash-logo\" src=\"%s\" alt=\"\">\n", logoUri);
         }
@@ -2524,6 +2680,17 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
                              "</svg></button>\n",
                              SVGReportPrintout::EscapeXmlAttr(_(L"Print page")));
         }
+    if (options.m_includeCopy)
+        {
+        html += wxString::Format(
+            L"<button type=\"button\" id=\"dash-copy\" class=\"dash-copy-btn\" "
+            "aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"dash-copy-menu\" "
+            "aria-label=\"%s\" title=\"%s\"><svg class=\"dash-btn-icon\" viewBox=\"0 0 16 16\" "
+            "aria-hidden=\"true\"><path d=\"M5.5 5.5h8v8h-8zM10.5 5.5v-3h-8v8h3\"/>"
+            "</svg></button>\n",
+            SVGReportPrintout::EscapeXmlAttr(_(L"Copy")),
+            SVGReportPrintout::EscapeXmlAttr(_(L"Copy")));
+        }
     if (options.m_includeSave)
         {
         html += wxString::Format(
@@ -2569,6 +2736,19 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
             SVGReportPrintout::EscapeXmlText(_(L"Save as PNG")));
         }
 
+    if (options.m_includeCopy)
+        {
+        html += wxString::Format(
+            L"<div id=\"dash-copy-menu\" class=\"dash-help-panel dash-save-menu no-print\" "
+            "role=\"menu\" aria-label=\"%s\" hidden>\n"
+            "<button type=\"button\" role=\"menuitem\" data-copy=\"png\">%s</button>\n"
+            "<button type=\"button\" role=\"menuitem\" data-copy=\"link\">%s</button>\n"
+            "</div>\n",
+            SVGReportPrintout::EscapeXmlAttr(_(L"Copy")),
+            SVGReportPrintout::EscapeXmlText(_(L"Copy as image")),
+            SVGReportPrintout::EscapeXmlText(_(L"Copy page link")));
+        }
+
     if (options.m_includeColorModeToggle)
         {
         html += wxString::Format(
@@ -2590,7 +2770,7 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
             SVGReportPrintout::EscapeXmlText(_(L"Dark")));
         }
 
-    html += BuildKeyboardTip();
+    html += BuildKeyboardTip(singlePage);
 
     const wxString loadingText{ _(L"Loading...") };
     html += wxString::Format(
@@ -2642,12 +2822,12 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
             wxString caption;
             if (const wxString captionText{ GetFilterCaption(*canvas) }; !captionText.empty())
                 {
-                caption = wxString::Format(
-                    L"<text class=\"page-filter-caption\" x=\"%d\" y=\"%d\" "
-                    "dominant-baseline=\"central\" fill=\"#000000\" font-family=\"%s\" "
-                    "font-size=\"%d\">%s</text>\n",
-                    CAPTION_FONT_SIZE, size.GetHeight() + (captionHeight / 2), captionFont,
-                    CAPTION_FONT_SIZE, SVGReportPrintout::EscapeXmlText(captionText));
+                caption =
+                    wxString::Format(L"<text class=\"page-filter-caption\" x=\"%d\" y=\"%d\" "
+                                     "dy=\"0.35em\" fill=\"#000000\" font-family=\"%s\" "
+                                     "font-size=\"%d\">%s</text>\n",
+                                     CAPTION_FONT_SIZE, size.GetHeight() + (captionHeight / 2),
+                                     captionFont, CAPTION_FONT_SIZE, captionText);
                 }
             return wxString::Format(
                 L"<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"page-svg\"%s "

@@ -26,7 +26,7 @@ namespace Wisteria::UI
           m_countUpNumbers(options.m_countUpNumbers), m_pageWidth(options.m_pageSize.GetWidth()),
           m_pageHeight(options.m_pageSize.GetHeight()),
           m_dualOrientations(options.m_dualOrientations), m_includeSave(options.m_includeSave),
-          m_includePrint(options.m_includePrint)
+          m_includePrint(options.m_includePrint), m_includeCopy(options.m_includeCopy)
         {
         m_view = (options.m_view == Wisteria::HtmlDashboardOptions::DashboardView::Gallery) ? 0 : 1;
         m_colorMode = (options.m_colorMode == Wisteria::HtmlDashboardOptions::ColorMode::Auto) ? 0 :
@@ -136,6 +136,10 @@ namespace Wisteria::UI
         auto* printCheck = new wxCheckBox(this, wxID_ANY, _(L"Include Print button"));
         printCheck->SetValidator(wxGenericValidator{ &m_includePrint });
         mainSizer->Add(printCheck, wxSizerFlags{}.Border());
+
+        auto* copyCheck = new wxCheckBox(this, wxID_ANY, _(L"Include Copy button"));
+        copyCheck->SetValidator(wxGenericValidator{ &m_includeCopy });
+        mainSizer->Add(copyCheck, wxSizerFlags{}.Border());
 
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
                        wxSizerFlags{}.Expand().Border());

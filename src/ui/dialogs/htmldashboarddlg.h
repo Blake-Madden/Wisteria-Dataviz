@@ -111,6 +111,13 @@ namespace Wisteria::UI
             return m_includePrint;
             }
 
+        /// @returns Whether the Copy button is included.
+        [[nodiscard]]
+        bool IncludeCopy() const noexcept
+            {
+            return m_includeCopy;
+            }
+
         /// @returns The page size (in DIPs/pixels).
         [[nodiscard]]
         wxSize GetPageSize() const noexcept
@@ -149,6 +156,7 @@ namespace Wisteria::UI
         bool m_dualOrientations{ true };
         bool m_includeSave{ true };
         bool m_includePrint{ true };
+        bool m_includeCopy{ true };
         };
     } // namespace Wisteria::UI
 

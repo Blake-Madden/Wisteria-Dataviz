@@ -72,6 +72,8 @@ namespace Wisteria
         bool m_includeSave{ true };
         /// @brief Whether to include the Print button.
         bool m_includePrint{ true };
+        /// @brief Whether to include the Copy button.
+        bool m_includeCopy{ true };
         /// @brief The name of the theme that @c m_css was built from.
         /// @note This is only stored by the caller. The exporter uses @c m_css.
         wxString m_theme;
@@ -249,6 +251,15 @@ namespace Wisteria
             m_includePrint = include;
             return *this;
             }
+
+        /// @brief Enables/disables the Copy button.
+        /// @param include @c true to include the button.
+        /// @returns A reference to this object.
+        HtmlDashboardOptions& IncludeCopy(const bool include) noexcept
+            {
+            m_includeCopy = include;
+            return *this;
+            }
         };
 
     /// @brief Exports a collection of canvases into a single self-contained HTML5 file.
@@ -342,6 +353,9 @@ namespace Wisteria
         /// @returns The script handling keyboard navigation.
         [[nodiscard]]
         static wxString GetDashboardScriptKeys();
+        /// @returns The script for swiping between pages and the copy menu.
+        [[nodiscard]]
+        static wxString GetDashboardScriptTouch();
         /// @returns The script handling drop-down menus.
         [[nodiscard]]
         static wxString GetDashboardScriptMenus();
@@ -384,7 +398,7 @@ namespace Wisteria
         [[nodiscard]]
         wxString BuildLogo(HtmlDashboardOptions options);
         [[nodiscard]]
-        wxString BuildKeyboardTip();
+        wxString BuildKeyboardTip(bool singlePage);
 
         /// @returns The filterable graphs on a page, grouped by the dataset and column
         ///     they filter. The graphs in a group are switched together.
@@ -454,8 +468,8 @@ namespace Wisteria
         /// @param originalStates How the graphs were originally shown.
         static void RestoreFilterStates(const FilterableGraphs& pageFilters,
                                         const std::vector<FilterState>& originalStates);
-        /// @returns The caption describing the filters shown on a page,
-        ///     or an empty string if it has none.
+        /// @returns The caption describing the filters shown on a page (as escaped SVG text
+        ///     markup), or an empty string if it has none.
         /// @param canvas The page.
         [[nodiscard]]
         static wxString GetFilterCaption(const Canvas& canvas);

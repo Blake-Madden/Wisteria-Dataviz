@@ -145,6 +145,7 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
         htmlNode->Add(L"dual-orientations", htmlOpts.m_dualOrientations);
         htmlNode->Add(L"include-save", htmlOpts.m_includeSave);
         htmlNode->Add(L"include-print", htmlOpts.m_includePrint);
+        htmlNode->Add(L"include-copy", htmlOpts.m_includeCopy);
         htmlNode->Add(L"page-width",
                       static_cast<double>(std::max(0, htmlOpts.m_pageSize.GetWidth())));
         htmlNode->Add(L"page-height",
