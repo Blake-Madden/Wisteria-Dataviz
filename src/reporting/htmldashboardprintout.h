@@ -74,6 +74,9 @@ namespace Wisteria
         bool m_includePrint{ true };
         /// @brief Whether to include the Copy button.
         bool m_includeCopy{ true };
+        /// @brief Whether to include checkboxes that hide or show a graph's groups.
+        /// @note Filterable graphs' choices are always included.
+        bool m_includeGroupVisibilityToggles{ false };
         /// @brief The name of the theme that @c m_css was built from.
         /// @note This is only stored by the caller. The exporter uses @c m_css.
         wxString m_theme;
@@ -258,6 +261,15 @@ namespace Wisteria
         HtmlDashboardOptions& IncludeCopy(const bool include) noexcept
             {
             m_includeCopy = include;
+            return *this;
+            }
+
+        /// @brief Enables/disables the checkboxes that hide or show a graph's groups.
+        /// @param include @c true to include the checkboxes.
+        /// @returns A reference to this object.
+        HtmlDashboardOptions& IncludeGroupVisibilityToggles(const bool include) noexcept
+            {
+            m_includeGroupVisibilityToggles = include;
             return *this;
             }
         };

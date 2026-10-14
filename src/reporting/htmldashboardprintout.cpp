@@ -38,6 +38,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptState()
   let colorMode = '{{MODE}}';
   const hasModeToggle = {{TOGGLE}};
   const countUp = {{COUNTUP}};
+  const hasGroupToggles = {{GROUPTOGGLES}};
   const layers = {{LAYERS}};
   const activeLayers = new Set(layers);
   let view = '{{VIEW}}';
@@ -585,6 +586,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptFilterMenu()
     pages.forEach(function(page, pageIndex) {
       if (!page.svg) return;
       if (page.filters) buildChoiceGroups(menu, page, pageIndex);
+      if (!hasGroupToggles) return;
       const found = collectFilterSections(page);
       found.sections.forEach(function(section) {
         appendFilterGroup(menu, section, found.chartIds, pageIndex);
@@ -2576,6 +2578,8 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
     };
     script.Replace(L"{{TOGGLE}}", options.m_includeColorModeToggle ? L"true" : L"false");
     script.Replace(L"{{COUNTUP}}", options.m_countUpNumbers ? L"true" : L"false");
+    script.Replace(L"{{GROUPTOGGLES}}",
+                   options.m_includeGroupVisibilityToggles ? L"true" : L"false");
     script.Replace(L"{{MODE}}", initialMode);
     script.Replace(L"{{VIEW}}", initialView);
     script.Replace(L"{{DASHID}}", dashboardId);

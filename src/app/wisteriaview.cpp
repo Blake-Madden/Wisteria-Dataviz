@@ -1382,7 +1382,9 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
         (savedOptions.m_dualOrientations != optionsDlg.DualOrientations()) ||
         (savedOptions.m_includeSave != optionsDlg.IncludeSave()) ||
         (savedOptions.m_includePrint != optionsDlg.IncludePrint()) ||
-        (savedOptions.m_includeCopy != optionsDlg.IncludeCopy());
+        (savedOptions.m_includeCopy != optionsDlg.IncludeCopy()) ||
+        (savedOptions.m_includeGroupVisibilityToggles !=
+         optionsDlg.IncludeGroupVisibilityToggles());
     savedOptions.m_theme = optionsDlg.GetTheme();
     savedOptions.m_logoPath = optionsDlg.GetLogoPath();
     savedOptions.m_view = optionsDlg.GetInitialView();
@@ -1394,6 +1396,7 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
     savedOptions.m_includeSave = optionsDlg.IncludeSave();
     savedOptions.m_includePrint = optionsDlg.IncludePrint();
     savedOptions.m_includeCopy = optionsDlg.IncludeCopy();
+    savedOptions.m_includeGroupVisibilityToggles = optionsDlg.IncludeGroupVisibilityToggles();
     if (changed)
         {
         GetDocument()->Modify(true);
@@ -1460,6 +1463,7 @@ void WisteriaView::ExportHtml(const Wisteria::ReportBuilder& builder,
                    .IncludeSave(savedOptions.m_includeSave)
                    .IncludePrint(savedOptions.m_includePrint)
                    .IncludeCopy(savedOptions.m_includeCopy)
+                   .IncludeGroupVisibilityToggles(savedOptions.m_includeGroupVisibilityToggles)
                    .PageTitles(std::move(pageTitles)));
     }
 

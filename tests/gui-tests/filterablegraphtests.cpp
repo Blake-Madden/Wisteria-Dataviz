@@ -506,6 +506,38 @@ TEST_CASE("Dashboard export scopes checkbox filters to their page", "[dashboard]
     CHECK(html.Contains(L"const key = filterScopeFor(el) + '|' + el.getAttribute('data-filter');"));
     CHECK(html.Contains(L"const scope = filterScopeFor(hit);"));
     CHECK_FALSE(html.Contains(L"const key = scopeIdFor(el) + '|'"));
+
+    // the group checkboxes are left out by default
+    CHECK(html.Contains(L"const hasGroupToggles = false;"));
+    CHECK(html.Contains(L"if (!hasGroupToggles) return;"));
+    }
+
+TEST_CASE("Dashboard export includes group visibility toggles when requested", "[dashboard]")
+    {
+    wxLogNull noLog;
+    auto* canvas = MakeCanvas();
+    auto pie = std::make_shared<PieChart>(canvas);
+    pie->SetData(MakeRegionDataset(), std::nullopt, L"Product", std::nullopt);
+    canvas->SetFixedObjectsGridSize(1, 1);
+    canvas->SetFixedObject(0, 0, pie);
+
+    const wxString filePath{ wxFileName::CreateTempFileName(L"wisteria-dashboard") };
+    HtmlDashboardOptions options{ filePath };
+    CHECK_FALSE(options.m_includeGroupVisibilityToggles);
+    options.IncludeGroupVisibilityToggles(true);
+    const HtmlDashboardPrintout printout{ std::vector<Canvas*>{ canvas }, options };
+
+    wxString html;
+    wxFile htmlFile{ filePath };
+    REQUIRE(htmlFile.IsOpened());
+    REQUIRE(htmlFile.ReadAll(&html, wxConvUTF8));
+    htmlFile.Close();
+    wxRemoveFile(filePath);
+
+    CHECK(html.Contains(L"const hasGroupToggles = true;"));
+    CHECK_FALSE(html.Contains(L"{{GROUPTOGGLES}}"));
+    // the graph's groups are still marked, so they can be hidden
+    CHECK(html.Contains(L"data-filter=\"Apples\""));
     }
 
 TEST_CASE("FilterableGraph from a report configuration", "[filterablegraph][reportbuilder]")

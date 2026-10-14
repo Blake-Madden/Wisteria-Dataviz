@@ -39,6 +39,9 @@ The following properties are available:
     The default is `true`.
   - `"include-copy"`: Whether to include the Copy button, which copies the current page as an image or a link to it. \
     The default is `true`.
+  - `"include-group-visibility-toggles"`: Whether the Filters menu includes checkboxes that hide or show a graph's groups (e.g., a pie slice or a line series). \
+    A graph's `"filter"` choices are always included. \
+    The default is `false`.
 
 ### Examples {-}
 

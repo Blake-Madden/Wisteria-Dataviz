@@ -26,7 +26,8 @@ namespace Wisteria::UI
           m_countUpNumbers(options.m_countUpNumbers), m_pageWidth(options.m_pageSize.GetWidth()),
           m_pageHeight(options.m_pageSize.GetHeight()),
           m_dualOrientations(options.m_dualOrientations), m_includeSave(options.m_includeSave),
-          m_includePrint(options.m_includePrint), m_includeCopy(options.m_includeCopy)
+          m_includePrint(options.m_includePrint), m_includeCopy(options.m_includeCopy),
+          m_includeGroupVisibilityToggles(options.m_includeGroupVisibilityToggles)
         {
         m_view = (options.m_view == Wisteria::HtmlDashboardOptions::DashboardView::Gallery) ? 0 : 1;
         m_colorMode = (options.m_colorMode == Wisteria::HtmlDashboardOptions::ColorMode::Auto) ? 0 :
@@ -140,6 +141,11 @@ namespace Wisteria::UI
         auto* copyCheck = new wxCheckBox(this, wxID_ANY, _(L"Include Copy button"));
         copyCheck->SetValidator(wxGenericValidator{ &m_includeCopy });
         mainSizer->Add(copyCheck, wxSizerFlags{}.Border());
+
+        auto* groupTogglesCheck =
+            new wxCheckBox(this, wxID_ANY, _(L"Include group visibility toggles"));
+        groupTogglesCheck->SetValidator(wxGenericValidator{ &m_includeGroupVisibilityToggles });
+        mainSizer->Add(groupTogglesCheck, wxSizerFlags{}.Border());
 
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
                        wxSizerFlags{}.Expand().Border());

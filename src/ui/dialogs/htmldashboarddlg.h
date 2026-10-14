@@ -118,6 +118,13 @@ namespace Wisteria::UI
             return m_includeCopy;
             }
 
+        /// @returns Whether the checkboxes that hide or show a graph's groups are included.
+        [[nodiscard]]
+        bool IncludeGroupVisibilityToggles() const noexcept
+            {
+            return m_includeGroupVisibilityToggles;
+            }
+
         /// @returns The page size (in DIPs/pixels).
         [[nodiscard]]
         wxSize GetPageSize() const noexcept
@@ -157,6 +164,7 @@ namespace Wisteria::UI
         bool m_includeSave{ true };
         bool m_includePrint{ true };
         bool m_includeCopy{ true };
+        bool m_includeGroupVisibilityToggles{ false };
         };
     } // namespace Wisteria::UI
 

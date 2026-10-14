@@ -550,6 +550,13 @@ namespace Wisteria
                 m_htmlExportOptions.m_includeCopy =
                     copyNode->AsBool(m_htmlExportOptions.m_includeCopy);
                 }
+            if (const auto groupTogglesNode =
+                    htmlExportNode->GetProperty(L"include-group-visibility-toggles");
+                groupTogglesNode->IsOk())
+                {
+                m_htmlExportOptions.m_includeGroupVisibilityToggles =
+                    groupTogglesNode->AsBool(m_htmlExportOptions.m_includeGroupVisibilityToggles);
+                }
             if (const auto widthNode = htmlExportNode->GetProperty(L"page-width");
                 widthNode->IsOk() && widthNode->AsDouble(-1) > 0)
                 {
