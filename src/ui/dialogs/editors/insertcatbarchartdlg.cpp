@@ -2062,6 +2062,7 @@ namespace Wisteria::UI
                 // data strings; both are restored after the call below.
                 // Brackets: snapshot now, discard if sort changed (positions will differ).
                 auto savedBrackets = plot->GetBarAxis().GetBrackets();
+                const bool bracketsAreDynamic = plot->GetBarAxis().AreBracketsDynamic();
                 if (HasBarSortChanged())
                     {
                     savedBrackets.clear();
@@ -2087,6 +2088,10 @@ namespace Wisteria::UI
                 for (const auto& bracket : savedBrackets)
                     {
                     plot->GetBarAxis().AddBracket(bracket);
+                    }
+                if (!savedBrackets.empty())
+                    {
+                    plot->GetBarAxis().SetBracketsAreDynamic(bracketsAreDynamic);
                     }
                 }
             else
