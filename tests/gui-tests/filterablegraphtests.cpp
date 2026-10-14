@@ -299,8 +299,9 @@ TEST_CASE("FilterableGraph dashboard export", "[filterablegraph][dashboard]")
     CHECK(html.Contains(L"data-variant-choices=\"0\" hidden>"));
 
     // each choice is captioned below the graph, in room added to the page
-    CHECK(html.Contains(L"Filters: Region filtered by North</text>"));
-    CHECK(html.Contains(L"Filters: Region unfiltered</text>"));
+    CHECK(html.Contains(L"Filters: <tspan font-weight=\"bold\">Region</tspan> filtered by "
+                        "<tspan font-style=\"italic\">North</tspan></text>"));
+    CHECK(html.Contains(L"Filters: <tspan font-weight=\"bold\">Region</tspan> unfiltered</text>"));
     CHECK(html.Contains(L"--page-w:1280;--page-h:748"));
     CHECK(html.Contains(L"viewBox=\"0 0 1280 748\""));
 
@@ -445,6 +446,66 @@ TEST_CASE("FilterableGraph dashboard export links pages filtering the same data"
 
     // the canvas is left showing the variant it had before exporting
     CHECK(secondGraph->GetActiveIndex() == 3);
+    }
+
+TEST_CASE("Dashboard export scopes checkbox filters to their page", "[dashboard]")
+    {
+    wxLogNull noLog;
+    auto* firstCanvas = MakeCanvas();
+    auto* secondCanvas = MakeCanvas();
+    // the same labels on both pages, but from different datasets
+    auto firstPie = std::make_shared<PieChart>(firstCanvas);
+    firstPie->SetData(MakeRegionDataset(), std::nullopt, L"Product", std::nullopt);
+    auto secondPie = std::make_shared<PieChart>(secondCanvas);
+    secondPie->SetData(MakeRegionDataset(false), std::nullopt, L"Product", std::nullopt);
+    firstCanvas->SetFixedObjectsGridSize(1, 1);
+    firstCanvas->SetFixedObject(0, 0, firstPie);
+    secondCanvas->SetFixedObjectsGridSize(1, 1);
+    secondCanvas->SetFixedObject(0, 0, secondPie);
+
+    const wxString filePath{ wxFileName::CreateTempFileName(L"wisteria-dashboard") };
+    HtmlDashboardOptions options{ filePath };
+    // a missing page is skipped and doesn't take up a page index
+    const HtmlDashboardPrintout printout{
+        std::vector<Canvas*>{ firstCanvas, nullptr, secondCanvas }, options
+    };
+
+    wxString html;
+    wxFile htmlFile{ filePath };
+    REQUIRE(htmlFile.IsOpened());
+    REQUIRE(htmlFile.ReadAll(&html, wxConvUTF8));
+    htmlFile.Close();
+    wxRemoveFile(filePath);
+
+    const auto getPageMarkup = [&html](const size_t pageIndex)
+    {
+        const size_t startPos{ html.find(wxString::Format(L"id=\"page-%zu\"", pageIndex)) };
+        if (startPos == wxString::npos)
+            {
+            return wxString{};
+            }
+        const size_t endPos{ html.find(L"</section>", startPos) };
+        return html.substr(startPos, endPos - startPos);
+    };
+
+    // chart IDs restart on each page, so the chart ID alone can't tell the pies apart
+    const wxString firstPage{ getPageMarkup(0) };
+    const wxString secondPage{ getPageMarkup(1) };
+    CHECK(getPageMarkup(2).empty());
+    CHECK(firstPage.Contains(L"data-index=\"0\""));
+    CHECK(secondPage.Contains(L"data-index=\"1\""));
+    CHECK(firstPage.Contains(L"data-chart-id=\"0\""));
+    CHECK(secondPage.Contains(L"data-chart-id=\"0\""));
+    CHECK(firstPage.Contains(L"data-filter=\"Apples\""));
+    CHECK(secondPage.Contains(L"data-filter=\"Apples\""));
+
+    // filter keys include the page index along with the chart ID
+    CHECK(html.Contains(L"return (page ? page.dataset.index : '') + ':' + scopeIdFor(el);"));
+    CHECK(html.Contains(L"box.dataset.filterKey = pageIndex + ':' + section.chartId + '|' + "
+                        "entry.key;"));
+    CHECK(html.Contains(L"const key = filterScopeFor(el) + '|' + el.getAttribute('data-filter');"));
+    CHECK(html.Contains(L"const scope = filterScopeFor(hit);"));
+    CHECK_FALSE(html.Contains(L"const key = scopeIdFor(el) + '|'"));
     }
 
 TEST_CASE("FilterableGraph from a report configuration", "[filterablegraph][reportbuilder]")

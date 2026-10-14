@@ -456,14 +456,19 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptFilters()
     {
     return LR"JS(
   const hiddenFilters = new Set();
+  // a filter only affects the chart on its own page
+  function filterScopeFor(el) {
+    const page = el.closest('.page');
+    return (page ? page.dataset.index : '') + ':' + scopeIdFor(el);
+  }
   function applyFilters() {
     document.querySelectorAll('.page-svg [data-filter]').forEach(function(el) {
-      const key = scopeIdFor(el) + '|' + el.getAttribute('data-filter');
+      const key = filterScopeFor(el) + '|' + el.getAttribute('data-filter');
       el.classList.toggle('is-filtered-out', hiddenFilters.has(key));
     });
     // legend rows go away with their data, leaving a gap
     document.querySelectorAll('.page-svg [data-legend-filter]').forEach(function(el) {
-      const key = scopeIdFor(el) + '|' + el.getAttribute('data-legend-filter');
+      const key = filterScopeFor(el) + '|' + el.getAttribute('data-legend-filter');
       el.classList.toggle('is-filtered-out', hiddenFilters.has(key));
     });
     // nested items (e.g., an inner pie ring) also go away with their parent
@@ -471,11 +476,13 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptFilters()
       .forEach(function(el) {
         const parent = el.getAttribute('data-filter-parent') ||
                        el.getAttribute('data-legend-parent');
-        if (hiddenFilters.has(scopeIdFor(el) + '|' + parent)) el.classList.add('is-filtered-out');
+        if (hiddenFilters.has(filterScopeFor(el) + '|' + parent)) {
+          el.classList.add('is-filtered-out');
+        }
       });
     // a base layer goes away once every group in its region is filtered out
     document.querySelectorAll('.page-svg [data-filter-all]').forEach(function(el) {
-      const scope = scopeIdFor(el);
+      const scope = filterScopeFor(el);
       const allHidden = el.getAttribute('data-filter-all')
         .split(String.fromCharCode(0x2028)).every(function(label) {
           return hiddenFilters.has(scope + '|' + label);
@@ -564,7 +571,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptFilterMenu()
       const box = document.createElement('input');
       box.type = 'checkbox';
       box.checked = true;
-      box.dataset.filterKey = section.chartId + '|' + entry.key;
+      box.dataset.filterKey = pageIndex + ':' + section.chartId + '|' + entry.key;
       box.addEventListener('change', function() { toggleFilter(box.dataset.filterKey); });
       row.appendChild(box);
       row.appendChild(document.createTextNode(entry.text));
@@ -1168,7 +1175,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptTooltips()
       const lineBreak = String.fromCharCode(0x2028);
       const groups = hit.getAttribute('data-tip-groups');
       if (groups) {
-        const scope = scopeIdFor(hit);
+        const scope = filterScopeFor(hit);
         const entries = groups.split(lineBreak).map(function(entry) {
           return entry.split(String.fromCharCode(0x2029));
         });
