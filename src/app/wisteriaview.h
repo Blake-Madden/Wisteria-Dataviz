@@ -259,6 +259,11 @@ class WisteriaView final : public wxView
     void OnEditItem(wxCommandEvent& event);
     void OnDeleteItem(wxCommandEvent& event);
     void OnGoToDatasource(wxCommandEvent& event);
+    void OnFilterDropdown(wxCommandEvent& event);
+    void OnFilterChoice(wxCommandEvent& event);
+    /// @returns The selected filterable graph, or null if one isn't the only item selected.
+    [[nodiscard]]
+    std::shared_ptr<Wisteria::Graphs::FilterableGraph> GetSelectedFilterableGraph() const;
     void OnCanvasDClick(wxCommandEvent& event);
     void OnCanvasCopyGraph(wxCommandEvent& event);
     void EditGraphByType(Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
@@ -544,6 +549,7 @@ class WisteriaView final : public wxView
     };
 
     wxMenu m_dividerMenu;
+    wxMenu m_filterMenu;
     wxMenu m_basicGraphMenu;
     wxMenu m_businessGraphMenu;
     wxMenu m_statisticalGraphMenu;

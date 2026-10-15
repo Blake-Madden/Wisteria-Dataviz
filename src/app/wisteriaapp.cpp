@@ -1110,6 +1110,10 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                     ReadSvgIcon(L"images/data.svg"),
                                     _(L"Jump to this graph's dataset"));
         sourcesButtonBar->SetKeyTip(ID_GOTO_DATASOURCE, _DT(L"G"));
+        sourcesButtonBar->AddDropdownButton(ID_FILTER_CHOICES, _(L"Filter"),
+                                            ReadSvgIcon(L"images/filter.svg"),
+                                            _(L"Choose the filter value to show"));
+        sourcesButtonBar->SetKeyTip(ID_FILTER_CHOICES, _DT(L"W"));
 
         // Analyses tab
         auto* analysesPage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Analyses"));

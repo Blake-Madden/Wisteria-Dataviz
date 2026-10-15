@@ -420,6 +420,10 @@ constexpr wxWindowID ID_EDIT_ITEM{ wxID_HIGHEST + 39 };
 constexpr wxWindowID ID_DELETE_ITEM{ wxID_HIGHEST + 40 };
 constexpr wxWindowID ID_GOTO_DATASOURCE{ wxID_HIGHEST + 83 };
 constexpr wxWindowID ID_SOURCES_BUTTONBAR{ wxID_HIGHEST + 84 };
+constexpr wxWindowID ID_FILTER_CHOICES{ wxID_HIGHEST + 126 };
+// menu items for the choices of the selected filterable graph
+constexpr wxWindowID ID_FILTER_CHOICE_FIRST{ wxID_HIGHEST + 127 };
+constexpr wxWindowID ID_FILTER_CHOICE_LAST{ wxID_HIGHEST + 254 };
 
 // Objects (labels, images, shapes, common axes)
 constexpr wxWindowID ID_NEW_LABEL{ wxID_HIGHEST + 42 };

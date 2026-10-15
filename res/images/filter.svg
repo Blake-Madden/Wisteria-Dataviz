@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="filterGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#5b9bd5;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#3a7bbf;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="2" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <!-- Funnel -->
+  <g filter="url(#dropShadow)">
+    <path d="M24,34 L232,34 L232,46 L150,138 L150,214 L106,194 L106,138 L24,46 Z"
+          fill="url(#filterGrad)" stroke="#2c5f94" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M40,46 L216,46 L142,130 L114,130 Z" fill="#ffffff" fill-opacity="0.22"/>
+  </g>
+</svg>

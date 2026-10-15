@@ -475,6 +475,10 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnDeleteItem, this, ID_DELETE_ITEM);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnGoToDatasource, this,
                   ID_GOTO_DATASOURCE);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaView::OnFilterDropdown, this,
+                  ID_FILTER_CHOICES);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnFilterChoice, this, ID_FILTER_CHOICE_FIRST,
+                  ID_FILTER_CHOICE_LAST);
 
     // bind DELETE key to delete selected item
     m_frame->Bind(wxEVT_CHAR_HOOK,
@@ -2349,6 +2353,8 @@ void WisteriaView::UpdateGraphButtonStates() const
     if (m_sourcesButtonBar != nullptr)
         {
         m_sourcesButtonBar->EnableButton(ID_GOTO_DATASOURCE, IsGraphSelected());
+        m_sourcesButtonBar->EnableButton(ID_FILTER_CHOICES,
+                                         GetSelectedFilterableGraph() != nullptr);
         }
     }
 
@@ -3810,6 +3816,87 @@ void WisteriaView::OnGoToDatasource([[maybe_unused]] wxCommandEvent& event)
         {
         m_sideBar->SelectSubItem(found);
         }
+    }
+
+//-------------------------------------------
+std::shared_ptr<Wisteria::Graphs::FilterableGraph> WisteriaView::GetSelectedFilterableGraph() const
+    {
+    auto* canvas = GetActiveCanvas();
+    if (canvas == nullptr)
+        {
+        return nullptr;
+        }
+
+    const auto [gridRows, gridCols] = canvas->GetFixedObjectsGridSize();
+    std::shared_ptr<Wisteria::GraphItems::GraphItemBase> selectedItem;
+    size_t selectedCount{ 0 };
+    for (size_t row = 0; row < gridRows; ++row)
+        {
+        for (size_t col = 0; col < gridCols; ++col)
+            {
+            auto item = canvas->GetFixedObject(row, col);
+            if (item != nullptr && (item->IsSelected() || !item->GetSelectedIds().empty()))
+                {
+                ++selectedCount;
+                selectedItem = item;
+                }
+            }
+        }
+
+    if (selectedCount != 1)
+        {
+        return nullptr;
+        }
+    return std::dynamic_pointer_cast<Wisteria::Graphs::FilterableGraph>(selectedItem);
+    }
+
+//-------------------------------------------
+void WisteriaView::OnFilterDropdown(wxCommandEvent& event)
+    {
+    const auto filterableGraph = GetSelectedFilterableGraph();
+    if (filterableGraph == nullptr)
+        {
+        return;
+        }
+
+    while (m_filterMenu.GetMenuItemCount() > 0)
+        {
+        m_filterMenu.Destroy(m_filterMenu.FindItemByPosition(0));
+        }
+
+    const auto& variants = filterableGraph->GetVariants();
+    const auto maxChoices = static_cast<size_t>(ID_FILTER_CHOICE_LAST - ID_FILTER_CHOICE_FIRST + 1);
+    for (size_t i = 0; i < variants.size() && i < maxChoices; ++i)
+        {
+        m_filterMenu.AppendCheckItem(ID_FILTER_CHOICE_FIRST + static_cast<wxWindowID>(i),
+                                     wxControl::EscapeMnemonics(variants[i].m_label));
+        m_filterMenu.Check(ID_FILTER_CHOICE_FIRST + static_cast<wxWindowID>(i),
+                           i == filterableGraph->GetActiveIndex());
+        }
+
+    dynamic_cast<wxRibbonButtonBarEvent&>(event).PopupMenu(&m_filterMenu);
+    }
+
+//-------------------------------------------
+void WisteriaView::OnFilterChoice(wxCommandEvent& event)
+    {
+    const auto filterableGraph = GetSelectedFilterableGraph();
+    auto* canvas = GetActiveCanvas();
+    if (filterableGraph == nullptr || canvas == nullptr)
+        {
+        return;
+        }
+
+    const auto index = static_cast<size_t>(event.GetId() - ID_FILTER_CHOICE_FIRST);
+    if (index >= filterableGraph->GetVariants().size() ||
+        index == filterableGraph->GetActiveIndex())
+        {
+        return;
+        }
+
+    filterableGraph->SetActiveIndex(index);
+    UpdateCanvas(canvas);
+    GetDocument()->Modify(true);
     }
 
 //-------------------------------------------
