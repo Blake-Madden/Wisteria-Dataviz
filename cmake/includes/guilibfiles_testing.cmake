@@ -128,6 +128,7 @@ SET(WISTERIA_SRC
     ../../src/reporting/reporttableloader.cpp
     ../../src/reporting/svgreportprintout.cpp
     ../../src/ui/app.cpp
+    ../../src/ui/controls/dataguidectrl.cpp
     ../../src/ui/controls/htmltablewin.cpp
     ../../src/ui/controls/htmltablewinprintout.cpp
     ../../src/ui/controls/listctrlex.cpp

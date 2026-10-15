@@ -17,6 +17,8 @@
 #include "../../base/icons.h"
 #include "../../base/image.h"
 #include "../../base/label.h"
+#include "../../controls/dataguidectrl.h"
+#include "../variableselectdlg.h"
 #include "insertitemdlg.h"
 #include <optional>
 #include <wx/choice.h>
@@ -512,10 +514,37 @@ namespace Wisteria::UI
         /// @param name The name of the dataset to select. (Nothing changes if not found.)
         void SelectDataset(const wxString& name);
 
+        /// @brief Creates the sidebar book, then adds the "Data Guide" page as its first page
+        ///     if GetDataGuide() has content.
+        void CreateControls() override;
+
+        /// @brief Returns the description of the data the graph expects.
+        /// @details Subclasses override this to supply the content of the "Data Guide" page.
+        ///     (The page is not shown when the returned guide is empty.)
+        /// @returns The data guide, or an empty guide for no "Data Guide" page.
+        [[nodiscard]]
+        virtual DataGuide GetDataGuide() const
+            {
+            return {};
+            }
+
         /// @brief Adds OK/Cancel buttons, then disables the dataset selector when editing.
         /// @details Changing the dataset of an existing graph would invalidate its
         ///     saved variables and axis state, so the selector is locked in edit mode.
         void FinalizeControls() override;
+
+        /** @brief Builds a variable list for the variable selection dialog from a
+                Data Guide parameter.
+            @param param The parameter to build the list from.
+            @param defaultVariables The variables to preselect in the list.
+            @returns The variable list definition.*/
+        [[nodiscard]]
+        static VariableSelectDlg::VariableListInfo
+        MakeVariableList(const DataGuideParameter& param,
+                         const std::vector<wxString>& defaultVariables);
+
+        /// @brief ID for the Data Guide sidebar section.
+        constexpr static wxWindowID ID_DATA_GUIDE_SECTION{ wxID_HIGHEST + 104 };
 
         /// @brief ID for the Graph Options sidebar section.
         constexpr static wxWindowID ID_GRAPH_OPTIONS_SECTION{ wxID_HIGHEST + 100 };

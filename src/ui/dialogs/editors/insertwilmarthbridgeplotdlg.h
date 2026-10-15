@@ -135,6 +135,14 @@ namespace Wisteria::UI
 
       protected:
         void CreateControls() override;
+        [[nodiscard]]
+        DataGuide GetDataGuide() const override;
+
+      private:
+        /// @returns The variables of the plot, shared by the Data Guide
+        ///     and the variable selection dialog.
+        [[nodiscard]]
+        static std::vector<DataGuideParameter> GetParameters();
 
       private:
         bool Validate() override;

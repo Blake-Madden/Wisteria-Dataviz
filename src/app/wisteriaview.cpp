@@ -3502,7 +3502,8 @@ std::optional<wxString> WisteriaView::PlaceFilterableGraphInGrid(
         {
         return _(L"The graph could not be found on the page.");
         }
-    const auto [graphRow, graphCol] = graphCell.value();
+    const size_t graphRow{ graphCell->first };
+    const size_t graphCol{ graphCell->second };
 
     // the legend is rebuilt from whichever filter value's graph is shown
     std::optional<Wisteria::Graphs::LegendOptions> legendOptions;

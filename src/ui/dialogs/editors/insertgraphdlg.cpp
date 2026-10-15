@@ -32,6 +32,39 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    void InsertGraphDlg::CreateControls()
+        {
+        InsertItemDlg::CreateControls();
+
+        // added before the derived dialog's pages so that it is the first sidebar item
+        if (const DataGuide guide = GetDataGuide(); !guide.IsEmpty())
+            {
+            auto* guidePage = new wxPanel(GetSideBarBook());
+            auto* guideSizer = new wxBoxSizer(wxVERTICAL);
+            auto* guideCtrl = new DataGuideCtrl(guidePage);
+            // the sample tables need room, so this page makes the whole dialog wider
+            guideCtrl->SetMinSize(FromDIP(wxSize{ 1050, 520 }));
+            guideCtrl->SetGuide(guide);
+            guideSizer->Add(guideCtrl, wxSizerFlags{ 1 }.Expand());
+            guidePage->SetSizer(guideSizer);
+            GetSideBarBook()->AddPage(guidePage, _(L"Data Guide"), ID_DATA_GUIDE_SECTION, false);
+            }
+        }
+
+    //-------------------------------------------
+    VariableSelectDlg::VariableListInfo
+    InsertGraphDlg::MakeVariableList(const DataGuideParameter& param,
+                                     const std::vector<wxString>& defaultVariables)
+        {
+        return VariableSelectDlg::VariableListInfo{}
+            .Label(param.m_name)
+            .SingleSelection(!param.m_multiple)
+            .Required(param.m_requirement == DataGuideRequirement::Required)
+            .DefaultVariables(defaultVariables)
+            .AcceptedTypes(param.m_types);
+        }
+
+    //-------------------------------------------
     void InsertGraphDlg::FinalizeControls()
         {
         InsertItemDlg::FinalizeControls();

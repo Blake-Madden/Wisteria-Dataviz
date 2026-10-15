@@ -114,6 +114,7 @@ SET(WISTERIA_SRC
     src/reporting/reportslideexportbase.cpp
     src/reporting/reporttableloader.cpp
     src/reporting/svgreportprintout.cpp
+    src/ui/controls/dataguidectrl.cpp
     src/ui/controls/listctrlexcelexporter.cpp
     src/ui/controls/thumbnail.cpp
     src/ui/dialogs/editors/accessibilityoptionspanel.cpp

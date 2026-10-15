@@ -118,6 +118,7 @@ SET(APP_WISTERIA_SRC
     src/reporting/reporttableloader.cpp
     src/reporting/svgreportprintout.cpp
     src/ui/app.cpp
+    src/ui/controls/dataguidectrl.cpp
     src/ui/controls/listctrlex.cpp
     src/ui/controls/listctrlexcelexporter.cpp
     src/ui/controls/listctrlexdataprovider.cpp

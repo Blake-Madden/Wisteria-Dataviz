@@ -9,6 +9,7 @@
 #include "insertwilmarthbridgeplotdlg.h"
 #include "../../app/wisteriaview.h"
 #include "../variableselectdlg.h"
+#include <array>
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
@@ -26,6 +27,97 @@ namespace Wisteria::UI
         SetMinSize(GetSize());
 
         Centre();
+        }
+
+    //-------------------------------------------
+    std::vector<DataGuideParameter> InsertWilmarthBridgePlotDlg::GetParameters()
+        {
+        const std::vector<Data::Dataset::ColumnImportType> labelTypes{
+            Data::Dataset::ColumnImportType::String, Data::Dataset::ColumnImportType::Discrete,
+            Data::Dataset::ColumnImportType::DichotomousString,
+            Data::Dataset::ColumnImportType::DichotomousDiscrete,
+            Data::Dataset::ColumnImportType::Numeric
+        };
+        const std::vector<Data::Dataset::ColumnImportType> periodTypes{
+            Data::Dataset::ColumnImportType::Numeric, Data::Dataset::ColumnImportType::Date
+        };
+        const std::vector<Data::Dataset::ColumnImportType> flagTypes{
+            Data::Dataset::ColumnImportType::Numeric, Data::Dataset::ColumnImportType::Discrete,
+            Data::Dataset::ColumnImportType::DichotomousDiscrete
+        };
+
+        // the order here is the order of the lists in the variable selection dialog
+        return { { _(L"Label"), labelTypes, DataGuideRequirement::Required,
+                   _(L"Identifies each observation, which is drawn as one column of cells. Rows "
+                     "sharing a label are combined into a single observation.") },
+                 { _(L"Entry"), periodTypes, DataGuideRequirement::Optional,
+                   _(L"The period the observation entered the study. Defaults to the first period. "
+                     "Must be the same type as Exit.") },
+                 { _(L"Exit"), periodTypes, DataGuideRequirement::Required,
+                   _(L"The last period the observation was under observation, whether its event "
+                     "occurred or follow-up simply ended.") },
+                 { _(L"Status"),
+                   flagTypes,
+                   DataGuideRequirement::Optional,
+                   _(L"Whether the exit was an event or a censoring. Missing counts as an event."),
+                   { { L"1", _(L"Event occurred") }, { L"0", _(L"Censored") } } },
+                 { _(L"Intermediate Event"),
+                   flagTypes,
+                   DataGuideRequirement::Optional,
+                   _(L"Marks an event that happens partway through the study. Cells from that "
+                     L"point on are drawn in a different color."),
+                   { { L"0", _(L"Before the event") }, { L"1", _(L"After the event") } } } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertWilmarthBridgePlotDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Wilmarth Bridge Plot");
+        guide.m_iconName = L"images/wilmarth-bridge.svg";
+        guide.m_summary =
+            _(L"Shows observations fading out of a study over time as a grid of characters, "
+              "where the tapering silhouette traces the survival curve.");
+        guide.m_requirements =
+            _(L"One row per observation, with the period it entered the study and the period "
+              "it exited.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample inscription;
+        inscription.m_title = _(L"Example: fading inscription");
+        inscription.m_columns = { { _(L"Letter"), _(L"Label") },
+                                  { _(L"Entered"), _(L"Entry") },
+                                  { _(L"Faded"), _(L"Exit") },
+                                  { _(L"Status"), _(L"Status") } };
+        inscription.m_rows = { { L"F", L"1963", L"1967", L"" },
+                               { L"O", L"1963", L"1963", L"" },
+                               { L"R", L"1963", L"1971", L"0" } };
+
+        DataGuideExample patients;
+        patients.m_title = _(L"Example: survival study with an intermediate event");
+        patients.m_columns = { { _(L"Patient"), _(L"Label") },
+                               { _(L"Start"), _(L"Entry") },
+                               { _(L"Stop"), _(L"Exit") },
+                               { _(L"Event"), _(L"Status") },
+                               { _(L"Transplant"), _(L"Intermediate Event") } };
+        patients.m_rows = {
+            { L"P01", L"0", L"49", L"1", L"0" }, { L"P02", L"0", L"5", L"1", L"0" },
+            { L"P03", L"0", L"12", L"0", L"0" }, { L"P03", L"12", L"41", L"1", L"1" },
+            { L"P04", L"0", L"36", L"0", L"0" }, { L"P05", L"0", L"8", L"0", L"0" },
+            { L"P05", L"8", L"27", L"0", L"1" }
+        };
+        guide.m_examples = { std::move(inscription), std::move(patients) };
+        guide.m_missingData = {
+            _(L"Label: a missing label is still drawn and counted, just with blank cells."),
+            _(L"Entry: a missing value defaults to the first period."),
+            _(L"Exit: a row with no exit value is left out of the statistics, but its column "
+              "is still reserved in the plot. A fully empty row separates groups visually."),
+            _(L"Status: a missing value is treated as an event, not a censoring.")
+        };
+        guide.m_notes = { _(L"The entry and exit columns can be dates instead of numbers, as "
+                            "long as both are the same type.") };
+        return guide;
         }
 
     //-------------------------------------------
@@ -181,59 +273,19 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
-        VariableSelectDlg dlg(
-            this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Label"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_labelVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_labelVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete,
-                                   Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Entry"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_entryVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_entryVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric,
-                                   Data::Dataset::ColumnImportType::Date }),
-              VLI{}
-                  .Label(_(L"Exit"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_exitVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_exitVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric,
-                                   Data::Dataset::ColumnImportType::Date }),
-              VLI{}
-                  .Label(_(L"Status"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_statusVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_statusVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Intermediate Event"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_intermediateEventVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_intermediateEventVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
+        const std::array<wxString, 5> currentVariables{ m_labelVariable, m_entryVariable,
+                                                        m_exitVariable, m_statusVariable,
+                                                        m_intermediateEventVariable };
+        const auto parameters = GetParameters();
+        std::vector<VariableSelectDlg::VariableListInfo> variableLists;
+        for (size_t paramIndex = 0; paramIndex < parameters.size(); ++paramIndex)
+            {
+            variableLists.push_back(MakeVariableList(
+                parameters[paramIndex], currentVariables[paramIndex].empty() ?
+                                            std::vector<wxString>{} :
+                                            std::vector<wxString>{ currentVariables[paramIndex] }));
+            }
+        VariableSelectDlg dlg(this, columnInfo, variableLists);
 
         if (dlg.ShowModal() != wxID_OK)
             {
