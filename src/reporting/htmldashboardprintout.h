@@ -13,6 +13,7 @@
 #define WISTERIA_HTML_DASHBOARD_PRINTOUT_H
 
 #include "../base/canvas.h"
+#include "../data/dataset.h"
 #include <memory>
 #include <optional>
 #include <utility>
@@ -41,6 +42,34 @@ namespace Wisteria
             Slides,
             /// @brief Small page cards across the top, with the selected page shown below.
             Gallery
+            };
+
+        /// @brief A dataset and column that filterable graphs are filtered by,
+        ///     along with the choice that the exported filter opens on.
+        struct FilterDefault
+            {
+            /// @brief The filtered dataset.
+            const Data::Dataset* m_data{ nullptr };
+            /// @brief The column being filtered.
+            wxString m_column;
+            /// @brief The name of the filtered dataset.
+            wxString m_datasetName;
+            /// @brief The choices, with the unfiltered choice first.
+            std::vector<wxString> m_choices;
+            /// @brief The index (into @c m_choices) that the filter opens on.
+            size_t m_defaultChoice{ 0 };
+            };
+
+        /// @brief A choice that a dataset and column's filter opens on, instead of the
+        ///     choice being shown on the canvas.
+        struct FilterOverride
+            {
+            /// @brief The filtered dataset.
+            const Data::Dataset* m_data{ nullptr };
+            /// @brief The column being filtered.
+            wxString m_column;
+            /// @brief The label of the choice to open on.
+            wxString m_label;
             };
 
         /// @brief Constructor.
@@ -83,6 +112,8 @@ namespace Wisteria
         /// @brief Page titles, in the same order as the canvases.
         /// @details An empty or missing entry falls back to the canvas's label.
         std::vector<wxString> m_pageTitles;
+        /// @brief Choices that filters open on, instead of the choices shown on the canvases.
+        std::vector<FilterOverride> m_filterOverrides;
 
         /// @param view The view.
         /// @returns The view as a string (for saving).
@@ -216,6 +247,15 @@ namespace Wisteria
         HtmlDashboardOptions& PageTitles(std::vector<wxString> titles)
             {
             m_pageTitles = std::move(titles);
+            return *this;
+            }
+
+        /// @brief Sets the choices that filters open on.
+        /// @param overrides The choices, by dataset and column.
+        /// @returns A reference to this object.
+        HtmlDashboardOptions& FilterOverrides(std::vector<FilterOverride> overrides)
+            {
+            m_filterOverrides = std::move(overrides);
             return *this;
             }
 
@@ -377,6 +417,14 @@ namespace Wisteria
         /// @returns The script performing the initial page load.
         [[nodiscard]]
         static wxString GetDashboardScriptLoad();
+
+        /// @returns The datasets and columns that the pages' filterable graphs are filtered by,
+        ///     with the choice that each filter opens on.
+        /// @details Filters on the same dataset and column are combined, even across pages.
+        /// @param canvases The pages.
+        [[nodiscard]]
+        static std::vector<HtmlDashboardOptions::FilterDefault>
+        GetFilterDefaults(const std::vector<Canvas*>& canvases);
 
       private:
         using FilterableGraphs = std::vector<std::shared_ptr<Graphs::FilterableGraph>>;

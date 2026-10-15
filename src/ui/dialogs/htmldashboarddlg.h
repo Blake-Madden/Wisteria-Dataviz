@@ -30,17 +30,20 @@ namespace Wisteria::UI
             @param options The options to pre-populate the dialog with.
                 The @c m_filePath and @c m_css fields are ignored.
             @param theme The name of the theme to select initially.
+            @param filterDefaults The datasets and columns that filterable graphs are filtered by,
+                which the user can choose the opening choice of.
             @param id The window ID.
             @param caption The title of the dialog.
             @param pos The screen position of the window.
             @param size The window size.
             @param style The window style (i.e., decorations and flags).*/
-        HtmlDashboardDlg(wxWindow* parent, const wxArrayString& themes,
-                         const Wisteria::HtmlDashboardOptions& options, const wxString& theme,
-                         wxWindowID id = wxID_ANY,
-                         const wxString& caption = _(L"HTML Export Options"),
-                         const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
-                         long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN);
+        HtmlDashboardDlg(
+            wxWindow* parent, const wxArrayString& themes,
+            const Wisteria::HtmlDashboardOptions& options, const wxString& theme,
+            const std::vector<Wisteria::HtmlDashboardOptions::FilterDefault>& filterDefaults,
+            wxWindowID id = wxID_ANY, const wxString& caption = _(L"HTML Export Options"),
+            const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
+            long style = wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN);
 
         /// @private
         HtmlDashboardDlg(const HtmlDashboardDlg&) = delete;
@@ -132,6 +135,10 @@ namespace Wisteria::UI
             return { m_pageWidth, m_pageHeight };
             }
 
+        /// @returns The choices that the user selected for each filter to open on.
+        [[nodiscard]]
+        std::vector<Wisteria::HtmlDashboardOptions::FilterOverride> GetFilterOverrides() const;
+
       private:
         void CreateControls(const wxArrayString& themes);
 
@@ -139,6 +146,11 @@ namespace Wisteria::UI
             {
             TransferDataFromWindow();
             m_logoPath = m_logoPicker->GetPath();
+            m_filterSelections.clear();
+            for (const auto* filterChoice : m_filterChoices)
+                {
+                m_filterSelections.push_back(filterChoice->GetSelection());
+                }
             if (IsModal())
                 {
                 EndModal(wxID_OK);
@@ -165,6 +177,11 @@ namespace Wisteria::UI
         bool m_includePrint{ true };
         bool m_includeCopy{ true };
         bool m_includeGroupVisibilityToggles{ false };
+        std::vector<Wisteria::HtmlDashboardOptions::FilterDefault> m_filterDefaults;
+        // one control per filter default
+        std::vector<wxChoice*> m_filterChoices;
+        // the selected choice of each filter default
+        std::vector<int> m_filterSelections;
         };
     } // namespace Wisteria::UI
 

@@ -1364,7 +1364,9 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
                                                             GetReportBuilder().GetName());
     const wxString initialTheme{ savedOptions.m_theme.empty() ? wxString{ L"default" } :
                                                                 savedOptions.m_theme };
-    Wisteria::UI::HtmlDashboardDlg optionsDlg(m_frame, themes, dlgOptions, initialTheme);
+    Wisteria::UI::HtmlDashboardDlg optionsDlg(
+        m_frame, themes, dlgOptions, initialTheme,
+        Wisteria::HtmlDashboardPrintout::GetFilterDefaults(m_pages));
     if (optionsDlg.ShowModal() != wxID_OK)
         {
         return;
@@ -1411,13 +1413,15 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    ExportHtml(GetReportBuilder(), m_pages, fileDlg.GetPath(), optionsDlg.GetDashboardTitle());
+    ExportHtml(GetReportBuilder(), m_pages, fileDlg.GetPath(), optionsDlg.GetDashboardTitle(),
+               optionsDlg.GetFilterOverrides());
     }
 
 //-------------------------------------------
-void WisteriaView::ExportHtml(const Wisteria::ReportBuilder& builder,
-                              const std::vector<Wisteria::Canvas*>& pages, const wxString& filePath,
-                              const wxString& title)
+void WisteriaView::ExportHtml(
+    const Wisteria::ReportBuilder& builder, const std::vector<Wisteria::Canvas*>& pages,
+    const wxString& filePath, const wxString& title,
+    const std::vector<Wisteria::HtmlDashboardOptions::FilterOverride>& filterOverrides)
     {
     const auto& savedOptions = builder.GetHtmlExportOptions();
 
@@ -1464,7 +1468,8 @@ void WisteriaView::ExportHtml(const Wisteria::ReportBuilder& builder,
                    .IncludePrint(savedOptions.m_includePrint)
                    .IncludeCopy(savedOptions.m_includeCopy)
                    .IncludeGroupVisibilityToggles(savedOptions.m_includeGroupVisibilityToggles)
-                   .PageTitles(std::move(pageTitles)));
+                   .PageTitles(std::move(pageTitles))
+                   .FilterOverrides(filterOverrides));
     }
 
 //-------------------------------------------

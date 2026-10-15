@@ -2128,6 +2128,70 @@ Wisteria::HtmlDashboardPrintout::GetFilterLinks(const std::vector<Canvas*>& canv
     }
 
 //------------------------------------------------------
+std::vector<Wisteria::HtmlDashboardOptions::FilterDefault>
+Wisteria::HtmlDashboardPrintout::GetFilterDefaults(const std::vector<Canvas*>& canvases)
+    {
+    std::vector<HtmlDashboardOptions::FilterDefault> filterDefaults;
+    for (const auto* canvas : canvases)
+        {
+        if (canvas == nullptr)
+            {
+            continue;
+            }
+        for (const auto& pageFilters : GetPageFilters(*canvas))
+            {
+            const Data::Dataset* groupData{ pageFilters.front()->GetData().get() };
+            const wxString& column{ pageFilters.front()->GetFilterColumn() };
+            std::vector<wxString> choices{ GetFilterChoices(pageFilters) };
+
+            const auto foundDefault =
+                std::ranges::find_if(filterDefaults,
+                                     [groupData, &column](const auto& filterDefault)
+                                     {
+                                         return filterDefault.m_data == groupData &&
+                                                filterDefault.m_column.CmpNoCase(column) == 0;
+                                     });
+            if (foundDefault == filterDefaults.end())
+                {
+                HtmlDashboardOptions::FilterDefault filterDefault;
+                filterDefault.m_data = groupData;
+                filterDefault.m_column = column;
+                filterDefault.m_datasetName =
+                    (groupData != nullptr) ? wxString{ groupData->GetName() } : wxString{};
+                filterDefault.m_defaultChoice = GetDefaultFilterChoice(pageFilters, choices);
+                filterDefault.m_choices = std::move(choices);
+                filterDefaults.push_back(std::move(filterDefault));
+                continue;
+                }
+
+            // another page's graphs may offer values that this page's don't
+            for (size_t i = 1; i < choices.size(); ++i)
+                {
+                const wxString& label{ choices[i] };
+                const bool isKnown{ std::ranges::any_of(
+                    foundDefault->m_choices,
+                    [&label](const auto& existing) { return existing.CmpNoCase(label) == 0; }) };
+                if (!isKnown)
+                    {
+                    foundDefault->m_choices.push_back(label);
+                    }
+                }
+            // the unfiltered choice stays first and the rest are kept sorted, with the
+            // default choice tracked by its label
+            const wxString defaultLabel{ foundDefault->m_choices[foundDefault->m_defaultChoice] };
+            std::sort(std::next(foundDefault->m_choices.begin()), foundDefault->m_choices.end(),
+                      [](const auto& lhv, const auto& rhv) { return lhv.CmpNoCase(rhv) < 0; });
+            const auto defaultPos =
+                std::ranges::find_if(foundDefault->m_choices, [&defaultLabel](const auto& label)
+                                     { return label.CmpNoCase(defaultLabel) == 0; });
+            foundDefault->m_defaultChoice =
+                static_cast<size_t>(std::distance(foundDefault->m_choices.begin(), defaultPos));
+            }
+        }
+    return filterDefaults;
+    }
+
+//------------------------------------------------------
 std::vector<Wisteria::HtmlDashboardPrintout::FilterGroup>
 Wisteria::HtmlDashboardPrintout::GetFilterGroups(
     const Canvas& canvas, const std::vector<std::optional<size_t>>& groupLinks)
@@ -2560,6 +2624,21 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         {
         hashText(layer);
         }
+    // a different default filter choice must not be overridden by a viewer's saved choice
+    for (const auto& filterDefault : GetFilterDefaults(canvases))
+        {
+        const auto foundOverride = std::ranges::find_if(
+            options.m_filterOverrides,
+            [&filterDefault](const auto& filterOverride)
+            {
+                return filterOverride.m_data == filterDefault.m_data &&
+                       filterOverride.m_column.CmpNoCase(filterDefault.m_column) == 0;
+            });
+        hashText(filterDefault.m_column);
+        hashText((foundOverride != options.m_filterOverrides.cend()) ?
+                     foundOverride->m_label :
+                     filterDefault.m_choices.at(filterDefault.m_defaultChoice));
+        }
     const wxString dashboardId{ wxString::Format(L"%08x", dashboardHash) };
 
     // the state script opens the enclosing function and the load script closes it
@@ -2849,6 +2928,30 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         };
 
         std::vector<FilterGroup> filterGroups{ GetFilterGroups(*canvas, filterLinks[canvasIndex]) };
+        for (auto& filterGroup : filterGroups)
+            {
+            const Data::Dataset* groupData{ filterGroup.m_graphs.front()->GetData().get() };
+            const wxString& column{ filterGroup.m_graphs.front()->GetFilterColumn() };
+            const auto foundOverride =
+                std::ranges::find_if(options.m_filterOverrides,
+                                     [groupData, &column](const auto& filterOverride)
+                                     {
+                                         return filterOverride.m_data == groupData &&
+                                                filterOverride.m_column.CmpNoCase(column) == 0;
+                                     });
+            if (foundOverride == options.m_filterOverrides.cend())
+                {
+                continue;
+                }
+            const auto overridePos =
+                std::ranges::find_if(filterGroup.m_choices, [&foundOverride](const auto& label)
+                                     { return label.CmpNoCase(foundOverride->m_label) == 0; });
+            if (overridePos != filterGroup.m_choices.end())
+                {
+                filterGroup.m_defaultChoice =
+                    static_cast<size_t>(std::distance(filterGroup.m_choices.begin(), overridePos));
+                }
+            }
 
         html += wxString::Format(
             L"<section class=\"page\" id=\"page-%zu\" data-index=\"%zu\" data-layer=\"%s\" "

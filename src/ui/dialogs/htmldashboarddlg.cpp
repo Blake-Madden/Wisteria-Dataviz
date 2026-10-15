@@ -13,13 +13,13 @@
 namespace Wisteria::UI
     {
     //------------------------------------------------------
-    HtmlDashboardDlg::HtmlDashboardDlg(wxWindow* parent, const wxArrayString& themes,
-                                       const Wisteria::HtmlDashboardOptions& options,
-                                       const wxString& theme, wxWindowID id /*= wxID_ANY*/,
-                                       const wxString& caption /*= _(L"HTML Export Options")*/,
-                                       const wxPoint& pos /*= wxDefaultPosition*/,
-                                       const wxSize& size /*= wxDefaultSize*/,
-                                       long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN*/)
+    HtmlDashboardDlg::HtmlDashboardDlg(
+        wxWindow* parent, const wxArrayString& themes,
+        const Wisteria::HtmlDashboardOptions& options, const wxString& theme,
+        const std::vector<Wisteria::HtmlDashboardOptions::FilterDefault>& filterDefaults,
+        wxWindowID id /*= wxID_ANY*/, const wxString& caption /*= _(L"HTML Export Options")*/,
+        const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
+        long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN*/)
         : DialogWithHelp(parent, id, caption, pos, size, style), m_dashboardTitle(options.m_title),
           m_theme(theme), m_logoPath(options.m_logoPath),
           m_includeColorModeToggle(options.m_includeColorModeToggle),
@@ -27,7 +27,8 @@ namespace Wisteria::UI
           m_pageHeight(options.m_pageSize.GetHeight()),
           m_dualOrientations(options.m_dualOrientations), m_includeSave(options.m_includeSave),
           m_includePrint(options.m_includePrint), m_includeCopy(options.m_includeCopy),
-          m_includeGroupVisibilityToggles(options.m_includeGroupVisibilityToggles)
+          m_includeGroupVisibilityToggles(options.m_includeGroupVisibilityToggles),
+          m_filterDefaults(filterDefaults)
         {
         m_view = (options.m_view == Wisteria::HtmlDashboardOptions::DashboardView::Gallery) ? 0 : 1;
         m_colorMode = (options.m_colorMode == Wisteria::HtmlDashboardOptions::ColorMode::Auto) ? 0 :
@@ -147,10 +148,62 @@ namespace Wisteria::UI
         groupTogglesCheck->SetValidator(wxGenericValidator{ &m_includeGroupVisibilityToggles });
         mainSizer->Add(groupTogglesCheck, wxSizerFlags{}.Border());
 
+        // the choice that each filter opens on
+        if (!m_filterDefaults.empty())
+            {
+            auto* filterSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Filter Defaults"));
+            auto* filterGrid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
+                                                              wxSizerFlags::GetDefaultBorder() });
+            filterGrid->AddGrowableCol(1, 1);
+
+            for (const auto& filterDefault : m_filterDefaults)
+                {
+                const wxString filterName{ filterDefault.m_datasetName.empty() ?
+                                               filterDefault.m_column :
+                                               wxString::Format(L"%s (%s)", filterDefault.m_column,
+                                                                filterDefault.m_datasetName) };
+                filterGrid->Add(
+                    new wxStaticText(filterSizer->GetStaticBox(), wxID_STATIC, filterName + L":"),
+                    wxSizerFlags{}.CenterVertical());
+
+                wxArrayString choiceLabels;
+                for (const auto& choice : filterDefault.m_choices)
+                    {
+                    choiceLabels.Add(choice);
+                    }
+                auto* choiceCtrl = new wxChoice(filterSizer->GetStaticBox(), wxID_ANY,
+                                                wxDefaultPosition, wxDefaultSize, choiceLabels);
+                choiceCtrl->SetSelection(static_cast<int>(filterDefault.m_defaultChoice));
+                m_filterChoices.push_back(choiceCtrl);
+                filterGrid->Add(choiceCtrl, wxSizerFlags{}.Expand());
+                }
+            filterSizer->Add(filterGrid, wxSizerFlags{}.Expand().Border());
+            mainSizer->Add(filterSizer, wxSizerFlags{}.Expand().Border());
+            }
+
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
                        wxSizerFlags{}.Expand().Border());
 
         SetSizerAndFit(mainSizer);
+        }
+
+    //------------------------------------------------------
+    std::vector<Wisteria::HtmlDashboardOptions::FilterOverride>
+    HtmlDashboardDlg::GetFilterOverrides() const
+        {
+        std::vector<Wisteria::HtmlDashboardOptions::FilterOverride> overrides;
+        for (size_t i = 0; i < m_filterDefaults.size() && i < m_filterSelections.size(); ++i)
+            {
+            const auto& filterDefault = m_filterDefaults[i];
+            const auto selection = static_cast<size_t>(std::max(m_filterSelections[i], 0));
+            if (selection < filterDefault.m_choices.size())
+                {
+                overrides.push_back(Wisteria::HtmlDashboardOptions::FilterOverride{
+                    filterDefault.m_data, filterDefault.m_column,
+                    filterDefault.m_choices[selection] });
+                }
+            }
+        return overrides;
         }
 
     //------------------------------------------------------
