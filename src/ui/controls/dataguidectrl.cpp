@@ -318,8 +318,8 @@ td { border-top: 1px solid var(--border); }
 .ref td.types { white-space: nowrap; }
 .ref td.types img { width: 16px; height: 16px; margin-right: 6px; vertical-align: middle; }
 .ref td.what { opacity: 0.85; min-width: 220px; }
-.ref tr.group td { padding: 14px 14px 6px; font-size: 11px; font-weight: 700;
-                   text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.65; }
+.ref tr.group td { padding: 8px 14px; font-size: 13px; font-weight: 700;
+                   background: rgba(128, 128, 128, 0.2); }
 .ref td.values { white-space: nowrap; }
 .value { margin: 2px 0; font-size: 12px; }
 .value code { display: inline-block; min-width: 22px; padding: 0 6px; margin-right: 4px;
@@ -334,7 +334,8 @@ td { border-top: 1px solid var(--border); }
         return _DT(LR"raw(
 .chip { display: inline-flex; align-items: center; vertical-align: middle; gap: 5px;
         height: 22px; margin: 0 6px 0 0; padding: 0 8px; line-height: 1; border-radius: 999px;
-        font-size: 11px; font-weight: 600; border: 1px solid var(--border); }
+        font-size: 11px; font-weight: 600; border: 1px solid var(--border);
+        white-space: nowrap; }
 .chip img { width: 14px; height: 14px; }
 .chip.required { background: var(--bg); border-color: var(--accent); }
 .chip.conditional { background: var(--bg); border-style: dashed; border-color: var(--accent); }
@@ -477,8 +478,14 @@ td { border-top: 1px solid var(--border); }
                                                        { return !param.m_values.empty(); });
             html += L"<div class='table-wrap ref'><table><thead><tr><th>" +
                     EscapeForHtml(_(L"Variable")) + L"</th><th>" + EscapeForHtml(_(L"Accepts")) +
-                    L"</th><th>" + EscapeForHtml(_(L"Required")) + L"</th><th>" +
-                    EscapeForHtml(_(L"Columns")) + L"</th>";
+                    L"</th><th>" + EscapeForHtml(_(L"Required")) + L"</th>";
+            // the 'Columns' column is only shown if some variable accepts several columns
+            const bool hasMultiple = std::ranges::any_of(m_guide.m_parameters, [](const auto& param)
+                                                         { return param.m_multiple; });
+            if (hasMultiple)
+                {
+                html += L"<th>" + EscapeForHtml(_(L"Columns")) + L"</th>";
+                }
             if (hasValues)
                 {
                 html += L"<th>" + EscapeForHtml(_(L"Expected Values")) + L"</th>";
@@ -492,7 +499,8 @@ td { border-top: 1px solid var(--border); }
                      m_guide.m_parameters[paramIndex - 1].m_group != param.m_group))
                     {
                     html += wxString::Format(L"<tr class='group'><td colspan='%d'>%s</td></tr>",
-                                             hasValues ? 6 : 5, EscapeForHtml(param.m_group));
+                                             4 + (hasMultiple ? 1 : 0) + (hasValues ? 1 : 0),
+                                             EscapeForHtml(param.m_group));
                     }
                 html += L"<tr><td class='var' style='" + GetAccentStyle(paramIndex) + L"'>" +
                         EscapeForHtml(param.m_name);
@@ -521,11 +529,13 @@ td { border-top: 1px solid var(--border); }
                         }
                     break;
                     }
-                html += L"</td><td>";
-                html += L"<span class='chip'>" +
-                        EscapeForHtml(param.m_multiple ? _(L"One or more") : _(L"One")) +
-                        L"</span>";
                 html += L"</td>";
+                if (hasMultiple)
+                    {
+                    html += L"<td><span class='chip'>" +
+                            EscapeForHtml(param.m_multiple ? _(L"One or more") : _(L"One")) +
+                            L"</span></td>";
+                    }
                 if (hasValues)
                     {
                     html += L"<td class='values'>";
