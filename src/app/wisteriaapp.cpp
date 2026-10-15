@@ -1038,10 +1038,6 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         objectsButtonBar->AddButton(ID_EDIT_ITEM, _(L"Edit"), ReadSvgIcon(L"images/edit.svg"),
                                     _(L"Edit the selected item"));
         objectsButtonBar->SetKeyTip(ID_EDIT_ITEM, _DT(L"W"));
-        objectsButtonBar->AddButton(ID_GOTO_DATASOURCE, _(L"Datasource"),
-                                    ReadSvgIcon(L"images/data.svg"),
-                                    _(L"Jump to this graph's dataset"));
-        objectsButtonBar->SetKeyTip(ID_GOTO_DATASOURCE, _DT(L"Z"));
         objectsButtonBar->AddButton(ID_DELETE_ITEM, _(L"Delete"), ReadSvgIcon(L"images/delete.svg"),
                                     _(L"Delete the selected item"));
         objectsButtonBar->SetKeyTip(ID_DELETE_ITEM, _DT(L"OD"));

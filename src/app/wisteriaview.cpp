@@ -2341,7 +2341,6 @@ void WisteriaView::UpdateGraphButtonStates() const
         m_objectsButtonBar->EnableButton(wxID_PASTE, true);
         m_objectsButtonBar->EnableButton(ID_EDIT_ITEM, IsCanvasItemSelected());
         m_objectsButtonBar->EnableButton(ID_DELETE_ITEM, IsCanvasItemSelected());
-        m_objectsButtonBar->EnableButton(ID_GOTO_DATASOURCE, IsGraphSelected());
         }
 
     if (m_quickToolbar != nullptr)
