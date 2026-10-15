@@ -34,6 +34,83 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertCandlestickPlotDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return { { .m_name = _(L"Date"),
+                   .m_types = { Data::Dataset::ColumnImportType::Date },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The day that each set of prices applies to."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Open"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The price at the start of the day."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"High"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The highest price reached during the day."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Low"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The lowest price reached during the day."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Close"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The price at the end of the day."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertCandlestickPlotDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Candlestick Plot");
+        guide.m_iconName = L"images/candlestick.svg";
+        guide.m_summary =
+            _(L"Shows how a price moved each day, with one candle per day spanning its open "
+              "and close and a wick reaching to its high and low.");
+        guide.m_requirements =
+            _(L"One row per day, holding the date and the opening, high, low, and closing "
+              "prices.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample prices;
+        prices.m_title = _(L"Example: daily prices for a commodity");
+        prices.m_columns = { { _(L"Date"), _(L"Date") },
+                             { _(L"Open"), _(L"Open") },
+                             { _(L"High"), _(L"High") },
+                             { _(L"Low"), _(L"Low") },
+                             { _(L"Close"), _(L"Close") } };
+        prices.m_rows = { { L"12/29/2021", L"22.60", L"23.19", L"22.55", L"22.86" },
+                          { L"12/30/2021", L"22.63", L"23.16", L"22.87", L"23.06" },
+                          { L"12/31/2021", L"23.07", L"23.39", L"23.10", L"23.35" } };
+        guide.m_examples = { std::move(prices) };
+
+        guide.m_missingData = { _(L"A row with any missing value is left out of the plot.") };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertCandlestickPlotDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -191,44 +268,24 @@ namespace Wisteria::UI
         const auto lowDefault = ExpandVariable(m_lowVariable);
         const auto closeDefault = ExpandVariable(m_closeVariable);
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Date"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(dateDefault.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ dateDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Date }),
-              VLI{}
-                  .Label(_(L"Open"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(openDefault.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ openDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"High"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(highDefault.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ highDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Low"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(lowDefault.empty() ? std::vector<wxString>{} :
-                                                         std::vector<wxString>{ lowDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Close"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(closeDefault.empty() ? std::vector<wxString>{} :
-                                                           std::vector<wxString>{ closeDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
+            { MakeVariableList(parameters[0], dateDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ dateDefault }),
+              MakeVariableList(parameters[1], openDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ openDefault }),
+              MakeVariableList(parameters[2], highDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ highDefault }),
+              MakeVariableList(parameters[3], lowDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ lowDefault }),
+              MakeVariableList(parameters[4], closeDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ closeDefault }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

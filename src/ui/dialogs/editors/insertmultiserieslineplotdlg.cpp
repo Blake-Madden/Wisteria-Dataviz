@@ -31,6 +31,68 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertMultiSeriesLinePlotDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return { { .m_name = _(L"Y (series)"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description =
+                       _(L"The measurements to plot. Each column you select is drawn as "
+                         "its own line."),
+                   .m_values = {},
+                   .m_multiple = true,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"X (axis)"),
+                   .m_types = { Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::DichotomousString,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The position of each point along the X axis, such as a "
+                                      "quarter or a year. All of the lines share it."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertMultiSeriesLinePlotDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Multi-Series Line Plot");
+        guide.m_iconName = L"images/lineplot.svg";
+        guide.m_summary =
+            _(L"Compares several measurements across the same X axis, with a separate line "
+              "for each measurement column.");
+        guide.m_requirements =
+            _(L"One row per position along the X axis, with a column for the X value and a "
+              "column for each measurement to plot.");
+        guide.m_shape = DataGuideShape::Wide;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample sales;
+        sales.m_title = _(L"Example: quarterly sales of two products");
+        sales.m_columns = { { _(L"Quarter"), _(L"X (axis)") },
+                            { _(L"Widgets"), _(L"Y (series)") },
+                            { _(L"Gadgets"), _(L"Y (series)") } };
+        sales.m_rows = { { L"Q1", L"120", L"90" },
+                         { L"Q2", L"135", L"110" },
+                         { L"Q3", L"150", L"105" },
+                         { L"Q4", L"170", L"140" } };
+        guide.m_examples = { std::move(sales) };
+
+        guide.m_missingData = { _(
+            L"A missing value in a series breaks that line at that row. The next valid row "
+            "starts the line again.") };
+        guide.m_notes = { _(L"Row order matters. Points are drawn in the order that they appear "
+                            "in the dataset, not sorted by the X axis.") };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertMultiSeriesLinePlotDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -135,25 +197,13 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Y (series)"))
-                  .SingleSelection(false)
-                  .Required(true)
-                  .DefaultVariables(m_yVariables)
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"X (axis)"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_xVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
+            { MakeVariableList(parameters[0], m_yVariables),
+              MakeVariableList(parameters[1], m_xVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_xVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

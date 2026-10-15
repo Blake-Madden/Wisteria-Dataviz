@@ -29,6 +29,62 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertDuBoisSpiralChartDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return { { .m_name = _(L"Label"),
+                   .m_types = { Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::DichotomousString,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The name of each segment of the spiral."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Value"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The amount for each segment. The length of the segment is "
+                                      "proportional to it."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertDuBoisSpiralChartDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Du Bois Spiral Chart");
+        guide.m_iconName = L"images/dubois-spiral.svg";
+        guide.m_summary =
+            _(L"Draws values as segments of one long path that zigzags down and then winds "
+              "into a spiral, which suits data where the last value is far larger than the "
+              "others.");
+        guide.m_requirements =
+            _(L"One row per segment, in the order that the segments should be drawn, holding "
+              "its name and its value.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample population;
+        population.m_title = _(L"Example: population by size of place");
+        population.m_columns = { { _(L"Place"), _(L"Label") }, { _(L"Population"), _(L"Value") } };
+        population.m_rows = { { _(L"Under 2,500"), L"500" },
+                              { _(L"2,500 to 5,000"), L"700" },
+                              { _(L"5,000 to 10,000"), L"900" },
+                              { _(L"Over 10,000"), L"4000" } };
+        guide.m_examples = { std::move(population) };
+
+        guide.m_notes = { _(L"Row order matters. The first row is drawn across the top and "
+                            "the last row is drawn as the innermost part of the spiral.") };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertDuBoisSpiralChartDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -205,28 +261,15 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Label"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_labelVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_labelVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Value"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_valueVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_valueVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
+            { MakeVariableList(parameters[0], m_labelVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_labelVariable }),
+              MakeVariableList(parameters[1], m_valueVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_valueVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

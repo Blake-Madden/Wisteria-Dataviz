@@ -31,6 +31,82 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertDuelingPieChartDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return { { .m_name = _(L"Category"),
+                   .m_types = { Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::DichotomousString,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The categories that become the slices in each pie, such as "
+                                      "activities."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Group"),
+                   .m_types = { Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::DichotomousString,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The group that each value belongs to. Each group gets its "
+                                      "own pie, and there must be exactly two groups."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Value"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The amount for each category within each group, such as "
+                                      "hours."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertDuelingPieChartDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Dueling Pie Chart");
+        guide.m_iconName = L"images/dueling-pie.svg";
+        guide.m_summary =
+            _(L"Compares how two groups divide a whole, with a pie for each group using the "
+              "same categories for the slices.");
+        guide.m_requirements =
+            _(L"One row per category per group, holding the category, the group, and the "
+              "value.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample hours;
+        hours.m_title = _(L"Example: how a weekday and a weekend day are spent");
+        hours.m_columns = { { _(L"Activity"), _(L"Category") },
+                            { _(L"Day"), _(L"Group") },
+                            { _(L"Hours"), _(L"Value") } };
+        hours.m_rows = { { _(L"Work"), _(L"Weekday"), L"8" },
+                         { _(L"Sleep"), _(L"Weekday"), L"7" },
+                         { _(L"Leisure"), _(L"Weekday"), L"4" },
+                         { _(L"Work"), _(L"Weekend"), L"1" },
+                         { _(L"Sleep"), _(L"Weekend"), L"9" } };
+        guide.m_examples = { std::move(hours) };
+
+        guide.m_missingData = {
+            _(L"A row with a missing or non-positive value is ignored."),
+            _(L"A row with a missing group is ignored."),
+            _(L"A row with a missing category is not drawn."),
+            _(L"If a group has no value for a category, then that group's pie has no slice "
+              "for it. The category keeps its color and legend entry.")
+        };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertDuelingPieChartDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -150,39 +226,18 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        const std::vector<Data::Dataset::ColumnImportType> categoricalTypes{
-            Data::Dataset::ColumnImportType::String, Data::Dataset::ColumnImportType::Discrete,
-            Data::Dataset::ColumnImportType::DichotomousString,
-            Data::Dataset::ColumnImportType::DichotomousDiscrete
-        };
-
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Category"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_categoryVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_categoryVariable })
-                  .AcceptedTypes(categoricalTypes),
-              VLI{}
-                  .Label(_(L"Group"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_groupVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_groupVariable })
-                  .AcceptedTypes(categoricalTypes),
-              VLI{}
-                  .Label(_(L"Value"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_valueVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_valueVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
+            { MakeVariableList(parameters[0], m_categoryVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_categoryVariable }),
+              MakeVariableList(parameters[1], m_groupVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_groupVariable }),
+              MakeVariableList(parameters[2], m_valueVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_valueVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

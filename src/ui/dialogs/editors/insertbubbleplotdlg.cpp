@@ -32,6 +32,90 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertBubblePlotDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return {
+            { .m_name = _(L"X (independent)"),
+              .m_types = { Data::Dataset::ColumnImportType::Numeric },
+              .m_requirement = DataGuideRequirement::Required,
+              .m_description = _(L"The measurement plotted along the X axis, such as a "
+                                 "population."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"Y (dependent)"),
+              .m_types = { Data::Dataset::ColumnImportType::Numeric },
+              .m_requirement = DataGuideRequirement::Required,
+              .m_description = _(L"The measurement plotted along the Y axis, such as an average "
+                                 "income."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"Size (area)"),
+              .m_types = { Data::Dataset::ColumnImportType::Numeric },
+              .m_requirement = DataGuideRequirement::Required,
+              .m_description = _(L"The measurement that controls how large each bubble is. The "
+                                 "bubbles are scaled by area, with the smallest value getting "
+                                 "the smallest bubble."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"Grouping"),
+              .m_types = { Data::Dataset::ColumnImportType::String,
+                           Data::Dataset::ColumnImportType::Discrete,
+                           Data::Dataset::ColumnImportType::DichotomousString,
+                           Data::Dataset::ColumnImportType::DichotomousDiscrete },
+              .m_requirement = DataGuideRequirement::Optional,
+              .m_description = _(L"Draws a separate series of bubbles, with its own regression "
+                                 "line, for each unique value."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} }
+        };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertBubblePlotDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Bubble Plot");
+        guide.m_iconName = L"images/bubbleplot.svg";
+        guide.m_summary =
+            _(L"Shows the relationship between two measurements, like a scatter plot, with "
+              "each point sized by a third measurement.");
+        guide.m_requirements =
+            _(L"One row per observation, holding its X value, Y value, and size value, and "
+              "optionally the group that it belongs to.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample cities;
+        cities.m_title = _(L"Example: cities by population, income, and number of schools");
+        cities.m_columns = { { _(L"City"), wxString{} },
+                             { _(L"Population"), _(L"X (independent)") },
+                             { _(L"Income"), _(L"Y (dependent)") },
+                             { _(L"Schools"), _(L"Size (area)") },
+                             { _(L"Region"), _(L"Grouping") } };
+        cities.m_rows = { { _(L"Akron"), L"190418", L"48544", L"45", _(L"East") },
+                          { _(L"Dayton"), L"137625", L"43454", L"38", _(L"West") },
+                          { _(L"Toledo"), L"265000", L"46000", L"60", _(L"West") },
+                          { _(L"Canton"), L"70000", L"44000", L"22", _(L"East") } };
+        guide.m_examples = { std::move(cities) };
+
+        guide.m_missingData = {
+            _(L"If the X, Y, or size value is missing, the point is left out of both the plot "
+              "and the regression calculation."),
+            _(L"A missing value in the grouping column is shown with an empty legend label.")
+        };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertBubblePlotDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -196,42 +280,21 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"X (independent)"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_xVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Y (dependent)"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_yVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_yVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Size (area)"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_sizeVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_sizeVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Grouping"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_groupVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_groupVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
+            { MakeVariableList(parameters[0], m_xVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_xVariable }),
+              MakeVariableList(parameters[1], m_yVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_yVariable }),
+              MakeVariableList(parameters[2], m_sizeVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_sizeVariable }),
+              MakeVariableList(parameters[3], m_groupVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_groupVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

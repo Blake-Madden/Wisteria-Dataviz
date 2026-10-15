@@ -32,6 +32,82 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertLikertDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return {
+            { .m_name = _(L"Questions"),
+              .m_types = { Data::Dataset::ColumnImportType::Numeric,
+                           Data::Dataset::ColumnImportType::String,
+                           Data::Dataset::ColumnImportType::Discrete },
+              .m_requirement = DataGuideRequirement::Required,
+              .m_description =
+                  _(L"The survey questions, each one a column of responses. Every question must "
+                    "use the same scale, and the number of points in that scale is deduced from "
+                    "the responses."),
+              .m_values = { { L"1", _(L"The most negative response") },
+                            { L"2, 3, ...",
+                              _(L"Responses in between, up to the most positive one") },
+                            { L"0", _(L"No response") } },
+              .m_multiple = true,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"Group"),
+              .m_types = { Data::Dataset::ColumnImportType::String,
+                           Data::Dataset::ColumnImportType::Discrete,
+                           Data::Dataset::ColumnImportType::DichotomousString,
+                           Data::Dataset::ColumnImportType::DichotomousDiscrete },
+              .m_requirement = DataGuideRequirement::Optional,
+              .m_description =
+                  _(L"Splits each question's responses into one bar per group (e.g., by gender)."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} }
+        };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertLikertDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Likert Chart");
+        guide.m_iconName = L"images/likert7.svg";
+        guide.m_summary =
+            _(L"Shows how respondents answered survey questions on an agreement scale, "
+              "as bars diverging from the neutral point into negative and positive responses.");
+        guide.m_requirements =
+            _(L"One row per respondent, with a column for each question holding that "
+              "respondent's answer coded as a whole number.");
+        guide.m_shape = DataGuideShape::Wide;
+        guide.m_parameters = GetParameters();
+        guide.m_prerequisites = {
+            _(L"Import the question columns as integers, and leave the missing data code as 0."),
+            _(L"Assign a label to each response value so that the legend can describe them.")
+        };
+
+        DataGuideExample survey;
+        survey.m_title = _(L"Example: a two-question survey by gender");
+        survey.m_columns = { { _(L"Gender"), _(L"Group") },
+                             { _(L"Question 1"), _(L"Questions") },
+                             { _(L"Question 2"), _(L"Questions") } };
+        survey.m_rows = { { L"M", L"1", L"3" },
+                          { L"M", L"2", L"2" },
+                          { L"F", L"1", L"3" },
+                          { L"M", L"3", L"1" },
+                          { L"F", L"5", L"" } };
+        guide.m_examples = { std::move(survey) };
+
+        guide.m_missingData = {
+            _(L"Questions: a missing value is treated as 0 and counted under No Response."),
+            _(L"Group: a missing value is shown with an empty label.")
+        };
+        guide.m_notes = { _(L"Select the questions in the order that they should appear. Question "
+                            "brackets can then be added to title ranges of related questions.") };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertLikertDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -352,27 +428,13 @@ namespace Wisteria::UI
             }
         const auto groupDefault = ExpandVariable(m_groupVariable);
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Questions"))
-                  .SingleSelection(false)
-                  .Required(true)
-                  .DefaultVariables(questionsDefault)
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric,
-                                   Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete }),
-              VLI{}
-                  .Label(_(L"Group"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(groupDefault.empty() ? std::vector<wxString>{} :
-                                                           std::vector<wxString>{ groupDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
+            { MakeVariableList(parameters[0], questionsDefault),
+              MakeVariableList(parameters[1], groupDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ groupDefault }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

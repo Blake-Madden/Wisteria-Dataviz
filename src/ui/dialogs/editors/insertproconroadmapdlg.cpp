@@ -35,6 +35,90 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertProConRoadmapDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        const std::vector<Data::Dataset::ColumnImportType> labelTypes{
+            Data::Dataset::ColumnImportType::String, Data::Dataset::ColumnImportType::Discrete,
+            Data::Dataset::ColumnImportType::DichotomousString,
+            Data::Dataset::ColumnImportType::DichotomousDiscrete
+        };
+        return { { .m_name = _(L"Positive (pros)"),
+                   .m_types = labelTypes,
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The positive sentiments, such as strengths or advantages. "
+                                      "Repeated labels are counted by frequency unless a values "
+                                      "column is supplied."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Positive values"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description = _(L"Pre-calculated totals for each positive sentiment, used in "
+                                      "place of counting how often it appears."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Negative (cons)"),
+                   .m_types = labelTypes,
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The negative sentiments, such as weaknesses or drawbacks. "
+                                      "Repeated labels are counted by frequency unless a values "
+                                      "column is supplied."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Negative values"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description = _(L"Pre-calculated totals for each negative sentiment, used in "
+                                      "place of counting how often it appears."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertProConRoadmapDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Pro & Con Roadmap");
+        guide.m_iconName = L"images/roadmap.svg";
+        guide.m_summary =
+            _(L"Shows positive and negative sentiments as stops along a road, sized by how often "
+              "each one was mentioned or by its total.");
+        guide.m_requirements =
+            _(L"One column of positive sentiments and one column of negative sentiments. Each "
+              "can be paired with a column of totals, otherwise the labels are counted.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample swot;
+        swot.m_title = _(L"Example: a SWOT analysis with a totals column for the weaknesses");
+        swot.m_columns = { { _(L"Strength"), _(L"Positive (pros)") },
+                           { _(L"Weakness"), _(L"Negative (cons)") },
+                           { _(L"WeaknessTotals"), _(L"Negative values") } };
+        swot.m_rows = { { _(L"New features"), _(L"Cost"), L"22" },
+                        { _(L"New features"), _(L"Missing features"), L"12" },
+                        { _(L"Improved user management"), _(L"Employee retraining"), L"12" } };
+        guide.m_examples = { std::move(swot) };
+
+        guide.m_missingData = { _(L"Positive and negative: a missing label is ignored."),
+                                _(L"Values: a missing total causes its label to be ignored.") };
+        guide.m_notes = { _(L"The positive and negative columns do not need to line up row by "
+                            "row. Each column is aggregated on its own."),
+                          _(L"If the same label appears in both columns, only its net total is "
+                            "shown, on the side with the larger count. Labels that cancel out "
+                            "are left off.") };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertProConRoadmapDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -236,47 +320,22 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Positive (pros)"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_positiveVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_positiveVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Positive values"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_positiveValueVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_positiveValueVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Negative (cons)"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_negativeVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_negativeVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Negative values"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_negativeValueVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_negativeValueVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
+            { MakeVariableList(parameters[0], m_positiveVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_positiveVariable }),
+              MakeVariableList(parameters[1], m_positiveValueVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_positiveValueVariable }),
+              MakeVariableList(parameters[2], m_negativeVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_negativeVariable }),
+              MakeVariableList(parameters[3],
+                               m_negativeValueVariable.empty() ?
+                                   std::vector<wxString>{} :
+                                   std::vector<wxString>{ m_negativeValueVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

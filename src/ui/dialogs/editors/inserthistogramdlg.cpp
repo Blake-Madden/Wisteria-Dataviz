@@ -30,6 +30,64 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertHistogramDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return {
+            { .m_name = _(L"Continuous"),
+              .m_types = { Data::Dataset::ColumnImportType::Numeric },
+              .m_requirement = DataGuideRequirement::Required,
+              .m_description = _(L"The measurement whose distribution is shown. Its values are "
+                                 "sorted into bins and the bars show how many fall in each."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"Grouping"),
+              .m_types = { Data::Dataset::ColumnImportType::String,
+                           Data::Dataset::ColumnImportType::Discrete,
+                           Data::Dataset::ColumnImportType::DichotomousString,
+                           Data::Dataset::ColumnImportType::DichotomousDiscrete },
+              .m_requirement = DataGuideRequirement::Optional,
+              .m_description = _(L"Splits each bar into stacked segments, one per unique value, "
+                                 "such as the proportion of each gender within a bin."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} }
+        };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertHistogramDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Histogram");
+        guide.m_iconName = L"images/histogram.svg";
+        guide.m_summary =
+            _(L"Shows how the values of a measurement are distributed by sorting them into "
+              "bins and counting how many fall in each one.");
+        guide.m_requirements =
+            _(L"One row per observation, holding the measurement and, optionally, the "
+              "group that the observation belongs to.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample scores;
+        scores.m_title = _(L"Example: exam scores for two sections");
+        scores.m_columns = { { _(L"Score"), _(L"Continuous") }, { _(L"Section"), _(L"Grouping") } };
+        scores.m_rows = { { L"68", L"A" }, { L"75", L"A" }, { L"84", L"A" }, { L"91", L"A" },
+                          { L"60", L"B" }, { L"71", L"B" }, { L"79", L"B" }, { L"88", L"B" } };
+        guide.m_examples = { std::move(scores) };
+
+        guide.m_missingData = {
+            _(L"A missing value in the continuous column is skipped."),
+            _(L"A missing value in the grouping column is shown with an empty legend label.")
+        };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertHistogramDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -394,28 +452,15 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Continuous"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_continuousVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_continuousVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Grouping"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_groupVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_groupVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
+            { MakeVariableList(parameters[0], m_continuousVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_continuousVariable }),
+              MakeVariableList(parameters[1], m_groupVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_groupVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

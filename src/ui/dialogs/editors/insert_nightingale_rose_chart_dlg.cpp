@@ -32,6 +32,79 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertNightingaleRoseChartDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return { { .m_name = _(L"Category"),
+                   .m_types = { Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::DichotomousString,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The categories that become the slices around the circle, "
+                                      "such as the months of a year."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Aggregate"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description = _(L"A measurement to add up for each slice. Without it, the "
+                                      "wedges show how many rows fall into each category."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Series"),
+                   .m_types = { Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::DichotomousString,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete },
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description = _(L"Splits each slice into a wedge for each unique value, such "
+                                      "as the cause of each death."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertNightingaleRoseChartDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Nightingale Rose Chart");
+        guide.m_iconName = L"images/rose.svg";
+        guide.m_summary =
+            _(L"Shows values by category as wedges around a circle, where the radius of each "
+              "wedge represents its amount, with an optional series within each slice.");
+        guide.m_requirements =
+            _(L"One row per observation, holding its category and, optionally, an amount to "
+              "add up and the series that it belongs to.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample mortality;
+        mortality.m_title = _(L"Example: monthly deaths by cause");
+        mortality.m_columns = { { _(L"Month"), _(L"Category") },
+                                { _(L"Cause"), _(L"Series") },
+                                { _(L"Deaths"), _(L"Aggregate") } };
+        mortality.m_rows = { { _(L"Apr 1854"), _(L"Zymotic diseases"), L"1" },
+                             { _(L"Apr 1854"), _(L"Wounds & injuries"), L"0" },
+                             { _(L"Apr 1854"), _(L"All other causes"), L"5" },
+                             { _(L"May 1854"), _(L"Zymotic diseases"), L"12" } };
+        guide.m_examples = { std::move(mortality) };
+
+        guide.m_missingData = {
+            _(L"A missing category is shown as a slice with an empty label."),
+            _(L"A missing or negative aggregate value is ignored. A value of zero is drawn as "
+              "a wedge with no radius.")
+        };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertNightingaleRoseChartDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -252,39 +325,18 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Category"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_categoryVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_categoryVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Aggregate"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_aggregateVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_aggregateVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Series"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_groupVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_groupVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
+            { MakeVariableList(parameters[0], m_categoryVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_categoryVariable }),
+              MakeVariableList(parameters[1], m_aggregateVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_aggregateVariable }),
+              MakeVariableList(parameters[2], m_groupVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_groupVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

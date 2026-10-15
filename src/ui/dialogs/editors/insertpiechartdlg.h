@@ -235,6 +235,13 @@ namespace Wisteria::UI
 
       private:
         void CreateControls() final;
+        [[nodiscard]]
+        DataGuide GetDataGuide() const final;
+
+        /// @returns The variables of the chart, in the order of the variable selection dialog.
+        [[nodiscard]]
+        static std::vector<DataGuideParameter> GetParameters();
+
         bool Validate() final;
         void OnSelectVariables();
         void OnDatasetChanged();

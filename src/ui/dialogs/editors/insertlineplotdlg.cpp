@@ -32,6 +32,83 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertLinePlotDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return {
+            { .m_name = /* TRANSLATORS: y-axis variable for line plot. */ _(L"Values"),
+              .m_types = { Data::Dataset::ColumnImportType::Numeric },
+              .m_requirement = DataGuideRequirement::Required,
+              .m_description = _(L"The measurement being plotted on the Y axis, such as an "
+                                 "average grade."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = /* TRANSLATORS: x-axis variable for line plot. */ _(L"Series"),
+              .m_types = { Data::Dataset::ColumnImportType::Numeric,
+                           Data::Dataset::ColumnImportType::String,
+                           Data::Dataset::ColumnImportType::Discrete,
+                           Data::Dataset::ColumnImportType::DichotomousString,
+                           Data::Dataset::ColumnImportType::DichotomousDiscrete },
+              .m_requirement = DataGuideRequirement::Required,
+              .m_description = _(L"The position of each point along the X axis, such as a week "
+                                 "or a year."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"Grouping"),
+              .m_types = { Data::Dataset::ColumnImportType::String,
+                           Data::Dataset::ColumnImportType::Discrete,
+                           Data::Dataset::ColumnImportType::DichotomousString,
+                           Data::Dataset::ColumnImportType::DichotomousDiscrete },
+              .m_requirement = DataGuideRequirement::Optional,
+              .m_description = _(L"Draws a separate line for each unique value, such as one line "
+                                 "per gender. Without it, a single line is drawn."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} }
+        };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertLinePlotDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Line Plot");
+        guide.m_iconName = L"images/lineplot.svg";
+        guide.m_summary =
+            _(L"Shows how a measurement changes across a series, such as weeks or years, "
+              "with an optional separate line for each group.");
+        guide.m_requirements =
+            _(L"One row per point, holding the measurement, its position along the X axis, and "
+              "optionally the group that the point belongs to.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample grades;
+        grades.m_title = _(L"Example: average spelling grades by week for two groups");
+        grades.m_columns = { { _(L"Week"), _(L"Series") },
+                             { _(L"Average"), _(L"Values") },
+                             { _(L"Gender"), _(L"Grouping") } };
+        grades.m_rows = { { L"1", L"82", _(L"Female") }, { L"2", L"85", _(L"Female") },
+                          { L"3", L"88", _(L"Female") }, { L"1", L"79", _(L"Male") },
+                          { L"2", L"81", _(L"Male") },   { L"3", L"84", _(L"Male") } };
+        guide.m_examples = { std::move(grades) };
+
+        guide.m_missingData = {
+            _(L"A missing value in either the Values or Series column breaks the line at that "
+              "row. The next valid row starts the line again."),
+            _(L"A missing value in the grouping column is shown with an empty legend label.")
+        };
+        guide.m_notes = { _(L"Row order matters. Each line is drawn through its points in the "
+                            "order that they appear in the dataset, not sorted by the X axis.") };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertLinePlotDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -288,38 +365,18 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(/* TRANSLATORS: y-axis variable for line plot. */ _(L"Values"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_yVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_yVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(/* TRANSLATORS: x-axis variable for line plot. */ _(L"Series"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_xVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric,
-                                   Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Grouping"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_groupVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_groupVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
+            { MakeVariableList(parameters[0], m_yVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_yVariable }),
+              MakeVariableList(parameters[1], m_xVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_xVariable }),
+              MakeVariableList(parameters[2], m_groupVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_groupVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

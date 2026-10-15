@@ -34,6 +34,109 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertSankeyDiagramDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        const std::vector<Data::Dataset::ColumnImportType> categoricalTypes{
+            Data::Dataset::ColumnImportType::String, Data::Dataset::ColumnImportType::Discrete,
+            Data::Dataset::ColumnImportType::DichotomousString,
+            Data::Dataset::ColumnImportType::DichotomousDiscrete
+        };
+        return {
+            { .m_name = _(L"From"),
+              .m_types = categoricalTypes,
+              .m_requirement = DataGuideRequirement::Required,
+              .m_description = _(L"The starting groups, shown on the left side of the diagram."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"To"),
+              .m_types = categoricalTypes,
+              .m_requirement = DataGuideRequirement::Required,
+              .m_description = _(L"The ending groups, shown on the right side of the diagram."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"From Weight"),
+              .m_types = { Data::Dataset::ColumnImportType::Numeric },
+              .m_requirement = DataGuideRequirement::Optional,
+              .m_description = _(L"The size of each starting group. If omitted, the rows of each "
+                                 "group are counted."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"To Weight"),
+              .m_types = { Data::Dataset::ColumnImportType::Numeric },
+              .m_requirement = DataGuideRequirement::Optional,
+              .m_description = _(L"The size of each ending group. If omitted, the rows of each "
+                                 "group are counted."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"From Group"),
+              .m_types = categoricalTypes,
+              .m_requirement = DataGuideRequirement::Optional,
+              .m_description = _(L"Sorts the starting groups into larger groups (e.g., schools "
+                                 "by county), which are labeled with brackets on the left."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} }
+        };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertSankeyDiagramDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Sankey Diagram");
+        guide.m_iconName = L"images/sankey.svg";
+        guide.m_summary = _(L"Shows how a set of starting groups flows into a set of ending "
+                            "groups, with the width of each flow showing its size.");
+        guide.m_requirements =
+            _(L"A column of starting groups and a column of ending groups. Each row is either "
+              "one observation, or a group with its totals if weight columns are supplied.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample feeder;
+        feeder.m_title = _(L"Example: feeder schools and where their graduates enrolled");
+        feeder.m_columns = { { _(L"From"), _(L"From") },
+                             { _(L"Graduated"), _(L"From Weight") },
+                             { _(L"To"), _(L"To") },
+                             { _(L"Enrolled"), _(L"To Weight") },
+                             { _(L"County"), _(L"From Group") } };
+        feeder.m_rows = {
+            { _(L"Westland HS"), L"150", _(L"Miskatonic University"), L"13", _(L"Berkshire") },
+            { _(L"Lincoln HS"), L"175", _(L"Miskatonic University"), L"2", _(L"Franklin") },
+            { _(L"West HS"), L"197", _(L"Miskatonic University"), L"0", _(L"Berkshire") }
+        };
+
+        DataGuideExample counted;
+        counted.m_title = _(L"Example: counting rows, with no weight columns");
+        counted.m_columns = { { _(L"From"), _(L"From") }, { _(L"To"), _(L"To") } };
+        counted.m_rows = { { _(L"Male"), _(L"Pass") },
+                           { _(L"Male"), _(L"Pass") },
+                           { _(L"Female"), _(L"Fail") },
+                           { _(L"Female"), _(L"Pass") },
+                           { _(L"Female"), _(L"Pass") } };
+        guide.m_examples = { std::move(counted), std::move(feeder) };
+
+        guide.m_missingData = {
+            _(L"From Weight and To Weight: a row with a missing value is dropped."),
+            _(L"All other columns: a missing value is shown as an empty label.")
+        };
+        guide.m_notes = { _(
+            L"If a starting group appears under more than one From Group value, it is shown "
+            "separately under each one, using only the rows belonging to that value.") };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertSankeyDiagramDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -351,56 +454,24 @@ namespace Wisteria::UI
         const auto toWeightDefault = ExpandVariable(m_toWeightVariable);
         const auto fromGroupDefault = ExpandVariable(m_fromGroupVariable);
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"From"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(fromDefault.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ fromDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"To"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(toDefault.empty() ? std::vector<wxString>{} :
-                                                        std::vector<wxString>{ toDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"From Weight"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(fromWeightDefault.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ fromWeightDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"To Weight"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(toWeightDefault.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ toWeightDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"From Group"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(fromGroupDefault.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ fromGroupDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
+            { MakeVariableList(parameters[0], fromDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ fromDefault }),
+              MakeVariableList(parameters[1], toDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ toDefault }),
+              MakeVariableList(parameters[2], fromWeightDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ fromWeightDefault }),
+              MakeVariableList(parameters[3], toWeightDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ toWeightDefault }),
+              MakeVariableList(parameters[4], fromGroupDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ fromGroupDefault }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

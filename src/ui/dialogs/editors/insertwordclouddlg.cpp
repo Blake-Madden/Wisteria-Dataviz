@@ -30,6 +30,63 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertWordCloudDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return { { .m_name = _(L"Word"),
+                   .m_types = { Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::DichotomousString,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The words to display. If no weight column is used, each "
+                                      "word is sized by how many times it appears."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Weight"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description = _(L"The frequency count of the word in the same row. Use this "
+                                      "when the words have already been tallied."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertWordCloudDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Word Cloud");
+        guide.m_iconName = L"images/wordcloud.svg";
+        guide.m_summary =
+            _(L"Shows words sized by how often they occur, so the most common ones stand out.");
+        guide.m_requirements =
+            _(L"A column of words, either one row per occurrence or one row per word with a "
+              "column of its frequency.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample names;
+        names.m_title = _(L"Example: how often each name was mentioned");
+        names.m_columns = { { _(L"Word"), _(L"Word") }, { _(L"Frequency"), _(L"Weight") } };
+        names.m_rows = { { _(L"Rachel"), L"192" },
+                         { _(L"Ross"), L"186" },
+                         { _(L"Monica"), L"181" } };
+        guide.m_examples = { std::move(names) };
+
+        guide.m_missingData = { _(L"Word: a missing word is ignored."),
+                                _(L"Weight: a row with a missing frequency is ignored.") };
+        guide.m_notes = { _(
+            L"Use the minimum frequency, maximum frequency, and maximum words options to "
+            "leave out rare words, very common words, or all but the top words.") };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertWordCloudDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -145,28 +202,15 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Word"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_wordVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_wordVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Weight"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_weightVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_weightVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
+            { MakeVariableList(parameters[0], m_wordVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_wordVariable }),
+              MakeVariableList(parameters[1], m_weightVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_weightVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

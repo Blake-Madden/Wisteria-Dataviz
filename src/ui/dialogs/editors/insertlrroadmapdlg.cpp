@@ -34,6 +34,78 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertLRRoadmapDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return {
+            { .m_name = _(L"Predictor"),
+              .m_types = { Data::Dataset::ColumnImportType::String,
+                           Data::Dataset::ColumnImportType::Discrete,
+                           Data::Dataset::ColumnImportType::DichotomousString,
+                           Data::Dataset::ColumnImportType::DichotomousDiscrete },
+              .m_requirement = DataGuideRequirement::Required,
+              .m_description = _(L"The name of each independent variable from the regression."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"Coefficient"),
+              .m_types = { Data::Dataset::ColumnImportType::Numeric },
+              .m_requirement = DataGuideRequirement::Required,
+              .m_description = _(L"The coefficient of each predictor. Positive values are drawn "
+                                 "as positive influencers and negative values as negative ones."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"p-value"),
+              .m_types = { Data::Dataset::ColumnImportType::Numeric },
+              .m_requirement = DataGuideRequirement::Optional,
+              .m_description = _(L"The p-value of each predictor. Predictors with a p-value above "
+                                 "the chosen threshold are left off the road."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} }
+        };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertLRRoadmapDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Linear Regression Roadmap");
+        guide.m_iconName = L"images/roadmap.svg";
+        guide.m_summary =
+            _(L"Shows the results of a linear regression as a road leading to a goal, where "
+              "predictors that help are placed along the way and those that hinder are shown as "
+              "obstacles.");
+        guide.m_requirements =
+            _(L"One row per predictor from the regression, with its name, coefficient, and "
+              "(optionally) p-value.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample factors;
+        factors.m_title = _(L"Example: factors affecting first-year GPA");
+        factors.m_columns = { { _(L"Factor"), _(L"Predictor") },
+                              { _(L"Coefficient"), _(L"Coefficient") },
+                              { _(L"p-value"), _(L"p-value") } };
+        factors.m_rows = { { _(L"Being female"), L"0.19", L"0.009" },
+                           { _(L"Being an athlete"), L"0.29", L"0.001" },
+                           { _(L"Being older, closer to 26 than 18"), L"-0.17", L"0.002" } };
+        guide.m_examples = { std::move(factors) };
+
+        guide.m_missingData = {
+            _(L"Predictor: a missing name is shown as an empty label."),
+            _(L"Coefficient and p-value: a row with either one missing is dropped.")
+        };
+        guide.m_notes = { _(L"The p-value column is only used to filter the predictors. Use the "
+                            "p-value threshold option to set the cutoff.") };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertLRRoadmapDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -231,36 +303,18 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Predictor"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_predictorVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_predictorVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Coefficient"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_coefficientVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_coefficientVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"p-value"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_pValueVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_pValueVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
+            { MakeVariableList(parameters[0], m_predictorVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_predictorVariable }),
+              MakeVariableList(parameters[1], m_coefficientVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_coefficientVariable }),
+              MakeVariableList(parameters[2], m_pValueVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_pValueVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

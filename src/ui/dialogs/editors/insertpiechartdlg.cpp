@@ -42,6 +42,82 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertPieChartDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        const std::vector<Data::Dataset::ColumnImportType> categoricalTypes{
+            Data::Dataset::ColumnImportType::String, Data::Dataset::ColumnImportType::Discrete,
+            Data::Dataset::ColumnImportType::DichotomousString,
+            Data::Dataset::ColumnImportType::DichotomousDiscrete
+        };
+        return {
+            { .m_name = _(L"Group (outer)"),
+              .m_types = categoricalTypes,
+              .m_requirement = DataGuideRequirement::Required,
+              .m_description = _(L"The groups that become the slices of the pie."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"Weight"),
+              .m_types = { Data::Dataset::ColumnImportType::Numeric },
+              .m_requirement = DataGuideRequirement::Optional,
+              .m_description = _(L"The value to add up for each group. If omitted, the rows of "
+                                 "each group are counted."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"Subgroup (inner)"),
+              .m_types = categoricalTypes,
+              .m_requirement = DataGuideRequirement::Optional,
+              .m_description = _(L"Splits each slice into subgroups, which are drawn as an inner "
+                                 "ring lined up against their parent slices."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} }
+        };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertPieChartDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Pie Chart");
+        guide.m_iconName = L"images/piechart.svg";
+        guide.m_summary = _(L"Shows how a total is divided among groups, as slices of a pie. "
+                            "Subgroups can be added as an inner ring.");
+        guide.m_requirements =
+            _(L"A column of groups, either one row per observation (which are counted) or one "
+              "row per group with a column of values to add up.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample enrollment;
+        enrollment.m_title = _(L"Example: enrollment by college and course");
+        enrollment.m_columns = { { _(L"College"), _(L"Group (outer)") },
+                                 { _(L"Course"), _(L"Subgroup (inner)") },
+                                 { _(L"Enrollment"), _(L"Weight") } };
+        enrollment.m_rows = { { _(L"Science"), _(L"Anatomy & Physiology I"), L"52" },
+                              { _(L"Business"), _(L"Business Ethics"), L"51" },
+                              { _(L"English"), _(L"Creative Writing"), L"47" },
+                              { _(L"Computer Science"), L"COBOL", L"45" },
+                              { _(L"Business"), _(L"Introduction to Economics"), L"34" },
+                              { _(L"Computer Science"), L"C++", L"32" } };
+        guide.m_examples = { std::move(enrollment) };
+
+        guide.m_missingData = {
+            _(L"Group and Subgroup: a missing value is shown as an empty slice and legend "
+              "label."),
+            _(L"Weight: a row with a missing value is ignored.")
+        };
+        guide.m_notes = { _(
+            L"Rows with the same group (and subgroup) are added together into one slice.") };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertPieChartDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -693,39 +769,18 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Group (outer)"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_groupVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_groupVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Weight"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_weightVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_weightVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Subgroup (inner)"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_group2Variable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_group2Variable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
+            { MakeVariableList(parameters[0], m_groupVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_groupVariable }),
+              MakeVariableList(parameters[1], m_weightVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_weightVariable }),
+              MakeVariableList(parameters[2], m_group2Variable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_group2Variable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

@@ -33,6 +33,113 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertGanttChartDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        const std::vector<Data::Dataset::ColumnImportType> categoricalTypes{
+            Data::Dataset::ColumnImportType::String, Data::Dataset::ColumnImportType::Discrete,
+            Data::Dataset::ColumnImportType::DichotomousString,
+            Data::Dataset::ColumnImportType::DichotomousDiscrete
+        };
+        return { { .m_name = _(L"Task"),
+                   .m_types = categoricalTypes,
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The name of each task."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Start date"),
+                   .m_types = { Data::Dataset::ColumnImportType::Date },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"When the task begins."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"End date"),
+                   .m_types = { Data::Dataset::ColumnImportType::Date },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"When the task ends."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Resource"),
+                   .m_types = categoricalTypes,
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description = _(L"Who or what the task is assigned to."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Description"),
+                   .m_types = categoricalTypes,
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description = _(L"A note describing the task."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Completion"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description = _(L"How much of the task is done, as a percent from 0 to 100."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Grouping"),
+                   .m_types = categoricalTypes,
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description =
+                       _(L"Collects related tasks together, such as by project phase."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertGanttChartDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Gantt Chart");
+        guide.m_iconName = L"images/gantt.svg";
+        guide.m_summary = _(L"Lays out a project's tasks along a timeline, showing when each "
+                            "one starts and ends, who it is assigned to, and how far along it is.");
+        guide.m_requirements = _(L"One row per task, with its name and its start and end dates.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample acquisition;
+        acquisition.m_title = _(L"Example: a company acquisition project");
+        acquisition.m_columns = {
+            { _(L"Task"), _(L"Task") },         { _(L"Start"), _(L"Start date") },
+            { _(L"End"), _(L"End date") },      { _(L"Description"), _(L"Description") },
+            { _(L"Resource"), _(L"Resource") }, { _(L"Completion"), _(L"Completion") }
+        };
+        acquisition.m_rows = {
+            { _(L"Acquisition"), L"2022-07-01", L"2022-08-31", L"", _(L"Management"), L"100" },
+            { _(L"Develop Product"), L"2022-09-01", L"2022-12-25", L"", _(L"Development"), L"50" },
+            { _(L"Testing"), L"2022-10-15", L"2022-12-25", _(L"Maybe outsource this"), _(L"QA"),
+              L"" }
+        };
+        guide.m_examples = { std::move(acquisition) };
+
+        guide.m_missingData = {
+            _(L"Task, Resource, Description, and Grouping: a missing value is shown as an "
+              "empty label."),
+            _(L"Completion: a missing value is treated as zero."),
+            _(L"Start date: a missing value makes the task begin at the earliest date on the "
+              "bottom axis."),
+            _(L"End date: a missing value draws the task as an arrow stretching to the end of "
+              "the bottom axis.")
+        };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertGanttChartDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -683,73 +790,30 @@ namespace Wisteria::UI
         const auto completionDefault = ExpandVariable(m_completionVariable);
         const auto groupDefault = ExpandVariable(m_groupVariable);
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Task"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(taskDefault.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ taskDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Start date"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(startDefault.empty() ? std::vector<wxString>{} :
-                                                           std::vector<wxString>{ startDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Date }),
-              VLI{}
-                  .Label(_(L"End date"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(endDefault.empty() ? std::vector<wxString>{} :
-                                                         std::vector<wxString>{ endDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Date }),
-              VLI{}
-                  .Label(_(L"Resource"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(resourceDefault.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ resourceDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Description"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(descriptionDefault.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ descriptionDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Completion"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(completionDefault.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ completionDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Grouping"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(groupDefault.empty() ? std::vector<wxString>{} :
-                                                           std::vector<wxString>{ groupDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
+            { MakeVariableList(parameters[0], taskDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ taskDefault }),
+              MakeVariableList(parameters[1], startDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ startDefault }),
+              MakeVariableList(parameters[2], endDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ endDefault }),
+              MakeVariableList(parameters[3], resourceDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ resourceDefault }),
+              MakeVariableList(parameters[4], descriptionDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ descriptionDefault }),
+              MakeVariableList(parameters[5], completionDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ completionDefault }),
+              MakeVariableList(parameters[6], groupDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ groupDefault }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

@@ -103,6 +103,72 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertScaleChartDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return { { .m_name = _(L"Score"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description =
+                       _(L"The value to place along the scales, such as a test score."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Grouping"),
+                   .m_types = { Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::DichotomousString,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete },
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description = _(L"Splits the scores into groups, such as by student, with "
+                                      "each group's scores shown separately."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertScaleChartDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Scale Chart");
+        guide.m_iconName = L"images/scale.svg";
+        guide.m_summary = _(L"Places scores along one or more labeled scales, such as letter "
+                            "grades or proficiency levels, so each score can be read against "
+                            "them.");
+        guide.m_requirements =
+            _(L"One row per score, with an ID to label the point and, optionally, the group that "
+              "it belongs to.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample scores;
+        scores.m_title = _(L"Example: weekly test scores for two students");
+        scores.m_columns = { { _(L"Week"), wxString{} },
+                             { _(L"Score"), _(L"Score") },
+                             { _(L"Name"), _(L"Grouping") } };
+        scores.m_rows = { { _(L"week 1"), L"52", _(L"Anna") },
+                          { _(L"week 2"), L"50", _(L"Anna") },
+                          { _(L"week 1"), L"62", _(L"Joe") } };
+        guide.m_examples = { std::move(scores) };
+
+        guide.m_missingData = {
+            _(L"Score: a missing value is not plotted."),
+            _(L"ID: a blank ID gives its point a blank label."),
+            _(L"Grouping: a blank group is placed into a \"[NO GROUP]\" category.")
+        };
+        guide.m_notes = {
+            _(L"The ID column of the dataset provides the label for each point, so fill it with "
+              "meaningful names."),
+            _(L"The scales themselves (such as the grade ranges) are defined on the Scales "
+              L"page.")
+        };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertScaleChartDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -559,28 +625,15 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Score"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_scoreVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_scoreVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Grouping"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_groupVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_groupVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
+            { MakeVariableList(parameters[0], m_scoreVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_scoreVariable }),
+              MakeVariableList(parameters[1], m_groupVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_groupVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

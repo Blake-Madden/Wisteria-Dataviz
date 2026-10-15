@@ -32,6 +32,80 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertWaterfallChartDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return { { .m_name = _(L"Step label"),
+                   .m_types = { Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::DichotomousString,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The name of each step, in the order that the steps should "
+                                      "appear."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Amount"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The amount that each step adds (positive) or subtracts "
+                                      "(negative) from the running total."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Total flag (0 = change, 1 = total)"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete,
+                                Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::DichotomousString },
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description =
+                       _(L"Marks the rows that are subtotals or totals, which are drawn "
+                         "as a bar from zero to the running sum."),
+                   .m_values = { { L"0", _(L"A step that changes the running total") },
+                                 { L"1", _(L"A total, showing the running sum so far") } },
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertWaterfallChartDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Waterfall Chart");
+        guide.m_iconName = L"images/waterfallchart.svg";
+        guide.m_summary =
+            _(L"Shows how a starting value is increased and decreased by a series of steps, "
+              "with optional totals along the way.");
+        guide.m_requirements =
+            _(L"One row per step, in order, holding the step's name, its amount, and "
+              "optionally whether the row is a total.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample flow;
+        flow.m_title = _(L"Example: a quarter's cash flow");
+        flow.m_columns = { { _(L"Step"), _(L"Step label") },
+                           { _(L"Amount"), _(L"Amount") },
+                           { _(L"IsTotal"), _(L"Total flag (0 = change, 1 = total)") } };
+        flow.m_rows = { { _(L"Start"), L"100", L"0" },
+                        { _(L"Sales"), L"50", L"0" },
+                        { _(L"Costs"), L"-30", L"0" },
+                        { _(L"Q1 Total"), L"", L"1" } };
+        guide.m_examples = { std::move(flow) };
+
+        guide.m_missingData = { _(
+            L"A row with a missing amount is skipped, unless it is flagged as a total. A "
+            "total row shows the running sum so far, so its amount can be left blank.") };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertWaterfallChartDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -194,40 +268,18 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Step label"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_labelVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_labelVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Amount"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_valueVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_valueVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Total flag (0 = change, 1 = total)"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_totalFlagVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_totalFlagVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete,
-                                   Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::DichotomousString }) });
+            { MakeVariableList(parameters[0], m_labelVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_labelVariable }),
+              MakeVariableList(parameters[1], m_valueVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_valueVariable }),
+              MakeVariableList(parameters[2], m_totalFlagVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_totalFlagVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

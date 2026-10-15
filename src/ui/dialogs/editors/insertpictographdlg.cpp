@@ -34,6 +34,60 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertPictographDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return { { .m_name = _(L"Label"),
+                   .m_types = { Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::DichotomousString,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The name of each observation. Each row is drawn as its own "
+                                      "icon."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Value"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The amount for each observation. The area of its icon is "
+                                      "proportional to it."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertPictographDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Pictograph");
+        guide.m_iconName = L"images/pictograph.svg";
+        guide.m_summary =
+            _(L"Compares amounts using a row of icons, where the size of each icon reflects "
+              "its value.");
+        guide.m_requirements =
+            _(L"One row per icon, holding its label and its value. No more than 10 rows can "
+              "be shown.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample deposits;
+        deposits.m_title = _(L"Example: deposits by year");
+        deposits.m_columns = { { _(L"Year"), _(L"Label") }, { _(L"Amount"), _(L"Value") } };
+        deposits.m_rows = { { L"2021", L"1200" }, { L"2022", L"1800" }, { L"2023", L"2600" } };
+        guide.m_examples = { std::move(deposits) };
+
+        guide.m_missingData = { _(
+            L"A row with a missing or non-positive value is skipped, because an icon area "
+            "can't be drawn for it.") };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertPictographDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -214,28 +268,15 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Label"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_labelVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_labelVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Value"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_valueVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_valueVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
+            { MakeVariableList(parameters[0], m_labelVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_labelVariable }),
+              MakeVariableList(parameters[1], m_valueVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_valueVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

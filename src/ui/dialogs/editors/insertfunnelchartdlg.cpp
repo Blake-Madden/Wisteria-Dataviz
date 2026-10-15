@@ -30,6 +30,77 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertFunnelChartDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return { { .m_name = _(L"Stage"),
+                   .m_types = { Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::DichotomousString,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description =
+                       _(L"The name of each stage in the funnel, in the order that the "
+                         "stages should appear."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Value"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The actual value at each stage, such as the number of "
+                                      "people who reached it."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Target"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description = _(L"The value that each stage was expected to reach. It is "
+                                      "drawn as a ghost behind the actual value."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertFunnelChartDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Funnel Chart");
+        guide.m_iconName = L"images/funnel.svg";
+        guide.m_summary =
+            _(L"Shows how a quantity narrows through a series of stages, such as applicants "
+              "moving through an admissions process, optionally against a target.");
+        guide.m_requirements =
+            _(L"One row per stage, in order, holding the stage's name, its actual value, and "
+              "optionally its target value.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample admissions;
+        admissions.m_title = _(L"Example: applicants moving through admissions");
+        admissions.m_columns = { { _(L"Stage"), _(L"Stage") },
+                                 { _(L"Count"), _(L"Value") },
+                                 { _(L"Goal"), _(L"Target") } };
+        admissions.m_rows = { { _(L"Applied"), L"1000", L"1100" },
+                              { _(L"Accepted"), L"640", L"700" },
+                              { _(L"Deposited"), L"310", L"350" },
+                              { _(L"Enrolled"), L"280", L"300" } };
+        guide.m_examples = { std::move(admissions) };
+
+        guide.m_missingData = {
+            _(L"A missing stage name is shown with an empty axis label, keeping its position."),
+            _(L"A missing value is treated as 0, so the stage collapses to a line."),
+            _(L"A missing target, or no target column, means no ghost is drawn for that stage.")
+        };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertFunnelChartDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -161,36 +232,18 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Stage"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_stageVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_stageVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Value"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_valueVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_valueVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Target"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_targetVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_targetVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
+            { MakeVariableList(parameters[0], m_stageVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_stageVariable }),
+              MakeVariableList(parameters[1], m_valueVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_valueVariable }),
+              MakeVariableList(parameters[2], m_targetVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_targetVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

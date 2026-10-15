@@ -33,6 +33,91 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertWLSparklineDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        const std::vector<Data::Dataset::ColumnImportType> categoricalTypes{
+            Data::Dataset::ColumnImportType::String, Data::Dataset::ColumnImportType::Discrete,
+            Data::Dataset::ColumnImportType::DichotomousString,
+            Data::Dataset::ColumnImportType::DichotomousDiscrete
+        };
+        return { { .m_name = _(L"Season"),
+                   .m_types = categoricalTypes,
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The label of the row that each game is placed in, such as "
+                                      "the season or team."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Won/Lost"),
+                   .m_types = categoricalTypes,
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The outcome of each game."),
+                   .m_values = { { L"0", _(L"Lost") }, { L"1", _(L"Won") }, { L"2", _(L"Tied") } },
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Shutout"),
+                   .m_types = categoricalTypes,
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"Whether the game was a shutout."),
+                   .m_values = { { L"0", _(L"Not a shutout") }, { L"1", _(L"Shutout") } },
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Home game"),
+                   .m_types = categoricalTypes,
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"Whether the game was played at home."),
+                   .m_values = { { L"0", _(L"Away game") }, { L"1", _(L"Home game") } },
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Postseason"),
+                   .m_types = categoricalTypes,
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description = _(L"Whether the game was a postseason game."),
+                   .m_values = { { L"0", _(L"Regular season") }, { L"1", _(L"Postseason") } },
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertWLSparklineDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Win/Loss Sparkline");
+        guide.m_iconName = L"images/sparkline.svg";
+        guide.m_summary = _(L"Shows the outcome of every game in a season as a compact row of "
+                            "marks, with home games, shutouts, and streaks easy to spot.");
+        guide.m_requirements =
+            _(L"One row per game, with the season it belongs to and codes for its outcome, "
+              "whether it was a shutout, and whether it was a home game.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample games;
+        games.m_title = _(L"Example: the first games of two seasons");
+        games.m_columns = { { _(L"Season"), _(L"Season") },
+                            { _(L"Result"), _(L"Won/Lost") },
+                            { _(L"Shutout"), _(L"Shutout") },
+                            { _(L"HomeGame"), _(L"Home game") } };
+        games.m_rows = { { L"2022", L"1", L"1", L"1" }, { L"2022", L"0", L"0", L"1" },
+                         { L"2022", L"1", L"0", L"1" }, { L"2022", L"1", L"0", L"0" },
+                         { L"2023", L"1", L"0", L"1" }, { L"2023", L"0", L"0", L"1" },
+                         { L"2023", L"1", L"1", L"0" }, { L"2023", L"2", L"0", L"0" } };
+        guide.m_examples = { std::move(games) };
+
+        guide.m_missingData = { _(
+            L"A blank cell marks a game that was canceled or a scrimmage. It is skipped when "
+            "finding streaks and other statistics.") };
+        guide.m_notes = { _(L"Games are placed in the order that they appear in the dataset.") };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertWLSparklineDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -155,63 +240,24 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Season"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_seasonVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_seasonVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Won/Lost"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_wonVariable.empty() ? std::vector<wxString>{} :
-                                                            std::vector<wxString>{ m_wonVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Shutout"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_shutoutVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_shutoutVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Home game"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_homeGameVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_homeGameVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Postseason"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_postseasonVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_postseasonVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
+            { MakeVariableList(parameters[0], m_seasonVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_seasonVariable }),
+              MakeVariableList(parameters[1], m_wonVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_wonVariable }),
+              MakeVariableList(parameters[2], m_shutoutVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_shutoutVariable }),
+              MakeVariableList(parameters[3], m_homeGameVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_homeGameVariable }),
+              MakeVariableList(parameters[4], m_postseasonVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_postseasonVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

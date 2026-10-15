@@ -85,6 +85,95 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertChoroplethMapDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return {
+            { .m_name = _(L"Key column"),
+              .m_types = { Data::Dataset::ColumnImportType::String,
+                           Data::Dataset::ColumnImportType::Discrete,
+                           Data::Dataset::ColumnImportType::DichotomousString,
+                           Data::Dataset::ColumnImportType::DichotomousDiscrete },
+              .m_requirement = DataGuideRequirement::Optional,
+              .m_description = _(L"The name of the region that each row belongs to, such as a "
+                                 "state. It is matched against the region key of the map file."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"Value column (opacity)"),
+              .m_types = { Data::Dataset::ColumnImportType::Numeric },
+              .m_requirement = DataGuideRequirement::Optional,
+              .m_description = _(L"The measurement that each region is shaded by, such as a "
+                                 "population. When a group column is also used, it sets the "
+                                 "opacity of each group's color instead."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"Group column (color per group)"),
+              .m_types = { Data::Dataset::ColumnImportType::String,
+                           Data::Dataset::ColumnImportType::Discrete,
+                           Data::Dataset::ColumnImportType::DichotomousString,
+                           Data::Dataset::ColumnImportType::DichotomousDiscrete },
+              .m_requirement = DataGuideRequirement::Optional,
+              .m_description = _(L"Colors each region by the group that it belongs to, such as "
+                                 "a sales territory."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"Proportional symbol size"),
+              .m_types = { Data::Dataset::ColumnImportType::Numeric },
+              .m_requirement = DataGuideRequirement::Optional,
+              .m_description = _(L"A second measurement, shown as a circle at the center of "
+                                 "each region with its area proportional to the value."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} }
+        };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertChoroplethMapDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Choropleth Map");
+        guide.m_iconName = L"images/choropleth.svg";
+        guide.m_summary =
+            _(L"Shades the regions of a map, such as states or counties, by a measurement or "
+              "by the group that each region belongs to.");
+        guide.m_requirements =
+            _(L"A KML or GeoJSON file that supplies the region shapes. A dataset is optional "
+              "and holds one or more rows per region, with the region's name and its values.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+        guide.m_prerequisites = {
+            _(L"Select the KML or GeoJSON file that holds the region shapes."),
+            _(L"If the region names are not in the file's name field, choose the field that "
+              "holds them as the region key.")
+        };
+
+        DataGuideExample states;
+        states.m_title = _(L"Example: population and sales territory by state");
+        states.m_columns = { { _(L"State"), _(L"Key column") },
+                             { _(L"Population"), _(L"Value column (opacity)") },
+                             { _(L"Territory"), _(L"Group column (color per group)") } };
+        states.m_rows = { { _(L"Ohio"), L"11800000", _(L"East") },
+                          { _(L"Indiana"), L"6800000", _(L"East") },
+                          { _(L"Iowa"), L"3200000", _(L"West") } };
+        guide.m_examples = { std::move(states) };
+
+        guide.m_missingData = { _(L"A region with no value is filled with the no-data color."),
+                                _(L"A region in the map file with no usable shape is skipped.") };
+        guide.m_notes = { _(L"If the dataset has several rows for a region, they are combined "
+                            "into one number using the selected aggregation (sum, mean, "
+                            "minimum, maximum, or count).") };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertChoroplethMapDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -280,41 +369,15 @@ namespace Wisteria::UI
             return;
             }
 
-        const std::vector<Data::Dataset::ColumnImportType> textTypes{
-            Data::Dataset::ColumnImportType::String, Data::Dataset::ColumnImportType::Discrete,
-            Data::Dataset::ColumnImportType::DichotomousString,
-            Data::Dataset::ColumnImportType::DichotomousDiscrete
-        };
         const auto asDefault = [](const wxString& name)
         { return name.empty() ? std::vector<wxString>{} : std::vector<wxString>{ name }; };
 
-        using VLI = VariableSelectDlg::VariableListInfo;
-        VariableSelectDlg selectDlg(
-            this, BuildColumnPreviewInfo(*dataset),
-            { VLI{}
-                  .Label(_(L"Key column"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(asDefault(m_keyColumn))
-                  .AcceptedTypes(textTypes),
-              VLI{}
-                  .Label(_(L"Value column (opacity)"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(asDefault(m_valueColumn))
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Group column (color per group)"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(asDefault(m_categoryColumn))
-                  .AcceptedTypes(textTypes),
-              VLI{}
-                  .Label(_(L"Proportional symbol size"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(asDefault(m_symbolColumn))
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
+        const auto parameters = GetParameters();
+        VariableSelectDlg selectDlg(this, BuildColumnPreviewInfo(*dataset),
+                                    { MakeVariableList(parameters[0], asDefault(m_keyColumn)),
+                                      MakeVariableList(parameters[1], asDefault(m_valueColumn)),
+                                      MakeVariableList(parameters[2], asDefault(m_categoryColumn)),
+                                      MakeVariableList(parameters[3], asDefault(m_symbolColumn)) });
 
         if (selectDlg.ShowModal() != wxID_OK)
             {

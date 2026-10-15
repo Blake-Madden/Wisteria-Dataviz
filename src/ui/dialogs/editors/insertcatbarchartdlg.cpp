@@ -42,6 +42,85 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertCatBarChartDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return { { .m_name = _(L"Category"),
+                   .m_types = { Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::DichotomousString,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The categories to compare. Each unique value becomes one "
+                                      "bar."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Weight"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description = _(L"A measurement to add up for each category. Without it, the "
+                                      "bars show how many rows fall into each category."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Group"),
+                   .m_types = { Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::DichotomousString,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete },
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description = _(L"Splits each bar into blocks, one per unique value, such as "
+                                      "the portion of each bar contributed by each gender."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertCatBarChartDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Bar Chart");
+        guide.m_iconName = L"images/barchart.svg";
+        guide.m_summary =
+            _(L"Compares categories with one bar each, sized by either how many rows fall in "
+              "the category or by the total of a measurement, with optional blocks within "
+              "each bar.");
+        guide.m_requirements =
+            _(L"One row per observation, holding its category and, optionally, a measurement "
+              "to add up and the group that it belongs to.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample enrollment;
+        enrollment.m_title = _(L"Example: students by major, split by year");
+        enrollment.m_columns = { { _(L"Major"), _(L"Category") }, { _(L"Year"), _(L"Group") } };
+        enrollment.m_rows = { { _(L"Biology"), _(L"Freshman") }, { _(L"Biology"), _(L"Senior") },
+                              { _(L"Biology"), _(L"Senior") },   { _(L"History"), _(L"Freshman") },
+                              { _(L"History"), _(L"Freshman") }, { _(L"Nursing"), _(L"Senior") } };
+        DataGuideExample sums;
+        sums.m_title = _(L"Example: total sales by region");
+        sums.m_columns = { { _(L"Region"), _(L"Category") }, { _(L"Sales"), _(L"Weight") } };
+        sums.m_rows = { { _(L"North"), L"1200" },
+                        { _(L"North"), L"800" },
+                        { _(L"South"), L"950" },
+                        { _(L"South"), L"1100" },
+                        { _(L"West"), L"700" } };
+        guide.m_examples = { std::move(enrollment), std::move(sums) };
+
+        guide.m_missingData = {
+            _(L"A missing category is shown as a bar with an empty axis label."),
+            _(L"A missing group is shown with an empty legend label."),
+            _(L"A missing weight is ignored when adding up the values.")
+        };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertCatBarChartDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -1445,37 +1524,18 @@ namespace Wisteria::UI
         const auto weightDefault = ExpandVariable(m_weightVariable);
         const auto groupDefault = ExpandVariable(m_groupVariable);
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Category"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(categoricalDefault.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ categoricalDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Weight"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(weightDefault.empty() ? std::vector<wxString>{} :
-                                                            std::vector<wxString>{ weightDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Group"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(groupDefault.empty() ? std::vector<wxString>{} :
-                                                           std::vector<wxString>{ groupDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
+            { MakeVariableList(parameters[0], categoricalDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ categoricalDefault }),
+              MakeVariableList(parameters[1], weightDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ weightDefault }),
+              MakeVariableList(parameters[2], groupDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ groupDefault }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

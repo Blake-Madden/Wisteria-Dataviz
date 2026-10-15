@@ -82,6 +82,74 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertBulletChartDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return { { .m_name = _(L"Label"),
+                   .m_types = { Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::DichotomousString,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The name of each measure. Each row is drawn as its own "
+                                      "bullet."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Actual"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The value that was achieved, drawn as the bar."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Target"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The value that was aimed for, drawn as a tick mark."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertBulletChartDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Bullet Chart");
+        guide.m_iconName = L"images/bulletchart.svg";
+        guide.m_summary =
+            _(L"Compares what was achieved against a target for each of several measures, "
+              "such as KPIs.");
+        guide.m_requirements =
+            _(L"One row per measure, holding its name, the actual value, and the target "
+              "value.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample kpis;
+        kpis.m_title = _(L"Example: satisfaction scores against their targets");
+        kpis.m_columns = { { _(L"Label"), _(L"Label") },
+                           { _(L"Actual"), _(L"Actual") },
+                           { _(L"Target"), _(L"Target") } };
+        kpis.m_rows = { { _(L"Employee Satisfaction"), L"82", L"85" },
+                        { _(L"Community Satisfaction"), L"74", L"80" },
+                        { _(L"Customer Satisfaction"), L"91", L"90" } };
+        guide.m_examples = { std::move(kpis) };
+
+        guide.m_missingData = {
+            _(L"A row with a missing actual value has no bar drawn, but its target tick is "
+              "still shown."),
+            _(L"A row with a missing target value has no tick drawn."),
+            _(L"A row with both values missing is skipped.")
+        };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertBulletChartDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -397,36 +465,18 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Label"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_labelVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_labelVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }),
-              VLI{}
-                  .Label(_(L"Actual"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_actualVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_actualVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Target"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_targetVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_targetVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }) });
+            { MakeVariableList(parameters[0], m_labelVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_labelVariable }),
+              MakeVariableList(parameters[1], m_actualVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_actualVariable }),
+              MakeVariableList(parameters[2], m_targetVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_targetVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

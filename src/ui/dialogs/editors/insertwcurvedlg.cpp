@@ -32,6 +32,78 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertWCurveDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return {
+            { .m_name = _(L"Y (sentiment)"),
+              .m_types = { Data::Dataset::ColumnImportType::Numeric },
+              .m_requirement = DataGuideRequirement::Required,
+              .m_description = _(L"The measurement being tracked, such as a sense of belonging "
+                                 "or a satisfaction score."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"X (time interval)"),
+              .m_types = { Data::Dataset::ColumnImportType::Numeric },
+              .m_requirement = DataGuideRequirement::Required,
+              .m_description = _(L"The period that the measurement was taken in, such as the "
+                                 "semester or year. Values should start at 1 and usually go up "
+                                 "to 4, although up to 12 is supported."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"Grouping"),
+              .m_types = { Data::Dataset::ColumnImportType::String,
+                           Data::Dataset::ColumnImportType::Discrete,
+                           Data::Dataset::ColumnImportType::DichotomousString,
+                           Data::Dataset::ColumnImportType::DichotomousDiscrete },
+              .m_requirement = DataGuideRequirement::Required,
+              .m_description = _(L"The name or ID of each observation, such as a student. Each "
+                                 "one is drawn as its own line."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} }
+        };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertWCurveDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"W-Curve Plot");
+        guide.m_iconName = L"images/wcurve.svg";
+        guide.m_summary =
+            _(L"Shows how each observation's measurement changes over a series of time "
+              "intervals, such as students' sense of belonging across semesters or years.");
+        guide.m_requirements =
+            _(L"One row per observation per time interval, holding the measurement, the "
+              "interval, and the observation's name.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample belonging;
+        belonging.m_title = _(L"Example: students' sense of belonging over four years");
+        belonging.m_columns = { { _(L"Year"), _(L"X (time interval)") },
+                                { _(L"Belong"), _(L"Y (sentiment)") },
+                                { _(L"Name"), _(L"Grouping") } };
+        belonging.m_rows = { { L"1", L"6", _(L"Nancy") },  { L"2", L"2", _(L"Nancy") },
+                             { L"3", L"5", _(L"Nancy") },  { L"4", L"5", _(L"Nancy") },
+                             { L"1", L"2", _(L"Tina") },   { L"2", L"2.5", _(L"Tina") },
+                             { L"3", L"3.2", _(L"Tina") }, { L"4", L"5.25", _(L"Tina") } };
+        guide.m_examples = { std::move(belonging) };
+
+        guide.m_missingData = { _(L"Missing values are handled the same way as in a line plot.") };
+        guide.m_notes = { _(
+            L"Use the showcase list to highlight specific observations while the others are "
+            "shown faded.") };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertWCurveDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -297,34 +369,18 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Y (sentiment)"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_yVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_yVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"X (time interval)"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_xVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Grouping"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_groupVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_groupVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
+            { MakeVariableList(parameters[0], m_yVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_yVariable }),
+              MakeVariableList(parameters[1], m_xVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_xVariable }),
+              MakeVariableList(parameters[2], m_groupVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_groupVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

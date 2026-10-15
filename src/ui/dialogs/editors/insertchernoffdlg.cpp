@@ -42,50 +42,50 @@ namespace Wisteria::UI
         const auto feature = [&numericTypes](const wxString& name, const wxString& effect,
                                              const wxString& group, const bool required = false)
         {
-            return DataGuideParameter{ name,
-                                       numericTypes,
-                                       required ? DataGuideRequirement::Required :
-                                                  DataGuideRequirement::Optional,
-                                       effect,
-                                       {},
-                                       false,
-                                       wxString{},
-                                       group };
+            return DataGuideParameter{ .m_name = name,
+                                       .m_types = numericTypes,
+                                       .m_requirement = required ? DataGuideRequirement::Required :
+                                                                   DataGuideRequirement::Optional,
+                                       .m_description = effect,
+                                       .m_values = {},
+                                       .m_multiple = false,
+                                       .m_condition = wxString{},
+                                       .m_group = group };
         };
 
         // the order here is the order of the lists in the variable selection dialog
-        return {
-            feature(_(L"Face width"), _(L"Narrow to wide."), _(L"Face"), true),
-            feature(_(L"Face height"), _(L"Short to tall."), _(L"Face")),
-            feature(_(L"Eye size"), _(L"Small to large."), _(L"Eyes")),
-            feature(_(L"Eye position"), _(L"Low to high on the face."), _(L"Eyes")),
-            feature(_(L"Eyebrow slant"), _(L"Angled down to angled up."), _(L"Eyes")),
-            feature(_(L"Pupil position"), _(L"Looking left to looking right."), _(L"Eyes")),
-            feature(_(L"Nose size"), _(L"Small to large."), _(L"Nose and mouth")),
-            feature(_(L"Mouth width"), _(L"Narrow to wide."), _(L"Nose and mouth")),
-            feature(_(L"Mouth curvature"), _(L"Frown to smile."), _(L"Nose and mouth")),
-            feature(_(L"Face color"), _(L"Pale to saturated, within the skin color range."),
-                    _(L"Ears and skin")),
-            feature(_(L"Ear size"), _(L"Small to large."), _(L"Ears and skin")),
-            { _(L"Hair style"),
-              categoryTypes,
-              DataGuideRequirement::Optional,
-              _(L"Each category is given its own hair style, in the order the categories "
-                "first appear. Overrides the hair style chosen in the dialog."),
-              {},
-              false,
-              wxString{},
-              _(L"Hair") },
-            { _(L"Hair addition"),
-              categoryTypes,
-              DataGuideRequirement::Optional,
-              _(L"Each category is given its own addition, such as a beard or mustache on male "
-                "faces and a flower or star on female faces."),
-              {},
-              false,
-              wxString{},
-              _(L"Hair") }
-        };
+        return { feature(_(L"Face width"), _(L"Narrow to wide."), _(L"Face"), true),
+                 feature(_(L"Face height"), _(L"Short to tall."), _(L"Face")),
+                 feature(_(L"Eye size"), _(L"Small to large."), _(L"Eyes")),
+                 feature(_(L"Eye position"), _(L"Low to high on the face."), _(L"Eyes")),
+                 feature(_(L"Eyebrow slant"), _(L"Angled down to angled up."), _(L"Eyes")),
+                 feature(_(L"Pupil position"), _(L"Looking left to looking right."), _(L"Eyes")),
+                 feature(_(L"Nose size"), _(L"Small to large."), _(L"Nose and mouth")),
+                 feature(_(L"Mouth width"), _(L"Narrow to wide."), _(L"Nose and mouth")),
+                 feature(_(L"Mouth curvature"), _(L"Frown to smile."), _(L"Nose and mouth")),
+                 feature(_(L"Face color"), _(L"Pale to saturated, within the skin color range."),
+                         _(L"Ears and skin")),
+                 feature(_(L"Ear size"), _(L"Small to large."), _(L"Ears and skin")),
+                 { .m_name = _(L"Hair style"),
+                   .m_types = categoryTypes,
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description =
+                       _(L"Each category is given its own hair style, in the order the categories "
+                         "first appear. Overrides the hair style chosen in the dialog."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = _(L"Hair") },
+                 { .m_name = _(L"Hair addition"),
+                   .m_types = categoryTypes,
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description =
+                       _(L"Each category is given its own addition, such as a beard or mustache on "
+                         "male faces and a flower or star on female faces."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = _(L"Hair") } };
         }
 
     //-------------------------------------------
@@ -107,12 +107,12 @@ namespace Wisteria::UI
         cities.m_title = _(L"Example: comparing cities");
         cities.m_columns = { { _(L"City"), wxString{} },
                              { _(L"Population"), _(L"Face width") },
-                             { _(L"Income"), _(L"Face height") },
-                             { _(L"Rainfall"), _(L"Eye size") },
+                             { _(L"Income ($)"), _(L"Face height") },
+                             { _(L"Rainfall (in)"), _(L"Eye size") },
                              { _(L"Happiness"), _(L"Mouth curvature") } };
-        cities.m_rows = { { L"Akron", L"199", L"48", L"39", L"6.1" },
-                          { L"Columbus", L"905", L"62", L"38", L"7.4" },
-                          { L"Dayton", L"137", L"45", L"41", L"5.2" } };
+        cities.m_rows = { { L"Akron", L"190418", L"48544", L"41.6", L"6.1" },
+                          { L"Columbus", L"905939", L"65327", L"41.5", L"7.4" },
+                          { L"Dayton", L"137625", L"43454", L"41.3", L"9.1" } };
         guide.m_examples = { std::move(cities) };
 
         guide.m_missingData = {

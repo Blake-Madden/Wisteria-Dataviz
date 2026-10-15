@@ -215,8 +215,14 @@ namespace Wisteria::UI
 
       protected:
         void CreateControls() override;
+        [[nodiscard]]
+        DataGuide GetDataGuide() const final;
 
       private:
+        /// @returns The variables of the map, in the order of the variable selection dialog.
+        [[nodiscard]]
+        static std::vector<DataGuideParameter> GetParameters();
+
         bool Validate() override;
         void OnDatasetChanged();
 

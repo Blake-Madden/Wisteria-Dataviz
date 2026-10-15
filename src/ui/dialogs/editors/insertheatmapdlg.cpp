@@ -29,6 +29,67 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertHeatMapDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return { { .m_name = _(L"Continuous"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The measurement that is color mapped. Each row becomes one "
+                                      "cell, colored by its value."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Group"),
+                   .m_types = { Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::DichotomousString,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete },
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description = _(L"Arranges the cells into a separate row for each unique "
+                                      "value, such as one row per student."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertHeatMapDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Heat Map");
+        guide.m_iconName = L"images/heatmap.svg";
+        guide.m_summary =
+            _(L"Shows a measurement as a grid of colored cells, so that high and low values "
+              "stand out, either as one block of cells or as one row per group.");
+        guide.m_requirements =
+            _(L"One row per cell, holding the measurement and, optionally, the group whose "
+              "row the cell belongs to.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample scores;
+        scores.m_title = _(L"Example: weekly test scores for two students");
+        scores.m_columns = { { _(L"Name"), _(L"Group") },
+                             { _(L"Score"), _(L"Continuous") },
+                             { _(L"Week"), wxString{} } };
+        scores.m_rows = { { _(L"Anna"), L"87", _(L"week 1") }, { _(L"Anna"), L"89", _(L"week 2") },
+                          { _(L"Anna"), L"91", _(L"week 3") }, { _(L"Anna"), L"95", _(L"week 4") },
+                          { _(L"Joe"), L"37", _(L"week 1") },  { _(L"Joe"), L"", _(L"week 2") },
+                          { _(L"Joe"), L"", _(L"week 3") },    { _(L"Joe"), L"82", _(L"week 4") } };
+        guide.m_examples = { std::move(scores) };
+
+        guide.m_missingData = {
+            _(L"A missing measurement is shown as a transparent cell with a red X in the "
+              "middle."),
+            _(L"A missing group is shown as a row with an empty label.")
+        };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertHeatMapDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -165,27 +226,15 @@ namespace Wisteria::UI
         const auto continuousDefault = ExpandVariable(m_continuousVariable);
         const auto groupDefault = ExpandVariable(m_groupVariable);
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Continuous"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(continuousDefault.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ continuousDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Group"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(groupDefault.empty() ? std::vector<wxString>{} :
-                                                           std::vector<wxString>{ groupDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
+            { MakeVariableList(parameters[0], continuousDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ continuousDefault }),
+              MakeVariableList(parameters[1], groupDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ groupDefault }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

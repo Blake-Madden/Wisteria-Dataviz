@@ -47,26 +47,57 @@ namespace Wisteria::UI
         };
 
         // the order here is the order of the lists in the variable selection dialog
-        return { { _(L"Label"), labelTypes, DataGuideRequirement::Required,
-                   _(L"Identifies each observation, which is drawn as one column of cells. Rows "
-                     "sharing a label are combined into a single observation.") },
-                 { _(L"Entry"), periodTypes, DataGuideRequirement::Optional,
-                   _(L"The period the observation entered the study. Defaults to the first period. "
-                     "Must be the same type as Exit.") },
-                 { _(L"Exit"), periodTypes, DataGuideRequirement::Required,
-                   _(L"The last period the observation was under observation, whether its event "
-                     "occurred or follow-up simply ended.") },
-                 { _(L"Status"),
-                   flagTypes,
-                   DataGuideRequirement::Optional,
-                   _(L"Whether the exit was an event or a censoring. Missing counts as an event."),
-                   { { L"1", _(L"Event occurred") }, { L"0", _(L"Censored") } } },
-                 { _(L"Intermediate Event"),
-                   flagTypes,
-                   DataGuideRequirement::Optional,
-                   _(L"Marks an event that happens partway through the study. Cells from that "
-                     L"point on are drawn in a different color."),
-                   { { L"0", _(L"Before the event") }, { L"1", _(L"After the event") } } } };
+        return {
+            { .m_name = _(L"Label"),
+              .m_types = labelTypes,
+              .m_requirement = DataGuideRequirement::Required,
+              .m_description =
+                  _(L"Identifies each observation, which is drawn as one column of cells. Rows "
+                    "sharing a label are combined into a single observation."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"Entry"),
+              .m_types = periodTypes,
+              .m_requirement = DataGuideRequirement::Optional,
+              .m_description =
+                  _(L"The period the observation entered the study. Defaults to the first period. "
+                    "Must be the same type as Exit."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"Exit"),
+              .m_types = periodTypes,
+              .m_requirement = DataGuideRequirement::Required,
+              .m_description =
+                  _(L"The last period the observation was under observation, whether its event "
+                    "occurred or follow-up simply ended."),
+              .m_values = {},
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"Status"),
+              .m_types = flagTypes,
+              .m_requirement = DataGuideRequirement::Optional,
+              .m_description =
+                  _(L"Whether the exit was an event or a censoring. Missing counts as an event."),
+              .m_values = { { L"1", _(L"Event occurred") }, { L"0", _(L"Censored") } },
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} },
+            { .m_name = _(L"Intermediate Event"),
+              .m_types = flagTypes,
+              .m_requirement = DataGuideRequirement::Optional,
+              .m_description =
+                  _(L"Marks an event that happens partway through the study. Cells from that "
+                    L"point on are drawn in a different color."),
+              .m_values = { { L"0", _(L"Before the event") }, { L"1", _(L"After the event") } },
+              .m_multiple = false,
+              .m_condition = wxString{},
+              .m_group = wxString{} }
+        };
         }
 
     //-------------------------------------------

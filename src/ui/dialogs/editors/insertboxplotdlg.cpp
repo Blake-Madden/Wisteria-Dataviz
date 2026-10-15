@@ -34,6 +34,66 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertBoxPlotDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return { { .m_name = _(L"Continuous"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The measurement whose distribution is shown, such as test "
+                                      "scores or highway mileage."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Group"),
+                   .m_types = { Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::DichotomousString,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete },
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description =
+                       _(L"Splits the measurements into separate boxes, one per unique "
+                         "value. Without it, a single box is shown."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertBoxPlotDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Box Plot");
+        guide.m_iconName = L"images/boxplot.svg";
+        guide.m_summary =
+            _(L"Shows the spread of a measurement, including its median, quartiles, and "
+              "outliers, either as a single box or as one box per group.");
+        guide.m_requirements =
+            _(L"One row per observation, holding the measurement and, optionally, the "
+              "group that the observation belongs to.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample mileage;
+        mileage.m_title = _(L"Example: highway mileage by vehicle class");
+        mileage.m_columns = { { _(L"Class"), _(L"Group") }, { _(L"Highway"), _(L"Continuous") } };
+        mileage.m_rows = { { _(L"compact"), L"29" },    { _(L"compact"), L"31" },
+                           { _(L"compact"), L"26" },    { _(L"suv"), L"20" },
+                           { _(L"suv"), L"17" },        { _(L"suv"), L"22" },
+                           { _(L"subcompact"), L"33" }, { _(L"subcompact"), L"26" } };
+        guide.m_examples = { std::move(mileage) };
+
+        guide.m_missingData = {
+            _(L"A missing value in the continuous column is skipped. The rest of the row is "
+              "ignored too."),
+            _(L"A missing value in the group column is shown as a box with an empty label.")
+        };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertBoxPlotDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -362,27 +422,15 @@ namespace Wisteria::UI
         const auto continuousDefault = ExpandVariable(m_continuousVariable);
         const auto groupDefault = ExpandVariable(m_groupVariable);
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Continuous"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(continuousDefault.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ continuousDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Group"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(groupDefault.empty() ? std::vector<wxString>{} :
-                                                           std::vector<wxString>{ groupDefault })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
+            { MakeVariableList(parameters[0], continuousDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ continuousDefault }),
+              MakeVariableList(parameters[1], groupDefault.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ groupDefault }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

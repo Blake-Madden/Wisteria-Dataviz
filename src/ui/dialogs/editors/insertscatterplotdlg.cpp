@@ -32,6 +32,73 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertScatterPlotDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return { { .m_name = _(L"X (independent)"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The measurement plotted along the X axis, such as hours "
+                                      "studied."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Y (dependent)"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The measurement plotted along the Y axis, such as an exam "
+                                      "score."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Grouping"),
+                   .m_types = { Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::DichotomousString,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete },
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description = _(L"Draws a separate series of points, with its own regression "
+                                      "line, for each unique value."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertScatterPlotDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Scatter Plot");
+        guide.m_iconName = L"images/scatterplot.svg";
+        guide.m_summary = _(L"Shows the relationship between two measurements, with one point per "
+                            "observation and an optional regression line for each group.");
+        guide.m_requirements =
+            _(L"One row per observation, holding its X value, its Y value, and optionally the "
+              "group that it belongs to.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample study;
+        study.m_title = _(L"Example: hours studied versus exam score for two sections");
+        study.m_columns = { { _(L"Hours"), _(L"X (independent)") },
+                            { _(L"Score"), _(L"Y (dependent)") },
+                            { _(L"Section"), _(L"Grouping") } };
+        study.m_rows = { { L"2", L"68", L"A" }, { L"4", L"75", L"A" }, { L"6", L"84", L"A" },
+                         { L"1", L"60", L"B" }, { L"3", L"71", L"B" }, { L"5", L"79", L"B" } };
+        guide.m_examples = { std::move(study) };
+
+        guide.m_missingData = {
+            _(L"If either the X or Y value is missing, the point is left out of both the plot "
+              "and the regression calculation."),
+            _(L"A missing value in the grouping column is shown with an empty legend label.")
+        };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertScatterPlotDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -163,34 +230,18 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"X (independent)"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_xVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_xVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Y (dependent)"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_yVariable.empty() ? std::vector<wxString>{} :
-                                                          std::vector<wxString>{ m_yVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Grouping"))
-                  .SingleSelection(true)
-                  .Required(false)
-                  .DefaultVariables(m_groupVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_groupVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
+            { MakeVariableList(parameters[0], m_xVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_xVariable }),
+              MakeVariableList(parameters[1], m_yVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_yVariable }),
+              MakeVariableList(parameters[2], m_groupVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_groupVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {

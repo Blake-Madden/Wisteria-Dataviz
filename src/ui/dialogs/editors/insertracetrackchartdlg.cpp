@@ -31,6 +31,61 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertRaceTrackChartDlg::GetParameters()
+        {
+        // the order here is the order of the lists in the variable selection dialog
+        return { { .m_name = _(L"Value"),
+                   .m_types = { Data::Dataset::ColumnImportType::Numeric },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description =
+                       _(L"The amount for each track lane. The longest lane goes almost "
+                         "all the way around and the others are drawn in proportion."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
+                 { .m_name = _(L"Label"),
+                   .m_types = { Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::DichotomousString,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete },
+                   .m_requirement = DataGuideRequirement::Required,
+                   .m_description = _(L"The name of each track lane."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} } };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertRaceTrackChartDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Race Track Chart");
+        guide.m_iconName = L"images/racetrack.svg";
+        guide.m_summary =
+            _(L"Compares amounts as concentric circular track lanes, each one extending "
+              "around the circle in proportion to its value.");
+        guide.m_requirements =
+            _(L"One row per track lane, holding its name and its value. The first row is "
+              "the outermost lane.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample population;
+        population.m_title = _(L"Example: population by area type");
+        population.m_columns = { { _(L"Area"), _(L"Label") }, { _(L"Percent"), _(L"Value") } };
+        population.m_rows = { { _(L"Urban"), L"64" },
+                              { _(L"Suburban"), L"31" },
+                              { _(L"Rural"), L"18" } };
+        guide.m_examples = { std::move(population) };
+
+        guide.m_missingData = { _(
+            L"A row with a missing, zero, or negative value is skipped, so it gets no lane.") };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertRaceTrackChartDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -165,28 +220,15 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
+        const auto parameters = GetParameters();
         VariableSelectDlg dlg(
             this, columnInfo,
-            { VLI{}
-                  .Label(_(L"Value"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_valueVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_valueVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-              VLI{}
-                  .Label(_(L"Label"))
-                  .SingleSelection(true)
-                  .Required(true)
-                  .DefaultVariables(m_labelVariable.empty() ?
-                                        std::vector<wxString>{} :
-                                        std::vector<wxString>{ m_labelVariable })
-                  .AcceptedTypes({ Data::Dataset::ColumnImportType::String,
-                                   Data::Dataset::ColumnImportType::Discrete,
-                                   Data::Dataset::ColumnImportType::DichotomousString,
-                                   Data::Dataset::ColumnImportType::DichotomousDiscrete }) });
+            { MakeVariableList(parameters[0], m_valueVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_valueVariable }),
+              MakeVariableList(parameters[1], m_labelVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_labelVariable }) });
 
         if (dlg.ShowModal() != wxID_OK)
             {
