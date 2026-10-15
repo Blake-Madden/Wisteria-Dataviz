@@ -136,7 +136,7 @@ namespace Wisteria::UI
       protected:
         void CreateControls() override;
         [[nodiscard]]
-        DataGuide GetDataGuide() const override;
+        DataGuide GetDataGuide() const final;
 
       private:
         /// @returns The variables of the plot, shared by the Data Guide

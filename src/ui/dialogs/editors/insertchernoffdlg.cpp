@@ -31,6 +31,105 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    std::vector<DataGuideParameter> InsertChernoffDlg::GetParameters()
+        {
+        const std::vector<Data::Dataset::ColumnImportType> numericTypes{
+            Data::Dataset::ColumnImportType::Numeric
+        };
+        const std::vector<Data::Dataset::ColumnImportType> categoryTypes{
+            Data::Dataset::ColumnImportType::String
+        };
+        const auto feature = [&numericTypes](const wxString& name, const wxString& effect,
+                                             const wxString& group, const bool required = false)
+        {
+            return DataGuideParameter{ name,
+                                       numericTypes,
+                                       required ? DataGuideRequirement::Required :
+                                                  DataGuideRequirement::Optional,
+                                       effect,
+                                       {},
+                                       false,
+                                       wxString{},
+                                       group };
+        };
+
+        // the order here is the order of the lists in the variable selection dialog
+        return {
+            feature(_(L"Face width"), _(L"Narrow to wide."), _(L"Face"), true),
+            feature(_(L"Face height"), _(L"Short to tall."), _(L"Face")),
+            feature(_(L"Eye size"), _(L"Small to large."), _(L"Eyes")),
+            feature(_(L"Eye position"), _(L"Low to high on the face."), _(L"Eyes")),
+            feature(_(L"Eyebrow slant"), _(L"Angled down to angled up."), _(L"Eyes")),
+            feature(_(L"Pupil position"), _(L"Looking left to looking right."), _(L"Eyes")),
+            feature(_(L"Nose size"), _(L"Small to large."), _(L"Nose and mouth")),
+            feature(_(L"Mouth width"), _(L"Narrow to wide."), _(L"Nose and mouth")),
+            feature(_(L"Mouth curvature"), _(L"Frown to smile."), _(L"Nose and mouth")),
+            feature(_(L"Face color"), _(L"Pale to saturated, within the skin color range."),
+                    _(L"Ears and skin")),
+            feature(_(L"Ear size"), _(L"Small to large."), _(L"Ears and skin")),
+            { _(L"Hair style"),
+              categoryTypes,
+              DataGuideRequirement::Optional,
+              _(L"Each category is given its own hair style, in the order the categories "
+                "first appear. Overrides the hair style chosen in the dialog."),
+              {},
+              false,
+              wxString{},
+              _(L"Hair") },
+            { _(L"Hair addition"),
+              categoryTypes,
+              DataGuideRequirement::Optional,
+              _(L"Each category is given its own addition, such as a beard or mustache on male "
+                "faces and a flower or star on female faces."),
+              {},
+              false,
+              wxString{},
+              _(L"Hair") }
+        };
+        }
+
+    //-------------------------------------------
+    DataGuide InsertChernoffDlg::GetDataGuide() const
+        {
+        DataGuide guide;
+        guide.m_title = _(L"Chernoff Faces Plot");
+        guide.m_iconName = L"images/chernoffplot.svg";
+        guide.m_summary =
+            _(L"Draws each observation as a face, with each variable controlling a facial "
+              "feature. Similar observations look alike and outliers stand out.");
+        guide.m_requirements =
+            _(L"One row per face, with a numeric column for each feature to vary. At most 36 "
+              "rows are drawn (a 6 by 6 grid). Values are scaled to the range of their column.");
+        guide.m_shape = DataGuideShape::Long;
+        guide.m_parameters = GetParameters();
+
+        DataGuideExample cities;
+        cities.m_title = _(L"Example: comparing cities");
+        cities.m_columns = { { _(L"City"), wxString{} },
+                             { _(L"Population"), _(L"Face width") },
+                             { _(L"Income"), _(L"Face height") },
+                             { _(L"Rainfall"), _(L"Eye size") },
+                             { _(L"Happiness"), _(L"Mouth curvature") } };
+        cities.m_rows = { { L"Akron", L"199", L"48", L"39", L"6.1" },
+                          { L"Columbus", L"905", L"62", L"38", L"7.4" },
+                          { L"Dayton", L"137", L"45", L"41", L"5.2" } };
+        guide.m_examples = { std::move(cities) };
+
+        guide.m_missingData = {
+            _(L"Feature columns: a missing value is drawn as the midpoint of the feature. A "
+              "row with every feature missing is not drawn."),
+            _(L"Hair style and hair addition: a missing category uses the default.")
+        };
+        guide.m_notes = {
+            _(L"Only the first 36 rows are drawn, so filter or aggregate larger datasets first."),
+            _(L"Features that are not assigned stay at their default look, so only assign the "
+              "variables you want to compare."),
+            _(L"Faces are labeled beneath with the dataset's ID column when labels are shown.")
+        };
+        return guide;
+        }
+
+    //-------------------------------------------
     void InsertChernoffDlg::CreateControls()
         {
         InsertGraphDlg::CreateControls();
@@ -230,98 +329,26 @@ namespace Wisteria::UI
             columnInfo = BuildColumnPreviewInfo(*dataset);
             }
 
-        using VLI = VariableSelectDlg::VariableListInfo;
         using FID = Graphs::ChernoffFacesPlot::FeatureId;
 
-        const auto defaultVar = [this](FID fid) -> std::vector<wxString>
-        {
-            const auto it = m_featureVariables.find(fid);
-            if (it != m_featureVariables.cend() && !it->second.empty())
-                {
-                return { it->second };
-                }
-            return {};
-        };
+        constexpr FID featureOrder[] = { FID::FaceWidth,   FID::FaceHeight,   FID::EyeSize,
+                                         FID::EyePosition, FID::EyebrowSlant, FID::PupilDirection,
+                                         FID::NoseSize,    FID::MouthWidth,   FID::SmileFrown,
+                                         FID::FaceColor,   FID::EarSize,      FID::HairStyle,
+                                         FID::HairAddition };
 
-        VariableSelectDlg dlg(this, columnInfo,
-                              { VLI{}
-                                    .Label(_(L"Face width"))
-                                    .SingleSelection(true)
-                                    .Required(true)
-                                    .DefaultVariables(defaultVar(FID::FaceWidth))
-                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-                                VLI{}
-                                    .Label(_(L"Face height"))
-                                    .SingleSelection(true)
-                                    .Required(false)
-                                    .DefaultVariables(defaultVar(FID::FaceHeight))
-                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-                                VLI{}
-                                    .Label(_(L"Eye size"))
-                                    .SingleSelection(true)
-                                    .Required(false)
-                                    .DefaultVariables(defaultVar(FID::EyeSize))
-                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-                                VLI{}
-                                    .Label(_(L"Eye position"))
-                                    .SingleSelection(true)
-                                    .Required(false)
-                                    .DefaultVariables(defaultVar(FID::EyePosition))
-                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-                                VLI{}
-                                    .Label(_(L"Eyebrow slant"))
-                                    .SingleSelection(true)
-                                    .Required(false)
-                                    .DefaultVariables(defaultVar(FID::EyebrowSlant))
-                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-                                VLI{}
-                                    .Label(_(L"Pupil position"))
-                                    .SingleSelection(true)
-                                    .Required(false)
-                                    .DefaultVariables(defaultVar(FID::PupilDirection))
-                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-                                VLI{}
-                                    .Label(_(L"Nose size"))
-                                    .SingleSelection(true)
-                                    .Required(false)
-                                    .DefaultVariables(defaultVar(FID::NoseSize))
-                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-                                VLI{}
-                                    .Label(_(L"Mouth width"))
-                                    .SingleSelection(true)
-                                    .Required(false)
-                                    .DefaultVariables(defaultVar(FID::MouthWidth))
-                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-                                VLI{}
-                                    .Label(_(L"Mouth curvature"))
-                                    .SingleSelection(true)
-                                    .Required(false)
-                                    .DefaultVariables(defaultVar(FID::SmileFrown))
-                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-                                VLI{}
-                                    .Label(_(L"Face color"))
-                                    .SingleSelection(true)
-                                    .Required(false)
-                                    .DefaultVariables(defaultVar(FID::FaceColor))
-                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-                                VLI{}
-                                    .Label(_(L"Ear size"))
-                                    .SingleSelection(true)
-                                    .Required(false)
-                                    .DefaultVariables(defaultVar(FID::EarSize))
-                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::Numeric }),
-                                VLI{}
-                                    .Label(_(L"Hair style"))
-                                    .SingleSelection(true)
-                                    .Required(false)
-                                    .DefaultVariables(defaultVar(FID::HairStyle))
-                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::String }),
-                                VLI{}
-                                    .Label(_(L"Hair addition"))
-                                    .SingleSelection(true)
-                                    .Required(false)
-                                    .DefaultVariables(defaultVar(FID::HairAddition))
-                                    .AcceptedTypes({ Data::Dataset::ColumnImportType::String }) });
+        const auto parameters = GetParameters();
+        std::vector<VariableSelectDlg::VariableListInfo> variableLists;
+        for (size_t paramIndex = 0; paramIndex < parameters.size(); ++paramIndex)
+            {
+            const auto foundPos = m_featureVariables.find(featureOrder[paramIndex]);
+            const bool isAssigned =
+                foundPos != m_featureVariables.cend() && !foundPos->second.empty();
+            variableLists.push_back(MakeVariableList(
+                parameters[paramIndex],
+                isAssigned ? std::vector<wxString>{ foundPos->second } : std::vector<wxString>{}));
+            }
+        VariableSelectDlg dlg(this, columnInfo, variableLists);
 
         if (dlg.ShowModal() != wxID_OK)
             {
@@ -329,12 +356,6 @@ namespace Wisteria::UI
             }
 
         // map feature IDs to selected variable names
-        constexpr FID featureOrder[] = { FID::FaceWidth,   FID::FaceHeight,   FID::EyeSize,
-                                         FID::EyePosition, FID::EyebrowSlant, FID::PupilDirection,
-                                         FID::NoseSize,    FID::MouthWidth,   FID::SmileFrown,
-                                         FID::FaceColor,   FID::EarSize,      FID::HairStyle,
-                                         FID::HairAddition };
-
         m_featureVariables.clear();
         for (size_t i = 0; i < std::size(featureOrder); ++i)
             {
