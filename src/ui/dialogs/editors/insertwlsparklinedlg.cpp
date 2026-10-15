@@ -103,7 +103,7 @@ namespace Wisteria::UI
         games.m_columns = { { _(L"Season"), _(L"Season") },
                             { _(L"Result"), _(L"Won/Lost") },
                             { _(L"Shutout"), _(L"Shutout") },
-                            { _(L"HomeGame"), _(L"Home game") } };
+                            { _(L"Home Game"), _(L"Home game") } };
         games.m_rows = { { L"2022", L"1", L"1", L"1" }, { L"2022", L"0", L"0", L"1" },
                          { L"2022", L"1", L"0", L"1" }, { L"2022", L"1", L"0", L"0" },
                          { L"2023", L"1", L"0", L"1" }, { L"2023", L"0", L"0", L"1" },

@@ -92,7 +92,7 @@ namespace Wisteria::UI
         flow.m_title = _(L"Example: a quarter's cash flow");
         flow.m_columns = { { _(L"Step"), _(L"Step label") },
                            { _(L"Amount"), _(L"Amount") },
-                           { _(L"IsTotal"), _(L"Total flag (0 = change, 1 = total)") } };
+                           { _(L"Is Total"), _(L"Total flag (0 = change, 1 = total)") } };
         flow.m_rows = { { _(L"Start"), L"100", L"0" },
                         { _(L"Sales"), L"50", L"0" },
                         { _(L"Costs"), L"-30", L"0" },

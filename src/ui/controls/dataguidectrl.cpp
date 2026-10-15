@@ -105,9 +105,9 @@ namespace Wisteria::UI
     wxString DataGuideCtrl::BuildTypeIconHtml(const Data::Dataset::ColumnImportType type)
         {
         const wxString iconUri = GetTypeIconUri(type);
-        return iconUri.empty() ?
-                   wxString{} :
-                   L"<img src='" + iconUri + L"' alt='" + EscapeForHtml(GetTypeName(type)) + L"'>";
+        return iconUri.empty() ? wxString{} :
+                                 L"<img src='" + iconUri + _DT(L"' alt='") +
+                                     EscapeForHtml(GetTypeName(type)) + L"'>";
         }
 
     //-------------------------------------------
@@ -405,7 +405,7 @@ td { border-top: 1px solid var(--border); }
             if (const wxString iconUri = GetSvgDataUri(m_guide.m_iconName, wxSize{ 96, 96 });
                 !iconUri.empty())
                 {
-                html += L"<div class='hero-icon'><img src='" + iconUri + L"' alt=''></div>";
+                html += L"<div class='hero-icon'><img src='" + iconUri + _DT(L"' alt=''></div>");
                 }
             html += L"<div>";
             if (!m_guide.m_title.empty())

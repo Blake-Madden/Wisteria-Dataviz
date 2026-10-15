@@ -102,7 +102,7 @@ namespace Wisteria::UI
         swot.m_title = _(L"Example: a SWOT analysis with a totals column for the weaknesses");
         swot.m_columns = { { _(L"Strength"), _(L"Positive (pros)") },
                            { _(L"Weakness"), _(L"Negative (cons)") },
-                           { _(L"WeaknessTotals"), _(L"Negative values") } };
+                           { _(L"Weakness Totals"), _(L"Negative values") } };
         swot.m_rows = { { _(L"New features"), _(L"Cost"), L"22" },
                         { _(L"New features"), _(L"Missing features"), L"12" },
                         { _(L"Improved user management"), _(L"Employee retraining"), L"12" } };

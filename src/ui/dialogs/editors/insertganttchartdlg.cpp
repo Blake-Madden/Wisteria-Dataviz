@@ -122,7 +122,7 @@ namespace Wisteria::UI
         acquisition.m_rows = {
             { _(L"Acquisition"), L"2022-07-01", L"2022-08-31", L"", _(L"Management"), L"100" },
             { _(L"Develop Product"), L"2022-09-01", L"2022-12-25", L"", _(L"Development"), L"50" },
-            { _(L"Testing"), L"2022-10-15", L"2022-12-25", _(L"Maybe outsource this"), _(L"QA"),
+            { _(L"Testing"), L"2022-10-15", L"2022-12-25", _(L"Maybe outsource this"), _DT(L"QA"),
               L"" }
         };
         guide.m_examples = { std::move(acquisition) };
