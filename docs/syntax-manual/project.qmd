@@ -46,6 +46,17 @@ The following properties are available:
   - `"include-group-visibility-toggles"`: Whether the Filters menu includes checkboxes that hide or show a graph's groups (e.g., a pie slice or a line series). \
     A graph's `"filter"` choices are always included. \
     The default is `false`.
+- `"export-excluded-pages"`: Defines the pages that are left out of each export format. \
+  Each property is an array of page `"guid"` values (see [Pages](#page-properties)). \
+  Pages that aren't listed are included, so pages added later are exported by default. \
+  This is written when the project is saved after choosing pages in the export dialog.
+  (It is also applied when exporting from the command line.) \
+  Available options:
+  - `"svg"`: The pages to leave out of SVG exports.
+  - `"html"`: The pages to leave out of HTML dashboard exports.
+  - `"pdf"`: The pages to leave out of PDF exports.
+  - `"pptx"`: The pages to leave out of PowerPoint exports.
+  - `"odp"`: The pages to leave out of OpenDocument presentation exports.
 
 ### Examples {-}
 

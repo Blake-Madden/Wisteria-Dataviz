@@ -60,6 +60,7 @@
 #include "../ui/dialogs/editors/subsetdlg.h"
 #include "../ui/dialogs/htmldashboarddlg.h"
 #include "../ui/dialogs/odpexportdlg.h"
+#include "../ui/dialogs/pageselectiondlg.h"
 #include "../ui/dialogs/pdfexportdlg.h"
 #include "../ui/dialogs/pptxexportdlg.h"
 #include "../ui/dialogs/projectsettingsdlg.h"
@@ -1391,9 +1392,48 @@ void WisteriaView::PrintAllPages(const bool prompt, const int copies)
     }
 
 //-------------------------------------------
+bool WisteriaView::SelectPagesToExport(const Wisteria::ReportBuilder::ExportFormat format,
+                                       const wxString& caption)
+    {
+    wxArrayString pageLabels;
+    std::vector<wxString> pageGuids;
+    pageGuids.reserve(m_pages.size());
+    for (size_t pageNum = 0; pageNum < m_pages.size(); ++pageNum)
+        {
+        const auto* page = m_pages[pageNum];
+        const wxString label = (page != nullptr && !page->GetLabel().empty()) ?
+                                   page->GetLabel() :
+                                   wxString::Format(_(L"Page %zu"), pageNum + 1);
+        pageLabels.Add(label);
+        pageGuids.push_back(page != nullptr ? page->GetGuid() : wxString{});
+        }
+
+    const auto previousExcluded = GetReportBuilder().GetExcludedPageGuids(format);
+    Wisteria::UI::PageSelectionDlg pagesDlg(m_frame, caption, pageLabels, pageGuids,
+                                            previousExcluded);
+    if (pagesDlg.ShowModal() != wxID_OK)
+        {
+        return false;
+        }
+
+    auto newExcluded = pagesDlg.GetExcludedGuids();
+    if (newExcluded != previousExcluded)
+        {
+        GetReportBuilder().SetExcludedPageGuids(format, std::move(newExcluded));
+        GetDocument()->Modify(true);
+        }
+    return true;
+    }
+
+//-------------------------------------------
 void WisteriaView::OnSvgExport([[maybe_unused]] wxCommandEvent& event)
     {
     if (m_pages.empty())
+        {
+        return;
+        }
+
+    if (!SelectPagesToExport(Wisteria::ReportBuilder::ExportFormat::Svg, _(L"Export to SVG")))
         {
         return;
         }
@@ -1478,6 +1518,8 @@ void WisteriaView::ExportSvg(const Wisteria::ReportBuilder& builder,
                              const std::vector<Wisteria::Canvas*>& pages, const wxString& filePath)
     {
     const auto& savedOptions = builder.GetSvgExportOptions();
+    const auto exportPages{ builder.GetPagesForExport(Wisteria::ReportBuilder::ExportFormat::Svg,
+                                                      pages) };
 
     const wxString dashboardFolder{ wxGetApp().FindResourceDirectory(_DT(L"res/dashboard")) };
     const wxString themesFolder{ dashboardFolder.empty() ?
@@ -1487,7 +1529,7 @@ void WisteriaView::ExportSvg(const Wisteria::ReportBuilder& builder,
     // RAII creates the report, maybe_unused is to silence clang-tidy false positive
     [[maybe_unused]]
     Wisteria::SVGReportPrintout svgReport(
-        pages,
+        exportPages,
         Wisteria::SVGReportOptions(filePath)
             .PageSize(savedOptions.m_pageSize)
             .UseGlobalPrintSettings(savedOptions.m_useGlobalPrintSettings)
@@ -1510,6 +1552,11 @@ void WisteriaView::ExportSvg(const Wisteria::ReportBuilder& builder,
 void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
     {
     if (m_pages.empty())
+        {
+        return;
+        }
+
+    if (!SelectPagesToExport(Wisteria::ReportBuilder::ExportFormat::Html, _(L"Export to HTML")))
         {
         return;
         }
@@ -1539,7 +1586,8 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
                                                                 savedOptions.m_theme };
     Wisteria::UI::HtmlDashboardDlg optionsDlg(
         m_frame, themes, dlgOptions, initialTheme,
-        Wisteria::HtmlDashboardPrintout::GetFilterDefaults(m_pages));
+        Wisteria::HtmlDashboardPrintout::GetFilterDefaults(GetReportBuilder().GetPagesForExport(
+            Wisteria::ReportBuilder::ExportFormat::Html, m_pages)));
     if (optionsDlg.ShowModal() != wxID_OK)
         {
         return;
@@ -1597,6 +1645,8 @@ void WisteriaView::ExportHtml(
     const std::vector<Wisteria::HtmlDashboardOptions::FilterOverride>& filterOverrides)
     {
     const auto& savedOptions = builder.GetHtmlExportOptions();
+    const auto exportPages{ builder.GetPagesForExport(Wisteria::ReportBuilder::ExportFormat::Html,
+                                                      pages) };
 
     const wxString dashboardFolder{ wxGetApp().FindResourceDirectory(_DT(L"res/dashboard")) };
     const wxString themesFolder{ dashboardFolder + wxFileName::GetPathSeparator() + L"themes" };
@@ -1617,8 +1667,8 @@ void WisteriaView::ExportHtml(
 
     // page labels hold the raw name template, so the expanded titles are only used for the export
     std::vector<wxString> pageTitles;
-    pageTitles.reserve(pages.size());
-    for (const auto* page : pages)
+    pageTitles.reserve(exportPages.size());
+    for (const auto* page : exportPages)
         {
         pageTitles.push_back((page != nullptr && !page->GetNameTemplate().empty()) ?
                                  builder.ExpandConstants(page->GetNameTemplate()) :
@@ -1627,28 +1677,34 @@ void WisteriaView::ExportHtml(
 
     [[maybe_unused]]
     Wisteria::HtmlDashboardPrintout htmlDashboard(
-        pages, Wisteria::HtmlDashboardOptions(filePath)
-                   .Title(builder.ExpandConstants(title))
-                   .Css(coreCss + L"\n" + themeCss)
-                   .Logo(savedOptions.m_logoPath)
-                   .InitialView(savedOptions.m_view)
-                   .InitialColorMode(savedOptions.m_colorMode)
-                   .ColorModeToggle(savedOptions.m_includeColorModeToggle)
-                   .CountUpNumbers(savedOptions.m_countUpNumbers)
-                   .PageSize(savedOptions.m_pageSize)
-                   .DualOrientations(savedOptions.m_dualOrientations)
-                   .IncludeSave(savedOptions.m_includeSave)
-                   .IncludePrint(savedOptions.m_includePrint)
-                   .IncludeCopy(savedOptions.m_includeCopy)
-                   .IncludeGroupVisibilityToggles(savedOptions.m_includeGroupVisibilityToggles)
-                   .PageTitles(std::move(pageTitles))
-                   .FilterOverrides(filterOverrides));
+        exportPages,
+        Wisteria::HtmlDashboardOptions(filePath)
+            .Title(builder.ExpandConstants(title))
+            .Css(coreCss + L"\n" + themeCss)
+            .Logo(savedOptions.m_logoPath)
+            .InitialView(savedOptions.m_view)
+            .InitialColorMode(savedOptions.m_colorMode)
+            .ColorModeToggle(savedOptions.m_includeColorModeToggle)
+            .CountUpNumbers(savedOptions.m_countUpNumbers)
+            .PageSize(savedOptions.m_pageSize)
+            .DualOrientations(savedOptions.m_dualOrientations)
+            .IncludeSave(savedOptions.m_includeSave)
+            .IncludePrint(savedOptions.m_includePrint)
+            .IncludeCopy(savedOptions.m_includeCopy)
+            .IncludeGroupVisibilityToggles(savedOptions.m_includeGroupVisibilityToggles)
+            .PageTitles(std::move(pageTitles))
+            .FilterOverrides(filterOverrides));
     }
 
 //-------------------------------------------
 void WisteriaView::OnPdfExport([[maybe_unused]] wxCommandEvent& event)
     {
     if (m_pages.empty())
+        {
+        return;
+        }
+
+    if (!SelectPagesToExport(Wisteria::ReportBuilder::ExportFormat::Pdf, _(L"Export to PDF")))
         {
         return;
         }
@@ -1720,13 +1776,21 @@ void WisteriaView::ExportPdf(const Wisteria::ReportBuilder& builder,
     options.m_subject = builder.GetSubject();
     options.m_keywords = builder.GetKeywords();
 
-    Wisteria::ReportPDFExport pdfReport(pages, filePath, options);
+    const auto exportPages{ builder.GetPagesForExport(Wisteria::ReportBuilder::ExportFormat::Pdf,
+                                                      pages) };
+    Wisteria::ReportPDFExport pdfReport(exportPages, filePath, options);
     }
 
 //-------------------------------------------
 void WisteriaView::OnPptxExport([[maybe_unused]] wxCommandEvent& event)
     {
     if (m_pages.empty())
+        {
+        return;
+        }
+
+    if (!SelectPagesToExport(Wisteria::ReportBuilder::ExportFormat::Pptx,
+                             _(L"Export to PowerPoint")))
         {
         return;
         }
@@ -1803,13 +1867,21 @@ void WisteriaView::ExportPptx(const Wisteria::ReportBuilder& builder,
     options.m_subject = builder.GetSubject();
     options.m_keywords = builder.GetKeywords();
 
-    Wisteria::ReportPowerPointExport pptxReport(pages, filePath, options);
+    const auto exportPages{ builder.GetPagesForExport(Wisteria::ReportBuilder::ExportFormat::Pptx,
+                                                      pages) };
+    Wisteria::ReportPowerPointExport pptxReport(exportPages, filePath, options);
     }
 
 //-------------------------------------------
 void WisteriaView::OnOdpExport([[maybe_unused]] wxCommandEvent& event)
     {
     if (m_pages.empty())
+        {
+        return;
+        }
+
+    if (!SelectPagesToExport(Wisteria::ReportBuilder::ExportFormat::Odp,
+                             _(L"Export to OpenDocument Presentation")))
         {
         return;
         }
@@ -1882,7 +1954,9 @@ void WisteriaView::ExportOdp(const Wisteria::ReportBuilder& builder,
     options.m_subject = builder.GetSubject();
     options.m_keywords = builder.GetKeywords();
 
-    Wisteria::ReportOdpExport odpReport(pages, filePath, options);
+    const auto exportPages{ builder.GetPagesForExport(Wisteria::ReportBuilder::ExportFormat::Odp,
+                                                      pages) };
+    Wisteria::ReportOdpExport odpReport(exportPages, filePath, options);
     }
 
 //-------------------------------------------

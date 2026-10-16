@@ -142,6 +142,14 @@ class WisteriaView final : public wxView
                           const wxString& fallbackTitle);
 
   private:
+    /// @brief Asks which pages to include in an export, and saves the choice to the project.
+    /// @param format The export format.
+    /// @param caption The title of the dialog.
+    /// @returns @c false if the user canceled the export.
+    [[nodiscard]]
+    bool SelectPagesToExport(const Wisteria::ReportBuilder::ExportFormat format,
+                             const wxString& caption);
+
     [[nodiscard]]
     Wisteria::UI::SideBar* GetSideBar() noexcept
         {

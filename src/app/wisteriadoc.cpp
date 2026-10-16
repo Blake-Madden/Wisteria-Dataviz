@@ -212,6 +212,36 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
         root->Add(L"odp-export", odpNode);
         }
 
+        // export-excluded-pages (per-project, GUIDs of the pages left out of each export format)
+        {
+        root->DeleteProperty(L"export-excluded-pages");
+        auto excludedNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+        bool hasExcludedPages{ false };
+        for (const auto format : { Wisteria::ReportBuilder::ExportFormat::Svg,
+                                   Wisteria::ReportBuilder::ExportFormat::Html,
+                                   Wisteria::ReportBuilder::ExportFormat::Pdf,
+                                   Wisteria::ReportBuilder::ExportFormat::Pptx,
+                                   Wisteria::ReportBuilder::ExportFormat::Odp })
+            {
+            const auto excludedGuids = view->GetReportBuilder().GetExcludedPageGuids(format);
+            if (excludedGuids.empty())
+                {
+                continue;
+                }
+            auto guidArray = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_ARRAY);
+            for (const auto& guid : excludedGuids)
+                {
+                guidArray->ArrayAdd(guid);
+                }
+            excludedNode->Add(Wisteria::ReportBuilder::ExportFormatToString(format), guidArray);
+            hasExcludedPages = true;
+            }
+        if (hasExcludedPages)
+            {
+            root->Add(L"export-excluded-pages", excludedNode);
+            }
+        }
+
     // datasets
     //---------
     const auto& datasets = view->GetReportBuilder().GetDatasets();

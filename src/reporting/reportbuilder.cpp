@@ -348,6 +348,7 @@ namespace Wisteria
         m_pdfExportOptions = PdfExportOptions{};
         m_powerPointExportOptions = PowerPointExportOptions{};
         m_odpExportOptions = OdpExportOptions{};
+        m_excludedPageGuids.clear();
         m_svgExportOptionsLoaded = false;
         m_htmlExportOptionsLoaded = false;
         m_pdfExportOptionsLoaded = false;
@@ -495,6 +496,21 @@ namespace Wisteria
                     (static_cast<int>(*layout) == 0) ? SVGReportOptions::PageLayout::Single :
                     (static_cast<int>(*layout) == 1) ? SVGReportOptions::PageLayout::Duplex :
                                                        SVGReportOptions::PageLayout::Stacked;
+                }
+            }
+
+        // pages excluded from each export format (stored as page GUIDs)
+        if (const auto excludedNode = json->GetProperty(L"export-excluded-pages");
+            excludedNode->IsOk())
+            {
+            for (const auto format : { ExportFormat::Svg, ExportFormat::Html, ExportFormat::Pdf,
+                                       ExportFormat::Pptx, ExportFormat::Odp })
+                {
+                if (const auto guidsNode = excludedNode->GetProperty(ExportFormatToString(format));
+                    guidsNode->IsOk() && guidsNode->IsValueArray())
+                    {
+                    SetExcludedPageGuids(format, guidsNode->AsStrings());
+                    }
                 }
             }
 

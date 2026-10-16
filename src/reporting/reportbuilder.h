@@ -61,6 +61,7 @@
 #include "odpreportprintout.h"
 #include "pptxreportprintout.h"
 #include "svgreportprintout.h"
+#include <algorithm>
 #include <functional>
 #include <map>
 #include <optional>
@@ -799,6 +800,94 @@ namespace Wisteria
         bool HasLoadedPdfExportOptions() const noexcept
             {
             return m_pdfExportOptionsLoaded;
+            }
+
+        /// @brief Export formats that have their own page selection.
+        enum class ExportFormat
+            {
+            Svg,
+            Html,
+            Pdf,
+            Pptx,
+            Odp
+            };
+
+        /// @returns The name used for an export format in the project file.
+        /// @param format The export format.
+        [[nodiscard]]
+        static wxString ExportFormatToString(const ExportFormat format)
+            {
+            switch (format)
+                {
+            case ExportFormat::Svg:
+                return L"svg";
+            case ExportFormat::Html:
+                return L"html";
+            case ExportFormat::Pdf:
+                return L"pdf";
+            case ExportFormat::Pptx:
+                return L"pptx";
+            case ExportFormat::Odp:
+                return L"odp";
+                }
+            return wxString{};
+            }
+
+        /// @returns The GUIDs of the pages excluded from an export format.
+        /// @param format The export format.
+        [[nodiscard]]
+        std::vector<wxString> GetExcludedPageGuids(const ExportFormat format) const
+            {
+            const auto foundGuids = m_excludedPageGuids.find(format);
+            return foundGuids != m_excludedPageGuids.cend() ? foundGuids->second :
+                                                              std::vector<wxString>{};
+            }
+
+        /// @brief Sets which pages are excluded from an export format.
+        /// @param format The export format.
+        /// @param guids The GUIDs of the pages to exclude.
+        void SetExcludedPageGuids(const ExportFormat format, std::vector<wxString> guids)
+            {
+            if (guids.empty())
+                {
+                m_excludedPageGuids.erase(format);
+                }
+            else
+                {
+                m_excludedPageGuids[format] = std::move(guids);
+                }
+            }
+
+        /// @brief Removes the pages that are excluded from an export format.
+        /// @param format The export format.
+        /// @param pages The pages of the report.
+        /// @returns The pages that should be included in the export.
+        [[nodiscard]]
+        std::vector<Canvas*> GetPagesForExport(const ExportFormat format,
+                                               const std::vector<Canvas*>& pages) const
+            {
+            const auto foundGuids = m_excludedPageGuids.find(format);
+            if (foundGuids == m_excludedPageGuids.cend())
+                {
+                return pages;
+                }
+            std::vector<Canvas*> includedPages;
+            includedPages.reserve(pages.size());
+            for (auto* page : pages)
+                {
+                if (page == nullptr)
+                    {
+                    continue;
+                    }
+                const bool isExcluded =
+                    std::ranges::any_of(foundGuids->second, [&page](const auto& guid)
+                                        { return page->GetGuid().CmpNoCase(guid) == 0; });
+                if (!isExcluded)
+                    {
+                    includedPages.push_back(page);
+                    }
+                }
+            return includedPages;
             }
 
         /// @returns The PowerPoint export options for the report.
@@ -1717,6 +1806,8 @@ namespace Wisteria
         OdpExportOptions m_odpExportOptions{};
         bool m_svgExportOptionsLoaded{ false };
         bool m_htmlExportOptionsLoaded{ false };
+        // GUIDs of the pages left out of each export format
+        std::map<ExportFormat, std::vector<wxString>> m_excludedPageGuids;
         bool m_pdfExportOptionsLoaded{ false };
         bool m_powerPointExportOptionsLoaded{ false };
         bool m_odpExportOptionsLoaded{ false };
