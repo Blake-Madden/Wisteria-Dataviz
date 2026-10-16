@@ -4,6 +4,10 @@ At the root level of a project file, you define overall project settings.
 The following properties are available:
 
 - `"name"`: A string value representing the name of the report.
+- `"auto-refresh"`: Whether the project reloads itself when its dataset files change. \
+  The files are checked every 5 seconds, and the reload waits until a changed file is no longer being written to or locked by another process. \
+  This only takes effect if every dataset is imported from a local or network file (not a URL). \
+  The default is `false`.
 - `"watermark"`: Defines a watermark to add to each page. \
   Available options:
   - `"label"`: The text to display across pages.

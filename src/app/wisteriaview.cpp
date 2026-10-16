@@ -64,14 +64,18 @@
 #include "../ui/dialogs/pptxexportdlg.h"
 #include "../ui/dialogs/projectsettingsdlg.h"
 #include "../ui/dialogs/svgexportdlg.h"
+#include "../util/fileutil.h"
 #include "wisteriaapp.h"
 #include "wisteriadoc.h"
+#include <algorithm>
 #include <array>
 #include <wx/dir.h>
 #include <wx/ffile.h>
+#include <wx/file.h>
 #include <wx/filename.h>
 #include <wx/rearrangectrl.h>
 #include <wx/regex.h>
+#include <wx/scopeguard.h>
 #include <wx/wupdlock.h>
 
 wxIMPLEMENT_DYNAMIC_CLASS(WisteriaView, wxView);
@@ -345,6 +349,15 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
                wxCommandEvent& event) { ReloadProject(); },
         ID_REFRESH_ALL);
 
+    // bind the auto-refresh toggle and its polling timer
+    m_autoRefreshTimer.SetOwner(this);
+    Bind(wxEVT_TIMER, &WisteriaView::OnAutoRefreshTimer, this, m_autoRefreshTimer.GetId());
+    m_frame->Bind(
+        wxEVT_RIBBONBUTTONBAR_CLICKED,
+        [this]([[maybe_unused]]
+               wxCommandEvent& event) { SetAutoRefresh(!m_autoRefresh); },
+        ID_AUTO_REFRESH);
+
     // bind insert and edit dataset buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertDataset, this,
                   ID_INSERT_DATASET);
@@ -613,6 +626,7 @@ bool WisteriaView::OnClose(bool deleteWindow)
         return false;
         }
 
+    m_autoRefreshTimer.Stop();
     Activate(false);
 
     if (deleteWindow)
@@ -720,6 +734,9 @@ bool WisteriaView::LoadProject(const wxString& filename)
             wxMessageBox(errMsg.m_message, errMsg.m_title, wxOK | wxICON_WARNING | wxCENTRE,
                          m_workArea);
             }
+
+        // deferred so that the document's filename is set when relative dataset paths are resolved
+        CallAfter([this]() { SetAutoRefresh(m_reportBuilder.IsAutoRefresh(), false); });
         }
 
     // add the "Data" folder
@@ -930,10 +947,13 @@ void WisteriaView::TearDownProject()
 void WisteriaView::ReloadProject()
     {
     auto* doc = dynamic_cast<WisteriaDoc*>(GetDocument());
-    if (doc == nullptr)
+    if (doc == nullptr || m_isProcessing)
         {
         return;
         }
+
+    m_isProcessing = true;
+    wxON_BLOCK_EXIT_SET(m_isProcessing, false);
 
     // Serialize next to the real project file so dataset paths (written relative to
     // the output file's directory) resolve the same way on reload. Never-saved
@@ -995,6 +1015,155 @@ void WisteriaView::ReloadProject()
                        "Close the project without saving to keep that version."),
                      _(L"Reload Incomplete"), wxOK | wxICON_WARNING, m_frame);
         }
+
+    SnapshotSourceFiles();
+    }
+
+//-------------------------------------------
+std::map<wxString, std::pair<wxDateTime, wxFileOffset>> WisteriaView::ReadSourceFileStates() const
+    {
+    const auto* doc = dynamic_cast<const WisteriaDoc*>(GetDocument());
+    if (doc == nullptr)
+        {
+        return {};
+        }
+
+    std::map<wxString, std::pair<wxDateTime, wxFileOffset>> states;
+    for (const auto& [name, importOptions] : m_reportBuilder.GetDatasetImportOptions())
+        {
+        if (importOptions.m_filePath.empty())
+            {
+            continue;
+            }
+        FilePathResolverBase resolver;
+        resolver.ResolvePath(doc->ResolveFilePath(importOptions.m_filePath));
+        // only local files can be polled, so any web-based dataset disables the feature
+        if (!resolver.IsLocalOrNetworkFile())
+            {
+            return {};
+            }
+        const wxFileName fileName{ resolver.GetResolvedPath() };
+        if (fileName.FileExists())
+            {
+            states[fileName.GetFullPath()] = { fileName.GetModificationTime(),
+                                               static_cast<wxFileOffset>(
+                                                   fileName.GetSize().GetValue()) };
+            }
+        else
+            {
+            states[fileName.GetFullPath()] = { wxDateTime{}, wxInvalidOffset };
+            }
+        }
+    return states;
+    }
+
+//-------------------------------------------
+void WisteriaView::SnapshotSourceFiles() { m_sourceFileStates = ReadSourceFileStates(); }
+
+//-------------------------------------------
+bool WisteriaView::IsDatasetFileReadable(const wxString& datasetFilePath)
+    {
+    const wxLogNull noLog;
+    wxFile file;
+    return file.Open(datasetFilePath, wxFile::read);
+    }
+
+//-------------------------------------------
+void WisteriaView::SetAutoRefresh(bool enable, const bool userInitiated)
+    {
+    if (enable)
+        {
+        SnapshotSourceFiles();
+        if (m_sourceFileStates.empty())
+            {
+            if (userInitiated)
+                {
+                wxMessageBox(_(L"Auto refresh is only available when the project has datasets, "
+                               "and all of them are imported from local files."),
+                             _(L"Auto Refresh"), wxOK | wxICON_INFORMATION, m_frame);
+                }
+            enable = false;
+            }
+        }
+
+    const bool changed = (m_reportBuilder.IsAutoRefresh() != enable);
+    m_reportBuilder.SetAutoRefresh(enable);
+    if (changed && userInitiated)
+        {
+        if (auto* doc = GetDocument(); doc != nullptr)
+            {
+            doc->Modify(true);
+            }
+        }
+
+    m_autoRefresh = enable;
+    m_refreshPending = false;
+    if (m_autoRefresh)
+        {
+        m_autoRefreshTimer.Start(AUTO_REFRESH_INTERVAL);
+        }
+    else
+        {
+        m_autoRefreshTimer.Stop();
+        }
+
+    if (m_pagesButtonBar != nullptr)
+        {
+        m_pagesButtonBar->ToggleButton(ID_AUTO_REFRESH, m_autoRefresh);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnAutoRefreshTimer([[maybe_unused]] wxTimerEvent& event)
+    {
+    // wait while the user is working in a dialog
+    if (!m_autoRefresh || m_isProcessing || Wisteria::UI::BaseApp::IsModalDialogOpen())
+        {
+        return;
+        }
+
+    const auto currentStates = ReadSourceFileStates();
+    if (currentStates.empty())
+        {
+        return;
+        }
+
+    // a file that changed since the last poll may still be getting written
+    bool changedSincePoll{ false };
+    for (const auto& [path, state] : currentStates)
+        {
+        const auto previous = m_sourceFileStates.find(path);
+        if (previous == m_sourceFileStates.cend())
+            {
+            // a newly added dataset
+            m_sourceFileStates.insert({ path, state });
+            }
+        else if (previous->second != state)
+            {
+            previous->second = state;
+            changedSincePoll = true;
+            }
+        }
+
+    if (changedSincePoll)
+        {
+        m_refreshPending = true;
+        return;
+        }
+    if (!m_refreshPending)
+        {
+        return;
+        }
+
+    // the dataset files have settled, but another process may still have one open
+    if (std::ranges::any_of(currentStates,
+                            [](const auto& item) { return !IsDatasetFileReadable(item.first); }))
+        {
+        return;
+        }
+
+    m_refreshPending = false;
+    ReloadProject();
     }
 
 //-------------------------------------------

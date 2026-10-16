@@ -87,6 +87,11 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
                          EscapeJsonStr(view->GetReportBuilder().GetKeywords())),
         true);
 
+    if (view->GetReportBuilder().IsAutoRefresh())
+        {
+        root->Add(L"auto-refresh", true);
+        }
+
     // watermark
     //----------
     const auto& wmLabel = view->GetReportBuilder().GetWatermarkLabel();

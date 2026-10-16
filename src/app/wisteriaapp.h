@@ -396,6 +396,7 @@ constexpr wxWindowID ID_JOIN_DATASET{ wxID_HIGHEST + 54 };
 constexpr wxWindowID ID_SAVE_PROJECT{ wxID_HIGHEST + 38 };
 constexpr wxWindowID ID_SAVE_PROJECT_AS{ wxID_HIGHEST + 41 };
 constexpr wxWindowID ID_REFRESH_ALL{ wxID_HIGHEST + 81 };
+constexpr wxWindowID ID_AUTO_REFRESH{ wxID_HIGHEST + 94 };
 
 // Backstage
 constexpr wxWindowID ID_BACKSTAGE_NEW{ wxID_HIGHEST + 110 };

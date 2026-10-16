@@ -691,6 +691,17 @@ namespace Wisteria
         /// @param keywords The new keywords.
         void SetKeywords(const wxString& keywords) { m_keywords = keywords; }
 
+        /// @returns Whether the project reloads itself when its local dataset files change.
+        [[nodiscard]]
+        bool IsAutoRefresh() const noexcept
+            {
+            return m_autoRefresh;
+            }
+
+        /// @brief Sets whether the project reloads itself when its local dataset file(s) change.
+        /// @param autoRefresh @c true to enable auto refresh.
+        void SetAutoRefresh(const bool autoRefresh) noexcept { m_autoRefresh = autoRefresh; }
+
         /// @returns The watermark label.
         [[nodiscard]]
         const wxString& GetWatermarkLabel() const noexcept
@@ -1695,6 +1706,7 @@ namespace Wisteria
         wxString m_name;
         wxString m_subject;
         wxString m_keywords;
+        bool m_autoRefresh{ false };
         wxString m_watermarkLabel;
         wxColour m_watermarkColor;
 

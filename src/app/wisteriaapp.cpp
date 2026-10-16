@@ -1000,6 +1000,10 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         pagesButtonBar->AddButton(ID_REFRESH_ALL, _(L"Refresh All"),
                                   ReadSvgIcon(L"images/reload.svg"), _(L"Reload the project"));
         pagesButtonBar->SetKeyTip(ID_REFRESH_ALL, _DT(L"L"));
+        pagesButtonBar->AddToggleButton(
+            ID_AUTO_REFRESH, _(L"Auto Refresh"), ReadSvgIcon(L"images/realtime.svg"),
+            _(L"Reload the project when its local dataset files change"));
+        pagesButtonBar->SetKeyTip(ID_AUTO_REFRESH, _DT(L"RE"));
 
         // Objects panel (labels, images, shapes)
         auto* objectsPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Objects"));

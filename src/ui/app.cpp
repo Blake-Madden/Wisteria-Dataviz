@@ -12,6 +12,7 @@
 #include "wx/xrc/xh_bmp.h"
 #include "wx/xrc/xh_menu.h"
 #include "wx/xrc/xmlres.h"
+#include <algorithm>
 #include <filesystem>
 #include <wx/display.h>
 #include <wx/regex.h>
@@ -113,6 +114,17 @@ namespace Wisteria::UI
 #elif defined(__WXMSW__)
         wxSetEnv("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--disable-gpu");
 #endif
+        }
+
+    //----------------------------------------------------------
+    bool BaseApp::IsModalDialogOpen()
+        {
+        return std::ranges::any_of(wxTopLevelWindows,
+                                   [](const wxWindow* window)
+                                   {
+                                       const auto* dlg = dynamic_cast<const wxDialog*>(window);
+                                       return dlg != nullptr && dlg->IsModal();
+                                   });
         }
 
     //----------------------------------------------------------

@@ -65,6 +65,12 @@ namespace Wisteria::UI
         /// @brief Disables the WebView GPU renderer under GTK+ and Windows.
         static void DisableWebViewGPUOptimization();
 
+        /// @returns @c true if any modal dialog is currently being shown.
+        /// @note Timers still fire while a modal dialog is open, so use this to avoid
+        ///     rebuilding the UI (e.g., reloading a project) underneath it.
+        [[nodiscard]]
+        static bool IsModalDialogOpen();
+
         /// @private
         void OnFatalException() final;
         // this is where we really generate the debug report

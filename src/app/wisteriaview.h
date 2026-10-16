@@ -13,10 +13,13 @@
 #include "../ui/controls/sidebar.h"
 #include "../ui/dialogs/editors/insertgraphdlg.h"
 #include "../util/windowcontainer.h"
+#include <algorithm>
 #include <functional>
+#include <map>
 #include <optional>
 #include <vector>
 #include <wx/aui/auibar.h>
+#include <wx/datetime.h>
 #include <wx/docview.h>
 #include <wx/grid.h>
 #include <wx/menu.h>
@@ -24,6 +27,7 @@
 #include <wx/ribbon/bar.h>
 #include <wx/ribbon/buttonbar.h>
 #include <wx/splitter.h>
+#include <wx/timer.h>
 #include <wx/wx.h>
 
 namespace Wisteria::UI
@@ -57,6 +61,20 @@ class WisteriaView final : public wxView
     const std::vector<Wisteria::Canvas*>& GetPages() const noexcept
         {
         return m_pages;
+        }
+
+    /// @brief Finds a page by its GUID.
+    /// @param guid The GUID of the page to look for.
+    /// @returns The index of the page, or @c std::nullopt if not found.
+    [[nodiscard]]
+    std::optional<size_t> FindPageById(const wxString& guid) const
+        {
+        const auto foundPage = std::ranges::find_if(
+            m_pages, [&guid](const auto* page)
+            { return page != nullptr && page->GetGuid().CmpNoCase(guid) == 0; });
+        return foundPage == m_pages.cend() ? std::nullopt :
+                                             std::optional<size_t>{ static_cast<size_t>(
+                                                 std::distance(m_pages.cbegin(), foundPage)) };
         }
 
     /// @brief Re-applies the global print settings (orientation, paper size) to all pages
@@ -422,6 +440,26 @@ class WisteriaView final : public wxView
     /// @brief Serializes the in-memory project, tears it down, and rebuilds it from
     ///     that serialization, preserving the current sidebar selection and sash position.
     void ReloadProject();
+
+    /// @brief Starts or stops polling the project's local dataset files for changes.
+    /// @details The setting is stored in the project, so it is saved with it.
+    /// @param enable Whether polling should be active.
+    /// @param userInitiated @c true if the user toggled this. This explains why polling can't
+    ///     be enabled and marks the project as modified.
+    void SetAutoRefresh(bool enable, bool userInitiated = true);
+    /// @brief Records the current state of every local dataset file.
+    void SnapshotSourceFiles();
+    /// @returns The current state of every local dataset file.
+    [[nodiscard]]
+    std::map<wxString, std::pair<wxDateTime, wxFileOffset>> ReadSourceFileStates() const;
+    /// @brief Checks whether an imported dataset's source file can be read.
+    /// @param datasetFilePath The path of a dataset's source file.
+    /// @returns @c false if the file is missing or another process has it locked
+    ///     (e.g., while it is being saved).
+    [[nodiscard]]
+    static bool IsDatasetFileReadable(const wxString& datasetFilePath);
+    void OnAutoRefreshTimer(wxTimerEvent& event);
+
     void PopulateConstantsGrid();
     void BuildGraphMenus();
 
@@ -537,6 +575,16 @@ class WisteriaView final : public wxView
     wxRibbonButtonBar* m_sourcesButtonBar{ nullptr };
     wxGrid* m_constantsGrid{ nullptr };
     bool m_sidebarShown{ true };
+
+    constexpr static int AUTO_REFRESH_INTERVAL{ 5000 }; // in milliseconds
+    wxTimer m_autoRefreshTimer;
+    bool m_autoRefresh{ false };
+    // true while a reload is underway, so timer ticks don't re-enter it
+    bool m_isProcessing{ false };
+    // dataset file states from the last poll
+    std::map<wxString, std::pair<wxDateTime, wxFileOffset>> m_sourceFileStates;
+    // a change was seen, but the file is still being written or is locked
+    bool m_refreshPending{ false };
 
     Wisteria::ReportBuilder m_reportBuilder;
     std::vector<Wisteria::Canvas*> m_pages;
