@@ -2954,9 +2954,10 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
             }
 
         html += wxString::Format(
-            L"<section class=\"page\" id=\"page-%zu\" data-index=\"%zu\" data-layer=\"%s\" "
-            "aria-label=\"%s\" tabindex=\"-1\">\n",
-            pageIndex, pageIndex, SVGReportPrintout::EscapeXmlAttr(canvas->GetLayer()),
+            L"<section class=\"page\" id=\"page-%zu\" data-index=\"%zu\" data-guid=\"%s\" "
+            "data-layer=\"%s\" aria-label=\"%s\" tabindex=\"-1\">\n",
+            pageIndex, pageIndex, SVGReportPrintout::EscapeXmlAttr(canvas->GetGuid()),
+            SVGReportPrintout::EscapeXmlAttr(canvas->GetLayer()),
             SVGReportPrintout::EscapeXmlAttr(pageTitle));
         if (filterGroups.empty())
             {

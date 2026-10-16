@@ -14,6 +14,7 @@
 
 #include "../ui/dialogs/imageexportdlg.h"
 #include "../ui/dialogs/radioboxdlg.h"
+#include "../util/guid.h"
 #include "graphitems.h"
 #include "image.h"
 #include "label.h"
@@ -363,6 +364,17 @@ namespace Wisteria
         const wxString& GetNameTemplate() const noexcept
             {
             return m_nameTemplate;
+            }
+
+        /// @brief Sets the GUID identifying this page.
+        /// @param guid The GUID string.
+        void SetGuid(const wxString& guid) { m_guid = guid; }
+
+        /// @returns The GUID identifying this page.
+        [[nodiscard]]
+        const wxString& GetGuid() const noexcept
+            {
+            return m_guid;
             }
 
         /// @brief Sets the layer that this page belongs to (for SVG layer filtering).
@@ -1124,6 +1136,7 @@ namespace Wisteria
         wxString m_exportHelpTopic;
 
         wxString m_nameTemplate;
+        wxString m_guid{ Wisteria::GenerateGuid() };
         wxString m_layer;
 
         // titles

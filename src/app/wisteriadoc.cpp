@@ -361,6 +361,9 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
                            wxSimpleJSON::Create(L"{\"name\": \"" + EscapeJsonStr(pageName) +
                                                 L"\", \"rows\": []}");
 
+        // GUID
+        pageObj->Add(L"guid", canvas->GetGuid());
+
         // per-page watermark
         const auto& pageWatermark = canvas->GetWatermark();
         if (!pageWatermark.m_label.empty())

@@ -3,8 +3,15 @@
 A page can contain the following properties:
 
 - `"name"`: A string value representing the name of the page.
+- `"guid"`: A string value uniquely identifying the page (e.g., `"550E8400-E29B-41D4-A716-446655440000"`). \
+  This is optional. If omitted, a new one is generated each time the report is loaded. \
+  Saved projects write this value so that it remains the same, and it is included in HTML dashboard exports (as the `data-guid` attribute of each page).
 - `"page-numbering"`: Resets the internal page counter to 1. \
   Note that the page number can be referenced via the function ``PageNumber()``.
+- `"layer"`: A string value assigning the page to a layer. \
+  When the report is exported to various formats, a checkbox is shown for each layer that can be used to show or hide all of the pages in that layer. \
+  (Pages without a layer are always shown.) \
+  Note that constants can be used in the layer name.
 - `"watermark"`: A watermark to add to each page. \
   Note that this will override the report's watermark section for this page. \
   Available options are:
