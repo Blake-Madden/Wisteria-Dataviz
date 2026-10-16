@@ -60,7 +60,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FilterableGraph, Wisteria::GraphItem
             m_variants.push_back(Variant{ label, buildGraph(subset, label) });
             }
 
-        m_activeIndex = FindVariant(defaultValue).value_or(0);
+        const auto defaultIndex = FindVariant(defaultValue);
+        if (!defaultIndex.has_value() && !defaultValue.empty())
+            {
+            wxLogWarning(_(L"'%s': default filter value not found in column '%s'. "
+                           "Falling back to '%s'."),
+                         defaultValue, filterColumn, allLabel);
+            }
+        m_activeIndex = defaultIndex.value_or(0);
         AdoptLayoutFrom(*GetActiveGraph());
         }
 
