@@ -220,6 +220,10 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
         return m_appSettings;
         }
 
+    /// @brief Shows the Options dialog, saves the settings, and refreshes open projects.
+    /// @param parent The parent window of the dialog.
+    void ShowOptionsDialog(wxWindow* parent);
+
     /// @returns The data file a newly created project should import, or an
     ///     empty string if none.
     [[nodiscard]]
@@ -457,7 +461,7 @@ constexpr wxWindowID ID_PDF_EXPORT{ wxID_HIGHEST + 57 };
 constexpr wxWindowID ID_PPTX_EXPORT{ wxID_HIGHEST + 82 };
 constexpr wxWindowID ID_HTML_EXPORT{ wxID_HIGHEST + 91 };
 constexpr wxWindowID ID_ODP_EXPORT{ wxID_HIGHEST + 92 };
-constexpr wxWindowID ID_PRINT_SETUP{ wxID_HIGHEST + 58 };
+constexpr wxWindowID ID_OPTIONS{ wxID_HIGHEST + 58 };
 constexpr wxWindowID ID_PROJECT_SETTINGS{ wxID_HIGHEST + 59 };
 
 // Tools

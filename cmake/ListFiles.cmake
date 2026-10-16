@@ -8,7 +8,7 @@ pdfreader[.]cpp|benchmark[.]cpp|\
 listctrlex[.]cpp|listctrlexdataprovider[.]cpp|searchpanel[.]cpp|warningmanager[.]cpp|\
 screenshot[.]cpp|idhelpers[.]cpp|mainframe[.]cpp|insertpagedlg[.]cpp|objectgallery[.]cpp|warningmessagesdlg[.]cpp|startpage[.]cpp|\
 htmltablepanel[.]cpp|htmltablewinprintout[.]cpp|listctrlitemviewdlg[.]cpp|listdlg[.]cpp|\
-listctrlsortdlg[.]cpp|filelistdlg[.]cpp|functionbrowserdlg[.]cpp|getdirdlg[.]cpp|projectsettingsdlg[.]cpp|\
+listctrlsortdlg[.]cpp|filelistdlg[.]cpp|functionbrowserdlg[.]cpp|getdirdlg[.]cpp|projectsettingsdlg[.]cpp|optionsdlg[.]cpp|\
 gridexportdlg[.]cpp|datasetimportdlg[.]cpp|archivedlg[.]cpp|edittextdlg[.]cpp|excelpreviewdlg[.]cpp|sidebar[.]cpp|\
 sidebarbook[.]cpp|downloadfile[.]cpp|formattedtextctrl[.]cpp|gtktextview-helper[.]cpp|\
 demo[.]cpp|main[.]cpp|src/app/|utfcpp/tests/|utfcpp/samples/|utfcpp/extern|wxpdfdoc/)")
@@ -18,7 +18,7 @@ set(WISTERIA_GUI_LIB_EXCLUDE_FILTER "(testmainc|formattedtextctrl[.]cpp|gtktextv
 codeeditor[.]cpp|functionbrowserdlg[.]cpp|dialogs/editors/insert[^/]*[.]cpp|objectgallery[.]cpp|\
 axisoptionspanel[.]cpp|accessibilityoptionspanel[.]cpp|benchmark[.]cpp|\
 dialogs/insert[^/]*[.]cpp|demo[.]cpp|main[.]cpp|src/app/|\
-utfcpp/tests/|utfcpp/samples/|utfcpp/extern|pdfreportprintout[.]cpp|projectsettingsdlg[.]cpp|wxpdfdoc/)")
+utfcpp/tests/|utfcpp/samples/|utfcpp/extern|pdfreportprintout[.]cpp|projectsettingsdlg[.]cpp|optionsdlg[.]cpp|wxpdfdoc/)")
 
 # Exclusion filter for main application (in addition to other filters)
 set(WISTERIA_APP_EXCLUDE_FILTER "(testmainc|formattedtextctrl[.]cpp|gtktextview-helper[.]cpp|\

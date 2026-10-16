@@ -184,7 +184,7 @@ class WisteriaView final : public wxView
     void OnPrintAll(wxCommandEvent& event);
     void OnBackstagePrint(wxCommandEvent& event);
     void PrintAllPages(bool prompt, int copies);
-    void OnPrintSetup(wxCommandEvent& event);
+    void OnOptions(wxCommandEvent& event);
     void OnSvgExport(wxCommandEvent& event);
     void OnHtmlExport(wxCommandEvent& event);
     void OnPdfExport(wxCommandEvent& event);

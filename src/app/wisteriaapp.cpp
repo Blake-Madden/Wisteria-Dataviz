@@ -9,6 +9,7 @@
 #include "wisteriaapp.h"
 #include "../data/dataset.h"
 #include "../import/text_matrix.h"
+#include "../ui/dialogs/optionsdlg.h"
 #include "wisteriadoc.h"
 #include "wisteriaview.h"
 #include <algorithm>
@@ -138,6 +139,35 @@ bool WisteriaApp::OnInit()
 
     return true;
     // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
+    }
+
+//-------------------------------------------
+void WisteriaApp::ShowOptionsDialog(wxWindow* parent)
+    {
+    Wisteria::UI::OptionsDlg dlg(parent);
+    dlg.LoadFromSettings(*GetAppSettings());
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+    dlg.ApplyToSettings(*GetAppSettings());
+    GetAppSettings()->SaveSettingsFile();
+
+    GetMainFrameEx()->SetLogAutoRefresh(GetAppSettings()->IsLogAutoRefresh());
+    wxLog::SetVerbose(GetAppSettings()->IsLogVerbose());
+
+    for (auto* docBase : GetDocManager()->GetDocuments())
+        {
+        const auto* doc = dynamic_cast<wxDocument*>(docBase);
+        if (doc == nullptr)
+            {
+            continue;
+            }
+        if (auto* view = dynamic_cast<WisteriaView*>(doc->GetFirstView()); view != nullptr)
+            {
+            view->RefreshPagePrintSettings();
+            }
+        }
     }
 
 //-------------------------------------------
@@ -467,29 +497,8 @@ void WisteriaApp::LoadInterface()
     GetMainFrame()->Bind(
         wxEVT_RIBBONBUTTONBAR_CLICKED,
         [this]([[maybe_unused]]
-               wxCommandEvent& event)
-        {
-            wxPageSetupDialogData pageSetupData;
-            wxPrintData printData;
-
-            // apply global settings
-            auto& settings = wxGetApp().GetAppSettings();
-            printData.SetOrientation(
-                static_cast<wxPrintOrientation>(settings->GetPrintOrientation()));
-            printData.SetPaperId(settings->GetPaperId());
-
-            pageSetupData.SetPrintData(printData);
-
-            wxPageSetupDialog dialog(GetMainFrame(), &pageSetupData);
-            if (dialog.ShowModal() == wxID_OK)
-                {
-                wxPrintData updatedData = dialog.GetPageSetupData().GetPrintData();
-                settings->SetPrintOrientation(updatedData.GetOrientation());
-                settings->SetPaperId(updatedData.GetPaperId());
-                settings->SaveSettingsFile();
-                }
-        },
-        ID_PRINT_SETUP);
+               wxCommandEvent& event) { ShowOptionsDialog(GetMainFrame()); },
+        ID_OPTIONS);
 
     // capture window state before the frame is destroyed
     GetMainFrame()->Bind(
@@ -993,10 +1002,6 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                   ReadSvgIcon(L"images/sort.svg"),
                                   _(L"Reorder or remove the project's pages"));
         pagesButtonBar->SetKeyTip(ID_REARRANGE_PAGES, _DT(L"R"));
-        pagesButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Layout"),
-                                  ReadSvgIcon(L"images/print-setup.svg"),
-                                  _(L"Configure print settings"));
-        pagesButtonBar->SetKeyTip(ID_PRINT_SETUP, _DT(L"G"));
         pagesButtonBar->AddButton(ID_REFRESH_ALL, _(L"Refresh All"),
                                   ReadSvgIcon(L"images/reload.svg"), _(L"Reload the project"));
         pagesButtonBar->SetKeyTip(ID_REFRESH_ALL, _DT(L"L"));
@@ -1166,19 +1171,19 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         }
     else
         {
-        // Print panel
-        auto* printPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Page"));
-        printPanel->SetKeyTip(_DT(L"R"));
-        auto* printButtonBar = new wxRibbonButtonBar(printPanel, wxID_ANY);
-        printButtonBar->AddButton(ID_PRINT_SETUP, _(L"Page Layout"),
-                                  ReadSvgIcon(L"images/print-setup.svg"),
-                                  _(L"Configure page view settings"));
-        printButtonBar->SetKeyTip(ID_PRINT_SETUP, _DT(L"G"));
-
         // Log tab
         LoadRibbonLogPage(ribbon);
         ribbon->SetPageKeyTip(GetMainFrameEx()->GetLogRibbonPage(), _DT(L"L"));
         }
+
+    // Tools panel on the Home tab
+    auto* toolsPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Tools"));
+    toolsPanel->SetKeyTip(_DT(L"T"));
+    auto* toolsButtonBar = new wxRibbonButtonBar(toolsPanel, wxID_ANY);
+    toolsButtonBar->AddButton(ID_OPTIONS, _(L"Options"),
+                              ReadSvgIcon(L"images/project-settings.svg"),
+                              _(L"Edit the application's settings"));
+    toolsButtonBar->SetKeyTip(ID_OPTIONS, _DT(L"P"));
 
     // Help tab
     auto* helpPage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Help"));
@@ -1190,12 +1195,12 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
     if (isProjectRibbon)
         {
         // Tools panel (project frames only, navigates to main frame log tab)
-        auto* toolsPanel = new wxRibbonPanel(helpPage, wxID_ANY, _(L"Tools"));
-        toolsPanel->SetKeyTip(_DT(L"C"));
-        auto* toolsButtonBar = new wxRibbonButtonBar(toolsPanel, wxID_ANY);
-        toolsButtonBar->AddButton(ID_VIEW_LOG_REPORT, _(L"Log"),
-                                  ReadSvgIcon(L"images/log-book.svg"), _(L"View the log report"));
-        toolsButtonBar->SetKeyTip(ID_VIEW_LOG_REPORT, _DT(L"B"));
+        auto* logPanel = new wxRibbonPanel(helpPage, wxID_ANY, _(L"Tools"));
+        logPanel->SetKeyTip(_DT(L"C"));
+        auto* logButtonBar = new wxRibbonButtonBar(logPanel, wxID_ANY);
+        logButtonBar->AddButton(ID_VIEW_LOG_REPORT, _(L"Log"), ReadSvgIcon(L"images/log-book.svg"),
+                                _(L"View the log report"));
+        logButtonBar->SetKeyTip(ID_VIEW_LOG_REPORT, _DT(L"B"));
         }
 
     auto* aboutPanel = new wxRibbonPanel(helpPage, wxID_ANY, _(L"About"));

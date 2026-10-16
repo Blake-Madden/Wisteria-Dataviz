@@ -188,6 +188,7 @@ SET(APP_WISTERIA_SRC
     src/ui/dialogs/odpexportdlg.cpp
     src/ui/dialogs/odspreviewdlg.cpp
     src/ui/dialogs/opacitydlg.cpp
+    src/ui/dialogs/optionsdlg.cpp
     src/ui/dialogs/pageselectiondlg.cpp
     src/ui/dialogs/pdfexportdlg.cpp
     src/ui/dialogs/pptxexportdlg.cpp

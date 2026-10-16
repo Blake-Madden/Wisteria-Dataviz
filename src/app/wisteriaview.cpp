@@ -298,8 +298,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPrintAll, this, wxID_PRINT);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPrintAll, this, wxID_PRINT);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnBackstagePrint, this, ID_BACKSTAGE_PRINT_NOW);
-    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnPrintSetup, this, ID_PRINT_SETUP);
-    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPrintSetup, this, ID_PRINT_SETUP);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnOptions, this, ID_OPTIONS);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnOptions, this, ID_OPTIONS);
 
     // bind SVG export button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnSvgExport, this, ID_SVG_EXPORT);
@@ -1200,40 +1200,9 @@ void WisteriaView::OnSidebarClick(const wxCommandEvent& event)
     }
 
 //-------------------------------------------
-void WisteriaView::OnPrintSetup([[maybe_unused]] wxCommandEvent& event)
+void WisteriaView::OnOptions([[maybe_unused]] wxCommandEvent& event)
     {
-    if (m_pages.empty())
-        {
-        return;
-        }
-
-    wxPageSetupDialogData pageSetupData;
-    wxPrintData printData = m_pages.front()->GetPrinterSettings();
-
-    // apply global settings
-    auto& settings = wxGetApp().GetAppSettings();
-    printData.SetOrientation(static_cast<wxPrintOrientation>(settings->GetPrintOrientation()));
-    printData.SetPaperId(settings->GetPaperId());
-
-    pageSetupData.SetPrintData(printData);
-
-    wxPageSetupDialog dialog(m_frame, &pageSetupData);
-    if (dialog.ShowModal() == wxID_OK)
-        {
-        wxPrintData updatedData = dialog.GetPageSetupData().GetPrintData();
-        settings->SetPrintOrientation(updatedData.GetOrientation());
-        settings->SetPaperId(updatedData.GetPaperId());
-        settings->SaveSettingsFile();
-        for (auto* docBase : wxGetApp().GetDocManager()->GetDocuments())
-            {
-            if (auto* view =
-                    dynamic_cast<WisteriaView*>(dynamic_cast<wxDocument*>(docBase)->GetFirstView());
-                view != nullptr)
-                {
-                view->RefreshPagePrintSettings();
-                }
-            }
-        }
+    wxGetApp().ShowOptionsDialog(m_frame);
     }
 
 //-------------------------------------------
