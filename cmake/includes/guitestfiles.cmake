@@ -26,6 +26,7 @@ SET(TEST_SRC_FILES
     histogramrendertests.cpp
     imagetests.cpp
     infleszrendertests.cpp
+    ishikawadiagramrendertests.cpp
     jittertests.cpp
     jointests.cpp
     labeltests.cpp

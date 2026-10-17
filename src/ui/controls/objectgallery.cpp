@@ -118,6 +118,8 @@ namespace Wisteria::UI
             return _(L"Social Sciences");
         case GalleryGroup::Sports:
             return _(L"Sports");
+        case GalleryGroup::Spc:
+            return _(L"SPC");
             }
         return {};
         }
@@ -143,6 +145,8 @@ namespace Wisteria::UI
             return L"images/chart-social.svg";
         case GalleryGroup::Sports:
             return L"images/chart-sports.svg";
+        case GalleryGroup::Spc:
+            return L"images/chart-spc.svg";
             }
         return {};
         }
@@ -192,6 +196,8 @@ namespace Wisteria::UI
             return L"nightingale-rose";
         case GalleryItemType::BulletChart:
             return L"bullet-chart";
+        case GalleryItemType::IshikawaDiagram:
+            return L"ishikawa-diagram";
         case GalleryItemType::ChoroplethMap:
             return L"choropleth";
         case GalleryItemType::GanttChart:

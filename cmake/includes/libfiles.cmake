@@ -69,6 +69,7 @@ SET(WISTERIA_SRC
     src/graphs/heatmap.cpp
     src/graphs/histogram.cpp
     src/graphs/inflesz.cpp
+    src/graphs/ishikawadiagram.cpp
     src/graphs/likertchart.cpp
     src/graphs/lineplot.cpp
     src/graphs/lixgauge.cpp
@@ -121,6 +122,7 @@ SET(WISTERIA_SRC
     src/ui/dialogs/editors/axisoptionspanel.cpp
     src/ui/dialogs/editors/filterablegraphdlg.cpp
     src/ui/dialogs/editors/insert_bullet_chart_dlg.cpp
+    src/ui/dialogs/editors/insert_ishikawa_diagram_dlg.cpp
     src/ui/dialogs/editors/insert_nightingale_rose_chart_dlg.cpp
     src/ui/dialogs/editors/insert_waterfallchart_dlg.cpp
     src/ui/dialogs/editors/insertboxplotdlg.cpp

@@ -2,6 +2,7 @@
 
 ## 1.2.2
 
+- Added Ishikawa Diagram.
 - Added Dueling Pie Chart.
 - Added Pictograph.
 - Added Du Bois Spiral Chart.

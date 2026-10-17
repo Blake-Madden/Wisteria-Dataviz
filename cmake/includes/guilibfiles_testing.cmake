@@ -71,6 +71,7 @@ SET(WISTERIA_SRC
     ../../src/graphs/heatmap.cpp
     ../../src/graphs/histogram.cpp
     ../../src/graphs/inflesz.cpp
+    ../../src/graphs/ishikawadiagram.cpp
     ../../src/graphs/likertchart.cpp
     ../../src/graphs/lineplot.cpp
     ../../src/graphs/lixgauge.cpp
@@ -128,7 +129,6 @@ SET(WISTERIA_SRC
     ../../src/reporting/reporttableloader.cpp
     ../../src/reporting/svgreportprintout.cpp
     ../../src/ui/app.cpp
-    ../../src/ui/controls/dataguidectrl.cpp
     ../../src/ui/controls/htmltablewin.cpp
     ../../src/ui/controls/htmltablewinprintout.cpp
     ../../src/ui/controls/listctrlex.cpp

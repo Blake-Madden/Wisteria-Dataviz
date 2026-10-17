@@ -13,6 +13,7 @@ images/chart-basic.svg
 images/chart-business.svg
 images/chart-education.svg
 images/chart-social.svg
+images/chart-spc.svg
 images/chart-sports.svg
 images/chart-statistical.svg
 images/chart-survey.svg
@@ -58,6 +59,7 @@ images/histogram.svg
 images/home-dark-mode.svg
 images/home.svg
 images/image.svg
+images/ishikawa.svg
 images/join.svg
 images/kpi-card.svg
 images/label.svg

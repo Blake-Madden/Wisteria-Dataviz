@@ -214,6 +214,108 @@ namespace Wisteria
 
     //---------------------------------------------------
     std::shared_ptr<Graphs::Graph2D>
+    ReportBuilder::LoadIshikawaDiagram(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                                       size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(L"dataset")->AsString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for Ishikawa diagram."), dsName)
+                    .ToUTF8());
+            }
+
+        const auto branchesNode = graphNode->GetProperty(L"branches");
+        if (!branchesNode->IsOk() || branchesNode->AsNodes().empty())
+            {
+            throw std::runtime_error(_(L"Branches not defined for Ishikawa diagram.").ToUTF8());
+            }
+
+        auto ishikawa = std::make_shared<Graphs::IshikawaDiagram>(canvas);
+        ishikawa->SetPropertyTemplate(L"dataset", dsName);
+        ishikawa->SetColorScheme(LoadColorScheme(graphNode->GetProperty(L"color-scheme")));
+
+        if (graphNode->HasProperty(L"monochrome"))
+            {
+            ishikawa->SetMonochrome(graphNode->GetProperty(L"monochrome")->AsBool());
+            }
+        if (graphNode->HasProperty(L"show-empty-branches"))
+            {
+            ishikawa->ShowEmptyBranches(graphNode->GetProperty(L"show-empty-branches")->AsBool());
+            }
+        if (graphNode->HasProperty(L"show-branch-labels"))
+            {
+            ishikawa->ShowBranchLabels(graphNode->GetProperty(L"show-branch-labels")->AsBool());
+            }
+        if (graphNode->HasProperty(L"tapered"))
+            {
+            ishikawa->SetTaperedLines(graphNode->GetProperty(L"tapered")->AsBool());
+            }
+        if (graphNode->HasProperty(L"show-cause-counts"))
+            {
+            ishikawa->ShowCauseCounts(graphNode->GetProperty(L"show-cause-counts")->AsBool());
+            }
+
+        std::vector<Graphs::IshikawaDiagram::Branch> branches;
+        for (const auto& branchNode : branchesNode->AsNodes())
+            {
+            Graphs::IshikawaDiagram::Branch branch;
+            branch.m_label = ExpandConstants(branchNode->GetProperty(L"label")->AsString());
+            branch.m_column = ExpandConstants(branchNode->GetProperty(L"variable")->AsString());
+            if (branchNode->HasProperty(L"causes"))
+                {
+                for (const auto& cause : branchNode->GetProperty(L"causes")->AsStrings())
+                    {
+                    branch.m_constants.push_back(ExpandConstants(cause));
+                    }
+                }
+            if (const auto subNodes = branchNode->GetProperty(L"sub-causes"); subNodes->IsOk())
+                {
+                for (const auto& subNode : subNodes->AsNodes())
+                    {
+                    // the sub-causes have to say which cause they belong to
+                    const wxString parentCause{
+                        subNode->HasProperty(L"cause") ?
+                            ExpandConstants(subNode->GetProperty(L"cause")->AsString()) :
+                            wxString{}
+                    };
+                    if (parentCause.empty())
+                        {
+                        throw std::runtime_error(
+                            wxString::Format(_(L"%s: a sub-cause entry on the branch '%s' must "
+                                               "specify the cause it belongs to."),
+                                             dsName, branch.m_label)
+                                .ToUTF8());
+                        }
+                    Graphs::IshikawaDiagram::SubCauses subCauses{
+                        parentCause,
+                        ExpandConstants(subNode->GetProperty(L"variable")->AsString()),
+                        {}
+                    };
+                    if (subNode->HasProperty(L"sub-causes"))
+                        {
+                        for (const auto& subCause :
+                             subNode->GetProperty(L"sub-causes")->AsStrings())
+                            {
+                            subCauses.m_constants.push_back(ExpandConstants(subCause));
+                            }
+                        }
+                    branch.m_subCauses.push_back(std::move(subCauses));
+                    }
+                }
+            branches.push_back(std::move(branch));
+            }
+
+        ishikawa->SetData(foundPos->second,
+                          ExpandConstants(graphNode->GetProperty(L"effect")->AsString()), branches);
+
+        LoadGraph(graphNode, canvas, currentRow, currentColumn, ishikawa);
+        return ishikawa;
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D>
     ReportBuilder::LoadFunnelChart(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
                                    size_t& currentRow, size_t& currentColumn)
         {

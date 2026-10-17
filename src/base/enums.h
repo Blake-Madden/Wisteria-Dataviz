@@ -823,7 +823,9 @@ namespace Wisteria
         /// @brief Social sciences graphs (W-curve plots, regression roadmaps).
         Social,
         /// @brief Sports graphs (win/loss sparklines).
-        Sports
+        Sports,
+        /// @brief Statistical process control graphs (Ishikawa diagrams).
+        Spc
         };
 
     /// @brief Special-case handling for an object gallery item.
@@ -883,7 +885,8 @@ namespace Wisteria
         DuBoisSpiralChart,
         DuelingPieChart,
         Pictograph,
-        FilteredGraph
+        FilteredGraph,
+        IshikawaDiagram
         };
     } // namespace Wisteria
 

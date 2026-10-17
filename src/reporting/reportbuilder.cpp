@@ -55,6 +55,10 @@ namespace Wisteria
             {
             return LoadBulletChart(graphNode, canvas, currentRow, currentColumn);
             }
+        if (type.CmpNoCase(L"ishikawa-diagram") == 0)
+            {
+            return LoadIshikawaDiagram(graphNode, canvas, currentRow, currentColumn);
+            }
         if (type.CmpNoCase(L"waterfall-chart") == 0)
             {
             return LoadWaterfallChart(graphNode, canvas, currentRow, currentColumn);

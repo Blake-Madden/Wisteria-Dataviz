@@ -15,6 +15,7 @@
 #include "../ui/dialogs/datasetimportdlg.h"
 #include "../ui/dialogs/editors/filterablegraphdlg.h"
 #include "../ui/dialogs/editors/insert_bullet_chart_dlg.h"
+#include "../ui/dialogs/editors/insert_ishikawa_diagram_dlg.h"
 #include "../ui/dialogs/editors/insert_nightingale_rose_chart_dlg.h"
 #include "../ui/dialogs/editors/insert_waterfallchart_dlg.h"
 #include "../ui/dialogs/editors/insertboxplotdlg.h"
@@ -411,6 +412,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaView::OnGraphDropdown, this,
                   ID_INSERT_GRAPH_STATISTICAL);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaView::OnGraphDropdown, this,
+                  ID_INSERT_GRAPH_SPC);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaView::OnGraphDropdown, this,
                   ID_INSERT_GRAPH_SURVEY);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED, &WisteriaView::OnGraphDropdown, this,
                   ID_INSERT_GRAPH_EDUCATION);
@@ -457,6 +460,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
                   ID_NEW_DUELING_PIE_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertPictograph, this, ID_NEW_PICTOGRAPH);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertBulletChart, this, ID_NEW_BULLET_CHART);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertIshikawaDiagram, this,
+                  ID_NEW_ISHIKAWA_DIAGRAM);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWaterfallChart, this, ID_NEW_WATERFALL_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertFunnelChart, this, ID_NEW_FUNNEL_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWilmarthBridgePlot, this,
@@ -2532,6 +2537,7 @@ void WisteriaView::UpdateGraphButtonStates() const
         m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_BASIC, true);
         m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_BUSINESS, true);
         m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_STATISTICAL, true);
+        m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SPC, true);
         m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SURVEY, true);
         m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_EDUCATION, true);
         m_graphButtonBar->EnableButton(ID_INSERT_GRAPH_SOCIAL, true);
@@ -2584,6 +2590,10 @@ void WisteriaView::OnGraphDropdown(wxCommandEvent& event)
     else if (id == ID_INSERT_GRAPH_STATISTICAL)
         {
         dynamic_cast<wxRibbonButtonBarEvent&>(event).PopupMenu(&m_statisticalGraphMenu);
+        }
+    else if (id == ID_INSERT_GRAPH_SPC)
+        {
+        dynamic_cast<wxRibbonButtonBarEvent&>(event).PopupMenu(&m_spcGraphMenu);
         }
     else if (id == ID_INSERT_GRAPH_SURVEY)
         {
@@ -2673,6 +2683,10 @@ void WisteriaView::BuildGraphMenus()
                L"images/waterfallchart.svg");
     appendItem(m_businessGraphMenu, ID_NEW_FUNNEL_CHART, _(L"Funnel Chart..."),
                L"images/funnel.svg");
+
+    // SPC graphs
+    appendItem(m_spcGraphMenu, ID_NEW_ISHIKAWA_DIAGRAM, _(L"Ishikawa Diagram..."),
+               L"images/ishikawa.svg");
 
     // Statistical graphs
     appendItem(m_statisticalGraphMenu, ID_NEW_HISTOGRAM, _(L"Histogram..."),
@@ -3442,6 +3456,10 @@ void WisteriaView::EditGraphByType(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         {
         EditBulletChart(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::IshikawaDiagram)))
+        {
+        EditIshikawaDiagram(graph, canvas, graphRow, graphCol, pasteAsNew);
+        }
     else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::WaterfallChart)))
         {
         EditWaterfallChart(graph, canvas, graphRow, graphCol, pasteAsNew);
@@ -3493,6 +3511,8 @@ const std::vector<WisteriaView::FilterableGraphType>& WisteriaView::GetFilterabl
           wxCLASSINFO(CandlestickPlot) },
         { ID_NEW_BULLET_CHART, GalleryItemType::BulletChart, _(L"Bullet Chart"),
           wxCLASSINFO(BulletChart) },
+        { ID_NEW_ISHIKAWA_DIAGRAM, GalleryItemType::IshikawaDiagram, _(L"Ishikawa Diagram"),
+          wxCLASSINFO(IshikawaDiagram) },
         { ID_NEW_WATERFALL_CHART, GalleryItemType::WaterfallChart, _(L"Waterfall Chart"),
           wxCLASSINFO(WaterfallChart) },
         { ID_NEW_FUNNEL_CHART, GalleryItemType::FunnelChart, _(L"Funnel Chart"),
@@ -5998,6 +6018,73 @@ void WisteriaView::EditBulletChart(const Wisteria::Graphs::Graph2D& graph, Wiste
     try
         {
         auto plot = dlg.BuildBulletChart(&graph);
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             pasteAsNew ? dlg.GetSelectedRow() : graphRow,
+                             pasteAsNew ? dlg.GetSelectedColumn() : graphCol,
+                             Wisteria::UI::LegendPlacement::None);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertIshikawaDiagram([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = EnsureActivePage();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertIshikawaDiagramDlg dlg(canvas, &m_reportBuilder, m_frame);
+    SetDialogIcon(dlg, L"images/ishikawa.svg");
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = dlg.BuildIshikawaDiagram();
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                             Wisteria::UI::LegendPlacement::None);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::EditIshikawaDiagram(const Wisteria::Graphs::Graph2D& graph,
+                                       Wisteria::Canvas* canvas, const size_t graphRow,
+                                       const size_t graphCol, const bool pasteAsNew) const
+    {
+    Wisteria::UI::InsertIshikawaDiagramDlg dlg(
+        canvas, &m_reportBuilder, m_frame,
+        pasteAsNew ? _(L"Insert Ishikawa Diagram") : _(L"Edit Ishikawa Diagram"), wxID_ANY,
+        wxDefaultPosition, wxDefaultSize,
+        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    SetDialogIcon(dlg, L"images/ishikawa.svg");
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
+    dlg.LoadFromGraph(graph);
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = dlg.BuildIshikawaDiagram(&graph);
         PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              pasteAsNew ? dlg.GetSelectedRow() : graphRow,
                              pasteAsNew ? dlg.GetSelectedColumn() : graphCol,

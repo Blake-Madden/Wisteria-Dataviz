@@ -1144,6 +1144,11 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                           _(L"Statistical graphs"));
         graphButtonBar->SetKeyTip(ID_INSERT_GRAPH_STATISTICAL, _DT(L"S"));
 
+        graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_SPC, _(L"SPC"),
+                                          ReadSvgIcon(L"images/chart-spc.svg"),
+                                          _(L"Statistical process control graphs"));
+        graphButtonBar->SetKeyTip(ID_INSERT_GRAPH_SPC, _DT(L"P"));
+
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_SURVEY, _(L"Survey"),
                                           ReadSvgIcon(L"images/chart-survey.svg"),
                                           _(L"Survey data graphs"));
@@ -1930,6 +1935,10 @@ wxString WisteriaApp::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph)
         {
         return _DT(L"bullet-chart");
         }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::IshikawaDiagram)))
+        {
+        return _DT(L"ishikawa-diagram");
+        }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WaterfallChart)))
         {
         return _DT(L"waterfall-chart");
@@ -2092,6 +2101,10 @@ wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase*
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BulletChart)))
         {
         return L"images/bulletchart.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::IshikawaDiagram)))
+        {
+        return L"images/ishikawa.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BarChart)))
         {
@@ -2284,6 +2297,9 @@ const std::vector<Wisteria::GalleryItemInfo>& WisteriaApp::GetGalleryItemCatalog
           GalleryGroup::Business },
         { GalleryItemType::FunnelChart, _(L"Funnel Chart"), L"images/funnel.svg",
           GalleryGroup::Business },
+        // SPC
+        { GalleryItemType::IshikawaDiagram, _(L"Ishikawa Diagram"), L"images/ishikawa.svg",
+          GalleryGroup::Spc },
         // Statistical
         { GalleryItemType::Histogram, _(L"Histogram"), L"images/histogram.svg",
           GalleryGroup::Statistical },

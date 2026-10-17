@@ -86,6 +86,59 @@ Properties for `"bullet-chart"` nodes:
 :::
 
 ::: {.minipage data-latex="{\textwidth}"}
+## Ishikawa Diagram {#ishikawa-diagram-properties .unnumbered}
+
+Properties for `"ishikawa-diagram"` nodes:
+
+- `"effect"`: The effect (problem) being analyzed, shown at the head of the diagram. \
+  Use `\n` for a line break.
+  Long text is wrapped to fit.
+- `"branches"`: An array of branch objects, drawn alternating above and below the spine. \
+  Each branch contains:
+  - `"label"`: The branch's label.
+    If omitted, a default label is used (People/Man, Machine, Material, Method, Measurement, Environment).
+  - `"variable"`: The categorical column containing the branch's causes.
+    Blank cells are skipped.
+    If omitted, `"causes"` is used instead.
+  - `"causes"`: An (optional) array of strings to use as the branch's causes, rather than a column.
+    If neither `"variable"` nor `"causes"` is specified, the branch is drawn without any causes.
+  - `"sub-causes"`: An (optional) array of items, each containing:
+    - `"cause"`: The text of a cause on this branch.
+      If the branch doesn't have this cause (e.g., it was removed from the data), these sub-causes are skipped.
+    - `"variable"`: The categorical column containing that cause's sub-causes.
+    - `"sub-causes"`: An (optional) array of strings to use as the cause's sub-causes, rather than a column.
+- `"monochrome"`: `true` to draw the diagram in the text color (and shades of it), instead of a color for each branch.
+  This is useful for printing in black and white.
+  Default is `false`.
+- `"color-scheme"`: The colors used for the branches (one per branch, repeating if needed).
+  If not specified, the default color scheme is used.
+- `"show-empty-branches"`: `false` to hide branches that have no causes.
+  Default is `true`.
+- `"show-branch-labels"`: `false` to hide the branch labels.
+- `"tapered"`: `false` to draw the spine and ribs with a constant width, instead of widening them toward the effect.
+  The default is `true`.
+- `"show-cause-counts"`: `true` to show the number of causes in each branch label (e.g., "People (3)"). The default is `false`.
+  Default is `true`.
+
+```json
+{
+  "type": "ishikawa-diagram",
+  "dataset": "SurfaceFlaws",
+  "effect": "Surface flaws",
+  "branches": [
+    {
+      "label": "Personnel",
+      "variable": "Man",
+      "sub-causes": [{ "cause": "Training", "variable": "TrainingDetails" }]
+    },
+    { "label": "Machines", "variable": "Machine" },
+    { "label": "Materials", "variable": "Material" }
+  ]
+}
+```
+:::
+
+::: {.minipage data-latex="{\textwidth}"}
 ## Waterfall Chart {#waterfall-chart-properties .unnumbered}
 
 Properties for `"waterfall-chart"` nodes:

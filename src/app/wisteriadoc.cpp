@@ -4718,7 +4718,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             }
         if (!roseChart->GetGhostedWedges().empty())
             {
-            auto ghostArray = node->GetProperty(L"ghosted-wedges");
+            auto ghostArray = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_ARRAY);
             for (const auto& [groupLabel, categoryLabel] : roseChart->GetGhostedWedges())
                 {
                 auto ghostObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
@@ -4729,6 +4729,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                     }
                 ghostArray->ArrayAdd(ghostObj);
                 }
+            node->Add(L"ghosted-wedges", ghostArray);
             }
         }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BulletChart)))
@@ -4782,7 +4783,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             }
         if (!bulletChart->GetRanges().empty())
             {
-            auto rangesArray = node->GetProperty(L"ranges");
+            auto rangesArray = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_ARRAY);
             for (const auto& range : bulletChart->GetRanges())
                 {
                 auto rangeObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
@@ -4790,7 +4791,78 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                 rangeObj->Add(L"label", range.m_label);
                 rangesArray->ArrayAdd(rangeObj);
                 }
+            node->Add(L"ranges", rangesArray);
             }
+        }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::IshikawaDiagram)))
+        {
+        const auto* ishikawa = dynamic_cast<const Wisteria::Graphs::IshikawaDiagram*>(graph);
+        node->Add(L"effect", ishikawa->GetEffect());
+        if (!ishikawa->IsShowingEmptyBranches())
+            {
+            node->Add(L"show-empty-branches", false);
+            }
+        if (!ishikawa->IsShowingBranchLabels())
+            {
+            node->Add(L"show-branch-labels", false);
+            }
+        if (!ishikawa->IsTaperedLines())
+            {
+            node->Add(L"tapered", false);
+            }
+        if (ishikawa->IsShowingCauseCounts())
+            {
+            node->Add(L"show-cause-counts", true);
+            }
+        if (ishikawa->IsMonochrome())
+            {
+            node->Add(L"monochrome", true);
+            }
+        // typed causes are written as an array of strings
+        const auto makeStringArray = [](const std::vector<wxString>& items)
+        {
+            auto array = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_ARRAY);
+            for (const auto& item : items)
+                {
+                array->ArrayAdd(item);
+                }
+            return array;
+        };
+        auto branchesArray = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_ARRAY);
+        for (const auto& branch : ishikawa->GetBranches())
+            {
+            auto branchObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+            branchObj->Add(L"label", branch.m_label);
+            if (!branch.m_column.empty())
+                {
+                branchObj->Add(L"variable", branch.m_column);
+                }
+            else if (!branch.m_constants.empty())
+                {
+                branchObj->Add(L"causes", makeStringArray(branch.m_constants));
+                }
+            if (!branch.m_subCauses.empty())
+                {
+                auto subArray = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_ARRAY);
+                for (const auto& subCauses : branch.m_subCauses)
+                    {
+                    auto subObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+                    subObj->Add(L"cause", subCauses.m_cause);
+                    if (!subCauses.m_column.empty())
+                        {
+                        subObj->Add(L"variable", subCauses.m_column);
+                        }
+                    else if (!subCauses.m_constants.empty())
+                        {
+                        subObj->Add(L"sub-causes", makeStringArray(subCauses.m_constants));
+                        }
+                    subArray->ArrayAdd(subObj);
+                    }
+                branchObj->Add(L"sub-causes", subArray);
+                }
+            branchesArray->ArrayAdd(branchObj);
+            }
+        node->Add(L"branches", branchesArray);
         }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WilmarthBridgePlot)))
         {

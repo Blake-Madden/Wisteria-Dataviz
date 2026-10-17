@@ -330,6 +330,7 @@ constexpr wxWindowID ID_INSERT_GRAPH_SURVEY{ wxID_HIGHEST + 6 };
 constexpr wxWindowID ID_INSERT_GRAPH_EDUCATION{ wxID_HIGHEST + 7 };
 constexpr wxWindowID ID_INSERT_GRAPH_SOCIAL{ wxID_HIGHEST + 8 };
 constexpr wxWindowID ID_INSERT_GRAPH_SPORTS{ wxID_HIGHEST + 9 };
+constexpr wxWindowID ID_INSERT_GRAPH_SPC{ wxID_HIGHEST + 95 };
 
 // graph button bar (for enabling/disabling)
 constexpr wxWindowID ID_GRAPH_BUTTONBAR{ wxID_HIGHEST + 10 };
@@ -355,6 +356,9 @@ constexpr wxWindowID ID_NEW_CANDLESTICK{ wxID_HIGHEST + 19 };
 constexpr wxWindowID ID_NEW_BULLET_CHART{ wxID_HIGHEST + 85 };
 constexpr wxWindowID ID_NEW_WATERFALL_CHART{ wxID_HIGHEST + 86 };
 constexpr wxWindowID ID_NEW_FUNNEL_CHART{ wxID_HIGHEST + 88 };
+
+// SPC graphs
+constexpr wxWindowID ID_NEW_ISHIKAWA_DIAGRAM{ wxID_HIGHEST + 96 };
 
 // Statistical graphs
 constexpr wxWindowID ID_NEW_HISTOGRAM{ wxID_HIGHEST + 20 };
