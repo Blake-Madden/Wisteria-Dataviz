@@ -30,6 +30,7 @@ namespace Wisteria::UI
     void OptionsDlg::LoadFromSettings(const AppSettings& settings)
         {
         m_portrait = (settings.GetPrintOrientation() == wxPORTRAIT);
+        m_landscape = !m_portrait;
         m_collate = settings.IsPrintCollated();
         m_color = settings.IsPrintColor();
         m_logAutoRefresh = settings.IsLogAutoRefresh();
@@ -108,6 +109,7 @@ namespace Wisteria::UI
         portraitRadio->SetValidator(wxGenericValidator{ &m_portrait });
         auto* landscapeRadio =
             new wxRadioButton(orientationBox->GetStaticBox(), wxID_ANY, _(L"Landscape"));
+        landscapeRadio->SetValidator(wxGenericValidator{ &m_landscape });
         orientationBox->Add(portraitRadio, wxSizerFlags{}.Border());
         orientationBox->Add(landscapeRadio, wxSizerFlags{}.Border());
 
@@ -173,10 +175,10 @@ namespace Wisteria::UI
         m_sideBarBook->GetImageList().push_back(
             wxGetApp().GetResourceManager().GetSVG(L"images/project-settings.svg"));
 
-        m_sideBarBook->AddPage(CreatePageSetupPage(m_sideBarBook), _(L"Page Setup"),
-                               ID_PAGE_SETUP_SECTION, true, 0);
         m_sideBarBook->AddPage(CreateGeneralPage(m_sideBarBook), _(L"General"), ID_GENERAL_SECTION,
-                               false, 1);
+                               true, 1);
+        m_sideBarBook->AddPage(CreatePageSetupPage(m_sideBarBook), _(L"Page Setup"),
+                               ID_PAGE_SETUP_SECTION, false, 0);
 
         mainSizer->Add(m_sideBarBook, wxSizerFlags{ 1 }.Expand().Border());
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),

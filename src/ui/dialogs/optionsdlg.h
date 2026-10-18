@@ -69,6 +69,7 @@ namespace Wisteria::UI
         std::vector<wxPaperSize> m_paperIds;
 
         bool m_portrait{ true };
+        bool m_landscape{ false };
         bool m_collate{ true };
         bool m_color{ true };
         bool m_logAutoRefresh{ false };
