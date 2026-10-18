@@ -258,7 +258,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                     // border between areas
                     padding);
                 }
-            drawArea.SetWidth(drawArea.GetWidth() - groupLabelWidth);
+            drawArea.SetWidth(std::max(drawArea.GetWidth() - groupLabelWidth, 1));
             // Free some space for the group labels above each column (even if one column).
             // First, label might be too long, so get best fitting font and measure again.
             GraphItems::Label groupHeaderLabelTemplate(GraphItems::GraphItemInfo{
@@ -306,7 +306,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                     }
                 }
 
-            drawArea.SetHeight(drawArea.GetHeight() - groupHeaderLabelHeight);
+            drawArea.SetHeight(std::max<wxCoord>(
+                drawArea.GetHeight() - static_cast<wxCoord>(groupHeaderLabelHeight), 1));
             drawArea.Offset(wxPoint(groupLabelWidth, groupHeaderLabelHeight));
             }
 

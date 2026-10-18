@@ -540,6 +540,16 @@ namespace Wisteria::Graphs
             m_calculatedRightPadding = rightAxisOverhang;
             }
 
+        // titles, caption, and overhangs may have used up all of the space
+        if (m_plotRect.GetWidth() < 1)
+            {
+            m_plotRect.SetWidth(1);
+            }
+        if (m_plotRect.GetHeight() < 1)
+            {
+            m_plotRect.SetHeight(1);
+            }
+
         // if axes from this graph are being adjusted to align with something else
         // (e.g., another graph), then adjust them now
         const auto originalPlotArea = GetPlotAreaBoundingBox();

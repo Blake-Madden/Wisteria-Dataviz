@@ -1174,7 +1174,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                         if (previousRowObject != nullptr)
                             {
                             auto bBox = previousRowObject->GetBoundingBox(dc);
-                            bBox.SetHeight(bBox.GetHeight() - rowHeightDiffForPreviousRows);
+                            bBox.SetHeight(std::max<double>(1, bBox.GetHeight() -
+                                                                   rowHeightDiffForPreviousRows));
                             bBox.Offset(
                                 wxPoint(0, -(rowHeightDiffForPreviousRows * previousRowIndex)));
                             previousRowObject->SetBoundingBox(bBox, dc, GetScaling());
@@ -1248,12 +1249,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     // and center its drawing area within that
                     boundingRect.y += ScaleToScreenAndCanvas(objectsPos->GetTopCanvasMargin(), dc);
                     boundingRect.x += ScaleToScreenAndCanvas(objectsPos->GetLeftCanvasMargin(), dc);
+                    // keep at least one pixel, as objects treat an empty box as unset
+                    // and fall back to the full canvas size
                     boundingRect.SetWidth(std::max<double>(
-                        0, boundingRect.GetWidth() -
+                        1, boundingRect.GetWidth() -
                                ScaleToScreenAndCanvas(objectsPos->GetLeftCanvasMargin(), dc) -
                                ScaleToScreenAndCanvas(objectsPos->GetRightCanvasMargin(), dc)));
                     boundingRect.SetHeight(std::max<double>(
-                        0, boundingRect.GetHeight() -
+                        1, boundingRect.GetHeight() -
                                ScaleToScreenAndCanvas(objectsPos->GetTopCanvasMargin(), dc) -
                                ScaleToScreenAndCanvas(objectsPos->GetBottomCanvasMargin(), dc)));
 
