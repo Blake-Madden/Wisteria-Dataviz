@@ -42,8 +42,10 @@ These tags are expanded dynamically when printing takes place. These tags are:
 - `@TITLE@`: The title of the printed document.
 - `@DATE@`: The date when it was printed.
 - `@TIME@`: The time when it was printed.
+- `@DATETIME@`: The date and time when it was printed.
 - `@PAGENUM@`: The current page number.
 - `@PAGESCNT@`: The number of printed pages.
+- `@USER@`: The user's name.
 
 Note that a user interface, `PrinterHeaderFooterDlg`, is also available to prompt for headers and footers.
 

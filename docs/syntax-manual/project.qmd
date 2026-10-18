@@ -12,6 +12,28 @@ The following properties are available:
   Available options:
   - `"label"`: The text to display across pages.
   - `"color"`: The watermark color (name or hex value).
+- `"print"`: Defines headers and footers for printing and PDF export. \
+  (These are not used by the other export formats.) \
+  Available options:
+  - `"header"`: The text drawn at the top of each page. \
+    Available options:
+    - `"left"`: The left-aligned text.
+    - `"center"`: The centered text.
+    - `"right"`: The right-aligned text.
+  - `"footer"`: The text drawn at the bottom of each page. \
+    Available options:
+    - `"left"`: The left-aligned text.
+    - `"center"`: The centered text.
+    - `"right"`: The right-aligned text.
+
+  The text can contain the following tags, which are expanded when the project is printed or exported:
+  - `@TITLE@`: The project's name.
+  - `@DATE@`: The date when it was printed.
+  - `@TIME@`: The time when it was printed.
+  - `@DATETIME@`: The date and time when it was printed.
+  - `@PAGENUM@`: The current page number.
+  - `@PAGESCNT@`: The number of pages.
+  - `@USER@`: The user's name.
 - `"html-export"`: Defines the options used when exporting the project as an HTML dashboard. \
   Available options:
   - `"theme"`: The name of the dashboard theme.
@@ -63,6 +85,23 @@ The following properties are available:
 ```json
 {
   "name": "RETENTION"
+}
+```
+
+A project with a header and footer:
+
+```json
+{
+  "name": "RETENTION",
+  "print": {
+    "header": {
+      "left": "@TITLE@",
+      "right": "@DATE@"
+    },
+    "footer": {
+      "center": "Page @PAGENUM@ of @PAGESCNT@"
+    }
+  }
 }
 ```
 
