@@ -4818,6 +4818,15 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             {
             node->Add(L"monochrome", true);
             }
+        if (ishikawa->GetFishStyle() != Wisteria::Graphs::IshikawaDiagram::FishStyle::Fish)
+            {
+            const auto fishStyleStr = Wisteria::ReportEnumConvert::ConvertIshikawaFishStyleToString(
+                ishikawa->GetFishStyle());
+            if (fishStyleStr.has_value())
+                {
+                node->Add(L"fish-style", fishStyleStr.value());
+                }
+            }
         // typed causes are written as an array of strings
         const auto makeStringArray = [](const std::vector<wxString>& items)
         {

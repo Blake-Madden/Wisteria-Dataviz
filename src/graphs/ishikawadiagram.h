@@ -56,6 +56,17 @@ namespace Wisteria::Graphs
         IshikawaDiagram() = default;
 
       public:
+        /// @brief The style of the fish (its head, tail, eye, and mouth).
+        enum class FishStyle
+            {
+            /// @brief No head, tail, eye, or mouth is drawn.
+            None,
+            /// @brief A fish with a simple line for the mouth.
+            Fish,
+            /// @brief A notched mouth with teeth.
+            Shark
+            };
+
         /// @brief Sub-causes for a single cause.
         struct SubCauses
             {
@@ -175,6 +186,17 @@ namespace Wisteria::Graphs
             return m_monochrome;
             }
 
+        /// @brief Sets the style of the fish (its head, tail, eye, and mouth).
+        /// @param style The fish style.
+        void SetFishStyle(const FishStyle style) noexcept { m_fishStyle = style; }
+
+        /// @returns The style of the fish (its head, tail, eye, and mouth).
+        [[nodiscard]]
+        FishStyle GetFishStyle() const noexcept
+            {
+            return m_fishStyle;
+            }
+
         /** @brief Splits typed causes into a list.
             @details Causes are separated by spaces, and a cause with several words is enclosed
                 in double quotation marks (e.g., `Speed "Operator training"`).
@@ -192,7 +214,7 @@ namespace Wisteria::Graphs
         /// @returns The default label for the branch at @c index, or an empty string
         ///     if the index is beyond the default branches.
         [[nodiscard]]
-        static wxString GetDefaultBranchLabel(const size_t index);
+        static wxString GetDefaultBranchLabel(size_t index);
 
         /** @brief Determines whether a name (e.g., a column name) matches a default branch label.
             @param index The index of the branch.
@@ -200,7 +222,7 @@ namespace Wisteria::Graphs
                 the traditional label "Man".
             @returns @c true if @c name matches the default label for the branch.*/
         [[nodiscard]]
-        static bool IsDefaultBranchName(const size_t index, const wxString& name);
+        static bool IsDefaultBranchName(size_t index, const wxString& name);
 
         /// @brief The number of branches that have a default label.
         constexpr static size_t DEFAULT_BRANCH_COUNT{ 6 };
@@ -229,6 +251,78 @@ namespace Wisteria::Graphs
             std::vector<CauseItem> m_causes;
             };
 
+        // the forked tail fin at the left end of the spine, drawn with quad bezier curves
+        class TailFin final : public GraphItems::GraphItemBase
+            {
+          public:
+            /** @brief Constructor.
+                @param spinePoint The point where the fin meets the spine.
+                @param topControl The control point for the upper lobe's curve.
+                @param bottomControl The control point for the lower lobe's curve.
+                @param notchPoint The concave notch between the two lobes.
+                @param color The fill color of the fin.*/
+            TailFin(const wxPoint& spinePoint, const wxPoint& topControl,
+                    const wxPoint& bottomControl, const wxPoint& notchPoint, const wxColour& color);
+
+            /// @private
+            [[nodiscard]]
+            wxRect GetBoundingBox(wxDC& dc) const final;
+
+          private:
+            wxRect Draw(wxDC& dc) const final;
+
+            [[nodiscard]]
+            bool HitTest(wxPoint pt, wxDC& dc) const final;
+
+            void Offset(int xOffset, int yOffset) final;
+
+            void SetBoundingBox(const wxRect& rect, wxDC& dc, double scaling) final;
+
+            wxPoint m_spinePoint;
+            wxPoint m_topControl;
+            wxPoint m_bottomControl;
+            wxPoint m_notchPoint;
+            wxColour m_color;
+            };
+
+        // the triangular fish head at the right end of the spine, drawn with rounded corners
+        class Head final : public GraphItems::GraphItemBase
+            {
+          public:
+            /** @brief Constructor.
+                @param topLeft The top-left vertex of the triangle.
+                @param bottomLeft The bottom-left vertex of the triangle.
+                @param apex The right-hand apex of the triangle.
+                @param color The fill color of the head.
+                @param featureColor The color of the eye and mouth.
+                @param fishStyle The style of the fish.
+                @param scaling The canvas scaling, used to scale the head's corners and pens.*/
+            Head(const wxPoint& topLeft, const wxPoint& bottomLeft, const wxPoint& apex,
+                 const wxColour& color, const wxColour& featureColor, const FishStyle fishStyle,
+                 const double scaling);
+
+            /// @private
+            [[nodiscard]]
+            wxRect GetBoundingBox(wxDC& dc) const final;
+
+          private:
+            wxRect Draw(wxDC& dc) const final;
+
+            [[nodiscard]]
+            bool HitTest(wxPoint pt, wxDC& dc) const final;
+
+            void Offset(int xOffset, int yOffset) final;
+
+            void SetBoundingBox(const wxRect& rect, wxDC& dc, double scaling) final;
+
+            wxPoint m_topLeft;
+            wxPoint m_bottomLeft;
+            wxPoint m_apex;
+            wxColour m_color;
+            wxColour m_featureColor;
+            FishStyle m_fishStyle;
+            };
+
         void SetAutoAccessibilityAttributes() override;
         void RecalcSizes(wxDC& dc) final;
 
@@ -240,6 +334,7 @@ namespace Wisteria::Graphs
         bool m_showCauseCounts{ false };
         bool m_taperedLines{ true };
         bool m_monochrome{ false };
+        FishStyle m_fishStyle{ FishStyle::Fish };
         };
     } // namespace Wisteria::Graphs
 

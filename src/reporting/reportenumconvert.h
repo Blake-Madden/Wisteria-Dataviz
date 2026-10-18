@@ -22,6 +22,7 @@
 #include "../graphs/choroplethmap.h"
 #include "../graphs/ganttchart.h"
 #include "../graphs/histogram.h"
+#include "../graphs/ishikawadiagram.h"
 #include "../graphs/likertchart.h"
 #include "../graphs/nightingale_rose_chart.h"
 #include "../graphs/piechart.h"
@@ -758,6 +759,24 @@ namespace Wisteria
             const auto foundValue = fadeEffects.find(value.Lower().ToStdWstring());
             return ((foundValue != fadeEffects.cend()) ?
                         std::optional<FadeEffect>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<Graphs::IshikawaDiagram::FishStyle>
+        ConvertIshikawaFishStyle(const wxString& value)
+            {
+            using FishStyle = Graphs::IshikawaDiagram::FishStyle;
+            static const std::map<std::wstring_view, FishStyle> fishStyles = {
+                { L"none", FishStyle::None },
+                { L"fish", FishStyle::Fish },
+                { L"shark", FishStyle::Shark }
+            };
+
+            const auto foundValue = fishStyles.find(value.Lower().ToStdWstring());
+            return ((foundValue != fishStyles.cend()) ?
+                        std::optional<FishStyle>(foundValue->second) :
                         std::nullopt);
             }
 
@@ -1927,6 +1946,24 @@ namespace Wisteria
                 { FadeEffect::RemainingLifetime, L"remaining-lifetime" },
                 { FadeEffect::ElapsedTime, L"elapsed-time" }
             };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts an IshikawaDiagram::FishStyle enum to its JSON string
+        ///     representation.
+        /// @param value The fish style enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertIshikawaFishStyleToString(Graphs::IshikawaDiagram::FishStyle value)
+            {
+            using FishStyle = Graphs::IshikawaDiagram::FishStyle;
+            static const std::map<FishStyle, wxString> values = { { FishStyle::None, L"none" },
+                                                                  { FishStyle::Fish, L"fish" },
+                                                                  { FishStyle::Shark, L"shark" } };
 
             const auto foundValue = values.find(value);
             return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :

@@ -95,7 +95,6 @@ namespace Wisteria::UI
         void RebuildBranchRows();
         void OnAddBranch();
         void OnRemoveBranch(size_t index);
-        void OnBranchColumnChanged(size_t index, int selection);
         void OnEditSubCauses(size_t index);
 
         /// @returns The names of the selected dataset's categorical columns.
@@ -106,7 +105,7 @@ namespace Wisteria::UI
         constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };
 
         wxScrolledWindow* m_branchPanel{ nullptr };
-        wxFlexGridSizer* m_branchGrid{ nullptr };
+        wxFlexGridSizer* m_branchSizer{ nullptr };
 
         // DDX data members
         wxString m_effect;
@@ -115,6 +114,7 @@ namespace Wisteria::UI
         bool m_showCauseCounts{ false };
         bool m_taperedLines{ true };
         bool m_monochrome{ false };
+        int m_fishStyle{ 1 };
 
         // the branches that the grid shows
         std::vector<Graphs::IshikawaDiagram::Branch> m_branches;

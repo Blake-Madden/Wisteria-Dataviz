@@ -24,13 +24,12 @@ namespace Wisteria::UI
             : wxDialog(parent, wxID_ANY, _(L"Sub-causes"), wxDefaultPosition, wxDefaultSize,
                        wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
             {
-            // the first choice means that the sub-causes are typed in
-            wxArrayString choices{ _(L"(typed sub-causes)") };
+            wxArrayString columnNames;
             if (dataset != nullptr)
                 {
                 for (const auto& column : dataset->GetCategoricalColumns())
                     {
-                    choices.Add(column.GetName());
+                    columnNames.Add(column.GetName());
                     }
                 }
 
@@ -62,50 +61,46 @@ namespace Wisteria::UI
                     }
                 }
 
+            const wxArrayString modes{ _(L"In column"), _(L"Constants") };
+
             auto* mainSizer = new wxBoxSizer(wxVERTICAL);
             auto* scroller = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition,
                                                   wxSize{ FromDIP(720), FromDIP(240) });
             scroller->SetScrollRate(0, FromDIP(10));
             auto* grid = new wxFlexGridSizer(4, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
                                                         wxSizerFlags::GetDefaultBorder() });
+            grid->AddGrowableCol(1, 1);
             grid->AddGrowableCol(2, 1);
-            grid->AddGrowableCol(3, 1);
 
             for (const wxString& header :
-                 { _(L"Cause"), _(L"Sub-causes column"), _(L"Typed sub-causes"), _(L"Sub-causes") })
+                 { _(L"Cause"), _(L"Mode"), _(L"Sub-causes"), _(L"Preview") })
                 {
                 auto* headerText = new wxStaticText(scroller, wxID_ANY, header);
                 headerText->SetFont(headerText->GetFont().Bold());
                 grid->Add(headerText);
                 }
 
-            // the sub-causes that the row will use, shown so that a wrong pick is easy to spot
-            const auto updatePreview =
-                [dataset](const wxChoice* choice, const wxTextCtrl* text, wxStaticText* preview)
+            const auto updatePreview = [dataset](const wxComboBox* combo, wxStaticText* preview)
             {
                 std::vector<wxString> subCauses;
-                if (choice->GetSelection() > 0)
+                if (combo->IsEditable())
                     {
-                    if (dataset != nullptr)
+                    subCauses = Graphs::IshikawaDiagram::ParseConstants(combo->GetValue());
+                    }
+                else if (dataset != nullptr)
+                    {
+                    const auto column = dataset->GetCategoricalColumn(combo->GetValue());
+                    if (column != dataset->GetCategoricalColumns().cend())
                         {
-                        const auto column =
-                            dataset->GetCategoricalColumn(choice->GetStringSelection());
-                        if (column != dataset->GetCategoricalColumns().cend())
+                        for (size_t row = 0; row < dataset->GetRowCount(); ++row)
                             {
-                            for (size_t row = 0; row < dataset->GetRowCount(); ++row)
+                            if (const wxString value{ column->GetValueAsLabel(row) };
+                                !value.empty())
                                 {
-                                if (const wxString value{ column->GetValueAsLabel(row) };
-                                    !value.empty())
-                                    {
-                                    subCauses.push_back(value);
-                                    }
+                                subCauses.push_back(value);
                                 }
                             }
                         }
-                    }
-                else
-                    {
-                    subCauses = Graphs::IshikawaDiagram::ParseConstants(text->GetValue());
                     }
                 wxString shown;
                 for (const auto& subCause : subCauses)
@@ -123,51 +118,104 @@ namespace Wisteria::UI
                 {
                 grid->Add(new wxStaticText(scroller, wxID_ANY, cause),
                           wxSizerFlags{}.CenterVertical());
-                auto* choice =
-                    new wxChoice(scroller, wxID_ANY, wxDefaultPosition, wxDefaultSize, choices);
-                auto* text = new wxTextCtrl(scroller, wxID_ANY);
+
+                auto* modeChoice = new wxChoice(scroller, wxID_ANY, wxDefaultPosition,
+                                                FromDIP(wxSize{ 120, -1 }), modes);
+                modeChoice->SetMinSize(FromDIP(wxSize{ 120, 24 }));
+
+                auto* valueCombo =
+                    new wxComboBox(scroller, wxID_ANY, wxString{}, wxDefaultPosition,
+                                   FromDIP(wxSize{ 200, -1 }), wxArrayString{}, wxCB_DROPDOWN);
+                valueCombo->SetMinSize(FromDIP(wxSize{ 200, 24 }));
+
                 auto* preview = new wxStaticText(scroller, wxID_ANY, wxString{});
-                choice->SetSelection(0);
+
                 const auto existing =
                     std::ranges::find_if(branch.m_subCauses, [&cause](const auto& subCauses)
                                          { return subCauses.m_cause == cause; });
                 if (existing != branch.m_subCauses.cend())
                     {
-                    const int found{ choices.Index(existing->m_column) };
-                    choice->SetSelection(
-                        (existing->m_column.empty() || found == wxNOT_FOUND) ? 0 : found);
-                    text->SetValue(Graphs::IshikawaDiagram::FormatConstants(existing->m_constants));
+                    if (existing->m_column.empty())
+                        {
+                        modeChoice->SetSelection(1);
+                        valueCombo->SetValue(
+                            Graphs::IshikawaDiagram::FormatConstants(existing->m_constants));
+                        valueCombo->SetEditable(true);
+                        }
+                    else
+                        {
+                        modeChoice->SetSelection(0);
+                        valueCombo->Append(columnNames);
+                        valueCombo->SetValue(existing->m_column);
+                        valueCombo->SetEditable(false);
+                        }
                     }
                 else
                     {
-                    // a column named after the cause is most likely its sub-causes
-                    for (int index = 1; std::cmp_less(index, choices.size()); ++index)
+                    // default to a column only when one is named after the cause;
+                    // otherwise default to Constants (blank)
+                    int matchingColumn{ wxNOT_FOUND };
+                    for (int index = 0; std::cmp_less(index, columnNames.size()); ++index)
                         {
-                        if (choices[index].CmpNoCase(cause) == 0)
+                        if (columnNames[index].CmpNoCase(cause) == 0)
                             {
-                            choice->SetSelection(index);
+                            matchingColumn = index;
                             break;
                             }
                         }
+                    if (matchingColumn != wxNOT_FOUND)
+                        {
+                        modeChoice->SetSelection(0);
+                        valueCombo->Append(columnNames);
+                        valueCombo->SetValue(columnNames[matchingColumn]);
+                        valueCombo->SetEditable(false);
+                        }
+                    else
+                        {
+                        modeChoice->SetSelection(1);
+                        valueCombo->SetEditable(true);
+                        }
                     }
-                text->Enable(choice->GetSelection() == 0);
-                updatePreview(choice, text, preview);
-                choice->Bind(
-                    wxEVT_CHOICE,
-                    [choice, text, preview, updatePreview]([[maybe_unused]] wxCommandEvent&)
-                    {
-                        text->Enable(choice->GetSelection() == 0);
-                        updatePreview(choice, text, preview);
-                    });
-                text->Bind(wxEVT_TEXT,
-                           [choice, text, preview, updatePreview]([[maybe_unused]] wxCommandEvent&)
-                           { updatePreview(choice, text, preview); });
-                grid->Add(choice, wxSizerFlags{}.Expand());
-                grid->Add(text, wxSizerFlags{}.Expand());
+
+                valueCombo->Enable(true);
+                updatePreview(valueCombo, preview);
+
+                modeChoice->Bind(wxEVT_CHOICE,
+                                 [modeChoice, valueCombo, preview, updatePreview,
+                                  columnNames]([[maybe_unused]] wxCommandEvent&)
+                                 {
+                                     if (modeChoice->GetSelection() == 0)
+                                         {
+                                         valueCombo->Clear();
+                                         valueCombo->Append(columnNames);
+                                         if (!columnNames.empty())
+                                             {
+                                             valueCombo->SetValue(columnNames[0]);
+                                             }
+                                         valueCombo->SetEditable(false);
+                                         }
+                                     else
+                                         {
+                                         valueCombo->Clear();
+                                         valueCombo->SetEditable(true);
+                                         }
+                                     updatePreview(valueCombo, preview);
+                                 });
+                valueCombo->Bind(wxEVT_COMBOBOX, [valueCombo, preview,
+                                                  updatePreview]([[maybe_unused]] wxCommandEvent&)
+                                 { updatePreview(valueCombo, preview); });
+                valueCombo->Bind(wxEVT_TEXT, [valueCombo, preview,
+                                              updatePreview]([[maybe_unused]] wxCommandEvent&)
+                                 { updatePreview(valueCombo, preview); });
+
+                grid->Add(modeChoice, wxSizerFlags{}.Expand());
+                grid->Add(valueCombo, wxSizerFlags{}.Expand());
                 grid->Add(preview, wxSizerFlags{}.CenterVertical());
-                m_choices.push_back(choice);
-                m_texts.push_back(text);
+
+                m_modeChoices.push_back(modeChoice);
+                m_valueCombos.push_back(valueCombo);
                 }
+
             if (m_causes.empty())
                 {
                 grid->Add(new wxStaticText(scroller, wxID_ANY,
@@ -192,12 +240,12 @@ namespace Wisteria::UI
             std::vector<Graphs::IshikawaDiagram::SubCauses> result;
             for (size_t i = 0; i < m_causes.size(); ++i)
                 {
-                if (m_choices[i]->GetSelection() > 0)
+                if (!m_valueCombos[i]->IsEditable())
                     {
-                    result.push_back({ m_causes[i], m_choices[i]->GetStringSelection(), {} });
+                    result.push_back({ m_causes[i], m_valueCombos[i]->GetValue(), {} });
                     }
                 else if (auto typed =
-                             Graphs::IshikawaDiagram::ParseConstants(m_texts[i]->GetValue());
+                             Graphs::IshikawaDiagram::ParseConstants(m_valueCombos[i]->GetValue());
                          !typed.empty())
                     {
                     result.push_back({ m_causes[i], wxString{}, std::move(typed) });
@@ -208,8 +256,8 @@ namespace Wisteria::UI
 
       private:
         std::vector<wxString> m_causes;
-        std::vector<wxChoice*> m_choices;
-        std::vector<wxTextCtrl*> m_texts;
+        std::vector<wxChoice*> m_modeChoices;
+        std::vector<wxComboBox*> m_valueCombos;
         };
 
     //-------------------------------------------
@@ -223,9 +271,9 @@ namespace Wisteria::UI
                          GraphDlgIncludeColorScheme)
         {
         CreateControls();
-        FinalizeControls();
+        InsertGraphDlg::FinalizeControls();
 
-        SetMinSize(GetSize());
+        wxTopLevelWindowBase::SetMinSize(GetSize());
 
         Centre();
         }
@@ -314,10 +362,11 @@ namespace Wisteria::UI
         m_branchPanel = new wxScrolledWindow(branchesBox->GetStaticBox(), wxID_ANY,
                                              wxDefaultPosition, wxSize{ -1, FromDIP(220) });
         m_branchPanel->SetScrollRate(0, FromDIP(10));
-        m_branchGrid = new wxFlexGridSizer(
+        m_branchSizer = new wxFlexGridSizer(
             5, wxSize{ wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder() });
-        m_branchGrid->AddGrowableCol(2, 1);
-        m_branchPanel->SetSizer(m_branchGrid);
+        m_branchSizer->AddGrowableCol(1, 0);
+        m_branchSizer->AddGrowableCol(2, 1);
+        m_branchPanel->SetSizer(m_branchSizer);
         branchesBox->Add(m_branchPanel, wxSizerFlags{ 1 }.Expand().Border());
 
         auto* addBranchBtn = new wxButton(branchesBox->GetStaticBox(), wxID_ANY, _(L"Add Branch"));
@@ -344,6 +393,20 @@ namespace Wisteria::UI
                                          wxDefaultSize, 0, wxGenericValidator{ &m_monochrome }),
                           wxSizerFlags{}.Border());
 
+        auto* fishStyleSizer = new wxBoxSizer(wxHORIZONTAL);
+        fishStyleSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Fish style:")),
+                            wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+        const wxArrayString fishStyleChoices{ _(L"None"), _(L"Fish"), _(L"Shark") };
+        auto* fishStyleChoice =
+            new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, FromDIP(wxSize{ 120, -1 }),
+                         fishStyleChoices, 0, wxGenericValidator{ &m_fishStyle });
+        fishStyleChoice->SetSelection(m_fishStyle);
+        fishStyleChoice->Bind(wxEVT_CHOICE,
+                              [this, fishStyleChoice]([[maybe_unused]] wxCommandEvent&)
+                              { m_fishStyle = fishStyleChoice->GetSelection(); });
+        fishStyleSizer->Add(fishStyleChoice);
+        optionsSizer->Add(fishStyleSizer, wxSizerFlags{}.Border());
+
         datasetChoice->Bind(wxEVT_CHOICE,
                             [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
         addBranchBtn->Bind(wxEVT_BUTTON,
@@ -353,9 +416,14 @@ namespace Wisteria::UI
         for (size_t i = 0; i < Graphs::IshikawaDiagram::DEFAULT_BRANCH_COUNT; ++i)
             {
             m_branches.push_back(
-                { Graphs::IshikawaDiagram::GetDefaultBranchLabel(i), wxString{}, {} });
+                { Graphs::IshikawaDiagram::GetDefaultBranchLabel(i), wxString{}, {}, {} });
             }
         RebuildBranchRows();
+
+        // map the branches to the pre-selected dataset's columns (e.g., a column
+        // named "Man" becomes the "People" branch); the choice's initial selection
+        // doesn't fire an event, so this has to be done once up-front
+        OnDatasetChanged();
 
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
@@ -379,23 +447,19 @@ namespace Wisteria::UI
     void InsertIshikawaDiagramDlg::RebuildBranchRows()
         {
         const wxWindowUpdateLocker noUpdates(m_branchPanel);
-        m_branchGrid->Clear(true);
+        m_branchSizer->Clear(true);
 
-        // the first choice means that the causes are typed in
-        wxArrayString choices{ _(L"(typed causes)") };
-        const auto columnNames{ GetColumnNames() };
-        for (const auto& name : columnNames)
-            {
-            choices.Add(name);
-            }
+        const auto columnNames = GetColumnNames();
 
         for (const wxString& header :
-             { _(L"Label"), _(L"Causes column"), _(L"Typed causes"), wxString{}, wxString{} })
+             { _(L"Label"), _(L"Mode"), _(L"Causes"), wxString{}, wxString{} })
             {
             auto* headerText = new wxStaticText(m_branchPanel, wxID_ANY, header);
             headerText->SetFont(headerText->GetFont().Bold());
-            m_branchGrid->Add(headerText);
+            m_branchSizer->Add(headerText);
             }
+
+        const wxArrayString modes{ _(L"In column"), _(L"Constants") };
 
         for (size_t i = 0; i < m_branches.size(); ++i)
             {
@@ -408,59 +472,133 @@ namespace Wisteria::UI
                                     m_branches[i].m_label = labelCtrl->GetValue();
                                     }
                             });
-            m_branchGrid->Add(labelCtrl, wxSizerFlags{}.Expand());
+            labelCtrl->SetMinSize(FromDIP(wxSize{ 180, 24 }));
+            m_branchSizer->Add(labelCtrl, wxSizerFlags{}.Expand());
 
-            auto* columnChoice =
-                new wxChoice(m_branchPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, choices);
-            const int found{ choices.Index(m_branches[i].m_column) };
-            columnChoice->SetSelection(
-                (m_branches[i].m_column.empty() || found == wxNOT_FOUND) ? 0 : found);
-            columnChoice->Bind(wxEVT_CHOICE,
-                               [this, i, columnChoice]([[maybe_unused]] wxCommandEvent&)
-                               {
-                                   const int selection{ columnChoice->GetSelection() };
-                                   CallAfter([this, i, selection]()
-                                             { OnBranchColumnChanged(i, selection); });
-                               });
-            m_branchGrid->Add(columnChoice, wxSizerFlags{}.Expand());
+            const bool inColumn{ !m_branches[i].m_column.empty() };
+            auto* modeChoice = new wxChoice(m_branchPanel, wxID_ANY, wxDefaultPosition,
+                                            FromDIP(wxSize{ 90, -1 }), modes);
+            modeChoice->SetMinSize(FromDIP(wxSize{ 170, 24 }));
+            modeChoice->SetSelection(inColumn ? 0 : 1);
+            m_branchSizer->Add(modeChoice, wxSizerFlags{}.Expand());
 
-            auto* subButton = new wxButton(m_branchPanel, wxID_ANY, _(L"Sub-causes..."));
+            auto* valueCombo =
+                new wxComboBox(m_branchPanel, wxID_ANY, wxString{}, wxDefaultPosition,
+                               FromDIP(wxSize{ 400, -1 }), wxArrayString{}, wxCB_DROPDOWN);
+            valueCombo->SetMinSize(FromDIP(wxSize{ 400, 24 }));
+            if (inColumn)
+                {
+                valueCombo->Append(columnNames);
+                valueCombo->SetValue(m_branches[i].m_column);
+                valueCombo->SetEditable(false);
+                }
+            else
+                {
+                valueCombo->SetValue(
+                    Graphs::IshikawaDiagram::FormatConstants(m_branches[i].m_constants));
+                valueCombo->SetEditable(true);
+                }
+            m_branchSizer->Add(valueCombo, wxSizerFlags{}.Expand());
+
+            auto* subButton = new wxButton(
+                m_branchPanel, wxID_ANY,
+                m_branches[i].m_subCauses.empty() ?
+                    _(L"Sub-causes...") :
+                    wxString::Format(_(L"Sub-causes (%zu)..."), m_branches[i].m_subCauses.size()));
             subButton->Enable(!m_branches[i].m_column.empty() ||
                               !m_branches[i].m_constants.empty());
             subButton->Bind(wxEVT_BUTTON,
                             [this, i]([[maybe_unused]] wxCommandEvent&) { OnEditSubCauses(i); });
+            subButton->SetMinSize(FromDIP(wxSize{ 210, 24 }));
+            m_branchSizer->Add(subButton);
 
-            auto* causesText =
-                new wxTextCtrl(m_branchPanel, wxID_ANY,
-                               Graphs::IshikawaDiagram::FormatConstants(m_branches[i].m_constants));
-            causesText->Enable(m_branches[i].m_column.empty());
-            causesText->Bind(wxEVT_TEXT,
-                             [this, i, causesText, subButton]([[maybe_unused]] wxCommandEvent&)
+            auto* removeButton = new wxButton(m_branchPanel, wxID_ANY, _(L"Remove"));
+            removeButton->SetMinSize(FromDIP(wxSize{ 130, 24 }));
+            removeButton->Bind(wxEVT_BUTTON, [this, i]([[maybe_unused]] wxCommandEvent&)
+                               { CallAfter([this, i]() { OnRemoveBranch(i); }); });
+            m_branchSizer->Add(removeButton);
+
+            modeChoice->Bind(
+                wxEVT_CHOICE,
+                [this, i, modeChoice, valueCombo, subButton,
+                 columnNames]([[maybe_unused]] wxCommandEvent&)
+                {
+                    if (i >= m_branches.size())
+                        {
+                        return;
+                        }
+                    auto& branch{ m_branches[i] };
+                    if (modeChoice->GetSelection() == 0)
+                        {
+                        branch.m_constants.clear();
+                        valueCombo->Clear();
+                        valueCombo->Append(columnNames);
+                        if (columnNames.Index(branch.m_column) != wxNOT_FOUND)
+                            {
+                            valueCombo->SetValue(branch.m_column);
+                            }
+                        else if (!columnNames.empty())
+                            {
+                            valueCombo->SetValue(columnNames[0]);
+                            branch.m_column = columnNames[0];
+                            }
+                        else
+                            {
+                            valueCombo->SetValue(wxString{});
+                            branch.m_column.clear();
+                            }
+                        valueCombo->SetEditable(false);
+                        }
+                    else
+                        {
+                        branch.m_column.clear();
+                        valueCombo->Clear();
+                        valueCombo->SetValue(
+                            Graphs::IshikawaDiagram::FormatConstants(branch.m_constants));
+                        valueCombo->SetEditable(true);
+                        }
+                    subButton->Enable(!branch.m_column.empty() || !branch.m_constants.empty());
+                });
+            valueCombo->Bind(wxEVT_COMBOBOX,
+                             [this, i, valueCombo, subButton]([[maybe_unused]] wxCommandEvent&)
                              {
                                  if (i >= m_branches.size())
                                      {
                                      return;
                                      }
                                  auto& branch{ m_branches[i] };
-                                 branch.m_constants = Graphs::IshikawaDiagram::ParseConstants(
-                                     causesText->GetValue());
-                                 // sub-causes only apply to causes that still exist
-                                 std::erase_if(branch.m_subCauses,
-                                               [&branch](const auto& subCauses)
-                                               {
-                                                   return std::ranges::find(branch.m_constants,
-                                                                            subCauses.m_cause) ==
-                                                          branch.m_constants.cend();
-                                               });
-                                 subButton->Enable(!branch.m_constants.empty());
+                                 branch.m_column = valueCombo->GetValue();
+                                 branch.m_constants.clear();
+                                 subButton->Enable(!branch.m_column.empty());
                              });
-            m_branchGrid->Add(causesText, wxSizerFlags{}.Expand());
-            m_branchGrid->Add(subButton);
-
-            auto* removeButton = new wxButton(m_branchPanel, wxID_ANY, _(L"Remove"));
-            removeButton->Bind(wxEVT_BUTTON, [this, i]([[maybe_unused]] wxCommandEvent&)
-                               { CallAfter([this, i]() { OnRemoveBranch(i); }); });
-            m_branchGrid->Add(removeButton);
+            valueCombo->Bind(
+                wxEVT_TEXT,
+                [this, i, valueCombo, subButton]([[maybe_unused]] wxCommandEvent&)
+                {
+                    if (i >= m_branches.size())
+                        {
+                        return;
+                        }
+                    auto& branch{ m_branches[i] };
+                    if (valueCombo->IsEditable())
+                        {
+                        branch.m_constants =
+                            Graphs::IshikawaDiagram::ParseConstants(valueCombo->GetValue());
+                        branch.m_column.clear();
+                        std::erase_if(branch.m_subCauses,
+                                      [&branch](const auto& subCauses)
+                                      {
+                                          return std::ranges::find(branch.m_constants,
+                                                                   subCauses.m_cause) ==
+                                                 branch.m_constants.cend();
+                                      });
+                        subButton->Enable(!branch.m_constants.empty());
+                        subButton->SetLabel(branch.m_subCauses.empty() ?
+                                                _(L"Sub-causes...") :
+                                                wxString::Format(_(L"Sub-causes (%zu)..."),
+                                                                 branch.m_subCauses.size()));
+                        }
+                });
             }
 
         m_branchPanel->FitInside();
@@ -470,8 +608,10 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertIshikawaDiagramDlg::OnAddBranch()
         {
-        m_branches.push_back(
-            { Graphs::IshikawaDiagram::GetDefaultBranchLabel(m_branches.size()), wxString{}, {} });
+        m_branches.push_back({ Graphs::IshikawaDiagram::GetDefaultBranchLabel(m_branches.size()),
+                               wxString{},
+                               {},
+                               {} });
         RebuildBranchRows();
         m_branchPanel->Scroll(0, m_branchPanel->GetScrollRange(wxVERTICAL));
         }
@@ -488,29 +628,6 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertIshikawaDiagramDlg::OnBranchColumnChanged(const size_t index, const int selection)
-        {
-        if (index >= m_branches.size())
-            {
-            return;
-            }
-        const auto names{ GetColumnNames() };
-        const wxString newColumn{ (selection > 0 && std::cmp_less(selection - 1, names.size())) ?
-                                      names[static_cast<size_t>(selection - 1)] :
-                                      wxString{} };
-        // picking what is already selected changes nothing
-        if (newColumn == m_branches[index].m_column)
-            {
-            return;
-            }
-        // the causes changed, so any sub-causes no longer apply
-        m_branches[index].m_subCauses.clear();
-        m_branches[index].m_constants.clear();
-        m_branches[index].m_column = newColumn;
-        RebuildBranchRows();
-        }
-
-    //-------------------------------------------
     void InsertIshikawaDiagramDlg::OnEditSubCauses(const size_t index)
         {
         if (index >= m_branches.size())
@@ -521,6 +638,8 @@ namespace Wisteria::UI
         if (dlg.ShowModal() == wxID_OK)
             {
             m_branches[index].m_subCauses = dlg.GetSubCauses();
+            // refresh the button labels with their new counts
+            RebuildBranchRows();
             }
         }
 
@@ -528,7 +647,7 @@ namespace Wisteria::UI
     void InsertIshikawaDiagramDlg::OnDatasetChanged()
         {
         // the columns belong to the previous dataset
-        const auto names{ GetColumnNames() };
+        const auto names = GetColumnNames();
         for (size_t branchIndex = 0; branchIndex < m_branches.size(); ++branchIndex)
             {
             auto& branch{ m_branches[branchIndex] };
@@ -560,7 +679,7 @@ namespace Wisteria::UI
     void InsertIshikawaDiagramDlg::RemoveStaleSubCauses()
         {
         const auto dataset{ GetSelectedDataset() };
-        const auto columnNames{ GetColumnNames() };
+        const auto columnNames = GetColumnNames();
         for (auto& branch : m_branches)
             {
             // the causes that sub-causes can belong to
@@ -651,6 +770,7 @@ namespace Wisteria::UI
         m_showCauseCounts = diagram->IsShowingCauseCounts();
         m_taperedLines = diagram->IsTaperedLines();
         m_monochrome = diagram->IsMonochrome();
+        m_fishStyle = static_cast<int>(diagram->GetFishStyle());
         m_branches = diagram->GetBranches();
         RebuildBranchRows();
 
@@ -674,6 +794,7 @@ namespace Wisteria::UI
         plot->ShowCauseCounts(m_showCauseCounts);
         plot->SetTaperedLines(m_taperedLines);
         plot->SetMonochrome(m_monochrome);
+        plot->SetFishStyle(static_cast<Graphs::IshikawaDiagram::FishStyle>(m_fishStyle));
         plot->SetData(GetSelectedDataset(), GetEffect(), GetBranches());
 
         if (oldGraph != nullptr)

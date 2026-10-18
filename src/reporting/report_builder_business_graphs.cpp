@@ -256,6 +256,15 @@ namespace Wisteria
             {
             ishikawa->ShowCauseCounts(graphNode->GetProperty(L"show-cause-counts")->AsBool());
             }
+        if (graphNode->HasProperty(L"fish-style"))
+            {
+            if (const auto fishStyle = ReportEnumConvert::ConvertIshikawaFishStyle(
+                    graphNode->GetProperty(L"fish-style")->AsString());
+                fishStyle.has_value())
+                {
+                ishikawa->SetFishStyle(fishStyle.value());
+                }
+            }
 
         std::vector<Graphs::IshikawaDiagram::Branch> branches;
         for (const auto& branchNode : branchesNode->AsNodes())

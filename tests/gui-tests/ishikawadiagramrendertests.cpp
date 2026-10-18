@@ -24,10 +24,10 @@ using namespace wisteria_render_tests;
 
 namespace
     {
-    // the four (hidden) axes, the tail fin, spine and the effect (a label, or a plain box if
-    // there is no text), then per branch: a rib and (optionally) a label,
+    // the four (hidden) axes, the tail fin, spine, the fish head (with its eye and mouth)
+    // and the effect label, then per branch: a rib and (optionally) a label,
     // per cause or sub-cause: a twig and a label, and per cause: a dot
-    constexpr size_t FIXED_OBJECTS{ 7 };
+    constexpr size_t FIXED_OBJECTS{ 8 };
 
     [[nodiscard]]
     std::vector<GroupIdType> BuildCodes(const std::vector<wxString>& values,
@@ -270,6 +270,27 @@ TEST_CASE("IshikawaDiagram tapers its lines by default", "[ishikawadiagram][rend
     };
     // the spine and ribs are polygons instead of lines, but there are the same number of them
     CHECK(draw(true) == draw(false));
+    }
+
+TEST_CASE("IshikawaDiagram can change its fish style", "[ishikawadiagram][render]")
+    {
+    const auto draw = [](const IshikawaDiagram::FishStyle style)
+    {
+        auto* canvas = MakeCanvas();
+        auto chart = std::make_shared<IshikawaDiagram>(canvas);
+        CHECK(chart->GetFishStyle() == IshikawaDiagram::FishStyle::Fish);
+        chart->SetFishStyle(style);
+        CHECK(chart->GetFishStyle() == style);
+        chart->SetData(BuildDataset(), L"Effect",
+                       { { L"Personnel", L"Man", {} }, { L"Machines", L"Machine", {} } });
+        LayOutOffscreen(canvas, chart);
+        return chart->GetObjectCount();
+    };
+    // a shark only changes the head's outline and mouth, but without a fish
+    // there is no tail or head (and so no eye or mouth)
+    const size_t fish{ draw(IshikawaDiagram::FishStyle::Fish) };
+    CHECK(draw(IshikawaDiagram::FishStyle::Shark) == fish);
+    CHECK(draw(IshikawaDiagram::FishStyle::None) == fish - 2);
     }
 
 TEST_CASE("IshikawaDiagram shows a repeated cause once", "[ishikawadiagram][render]")

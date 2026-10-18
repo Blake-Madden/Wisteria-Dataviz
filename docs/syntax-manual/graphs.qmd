@@ -115,10 +115,16 @@ Properties for `"ishikawa-diagram"` nodes:
 - `"show-empty-branches"`: `false` to hide branches that have no causes.
   Default is `true`.
 - `"show-branch-labels"`: `false` to hide the branch labels.
-- `"tapered"`: `false` to draw the spine and ribs with a constant width, instead of widening them toward the effect.
-  The default is `true`.
-- `"show-cause-counts"`: `true` to show the number of causes in each branch label (e.g., "People (3)"). The default is `false`.
   Default is `true`.
+- `"tapered"`: `false` to draw the spine and ribs with a constant width, instead of widening them toward the effect.
+  Default is `true`.
+- `"show-cause-counts"`: `true` to show the number of causes in each branch label (e.g., "People (3)").
+  Default is `false`.
+- `"fish-style"`: A string specifying the style of the fish (its head, tail, eye, and mouth). \
+  Available options are:
+  - `"none"`: No head, tail, eye, or mouth is drawn. The effect is shown in a box at the end of the spine.
+  - `"fish"`: A fish with a simple line for the mouth (the default).
+  - `"shark"`: A notched mouth with teeth.
 
 ```json
 {
