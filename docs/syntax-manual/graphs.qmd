@@ -122,7 +122,8 @@ Properties for `"ishikawa-diagram"` nodes:
   Default is `false`.
 - `"fish-style"`: A string specifying the style of the fish (its head, tail, eye, and mouth). \
   Available options are:
-  - `"none"`: No head, tail, eye, or mouth is drawn. The effect is shown in a box at the end of the spine.
+  - `"none"`: No head, tail, eye, or mouth is drawn.
+  The effect is shown in a box at the end of the spine.
   - `"fish"`: A fish with a simple line for the mouth (the default).
   - `"shark"`: A notched mouth with teeth.
 
@@ -140,6 +141,52 @@ Properties for `"ishikawa-diagram"` nodes:
     { "label": "Machines", "variable": "Machine" },
     { "label": "Materials", "variable": "Material" }
   ]
+}
+```
+:::
+
+::: {.minipage data-latex="{\textwidth}"}
+## Run Chart {#run-chart-properties .unnumbered}
+
+Properties for `"run-chart"` nodes:
+
+- `"variables"`: An item containing the following properties:
+  - `"value"`: The continuous column containing the measurements. \
+    Rows are plotted in dataset order, at equally spaced positions along the x-axis.
+  - `"label"`: An (optional) column (categorical, date, or continuous) containing the text shown along the x-axis. \
+    This does not change the order or spacing of the points.
+  - `"sample"`: An (optional) categorical or continuous column identifying which sample each row belongs to. \
+    A continuous column must contain whole numbers.
+    A new sample starts whenever the value changes from the previous row.
+    The same value in rows that are not next to each other starts a new sample.
+- `"sample-size"`: An (optional) number of consecutive rows to collect into each sample. \
+  Ignored if `"sample"` is specified.
+  The last sample can be smaller.
+- `"sample-statistic"`: A string specifying the statistic plotted for each sample. \
+  Available options are:
+  - `"mean"`: The sample's mean (the default).
+  - `"median"`: The sample's median.
+- `"show-median-line"`: `false` to hide the median line.
+  Default is `true`.
+- `"show-individual-points"`: `true` to also draw each observation of a sample as a faint point.
+  This only applies when the data is collected into samples.
+  Default is `false`.
+- `"individual-point-opacity"`: The opacity (`0` to `255`) of the individual observation points.
+  Default is `90`.
+- Some base properties available to [graphs](#graph-properties).
+
+Missing values are drawn as gaps and are not included in the median.
+
+```json
+{
+  "type": "run-chart",
+  "dataset": "Readings",
+  "variables": {
+    "value": "Radon",
+    "label": "Day",
+    "sample": "Day"
+  },
+  "sample-statistic": "median"
 }
 ```
 :::

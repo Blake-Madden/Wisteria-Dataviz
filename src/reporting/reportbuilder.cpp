@@ -99,6 +99,10 @@ namespace Wisteria
             {
             return LoadWCurvePlot(graphNode, canvas, currentRow, currentColumn);
             }
+        if (type.CmpNoCase(L"run-chart") == 0)
+            {
+            return LoadRunChart(graphNode, canvas, currentRow, currentColumn);
+            }
         if (type.CmpNoCase(L"likert-chart") == 0)
             {
             return LoadLikertChart(graphNode, canvas, currentRow, currentColumn);

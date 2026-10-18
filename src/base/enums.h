@@ -886,7 +886,8 @@ namespace Wisteria
         DuelingPieChart,
         Pictograph,
         FilteredGraph,
-        IshikawaDiagram
+        IshikawaDiagram,
+        RunChart
         };
     } // namespace Wisteria
 

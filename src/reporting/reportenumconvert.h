@@ -28,6 +28,7 @@
 #include "../graphs/piechart.h"
 #include "../graphs/proconroadmap.h"
 #include "../graphs/racetrackchart.h"
+#include "../graphs/spcchart.h"
 #include "../graphs/wilmarth_bridge_plot.h"
 #include <wx/wx.h>
 
@@ -591,6 +592,21 @@ namespace Wisteria
             const auto foundValue = colorSchemes.find(value.Lower().ToStdWstring());
             return ((foundValue != colorSchemes.cend()) ?
                         std::optional<Graphs::BulletChartRangeColorScheme>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
+        static std::optional<Graphs::SampleStatistic> ConvertSampleStatistic(const wxString& value)
+            {
+            static const std::map<std::wstring, Graphs::SampleStatistic> statistics = {
+                { L"mean", Graphs::SampleStatistic::Mean },
+                { L"median", Graphs::SampleStatistic::Median }
+            };
+
+            const auto foundValue = statistics.find(value.Lower().ToStdWstring());
+            return ((foundValue != statistics.cend()) ?
+                        std::optional<Graphs::SampleStatistic>(foundValue->second) :
                         std::nullopt);
             }
 
@@ -2205,6 +2221,22 @@ namespace Wisteria
             static const std::map<Graphs::BulletChartRangeColorScheme, wxString> values = {
                 { Graphs::BulletChartRangeColorScheme::TwoTone, L"two-tone" },
                 { Graphs::BulletChartRangeColorScheme::GoalStatus, L"goal-status" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts a SampleStatistic enum to its JSON string.
+        /// @param value The sample statistic enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertSampleStatisticToString(Graphs::SampleStatistic value)
+            {
+            static const std::map<Graphs::SampleStatistic, wxString> values = {
+                { Graphs::SampleStatistic::Mean, L"mean" },
+                { Graphs::SampleStatistic::Median, L"median" }
             };
 
             const auto foundValue = values.find(value);

@@ -48,6 +48,7 @@ SET(TEST_SRC_FILES
     racetrackchartrendertests.cpp
     reportbuilderdetachedgraphtests.cpp
     reportbuilderformulatests.cpp
+    runchartrendertests.cpp
     sankeydiagramrendertests.cpp
     scalechartrendertests.cpp
     scatterplotrendertests.cpp

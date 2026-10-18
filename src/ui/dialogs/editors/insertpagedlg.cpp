@@ -15,6 +15,7 @@
 #include "insert_bullet_chart_dlg.h"
 #include "insert_ishikawa_diagram_dlg.h"
 #include "insert_nightingale_rose_chart_dlg.h"
+#include "insert_run_chart_dlg.h"
 #include "insert_waterfallchart_dlg.h"
 #include "insertboxplotdlg.h"
 #include "insertbubbleplotdlg.h"
@@ -940,6 +941,8 @@ namespace Wisteria::UI
             return DropBulletChart(stagingCanvas, row, col);
         case Wisteria::GalleryItemType::IshikawaDiagram:
             return DropIshikawaDiagram(stagingCanvas, row, col);
+        case Wisteria::GalleryItemType::RunChart:
+            return DropRunChart(stagingCanvas, row, col);
         case Wisteria::GalleryItemType::WaterfallChart:
             return DropWaterfallChart(stagingCanvas, row, col);
         case Wisteria::GalleryItemType::FunnelChart:
@@ -1903,6 +1906,29 @@ namespace Wisteria::UI
         try
             {
             auto plot = dlg.BuildIshikawaDiagram();
+            PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
+            return true;
+            }
+        catch (const std::exception&)
+            {
+            return false;
+            }
+        }
+
+    //-------------------------------------------
+    bool InsertPageDlg::DropRunChart(Canvas* stagingCanvas, const size_t row, const size_t col)
+        {
+        Wisteria::UI::InsertRunChartDlg dlg(stagingCanvas, m_reportBuilder, this);
+        WisteriaView::SetDialogIcon(dlg, L"images/runchart.svg");
+        dlg.SetSelectedCell(row, col);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return false;
+            }
+
+        try
+            {
+            auto plot = dlg.BuildRunChart();
             PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
             return true;
             }

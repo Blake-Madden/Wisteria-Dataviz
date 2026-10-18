@@ -12,6 +12,89 @@ namespace Wisteria
     {
     //---------------------------------------------------
     std::shared_ptr<Graphs::Graph2D>
+    ReportBuilder::LoadRunChart(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
+                                size_t& currentRow, size_t& currentColumn)
+        {
+        const wxString dsName = graphNode->GetProperty(_DT(L"dataset"))->AsString();
+        const auto foundPos = m_datasets.find(dsName);
+        if (foundPos == m_datasets.cend() || foundPos->second == nullptr)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"%s: dataset not found for run chart."), dsName).ToUTF8());
+            }
+
+        const auto variablesNode = graphNode->GetProperty(_DT(L"variables"));
+        if (variablesNode->IsOk())
+            {
+            auto runChart = std::make_shared<Graphs::RunChart>(
+                canvas, LoadGraphColorScheme(graphNode),
+                LoadIconScheme(graphNode->GetProperty(_DT(L"icon-scheme"))),
+                LoadLineStyleScheme(graphNode->GetProperty(_DT(L"line-scheme"))));
+
+            const wxString valueVar =
+                ExpandAndCache(runChart.get(), L"variables.value",
+                               variablesNode->GetProperty(_DT(L"value"))->AsString());
+            const std::optional<wxString> labelVar =
+                variablesNode->HasProperty(_DT(L"label")) ?
+                    std::optional<wxString>(
+                        ExpandAndCache(runChart.get(), L"variables.label",
+                                       variablesNode->GetProperty(_DT(L"label"))->AsString())) :
+                    std::nullopt;
+            const auto statistic = ReportEnumConvert::ConvertSampleStatistic(
+                                       graphNode->GetProperty(_DT(L"sample-statistic"))->AsString())
+                                       .value_or(Graphs::SampleStatistic::Mean);
+
+            if (variablesNode->HasProperty(_DT(L"sample")))
+                {
+                runChart->SetSampleData(
+                    foundPos->second, valueVar,
+                    ExpandAndCache(runChart.get(), L"variables.sample",
+                                   variablesNode->GetProperty(_DT(L"sample"))->AsString()),
+                    labelVar, statistic);
+                }
+            else if (graphNode->GetProperty(_DT(L"sample-size"))->IsValueNumber())
+                {
+                const double sampleSize{ graphNode->GetProperty(_DT(L"sample-size"))->AsDouble(1) };
+                constexpr double MAX_SAMPLE_SIZE{ 1'000'000 };
+                if (!std::isfinite(sampleSize) || sampleSize < 1 || sampleSize > MAX_SAMPLE_SIZE)
+                    {
+                    throw std::runtime_error(
+                        _(L"Run chart 'sample-size' must be a whole number of at least 1.")
+                            .ToUTF8());
+                    }
+                runChart->SetSampleData(foundPos->second, valueVar, static_cast<size_t>(sampleSize),
+                                        labelVar, statistic);
+                }
+            else
+                {
+                runChart->SetData(foundPos->second, valueVar, labelVar);
+                }
+
+            runChart->ShowIndividualPoints(
+                graphNode->GetProperty(_DT(L"show-individual-points"))->AsBool(false));
+            if (graphNode->GetProperty(_DT(L"individual-point-opacity"))->IsValueNumber())
+                {
+                runChart->SetIndividualPointOpacity(static_cast<uint8_t>(std::clamp(
+                    graphNode->GetProperty(_DT(L"individual-point-opacity"))->AsDouble(90), 0.0,
+                    255.0)));
+                }
+
+            LoadGraph(graphNode, canvas, currentRow, currentColumn, runChart);
+            LoadLinePlotBaseOptions(graphNode, runChart.get());
+
+            // set after the saved reference lines are loaded,
+            // so that a saved copy of the median line is replaced by the current one
+            runChart->ShowMedianLine(
+                graphNode->GetProperty(_DT(L"show-median-line"))->AsBool(true));
+
+            return runChart;
+            }
+
+        throw std::runtime_error(_(L"Variables not defined for run chart.").ToUTF8());
+        }
+
+    //---------------------------------------------------
+    std::shared_ptr<Graphs::Graph2D>
     ReportBuilder::LoadBubblePlot(const wxSimpleJSON::Ptr_t& graphNode, Canvas* canvas,
                                   size_t& currentRow, size_t& currentColumn)
         {

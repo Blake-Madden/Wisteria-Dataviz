@@ -1904,6 +1904,10 @@ wxString WisteriaApp::GetGraphTypeString(const Wisteria::Graphs::Graph2D* graph)
         {
         return _DT(L"w-curve-plot");
         }
+    if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::RunChart)))
+        {
+        return _DT(L"run-chart");
+        }
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LinePlot)))
         {
         return _DT(L"line-plot");
@@ -2066,6 +2070,10 @@ wxString WisteriaApp::GetItemIconName(const Wisteria::GraphItems::GraphItemBase*
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::WCurvePlot)))
         {
         return L"images/wcurve.svg";
+        }
+    if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::RunChart)))
+        {
+        return L"images/runchart.svg";
         }
     if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LinePlot)))
         {
@@ -2301,6 +2309,7 @@ const std::vector<Wisteria::GalleryItemInfo>& WisteriaApp::GetGalleryItemCatalog
         // SPC
         { GalleryItemType::IshikawaDiagram, _(L"Ishikawa Diagram"), L"images/ishikawa.svg",
           GalleryGroup::Spc },
+        { GalleryItemType::RunChart, _(L"Run Chart"), L"images/runchart.svg", GalleryGroup::Spc },
         // Statistical
         { GalleryItemType::Histogram, _(L"Histogram"), L"images/histogram.svg",
           GalleryGroup::Statistical },

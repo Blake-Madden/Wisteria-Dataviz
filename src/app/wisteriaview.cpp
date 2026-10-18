@@ -17,6 +17,7 @@
 #include "../ui/dialogs/editors/insert_bullet_chart_dlg.h"
 #include "../ui/dialogs/editors/insert_ishikawa_diagram_dlg.h"
 #include "../ui/dialogs/editors/insert_nightingale_rose_chart_dlg.h"
+#include "../ui/dialogs/editors/insert_run_chart_dlg.h"
 #include "../ui/dialogs/editors/insert_waterfallchart_dlg.h"
 #include "../ui/dialogs/editors/insertboxplotdlg.h"
 #include "../ui/dialogs/editors/insertbubbleplotdlg.h"
@@ -462,6 +463,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertBulletChart, this, ID_NEW_BULLET_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertIshikawaDiagram, this,
                   ID_NEW_ISHIKAWA_DIAGRAM);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertRunChart, this, ID_NEW_RUN_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWaterfallChart, this, ID_NEW_WATERFALL_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertFunnelChart, this, ID_NEW_FUNNEL_CHART);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertWilmarthBridgePlot, this,
@@ -2726,6 +2728,7 @@ void WisteriaView::BuildGraphMenus()
     // SPC graphs
     appendItem(m_spcGraphMenu, ID_NEW_ISHIKAWA_DIAGRAM, _(L"Ishikawa Diagram..."),
                L"images/ishikawa.svg");
+    appendItem(m_spcGraphMenu, ID_NEW_RUN_CHART, _(L"Run Chart..."), L"images/runchart.svg");
 
     // Statistical graphs
     appendItem(m_statisticalGraphMenu, ID_NEW_HISTOGRAM, _(L"Histogram..."),
@@ -3395,6 +3398,10 @@ void WisteriaView::EditGraphByType(Wisteria::Graphs::Graph2D& graph, Wisteria::C
         {
         EditWCurvePlot(graph, canvas, graphRow, graphCol, pasteAsNew);
         }
+    else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::RunChart)))
+        {
+        EditRunChart(graph, canvas, graphRow, graphCol, pasteAsNew);
+        }
     else if (graph.IsKindOf(wxCLASSINFO(Wisteria::Graphs::MultiSeriesLinePlot)))
         {
         EditMultiSeriesLinePlot(graph, canvas, graphRow, graphCol, pasteAsNew);
@@ -3552,6 +3559,7 @@ const std::vector<WisteriaView::FilterableGraphType>& WisteriaView::GetFilterabl
           wxCLASSINFO(BulletChart) },
         { ID_NEW_ISHIKAWA_DIAGRAM, GalleryItemType::IshikawaDiagram, _(L"Ishikawa Diagram"),
           wxCLASSINFO(IshikawaDiagram) },
+        { ID_NEW_RUN_CHART, GalleryItemType::RunChart, _(L"Run Chart"), wxCLASSINFO(RunChart) },
         { ID_NEW_WATERFALL_CHART, GalleryItemType::WaterfallChart, _(L"Waterfall Chart"),
           wxCLASSINFO(WaterfallChart) },
         { ID_NEW_FUNNEL_CHART, GalleryItemType::FunnelChart, _(L"Funnel Chart"),
@@ -6124,6 +6132,72 @@ void WisteriaView::EditIshikawaDiagram(const Wisteria::Graphs::Graph2D& graph,
     try
         {
         auto plot = dlg.BuildIshikawaDiagram(&graph);
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             pasteAsNew ? dlg.GetSelectedRow() : graphRow,
+                             pasteAsNew ? dlg.GetSelectedColumn() : graphCol,
+                             Wisteria::UI::LegendPlacement::None);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::OnInsertRunChart([[maybe_unused]] wxCommandEvent& event)
+    {
+    auto* canvas = EnsureActivePage();
+    if (canvas == nullptr)
+        {
+        return;
+        }
+
+    Wisteria::UI::InsertRunChartDlg dlg(canvas, &m_reportBuilder, m_frame);
+    SetDialogIcon(dlg, L"images/runchart.svg");
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = dlg.BuildRunChart();
+        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
+                             Wisteria::UI::LegendPlacement::None);
+        }
+    catch (const std::exception& exc)
+        {
+        wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
+        }
+    }
+
+//-------------------------------------------
+void WisteriaView::EditRunChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                                const size_t graphRow, const size_t graphCol,
+                                const bool pasteAsNew) const
+    {
+    Wisteria::UI::InsertRunChartDlg dlg(canvas, &m_reportBuilder, m_frame,
+                                        pasteAsNew ? _(L"Insert Run Chart") : _(L"Edit Run Chart"),
+                                        wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                        wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN | wxRESIZE_BORDER,
+                                        pasteAsNew ? Wisteria::UI::InsertItemDlg::EditMode::Insert :
+                                                     Wisteria::UI::InsertItemDlg::EditMode::Edit);
+    SetDialogIcon(dlg, L"images/runchart.svg");
+    if (!pasteAsNew)
+        {
+        dlg.SetSelectedCell(graphRow, graphCol);
+        }
+    dlg.LoadFromGraph(graph);
+
+    if (dlg.ShowModal() != wxID_OK)
+        {
+        return;
+        }
+
+    try
+        {
+        auto plot = dlg.BuildRunChart(&graph);
         PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
                              pasteAsNew ? dlg.GetSelectedRow() : graphRow,
                              pasteAsNew ? dlg.GetSelectedColumn() : graphCol,

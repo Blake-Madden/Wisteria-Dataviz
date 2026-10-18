@@ -270,6 +270,7 @@ namespace Wisteria::UI
         bool DropNightingaleRoseChart(Canvas* stagingCanvas, size_t row, size_t col);
         bool DropBulletChart(Canvas* stagingCanvas, size_t row, size_t col);
         bool DropIshikawaDiagram(Canvas* stagingCanvas, size_t row, size_t col);
+        bool DropRunChart(Canvas* stagingCanvas, size_t row, size_t col);
         bool DropWaterfallChart(Canvas* stagingCanvas, size_t row, size_t col);
         bool DropFunnelChart(Canvas* stagingCanvas, size_t row, size_t col);
         bool DropDuBoisSpiralChart(Canvas* stagingCanvas, size_t row, size_t col);

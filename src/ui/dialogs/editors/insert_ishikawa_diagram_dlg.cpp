@@ -420,7 +420,7 @@ namespace Wisteria::UI
             }
         RebuildBranchRows();
 
-        // map the branches to the pre-selected dataset's columns (e.g., a column
+        // map the branches to the preselected dataset's columns (e.g., a column
         // named "Man" becomes the "People" branch); the choice's initial selection
         // doesn't fire an event, so this has to be done once up-front
         OnDatasetChanged();

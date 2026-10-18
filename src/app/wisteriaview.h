@@ -257,6 +257,9 @@ class WisteriaView final : public wxView
     void OnInsertIshikawaDiagram(wxCommandEvent& event);
     void EditIshikawaDiagram(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                              size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
+    void OnInsertRunChart(wxCommandEvent& event);
+    void EditRunChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
+                      size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;
     void OnInsertWaterfallChart(wxCommandEvent& event);
     void EditWaterfallChart(const Wisteria::Graphs::Graph2D& graph, Wisteria::Canvas* canvas,
                             size_t graphRow, size_t graphCol, bool pasteAsNew = false) const;

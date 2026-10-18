@@ -2,6 +2,7 @@
 
 ## 1.2.2
 
+- Added Run Chart.
 - Added Ishikawa Diagram.
 - Added Dueling Pie Chart.
 - Added Pictograph.

@@ -84,9 +84,11 @@ SET(WISTERIA_SRC
     ../../src/graphs/proconroadmap.cpp
     ../../src/graphs/racetrackchart.cpp
     ../../src/graphs/roadmap.cpp
+    ../../src/graphs/runchart.cpp
     ../../src/graphs/sankeydiagram.cpp
     ../../src/graphs/scalechart.cpp
     ../../src/graphs/scatterplot.cpp
+    ../../src/graphs/spcchart.cpp
     ../../src/graphs/stemandleafplot.cpp
     ../../src/graphs/table.cpp
     ../../src/graphs/waffle_chart.cpp

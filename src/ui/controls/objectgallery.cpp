@@ -199,6 +199,8 @@ namespace Wisteria::UI
             return L"bullet-chart";
         case GalleryItemType::IshikawaDiagram:
             return L"ishikawa-diagram";
+        case GalleryItemType::RunChart:
+            return L"run-chart";
         case GalleryItemType::ChoroplethMap:
             return L"choropleth";
         case GalleryItemType::GanttChart:

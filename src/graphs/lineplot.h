@@ -687,6 +687,9 @@ namespace Wisteria::Graphs
         /// @warning This must be called after setting the dataset.
         void SetXColumn(const wxString& xColumnName);
 
+        /// @brief Recalculates the size of embedded objects on the plot.
+        void RecalcSizes(wxDC& dc) override;
+
       private:
         /// @brief Sets the graph's descriptive string for screen readers.
         /// @details Call this after all data and features have been set.
@@ -695,9 +698,6 @@ namespace Wisteria::Graphs
         /** @brief Adds a line to the plot.
             @param line The line to add.*/
         void AddLine(const Line& line);
-
-        /// @brief Recalculates the size of embedded objects on the plot.
-        void RecalcSizes(wxDC& dc) override;
 
         Data::ColumnType m_xColumnType{ Data::ColumnType::None };
         wxString m_xColumnName;

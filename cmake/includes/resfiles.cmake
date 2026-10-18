@@ -102,6 +102,7 @@ images/reload.svg
 images/report.svg
 images/roadmap.svg
 images/rose.svg
+images/runchart.svg
 images/sankey.svg
 images/scale.svg
 images/scatterplot.svg

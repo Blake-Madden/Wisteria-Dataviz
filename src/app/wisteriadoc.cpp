@@ -2995,9 +2995,15 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
 
     // reference-lines
     const auto& refLines = graph->GetReferenceLines();
+    const auto* runChartForRefLines = dynamic_cast<const Wisteria::Graphs::RunChart*>(graph);
     wxString refLinesStr;
     for (const auto& rl : refLines)
         {
+        // a run chart rebuilds its median line from the data
+        if (runChartForRefLines != nullptr && runChartForRefLines->IsMedianLine(rl))
+            {
+            continue;
+            }
         const auto atStr = Wisteria::ReportEnumConvert::ConvertAxisTypeToString(rl.GetAxisType());
         if (!atStr.has_value())
             {
@@ -3485,6 +3491,38 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             {
             const auto* wcPlot = dynamic_cast<const Wisteria::Graphs::WCurvePlot*>(graph);
             node->Add(L"time-interval-label", wcPlot->GetTimeIntervalLabel());
+            }
+        // run-chart specific
+        if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::RunChart)))
+            {
+            const auto* runChart = dynamic_cast<const Wisteria::Graphs::RunChart*>(graph);
+            if (!runChart->IsShowingMedianLine())
+                {
+                node->Add(L"show-median-line", false);
+                }
+            if (runChart->IsShowingIndividualPoints())
+                {
+                node->Add(L"show-individual-points", true);
+                }
+            if (runChart->GetIndividualPointOpacity() != 90)
+                {
+                node->Add(L"individual-point-opacity",
+                          static_cast<double>(runChart->GetIndividualPointOpacity()));
+                }
+            if (runChart->GetSampleSize().has_value())
+                {
+                node->Add(L"sample-size", static_cast<double>(runChart->GetSampleSize().value()));
+                }
+            if (runChart->GetSampleStatistic() != Wisteria::Graphs::SampleStatistic::Mean)
+                {
+                const auto statisticStr =
+                    Wisteria::ReportEnumConvert::ConvertSampleStatisticToString(
+                        runChart->GetSampleStatistic());
+                if (statisticStr.has_value())
+                    {
+                    node->Add(L"sample-statistic", statisticStr.value());
+                    }
+                }
             }
         }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScatterPlot)))

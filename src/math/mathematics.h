@@ -267,11 +267,49 @@ inline constexpr double previous_interval(const double value, const uint8_t inte
                                   std::pow(10, intervalSize - 1));
     }
 
+/** @returns The "neat" step size that adjust_intervals() rounds @p start and @p end to,
+        or zero if the range is empty.
+    @param start The start of the range.
+    @param end The end of the range.\n
+     For example:\n
+     - 0.75 & 4.2 -> 0.5
+     - 73.96 & 74.04 -> 0.01*/
+[[nodiscard]]
+inline double neat_interval(double start, double end)
+    {
+    // in case the values are backwards
+    if (end < start)
+        {
+        std::swap(start, end);
+        }
+
+    const double range = end - start;
+    if (range == 0.0)
+        {
+        return 0.0;
+        }
+
+    const double magnitude = std::pow(10, std::floor(std::log10(range)));
+    const auto normalizedRange = safe_divide<double>(range, magnitude);
+
+    // choose a "neat" step from 1, 2, 2.5, 5, 10 scaled by magnitude
+    if (normalizedRange <= 2)
+        {
+        return 0.2 * magnitude;
+        }
+    if (normalizedRange <= 5)
+        {
+        return 0.5 * magnitude;
+        }
+    return magnitude;
+    }
+
 /** @returns Intelligent intervals for @p start and @p end to fall within.
     @param start The start of the interval.
     @param end The end of the interval.\n
      For example:\n
-     - 0.75 & 4.2 -> 0.5 - 4.5*/
+     - 0.75 & 4.2 -> 0.5 - 4.5
+    @sa neat_interval().*/
 [[nodiscard]]
 inline std::pair<double, double> adjust_intervals(double start, double end)
     {
@@ -281,30 +319,11 @@ inline std::pair<double, double> adjust_intervals(double start, double end)
         std::swap(start, end);
         }
 
-    const double range = end - start;
-
     // if start and end are the same, just return them as-is
-    if (range == 0.0)
+    const double neatStep = neat_interval(start, end);
+    if (neatStep == 0.0)
         {
         return std::make_pair(start, end);
-        }
-
-    const double magnitude = std::pow(10, std::floor(std::log10(range)));
-    const auto normalizedRange = safe_divide<double>(range, magnitude);
-
-    // choose a "neat" step from 1, 2, 2.5, 5, 10 scaled by magnitude
-    double neatStep{ 0.0 };
-    if (normalizedRange <= 2)
-        {
-        neatStep = 0.2 * magnitude;
-        }
-    else if (normalizedRange <= 5)
-        {
-        neatStep = 0.5 * magnitude;
-        }
-    else
-        {
-        neatStep = magnitude;
         }
 
     return std::make_pair(std::floor(safe_divide<double>(start, neatStep)) * neatStep,

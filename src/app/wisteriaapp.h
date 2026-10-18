@@ -359,6 +359,7 @@ constexpr wxWindowID ID_NEW_FUNNEL_CHART{ wxID_HIGHEST + 88 };
 
 // SPC graphs
 constexpr wxWindowID ID_NEW_ISHIKAWA_DIAGRAM{ wxID_HIGHEST + 96 };
+constexpr wxWindowID ID_NEW_RUN_CHART{ wxID_HIGHEST + 97 };
 
 // Statistical graphs
 constexpr wxWindowID ID_NEW_HISTOGRAM{ wxID_HIGHEST + 20 };

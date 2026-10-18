@@ -82,9 +82,11 @@ SET(WISTERIA_SRC
     src/graphs/proconroadmap.cpp
     src/graphs/racetrackchart.cpp
     src/graphs/roadmap.cpp
+    src/graphs/runchart.cpp
     src/graphs/sankeydiagram.cpp
     src/graphs/scalechart.cpp
     src/graphs/scatterplot.cpp
+    src/graphs/spcchart.cpp
     src/graphs/stemandleafplot.cpp
     src/graphs/table.cpp
     src/graphs/waffle_chart.cpp
@@ -124,6 +126,7 @@ SET(WISTERIA_SRC
     src/ui/dialogs/editors/insert_bullet_chart_dlg.cpp
     src/ui/dialogs/editors/insert_ishikawa_diagram_dlg.cpp
     src/ui/dialogs/editors/insert_nightingale_rose_chart_dlg.cpp
+    src/ui/dialogs/editors/insert_run_chart_dlg.cpp
     src/ui/dialogs/editors/insert_waterfallchart_dlg.cpp
     src/ui/dialogs/editors/insertboxplotdlg.cpp
     src/ui/dialogs/editors/insertbubbleplotdlg.cpp
