@@ -1316,6 +1316,24 @@ void WisteriaView::OnBackstagePrint(wxCommandEvent& event)
     }
 
 //-------------------------------------------
+void WisteriaView::ApplyPrinterHeadersFooters(const Wisteria::ReportBuilder& builder,
+                                              const std::vector<Wisteria::Canvas*>& pages)
+    {
+    for (auto* page : pages)
+        {
+        if (page != nullptr)
+            {
+            page->SetLeftPrinterHeader(builder.GetLeftPrinterHeader());
+            page->SetCenterPrinterHeader(builder.GetCenterPrinterHeader());
+            page->SetRightPrinterHeader(builder.GetRightPrinterHeader());
+            page->SetLeftPrinterFooter(builder.GetLeftPrinterFooter());
+            page->SetCenterPrinterFooter(builder.GetCenterPrinterFooter());
+            page->SetRightPrinterFooter(builder.GetRightPrinterFooter());
+            }
+        }
+    }
+
+//-------------------------------------------
 void WisteriaView::PrintAllPages(const bool prompt, const int copies)
     {
     if (m_pages.empty())
@@ -1323,8 +1341,11 @@ void WisteriaView::PrintAllPages(const bool prompt, const int copies)
         return;
         }
 
-    auto printOut =
-        std::make_unique<Wisteria::ReportPrintout>(m_pages, m_pages.front()->GetLabel());
+    ApplyPrinterHeadersFooters(GetReportBuilder(), m_pages);
+
+    auto printOut = std::make_unique<Wisteria::ReportPrintout>(
+        m_pages, GetReportBuilder().GetName().empty() ? m_pages.front()->GetLabel() :
+                                                        GetReportBuilder().GetName());
 
     auto& settings = wxGetApp().GetAppSettings();
     wxPrintData printData = m_pages.front()->GetPrinterSettings();
@@ -1765,6 +1786,7 @@ void WisteriaView::ExportPdf(const Wisteria::ReportBuilder& builder,
 
     const auto exportPages{ builder.GetPagesForExport(Wisteria::ReportBuilder::ExportFormat::Pdf,
                                                       pages) };
+    ApplyPrinterHeadersFooters(builder, exportPages);
     Wisteria::ReportPDFExport pdfReport(exportPages, filePath, options);
     }
 
@@ -1961,6 +1983,10 @@ void WisteriaView::OnProjectSettings([[maybe_unused]] wxCommandEvent& event)
     GetReportBuilder().SetKeywords(dlg.GetKeywords());
     GetReportBuilder().SetWatermarkLabel(dlg.GetWatermarkLabel());
     GetReportBuilder().SetWatermarkColor(dlg.GetWatermarkColor());
+    GetReportBuilder().SetPrinterHeaders(dlg.GetLeftPrinterHeader(), dlg.GetCenterPrinterHeader(),
+                                         dlg.GetRightPrinterHeader());
+    GetReportBuilder().SetPrinterFooters(dlg.GetLeftPrinterFooter(), dlg.GetCenterPrinterFooter(),
+                                         dlg.GetRightPrinterFooter());
 
     // apply the new watermark to all pages
     const Wisteria::Canvas::Watermark newWatermark{ dlg.GetWatermarkLabel(),

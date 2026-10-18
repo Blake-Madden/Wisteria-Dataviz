@@ -441,6 +441,25 @@ namespace Wisteria
             m_watermarkColor = reportWatermarkColor;
             }
 
+        // printer headers & footers (printing and PDF export only)
+        if (const auto printNode = json->GetProperty(L"print"); printNode->IsOk())
+            {
+            const auto loadSection = [&printNode](const wxString& section, wxString& left,
+                                                  wxString& center, wxString& right)
+            {
+                if (const auto sectionNode = printNode->GetProperty(section); sectionNode->IsOk())
+                    {
+                    left = sectionNode->GetProperty(L"left")->AsString();
+                    center = sectionNode->GetProperty(L"center")->AsString();
+                    right = sectionNode->GetProperty(L"right")->AsString();
+                    }
+            };
+            loadSection(L"header", m_leftPrinterHeader, m_centerPrinterHeader,
+                        m_rightPrinterHeader);
+            loadSection(L"footer", m_leftPrinterFooter, m_centerPrinterFooter,
+                        m_rightPrinterFooter);
+            }
+
         // SVG export options
         if (const auto svgExportNode = json->GetProperty(L"svg-export"); svgExportNode->IsOk())
             {

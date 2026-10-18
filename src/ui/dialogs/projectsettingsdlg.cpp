@@ -8,6 +8,7 @@
 
 #include "projectsettingsdlg.h"
 #include "../../app/wisteriaapp.h"
+#include "printerheaderfooterdlg.h"
 #include <wx/valgen.h>
 
 namespace Wisteria::UI
@@ -30,6 +31,12 @@ namespace Wisteria::UI
         m_subject = reportBuilder.GetSubject();
         m_keywords = reportBuilder.GetKeywords();
         m_watermarkLabel = reportBuilder.GetWatermarkLabel();
+        m_leftPrinterHeader = reportBuilder.GetLeftPrinterHeader();
+        m_centerPrinterHeader = reportBuilder.GetCenterPrinterHeader();
+        m_rightPrinterHeader = reportBuilder.GetRightPrinterHeader();
+        m_leftPrinterFooter = reportBuilder.GetLeftPrinterFooter();
+        m_centerPrinterFooter = reportBuilder.GetCenterPrinterFooter();
+        m_rightPrinterFooter = reportBuilder.GetRightPrinterFooter();
         if (reportBuilder.GetWatermarkColor().IsOk())
             {
             m_watermarkColor = reportBuilder.GetWatermarkColor();
@@ -98,9 +105,36 @@ namespace Wisteria::UI
         wmBox->Add(wmGrid, wxSizerFlags{}.Expand().Border());
         mainSizer->Add(wmBox, wxSizerFlags{}.Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM));
 
+        // printer headers & footers
+        auto* headerFooterBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Printing && PDF"));
+        auto* headerFooterButton =
+            new wxButton(headerFooterBox->GetStaticBox(), wxID_ANY, _(L"Headers && Footers..."));
+        headerFooterButton->Bind(wxEVT_BUTTON, &ProjectSettingsDlg::OnEditHeadersFooters, this);
+        headerFooterBox->Add(headerFooterButton, wxSizerFlags{}.Border());
+        mainSizer->Add(headerFooterBox,
+                       wxSizerFlags{}.Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM));
+
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
                        wxSizerFlags{}.Expand().Border());
 
         SetSizer(mainSizer);
+        }
+
+    //-------------------------------------------
+    void ProjectSettingsDlg::OnEditHeadersFooters([[maybe_unused]] wxCommandEvent& event)
+        {
+        PrinterHeaderFooterDlg dlg(this, m_leftPrinterHeader, m_centerPrinterHeader,
+                                   m_rightPrinterHeader, m_leftPrinterFooter, m_centerPrinterFooter,
+                                   m_rightPrinterFooter);
+        if (dlg.ShowModal() != wxID_OK)
+            {
+            return;
+            }
+        m_leftPrinterHeader = dlg.GetLeftPrinterHeader();
+        m_centerPrinterHeader = dlg.GetCenterPrinterHeader();
+        m_rightPrinterHeader = dlg.GetRightPrinterHeader();
+        m_leftPrinterFooter = dlg.GetLeftPrinterFooter();
+        m_centerPrinterFooter = dlg.GetCenterPrinterFooter();
+        m_rightPrinterFooter = dlg.GetRightPrinterFooter();
         }
     } // namespace Wisteria::UI

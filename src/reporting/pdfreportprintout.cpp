@@ -8,8 +8,43 @@
 
 #include "pdfreportprintout.h"
 #include "../app/wisteriaapp.h"
+#include "reportprintout.h"
+#include <array>
 #include <wx/paper.h>
 #include <wx/pdfdc.h>
+
+//------------------------------------------------------
+void Wisteria::ReportPDFExport::DrawPrintStrip(wxDC& dc, const wxRect& stripRect,
+                                               const double scaling,
+                                               const std::array<wxString, 3>& text,
+                                               const PageVerticalAlignment vertAlign)
+    {
+    constexpr std::array<PageHorizontalAlignment, 3> horizAligns{
+        PageHorizontalAlignment::LeftAligned, PageHorizontalAlignment::Centered,
+        PageHorizontalAlignment::RightAligned
+    };
+    constexpr std::array<TextAlignment, 3> textAligns{ TextAlignment::FlushLeft,
+                                                       TextAlignment::Centered,
+                                                       TextAlignment::FlushRight };
+
+    for (size_t i = 0; i < text.size(); ++i)
+        {
+        if (text[i].empty())
+            {
+            continue;
+            }
+        GraphItems::Label label(GraphItems::GraphItemInfo{ text[i] }
+                                    .Anchoring(Anchoring::TopLeftCorner)
+                                    .Padding(0, 0, 0, 0)
+                                    .Pen(wxNullPen)
+                                    .LabelAlignment(textAligns[i])
+                                    .LabelPageVerticalAlignment(vertAlign)
+                                    .LabelPageHorizontalAlignment(horizAligns[i])
+                                    .DPIScaling(dc.GetContentScaleFactor()));
+        label.SetBoundingBox(stripRect, dc, scaling);
+        label.Draw(dc);
+        }
+    }
 
 //------------------------------------------------------
 Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
@@ -57,8 +92,11 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
     pdfDC.GetPdfDocument()->SetCreator(wxTheApp->GetAppDisplayName());
 
+    const size_t pageCount{ canvases.size() };
+    int pageNum{ 0 };
     for (auto* canvas : canvases)
         {
+        ++pageNum;
         if (canvas == nullptr)
             {
             continue;
@@ -105,7 +143,24 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
             dipH = dipSize.GetHeight() - topMargin - bottomMargin;
             }
 
-        pdfDC.SetDeviceOrigin(leftMargin, topMargin);
+        // reserve room for the header and footer (if being used)
+        constexpr int headerFooterStripDIPs{ 24 };
+        const bool hasHeader = !canvas->GetLeftPrinterHeader().empty() ||
+                               !canvas->GetCenterPrinterHeader().empty() ||
+                               !canvas->GetRightPrinterHeader().empty();
+        const bool hasFooter = !canvas->GetLeftPrinterFooter().empty() ||
+                               !canvas->GetCenterPrinterFooter().empty() ||
+                               !canvas->GetRightPrinterFooter().empty();
+        const int headerStripDIPs{ hasHeader ? headerFooterStripDIPs : 0 };
+        const int footerStripDIPs{ hasFooter ? headerFooterStripDIPs : 0 };
+        // the page is laid out at full size and then scaled to fit between the strips
+        const int availHeightDIPs{ dipH - (headerStripDIPs + footerStripDIPs) };
+        const double contentScale{ safe_divide<double>(availHeightDIPs, dipH) };
+        const int contentLeftDIPs{ leftMargin +
+                                   static_cast<int>(dipW * (1.0 - contentScale) / 2.0) };
+        const int contentTopDIPs{ topMargin + headerStripDIPs };
+
+        pdfDC.SetDeviceOrigin(contentLeftDIPs, contentTopDIPs);
 
         // save original canvas state
         const int origMinWidth = canvas->GetCanvasMinWidthDIPs();
@@ -155,8 +210,65 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
             {
             const wxEventBlocker blocker{ canvas };
             canvas->CalcAllSizes(pdfDC);
+
+            // the DC's graphics context (used for shapes) ignores the DC's device origin,
+            // so apply the same offset to it while drawing this page
+            auto* gc = pdfDC.GetGraphicsContext();
+            if (gc != nullptr)
+                {
+                const wxPoint origin{ pdfDC.GetDeviceOrigin() };
+                gc->PushState();
+                gc->Translate(pdfDC.DeviceToLogicalXRel(origin.x),
+                              pdfDC.DeviceToLogicalYRel(origin.y));
+                gc->Scale(contentScale, contentScale);
+                }
+            pdfDC.SetUserScale(contentScale, contentScale);
             canvas->OnDraw(pdfDC);
             canvas->DrawWatermarkLabel(pdfDC);
+            pdfDC.SetUserScale(1.0, 1.0);
+            if (gc != nullptr)
+                {
+                gc->PopState();
+                }
+
+            if (hasHeader || hasFooter)
+                {
+                // the strips span the full page width, so use the page's origin
+                pdfDC.SetDeviceOrigin(leftMargin, contentTopDIPs);
+                // content area and strip size in the DC's units
+                const wxSize contentSize{ pdfDC.FromDIP(wxSize{ dipW, availHeightDIPs }) };
+                const int stripHeight{
+                    pdfDC.FromDIP(wxSize{ 0, headerFooterStripDIPs }).GetHeight()
+                };
+                const wxRect canvasRect{ 0, 0, contentSize.GetWidth(), contentSize.GetHeight() };
+                const auto expand = [&](const wxString& str)
+                {
+                    return Wisteria::ReportPrintout::ExpandPrintString(str, pageNum, pageCount,
+                                                                       options.m_title);
+                };
+                if (hasHeader)
+                    {
+                    DrawPrintStrip(pdfDC,
+                                   wxRect{ canvasRect.GetX(), canvasRect.GetY() - stripHeight,
+                                           canvasRect.GetWidth(), stripHeight },
+                                   canvas->GetScaling(),
+                                   { expand(canvas->GetLeftPrinterHeader()),
+                                     expand(canvas->GetCenterPrinterHeader()),
+                                     expand(canvas->GetRightPrinterHeader()) },
+                                   PageVerticalAlignment::TopAligned);
+                    }
+                if (hasFooter)
+                    {
+                    DrawPrintStrip(pdfDC,
+                                   wxRect{ canvasRect.GetX(), canvasRect.GetBottom() + 1,
+                                           canvasRect.GetWidth(), stripHeight },
+                                   canvas->GetScaling(),
+                                   { expand(canvas->GetLeftPrinterFooter()),
+                                     expand(canvas->GetCenterPrinterFooter()),
+                                     expand(canvas->GetRightPrinterFooter()) },
+                                   PageVerticalAlignment::BottomAligned);
+                    }
+                }
             }
         pdfDC.EndPage();
 

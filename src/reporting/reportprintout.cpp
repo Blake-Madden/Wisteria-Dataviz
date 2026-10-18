@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "reportprintout.h"
+#include <utility>
 
 //------------------------------------------------------
 bool Wisteria::ReportPrintout::OnPrintPage(const int page)
@@ -204,10 +205,11 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
 
 //------------------------------------------------------
 wxString Wisteria::ReportPrintout::ExpandPrintString(const wxString& printString,
-                                                     const int pageNumber) const
+                                                     const int pageNumber, const size_t pageCount,
+                                                     const wxString& title)
     {
     // page out of range, so don't do anything
-    if (GetCanvasFromPageNumber(pageNumber) == nullptr)
+    if (pageNumber <= 0 || std::cmp_greater(pageNumber, pageCount))
         {
         return printString;
         }
@@ -219,16 +221,15 @@ wxString Wisteria::ReportPrintout::ExpandPrintString(const wxString& printString
                            true);
     expandedString.Replace(
         L"@PAGESCNT@",
-        wxNumberFormatter::ToString(m_canvases.size(), 0,
-                                    wxNumberFormatter::Style::Style_WithThousandsSep),
+        wxNumberFormatter::ToString(pageCount, 0, wxNumberFormatter::Style::Style_WithThousandsSep),
         true);
 
     const wxDateTime now = wxDateTime::Now();
-    expandedString.Replace(L"@TITLE@", GetCanvasFromPageNumber(pageNumber)->GetLabel(), true);
+    expandedString.Replace(L"@TITLE@", title, true);
     expandedString.Replace(L"@USER@", wxGetUserName(), true);
+    expandedString.Replace(L"@DATETIME@", now.FormatISOCombined(), true);
     expandedString.Replace(L"@DATE@", now.FormatDate(), true);
     expandedString.Replace(L"@TIME@", now.FormatTime(), true);
-    expandedString.Replace(L"[DATETIME]", now.FormatISOCombined());
 
     return expandedString;
     }

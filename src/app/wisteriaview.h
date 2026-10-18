@@ -184,6 +184,12 @@ class WisteriaView final : public wxView
     void OnPrintAll(wxCommandEvent& event);
     void OnBackstagePrint(wxCommandEvent& event);
     void PrintAllPages(bool prompt, int copies);
+
+    /// @brief Copies the project's printer headers and footers onto the pages.
+    /// @param builder The project's report builder.
+    /// @param pages The pages to apply the headers and footers to.
+    static void ApplyPrinterHeadersFooters(const Wisteria::ReportBuilder& builder,
+                                           const std::vector<Wisteria::Canvas*>& pages);
     void OnOptions(wxCommandEvent& event);
     void OnSvgExport(wxCommandEvent& event);
     void OnHtmlExport(wxCommandEvent& event);

@@ -13,6 +13,7 @@
 #define WISTERIA_REPORT_PDF_EXPORT_H
 
 #include "../base/canvas.h"
+#include <array>
 #include <vector>
 
 namespace Wisteria
@@ -30,6 +31,17 @@ namespace Wisteria
             @param options The PDF export options (metadata, compression, etc.).*/
         ReportPDFExport(const std::vector<Canvas*>& canvases, const wxString& filePath,
                         const PdfExportOptions& options = PdfExportOptions{});
+
+      private:
+        /// @brief Draws a left/center/right header or footer strip.
+        /// @param dc The DC to draw on.
+        /// @param stripRect The area of the strip.
+        /// @param scaling The canvas scaling.
+        /// @param text The left, center, and right text (already expanded).
+        /// @param vertAlign How the text is aligned vertically within the strip.
+        static void DrawPrintStrip(wxDC& dc, const wxRect& stripRect, double scaling,
+                                   const std::array<wxString, 3>& text,
+                                   PageVerticalAlignment vertAlign);
         };
     } // namespace Wisteria
 

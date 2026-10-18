@@ -726,6 +726,70 @@ namespace Wisteria
         /// @param color The new watermark color.
         void SetWatermarkColor(const wxColour& color) { m_watermarkColor = color; }
 
+        /// @returns The left printer header.
+        [[nodiscard]]
+        const wxString& GetLeftPrinterHeader() const noexcept
+            {
+            return m_leftPrinterHeader;
+            }
+
+        /// @returns The center printer header.
+        [[nodiscard]]
+        const wxString& GetCenterPrinterHeader() const noexcept
+            {
+            return m_centerPrinterHeader;
+            }
+
+        /// @returns The right printer header.
+        [[nodiscard]]
+        const wxString& GetRightPrinterHeader() const noexcept
+            {
+            return m_rightPrinterHeader;
+            }
+
+        /// @returns The left printer footer.
+        [[nodiscard]]
+        const wxString& GetLeftPrinterFooter() const noexcept
+            {
+            return m_leftPrinterFooter;
+            }
+
+        /// @returns The center printer footer.
+        [[nodiscard]]
+        const wxString& GetCenterPrinterFooter() const noexcept
+            {
+            return m_centerPrinterFooter;
+            }
+
+        /// @returns The right printer footer.
+        [[nodiscard]]
+        const wxString& GetRightPrinterFooter() const noexcept
+            {
+            return m_rightPrinterFooter;
+            }
+
+        /// @brief Sets the printer headers (used for printing and PDF export).
+        /// @param left The left header.
+        /// @param center The center header.
+        /// @param right The right header.
+        void SetPrinterHeaders(const wxString& left, const wxString& center, const wxString& right)
+            {
+            m_leftPrinterHeader = left;
+            m_centerPrinterHeader = center;
+            m_rightPrinterHeader = right;
+            }
+
+        /// @brief Sets the printer footers (used for printing and PDF export).
+        /// @param left The left footer.
+        /// @param center The center footer.
+        /// @param right The right footer.
+        void SetPrinterFooters(const wxString& left, const wxString& center, const wxString& right)
+            {
+            m_leftPrinterFooter = left;
+            m_centerPrinterFooter = center;
+            m_rightPrinterFooter = right;
+            }
+
         /// @returns The SVG export options for the report.
         [[nodiscard]]
         const SVGReportOptions& GetSvgExportOptions() const noexcept
@@ -1809,6 +1873,12 @@ namespace Wisteria
         bool m_autoRefresh{ false };
         wxString m_watermarkLabel;
         wxColour m_watermarkColor;
+        wxString m_leftPrinterHeader;
+        wxString m_centerPrinterHeader;
+        wxString m_rightPrinterHeader;
+        wxString m_leftPrinterFooter;
+        wxString m_centerPrinterFooter;
+        wxString m_rightPrinterFooter;
 
         SVGReportOptions m_svgExportOptions{ wxString{} };
         HtmlDashboardOptions m_htmlExportOptions{ wxString{} };

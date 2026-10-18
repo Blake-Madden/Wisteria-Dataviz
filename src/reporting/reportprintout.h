@@ -58,6 +58,16 @@ namespace Wisteria
             @returns @c true if printing page was successful.*/
         bool OnPrintPage(int page) final;
 
+        /** @brief Expands the dynamic tags in a header or footer.
+            @param printString The header or footer text.
+            @param pageNumber The current page number (1-indexed).
+            @param pageCount The total number of pages.
+            @param title The title to use for @c \@TITLE\@.
+            @returns The text with the tags expanded.*/
+        [[nodiscard]]
+        static wxString ExpandPrintString(const wxString& printString, int pageNumber,
+                                          size_t pageCount, const wxString& title);
+
       private:
         /// @returns The margin around the printing area.
         [[nodiscard]]
@@ -74,7 +84,10 @@ namespace Wisteria
 
         /// @returns A header or footer with dynamic constants expanded in them.
         [[nodiscard]]
-        wxString ExpandPrintString(const wxString& printString, int pageNumber) const;
+        wxString ExpandPrintString(const wxString& printString, const int pageNumber) const
+            {
+            return ExpandPrintString(printString, pageNumber, m_canvases.size(), GetTitle());
+            }
 
         /// @brief Gets the canvas associated with a page #.
         /// @details Page numbers are 1-indexed, so we need to take that into account.

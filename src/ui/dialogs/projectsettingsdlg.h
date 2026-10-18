@@ -88,10 +88,60 @@ namespace Wisteria::UI
                                                          m_watermarkColor;
             }
 
+        /// @returns The left printer header.
+        [[nodiscard]]
+        const wxString& GetLeftPrinterHeader() const noexcept
+            {
+            return m_leftPrinterHeader;
+            }
+
+        /// @returns The center printer header.
+        [[nodiscard]]
+        const wxString& GetCenterPrinterHeader() const noexcept
+            {
+            return m_centerPrinterHeader;
+            }
+
+        /// @returns The right printer header.
+        [[nodiscard]]
+        const wxString& GetRightPrinterHeader() const noexcept
+            {
+            return m_rightPrinterHeader;
+            }
+
+        /// @returns The left printer footer.
+        [[nodiscard]]
+        const wxString& GetLeftPrinterFooter() const noexcept
+            {
+            return m_leftPrinterFooter;
+            }
+
+        /// @returns The center printer footer.
+        [[nodiscard]]
+        const wxString& GetCenterPrinterFooter() const noexcept
+            {
+            return m_centerPrinterFooter;
+            }
+
+        /// @returns The right printer footer.
+        [[nodiscard]]
+        const wxString& GetRightPrinterFooter() const noexcept
+            {
+            return m_rightPrinterFooter;
+            }
+
       private:
         void CreateControls();
+        void OnEditHeadersFooters(wxCommandEvent& event);
 
         wxColourPickerCtrl* m_watermarkColorPicker{ nullptr };
+
+        wxString m_leftPrinterHeader;
+        wxString m_centerPrinterHeader;
+        wxString m_rightPrinterHeader;
+        wxString m_leftPrinterFooter;
+        wxString m_centerPrinterFooter;
+        wxString m_rightPrinterFooter;
 
         wxString m_projectName;
         wxString m_subject;

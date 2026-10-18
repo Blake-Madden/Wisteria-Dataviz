@@ -110,6 +110,32 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
         root->DeleteProperty(L"watermark");
         }
 
+    // printer headers & footers
+    //--------------------------
+    const auto& builder = view->GetReportBuilder();
+    if (!builder.GetLeftPrinterHeader().empty() || !builder.GetCenterPrinterHeader().empty() ||
+        !builder.GetRightPrinterHeader().empty() || !builder.GetLeftPrinterFooter().empty() ||
+        !builder.GetCenterPrinterFooter().empty() || !builder.GetRightPrinterFooter().empty())
+        {
+        auto printObj = root->GetProperty(L"print");
+
+        auto headerNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+        headerNode->Add(L"left", builder.GetLeftPrinterHeader());
+        headerNode->Add(L"center", builder.GetCenterPrinterHeader());
+        headerNode->Add(L"right", builder.GetRightPrinterHeader());
+        printObj->Add(L"header", headerNode);
+
+        auto footerNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+        footerNode->Add(L"left", builder.GetLeftPrinterFooter());
+        footerNode->Add(L"center", builder.GetCenterPrinterFooter());
+        footerNode->Add(L"right", builder.GetRightPrinterFooter());
+        printObj->Add(L"footer", footerNode);
+        }
+    else
+        {
+        root->DeleteProperty(L"print");
+        }
+
         // svg-export (per-project, does not affect canvas paper settings)
         {
         const auto& svgOpts = view->GetReportBuilder().GetSvgExportOptions();
