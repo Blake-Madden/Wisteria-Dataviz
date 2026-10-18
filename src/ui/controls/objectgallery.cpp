@@ -119,6 +119,7 @@ namespace Wisteria::UI
         case GalleryGroup::Sports:
             return _(L"Sports");
         case GalleryGroup::Spc:
+            // TRANSLATORS: Abbreviation for "Statistical Process Control."
             return _(L"SPC");
             }
         return {};

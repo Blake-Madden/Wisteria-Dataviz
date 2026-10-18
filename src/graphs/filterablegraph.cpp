@@ -63,6 +63,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FilterableGraph, Wisteria::GraphItem
         const auto defaultIndex = FindVariant(defaultValue);
         if (!defaultIndex.has_value() && !defaultValue.empty())
             {
+            // TRANSLATORS: The first %s is the default filter value, the second is the
+            // column name, and the third is the label of the fallback ("all") choice.
+            // Do not reorder them.
             wxLogWarning(_(L"'%s': default filter value not found in column '%s'. "
                            "Falling back to '%s'."),
                          defaultValue, filterColumn, allLabel);

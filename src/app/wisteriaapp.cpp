@@ -1144,6 +1144,7 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                           _(L"Statistical graphs"));
         graphButtonBar->SetKeyTip(ID_INSERT_GRAPH_STATISTICAL, _DT(L"S"));
 
+        // TRANSLATORS: Abbreviation for "Statistical Process Control."
         graphButtonBar->AddDropdownButton(ID_INSERT_GRAPH_SPC, _(L"SPC"),
                                           ReadSvgIcon(L"images/chart-spc.svg"),
                                           _(L"Statistical process control graphs"));

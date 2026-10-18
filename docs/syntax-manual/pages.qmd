@@ -4,7 +4,8 @@ A page can contain the following properties:
 
 - `"name"`: A string value representing the name of the page.
 - `"guid"`: A string value uniquely identifying the page (e.g., `"550E8400-E29B-41D4-A716-446655440000"`). \
-  This is optional. If omitted, a new one is generated each time the report is loaded. \
+  This is optional.
+  If omitted, a new one is generated each time the report is loaded. \
   Saved projects write this value so that it remains the same, and it is included in HTML dashboard exports (as the `data-guid` attribute of each page).
 - `"page-numbering"`: Resets the internal page counter to 1. \
   Note that the page number can be referenced via the function ``PageNumber()``.

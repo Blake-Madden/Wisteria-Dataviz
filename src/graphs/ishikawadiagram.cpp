@@ -935,12 +935,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
             if (m_showBranchLabels)
                 {
                 const wxString labelText{ m_showCauseCounts ?
-                                              wxString::Format(
-                                                  /* TRANSLATORS: branch label of a cause-and-effect
-                                                     diagram. 1st %s is the branch's name, 2nd is
-                                                     the number of causes in the branch. */
-                                                  _(L"%s (%zu)"), branch.m_label,
-                                                  branch.m_causes.size()) :
+                                              wxString::Format(_DT(L"%s (%zu)"), branch.m_label,
+                                                               branch.m_causes.size()) :
                                               branch.m_label };
                 // push labels further left (away from the rib)
                 const int labelOffset{ static_cast<int>(ScaleToScreenAndCanvas(12)) };
