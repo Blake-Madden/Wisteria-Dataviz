@@ -1382,7 +1382,20 @@ bool WisteriaView::SelectPagesToExport(const Wisteria::ReportBuilder::ExportForm
         pageGuids.push_back(page != nullptr ? page->GetGuid() : wxString{});
         }
 
-    const auto previousExcluded = GetReportBuilder().GetExcludedPageGuids(format);
+    auto previousExcluded = GetReportBuilder().GetExcludedPageGuids(format);
+
+    // nothing to choose from with a single page, so just export it
+    if (m_pages.size() == 1)
+        {
+        if (!previousExcluded.empty())
+            {
+            previousExcluded.clear();
+            GetReportBuilder().SetExcludedPageGuids(format, std::move(previousExcluded));
+            GetDocument()->Modify(true);
+            }
+        return true;
+        }
+
     Wisteria::UI::PageSelectionDlg pagesDlg(m_frame, caption, pageLabels, pageGuids,
                                             previousExcluded);
     if (pagesDlg.ShowModal() != wxID_OK)
