@@ -1592,6 +1592,9 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
     Wisteria::HtmlDashboardOptions dlgOptions{ savedOptions };
     dlgOptions.Title(GetReportBuilder().GetName().empty() ? GetDocument()->GetUserReadableName() :
                                                             GetReportBuilder().GetName());
+    dlgOptions.Author(GetReportBuilder().GetAuthor());
+    dlgOptions.Subject(GetReportBuilder().GetSubject());
+    dlgOptions.Keywords(GetReportBuilder().GetKeywords());
     const wxString initialTheme{ savedOptions.m_theme.empty() ? wxString{ L"default" } :
                                                                 savedOptions.m_theme };
     Wisteria::UI::HtmlDashboardDlg optionsDlg(
@@ -1603,9 +1606,21 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
+    const bool docInfoChanged = (GetReportBuilder().GetName() != optionsDlg.GetDashboardTitle() ||
+                                 GetReportBuilder().GetSubject() != optionsDlg.GetSubject() ||
+                                 GetReportBuilder().GetAuthor() != optionsDlg.GetAuthor() ||
+                                 GetReportBuilder().GetKeywords() != optionsDlg.GetKeywords());
+    if (docInfoChanged)
+        {
+        GetReportBuilder().SetName(optionsDlg.GetDashboardTitle());
+        GetReportBuilder().SetSubject(optionsDlg.GetSubject());
+        GetReportBuilder().SetAuthor(optionsDlg.GetAuthor());
+        GetReportBuilder().SetKeywords(optionsDlg.GetKeywords());
+        }
+
     // persist the choices to the project, and to the app settings for new projects
     const bool changed =
-        (savedOptions.m_theme != optionsDlg.GetTheme()) ||
+        docInfoChanged || (savedOptions.m_theme != optionsDlg.GetTheme()) ||
         (savedOptions.m_logoPath != optionsDlg.GetLogoPath()) ||
         (savedOptions.m_view != optionsDlg.GetInitialView()) ||
         (savedOptions.m_colorMode != optionsDlg.GetInitialColorMode()) ||
@@ -1646,16 +1661,17 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    ExportHtml(GetReportBuilder(), m_pages, fileDlg.GetPath(), optionsDlg.GetDashboardTitle(),
+    ExportHtml(GetReportBuilder(), m_pages, fileDlg.GetPath(), GetDocument()->GetUserReadableName(),
                optionsDlg.GetFilterOverrides());
     }
 
 //-------------------------------------------
 void WisteriaView::ExportHtml(
     const Wisteria::ReportBuilder& builder, const std::vector<Wisteria::Canvas*>& pages,
-    const wxString& filePath, const wxString& title,
+    const wxString& filePath, const wxString& fallbackTitle,
     const std::vector<Wisteria::HtmlDashboardOptions::FilterOverride>& filterOverrides)
     {
+    const wxString title{ builder.GetName().empty() ? fallbackTitle : builder.GetName() };
     const auto& savedOptions = builder.GetHtmlExportOptions();
     const auto exportPages{ builder.GetPagesForExport(Wisteria::ReportBuilder::ExportFormat::Html,
                                                       pages) };
@@ -1692,6 +1708,9 @@ void WisteriaView::ExportHtml(
         exportPages,
         Wisteria::HtmlDashboardOptions(filePath)
             .Title(builder.ExpandConstants(title))
+            .Author(builder.GetAuthor())
+            .Subject(builder.GetSubject())
+            .Keywords(builder.GetKeywords())
             .Css(coreCss + L"\n" + themeCss)
             .Logo(savedOptions.m_logoPath)
             .InitialView(savedOptions.m_view)
@@ -1727,6 +1746,7 @@ void WisteriaView::OnPdfExport([[maybe_unused]] wxCommandEvent& event)
     options.m_title = GetReportBuilder().GetName().empty() ? GetDocument()->GetUserReadableName() :
                                                              GetReportBuilder().GetName();
     options.m_subject = GetReportBuilder().GetSubject();
+    options.m_author = GetReportBuilder().GetAuthor();
     options.m_keywords = GetReportBuilder().GetKeywords();
 
     wxPrintData printData;
@@ -1750,22 +1770,22 @@ void WisteriaView::OnPdfExport([[maybe_unused]] wxCommandEvent& event)
 
     const bool docInfoChanged = (GetReportBuilder().GetName() != options.m_title ||
                                  GetReportBuilder().GetSubject() != options.m_subject ||
+                                 GetReportBuilder().GetAuthor() != options.m_author ||
                                  GetReportBuilder().GetKeywords() != options.m_keywords);
     if (docInfoChanged)
         {
         GetReportBuilder().SetName(options.m_title);
         GetReportBuilder().SetSubject(options.m_subject);
+        GetReportBuilder().SetAuthor(options.m_author);
         GetReportBuilder().SetKeywords(options.m_keywords);
         }
 
     const bool pdfPaperChanged =
-        (savedPdfOptions.m_author != options.m_author) ||
         (savedPdfOptions.m_paperSize != options.m_paperSize) ||
         (savedPdfOptions.m_paperOrientation != options.m_paperOrientation) ||
         (savedPdfOptions.m_compress != options.m_compress);
     if (pdfPaperChanged)
         {
-        savedPdfOptions.m_author = options.m_author;
         savedPdfOptions.m_paperSize = options.m_paperSize;
         savedPdfOptions.m_paperOrientation = options.m_paperOrientation;
         savedPdfOptions.m_compress = options.m_compress;
@@ -1787,6 +1807,7 @@ void WisteriaView::ExportPdf(const Wisteria::ReportBuilder& builder,
     Wisteria::PdfExportOptions options{ builder.GetPdfExportOptions() };
     options.m_title = builder.GetName().empty() ? fallbackTitle : builder.GetName();
     options.m_subject = builder.GetSubject();
+    options.m_author = builder.GetAuthor();
     options.m_keywords = builder.GetKeywords();
 
     const auto exportPages{ builder.GetPagesForExport(Wisteria::ReportBuilder::ExportFormat::Pdf,
@@ -1815,6 +1836,7 @@ void WisteriaView::OnPptxExport([[maybe_unused]] wxCommandEvent& event)
     options.m_title = GetReportBuilder().GetName().empty() ? GetDocument()->GetUserReadableName() :
                                                              GetReportBuilder().GetName();
     options.m_subject = GetReportBuilder().GetSubject();
+    options.m_author = GetReportBuilder().GetAuthor();
     options.m_keywords = GetReportBuilder().GetKeywords();
 
     Wisteria::UI::PptxExportDlg pptxOptionsDlg(m_frame, options);
@@ -1834,16 +1856,17 @@ void WisteriaView::OnPptxExport([[maybe_unused]] wxCommandEvent& event)
 
     const bool docInfoChanged = (GetReportBuilder().GetName() != options.m_title ||
                                  GetReportBuilder().GetSubject() != options.m_subject ||
+                                 GetReportBuilder().GetAuthor() != options.m_author ||
                                  GetReportBuilder().GetKeywords() != options.m_keywords);
     if (docInfoChanged)
         {
         GetReportBuilder().SetName(options.m_title);
         GetReportBuilder().SetSubject(options.m_subject);
+        GetReportBuilder().SetAuthor(options.m_author);
         GetReportBuilder().SetKeywords(options.m_keywords);
         }
 
     const bool pptxOptionsChanged =
-        (savedOptions.m_author != options.m_author) ||
         (savedOptions.m_publisher != options.m_publisher) ||
         (savedOptions.m_slideSize != options.m_slideSize) ||
         (savedOptions.m_customWidthInches != options.m_customWidthInches) ||
@@ -1879,6 +1902,7 @@ void WisteriaView::ExportPptx(const Wisteria::ReportBuilder& builder,
     Wisteria::PowerPointExportOptions options{ builder.GetPowerPointExportOptions() };
     options.m_title = builder.GetName().empty() ? fallbackTitle : builder.GetName();
     options.m_subject = builder.GetSubject();
+    options.m_author = builder.GetAuthor();
     options.m_keywords = builder.GetKeywords();
 
     const auto exportPages{ builder.GetPagesForExport(Wisteria::ReportBuilder::ExportFormat::Pptx,
@@ -1905,6 +1929,7 @@ void WisteriaView::OnOdpExport([[maybe_unused]] wxCommandEvent& event)
     options.m_title = GetReportBuilder().GetName().empty() ? GetDocument()->GetUserReadableName() :
                                                              GetReportBuilder().GetName();
     options.m_subject = GetReportBuilder().GetSubject();
+    options.m_author = GetReportBuilder().GetAuthor();
     options.m_keywords = GetReportBuilder().GetKeywords();
 
     Wisteria::UI::OdpExportDlg odpOptionsDlg(m_frame, options);
@@ -1924,16 +1949,17 @@ void WisteriaView::OnOdpExport([[maybe_unused]] wxCommandEvent& event)
 
     const bool docInfoChanged = (GetReportBuilder().GetName() != options.m_title ||
                                  GetReportBuilder().GetSubject() != options.m_subject ||
+                                 GetReportBuilder().GetAuthor() != options.m_author ||
                                  GetReportBuilder().GetKeywords() != options.m_keywords);
     if (docInfoChanged)
         {
         GetReportBuilder().SetName(options.m_title);
         GetReportBuilder().SetSubject(options.m_subject);
+        GetReportBuilder().SetAuthor(options.m_author);
         GetReportBuilder().SetKeywords(options.m_keywords);
         }
 
     const bool odpOptionsChanged =
-        (savedOptions.m_author != options.m_author) ||
         (savedOptions.m_publisher != options.m_publisher) ||
         (savedOptions.m_slideSize != options.m_slideSize) ||
         (savedOptions.m_customWidthInches != options.m_customWidthInches) ||
@@ -1966,6 +1992,7 @@ void WisteriaView::ExportOdp(const Wisteria::ReportBuilder& builder,
     Wisteria::OdpExportOptions options{ builder.GetOdpExportOptions() };
     options.m_title = builder.GetName().empty() ? fallbackTitle : builder.GetName();
     options.m_subject = builder.GetSubject();
+    options.m_author = builder.GetAuthor();
     options.m_keywords = builder.GetKeywords();
 
     const auto exportPages{ builder.GetPagesForExport(Wisteria::ReportBuilder::ExportFormat::Odp,
@@ -1985,6 +2012,7 @@ void WisteriaView::OnProjectSettings([[maybe_unused]] wxCommandEvent& event)
 
     GetReportBuilder().SetName(dlg.GetProjectName());
     GetReportBuilder().SetSubject(dlg.GetSubject());
+    GetReportBuilder().SetAuthor(dlg.GetAuthor());
     GetReportBuilder().SetKeywords(dlg.GetKeywords());
     GetReportBuilder().SetWatermarkLabel(dlg.GetWatermarkLabel());
     GetReportBuilder().SetWatermarkColor(dlg.GetWatermarkColor());

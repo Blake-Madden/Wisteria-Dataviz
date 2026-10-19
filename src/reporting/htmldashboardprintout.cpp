@@ -2685,6 +2685,21 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         }
     html += wxString::Format(L"<meta name=\"dcterms.created\" content=\"%s\">\n",
                              wxDateTime::Now().FormatISOCombined());
+    if (!options.m_author.empty())
+        {
+        html += wxString::Format(L"<meta name=\"author\" content=\"%s\">\n",
+                                 SVGReportPrintout::EscapeXmlAttr(options.m_author));
+        }
+    if (!options.m_subject.empty())
+        {
+        html += wxString::Format(L"<meta name=\"description\" content=\"%s\">\n",
+                                 SVGReportPrintout::EscapeXmlAttr(options.m_subject));
+        }
+    if (!options.m_keywords.empty())
+        {
+        html += wxString::Format(L"<meta name=\"keywords\" content=\"%s\">\n",
+                                 SVGReportPrintout::EscapeXmlAttr(options.m_keywords));
+        }
     html += wxString::Format(L"<title>%s</title>\n", SVGReportPrintout::EscapeXmlText(title));
     // optional logo, embedded as a data URI
     const wxString logoUri{ BuildLogo(options) };

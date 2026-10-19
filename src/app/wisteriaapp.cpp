@@ -355,8 +355,7 @@ int WisteriaApp::RunHeadlessExport()
             }
         if (!m_exportHtmlPath.empty())
             {
-            WisteriaView::ExportHtml(builder, pages, m_exportHtmlPath,
-                                     builder.GetName().empty() ? fallbackTitle : builder.GetName());
+            WisteriaView::ExportHtml(builder, pages, m_exportHtmlPath, fallbackTitle);
             }
         }
     catch (const std::exception& exc)

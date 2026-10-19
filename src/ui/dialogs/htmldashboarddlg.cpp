@@ -21,6 +21,7 @@ namespace Wisteria::UI
         const wxPoint& pos /*= wxDefaultPosition*/, const wxSize& size /*= wxDefaultSize*/,
         long style /*= wxDEFAULT_DIALOG_STYLE | wxCLIP_CHILDREN*/)
         : DialogWithHelp(parent, id, caption, pos, size, style), m_dashboardTitle(options.m_title),
+          m_subject(options.m_subject), m_author(options.m_author), m_keywords(options.m_keywords),
           m_theme(theme), m_logoPath(options.m_logoPath),
           m_includeColorModeToggle(options.m_includeColorModeToggle),
           m_countUpNumbers(options.m_countUpNumbers), m_pageWidth(options.m_pageSize.GetWidth()),
@@ -61,6 +62,27 @@ namespace Wisteria::UI
                                          FromDIP(wxSize{ 300, -1 }));
         titleCtrl->SetValidator(wxGenericValidator{ &m_dashboardTitle });
         gridSizer->Add(titleCtrl, wxSizerFlags{}.Expand());
+
+        // subject
+        gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Subject:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* subjectCtrl = new wxTextCtrl(this, wxID_ANY);
+        subjectCtrl->SetValidator(wxGenericValidator{ &m_subject });
+        gridSizer->Add(subjectCtrl, wxSizerFlags{}.Expand());
+
+        // author
+        gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Author:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* authorCtrl = new wxTextCtrl(this, wxID_ANY);
+        authorCtrl->SetValidator(wxGenericValidator{ &m_author });
+        gridSizer->Add(authorCtrl, wxSizerFlags{}.Expand());
+
+        // keywords
+        gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Keywords:")),
+                       wxSizerFlags{}.CenterVertical());
+        auto* keywordsCtrl = new wxTextCtrl(this, wxID_ANY);
+        keywordsCtrl->SetValidator(wxGenericValidator{ &m_keywords });
+        gridSizer->Add(keywordsCtrl, wxSizerFlags{}.Expand());
 
         // logo
         gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Logo:")),

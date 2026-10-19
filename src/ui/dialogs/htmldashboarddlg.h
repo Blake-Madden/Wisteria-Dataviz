@@ -57,6 +57,27 @@ namespace Wisteria::UI
             return m_dashboardTitle;
             }
 
+        /// @returns The document subject.
+        [[nodiscard]]
+        const wxString& GetSubject() const noexcept
+            {
+            return m_subject;
+            }
+
+        /// @returns The document author.
+        [[nodiscard]]
+        const wxString& GetAuthor() const noexcept
+            {
+            return m_author;
+            }
+
+        /// @returns The document keywords.
+        [[nodiscard]]
+        const wxString& GetKeywords() const noexcept
+            {
+            return m_keywords;
+            }
+
         /// @returns The name of the selected theme.
         [[nodiscard]]
         const wxString& GetTheme() const noexcept
@@ -169,6 +190,9 @@ namespace Wisteria::UI
             }
 
         wxString m_dashboardTitle;
+        wxString m_subject;
+        wxString m_author;
+        wxString m_keywords;
         wxString m_theme;
         wxString m_logoPath;
         wxFilePickerCtrl* m_logoPicker{ nullptr };

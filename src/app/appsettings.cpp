@@ -272,8 +272,6 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                 boolAttr(L"title-slide", m_powerPointExportOptions.m_includeTitleSlide);
             m_powerPointExportOptions.m_titleSlideTheme = child->GetAttribute(
                 L"title-slide-theme", m_powerPointExportOptions.m_titleSlideTheme);
-            m_powerPointExportOptions.m_author =
-                child->GetAttribute(L"author", m_powerPointExportOptions.m_author);
             m_powerPointExportOptions.m_publisher =
                 child->GetAttribute(L"publisher", m_powerPointExportOptions.m_publisher);
             }
@@ -344,8 +342,6 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                 boolAttr(L"title-slide", m_odpExportOptions.m_includeTitleSlide);
             m_odpExportOptions.m_titleSlideTheme =
                 child->GetAttribute(L"title-slide-theme", m_odpExportOptions.m_titleSlideTheme);
-            m_odpExportOptions.m_author =
-                child->GetAttribute(L"author", m_odpExportOptions.m_author);
             m_odpExportOptions.m_publisher =
                 child->GetAttribute(L"publisher", m_odpExportOptions.m_publisher);
             }
@@ -478,7 +474,6 @@ bool AppSettings::SaveSettingsFile(const wxString& filePath)
     pptxNode->AddAttribute(L"title-slide",
                            m_powerPointExportOptions.m_includeTitleSlide ? L"1" : L"0");
     pptxNode->AddAttribute(L"title-slide-theme", m_powerPointExportOptions.m_titleSlideTheme);
-    pptxNode->AddAttribute(L"author", m_powerPointExportOptions.m_author);
     pptxNode->AddAttribute(L"publisher", m_powerPointExportOptions.m_publisher);
     root->AddChild(pptxNode);
 
@@ -500,7 +495,6 @@ bool AppSettings::SaveSettingsFile(const wxString& filePath)
                           m_odpExportOptions.m_includeAccessibilityNotes ? L"1" : L"0");
     odpNode->AddAttribute(L"title-slide", m_odpExportOptions.m_includeTitleSlide ? L"1" : L"0");
     odpNode->AddAttribute(L"title-slide-theme", m_odpExportOptions.m_titleSlideTheme);
-    odpNode->AddAttribute(L"author", m_odpExportOptions.m_author);
     odpNode->AddAttribute(L"publisher", m_odpExportOptions.m_publisher);
     root->AddChild(odpNode);
 

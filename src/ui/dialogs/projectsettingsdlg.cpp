@@ -29,6 +29,7 @@ namespace Wisteria::UI
         {
         m_projectName = reportBuilder.GetName();
         m_subject = reportBuilder.GetSubject();
+        m_author = reportBuilder.GetAuthor();
         m_keywords = reportBuilder.GetKeywords();
         m_watermarkLabel = reportBuilder.GetWatermarkLabel();
         m_leftPrinterHeader = reportBuilder.GetLeftPrinterHeader();
@@ -71,6 +72,14 @@ namespace Wisteria::UI
         gridSizer->Add(new wxTextCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition,
                                       FromDIP(wxSize{ 300, -1 }), 0,
                                       wxGenericValidator{ &m_subject }),
+                       wxSizerFlags{}.Expand());
+
+        // author
+        gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Author:")),
+                       wxSizerFlags{}.CenterVertical());
+        gridSizer->Add(new wxTextCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition,
+                                      FromDIP(wxSize{ 300, -1 }), 0,
+                                      wxGenericValidator{ &m_author }),
                        wxSizerFlags{}.Expand());
 
         // keywords

@@ -106,12 +106,12 @@ class WisteriaView final : public wxView
     /// @param builder The project's report builder.
     /// @param pages The pages to export.
     /// @param filePath The output file path.
-    /// @param title The dashboard title (constants are expanded).
+    /// @param fallbackTitle The title to use if the project has no name.
     /// @param filterOverrides The choices that filters open on, instead of the choices
     ///     shown on the pages.
     static void ExportHtml(
         const Wisteria::ReportBuilder& builder, const std::vector<Wisteria::Canvas*>& pages,
-        const wxString& filePath, const wxString& title,
+        const wxString& filePath, const wxString& fallbackTitle,
         const std::vector<Wisteria::HtmlDashboardOptions::FilterOverride>& filterOverrides = {});
 
     /// @brief Exports pages to PDF using the project's saved PDF options.

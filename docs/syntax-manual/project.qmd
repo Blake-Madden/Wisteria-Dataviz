@@ -4,6 +4,13 @@ At the root level of a project file, you define overall project settings.
 The following properties are available:
 
 - `"name"`: A string value representing the name of the report.
+- `"subject"`: The report's subject. \
+  This is written to the document properties of PDF, PowerPoint, and ODP exports, and as the description of HTML dashboards.
+- `"author"`: The report's author. \
+  This is written to the document properties of PDF, PowerPoint, and ODP exports, and HTML dashboards. \
+  The default is the user's name.
+- `"keywords"`: The report's keywords. \
+  This is written to the document properties of PDF, PowerPoint, and ODP exports, and HTML dashboards.
 - `"auto-refresh"`: Whether the project reloads itself when its dataset files change. \
   The files are checked every 5 seconds, and the reload waits until a changed file is no longer being written to or locked by another process. \
   This only takes effect if every dataset is imported from a local or network file (not a URL). \

@@ -80,6 +80,12 @@ namespace Wisteria
         wxString m_filePath;
         /// @brief The dashboard title. If empty, the first canvas label is used.
         wxString m_title;
+        /// @brief The document author.
+        wxString m_author{ wxGetUserName() };
+        /// @brief The document subject, written as the page's description.
+        wxString m_subject;
+        /// @brief The document keywords.
+        wxString m_keywords;
         /// @brief Path to an optional logo shown in the title bar.
         wxString m_logoPath;
         /// @brief The CSS to inline (core stylesheet followed by the theme).
@@ -177,6 +183,33 @@ namespace Wisteria
         HtmlDashboardOptions& Title(const wxString& title)
             {
             m_title = title;
+            return *this;
+            }
+
+        /// @brief Sets the document author.
+        /// @param author The author.
+        /// @returns A reference to this object.
+        HtmlDashboardOptions& Author(const wxString& author)
+            {
+            m_author = author;
+            return *this;
+            }
+
+        /// @brief Sets the document subject.
+        /// @param subject The subject.
+        /// @returns A reference to this object.
+        HtmlDashboardOptions& Subject(const wxString& subject)
+            {
+            m_subject = subject;
+            return *this;
+            }
+
+        /// @brief Sets the document keywords.
+        /// @param keywords The keywords.
+        /// @returns A reference to this object.
+        HtmlDashboardOptions& Keywords(const wxString& keywords)
+            {
+            m_keywords = keywords;
             return *this;
             }
 

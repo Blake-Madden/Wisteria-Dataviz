@@ -683,6 +683,17 @@ namespace Wisteria
         /// @param subject The new subject.
         void SetSubject(const wxString& subject) { m_subject = subject; }
 
+        /// @returns The author of the report.
+        [[nodiscard]]
+        const wxString& GetAuthor() const noexcept
+            {
+            return m_author;
+            }
+
+        /// @brief Sets the author of the report.
+        /// @param author The new author.
+        void SetAuthor(const wxString& author) { m_author = author; }
+
         /// @returns The keywords of the report.
         [[nodiscard]]
         const wxString& GetKeywords() const noexcept
@@ -1880,6 +1891,7 @@ namespace Wisteria
         std::map<wxString, ValuesType, Data::wxStringLessNoCase> m_values;
         wxString m_name;
         wxString m_subject;
+        wxString m_author{ wxGetUserName() };
         wxString m_keywords;
         bool m_autoRefresh{ false };
         wxString m_watermarkLabel;

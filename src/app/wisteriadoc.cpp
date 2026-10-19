@@ -79,11 +79,13 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
                                      view->GetReportBuilder().GetName();
 
     auto root = wxSimpleJSON::Create(
-        wxString::Format(L"{\"name\": \"%s\", \"subject\": \"%s\", \"keywords\": \"%s\", "
+        wxString::Format(L"{\"name\": \"%s\", \"subject\": \"%s\", \"author\": \"%s\", "
+                         L"\"keywords\": \"%s\", "
                          L"\"watermark\": {}, \"print\": {}, "
                          L"\"datasets\": [], \"constants\": [], \"pages\": []}",
                          EscapeJsonStr(projectName),
                          EscapeJsonStr(view->GetReportBuilder().GetSubject()),
+                         EscapeJsonStr(view->GetReportBuilder().GetAuthor()),
                          EscapeJsonStr(view->GetReportBuilder().GetKeywords())),
         true);
 
@@ -214,7 +216,6 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
         pptxNode->Add(L"accessibility-notes", pptxOpts.m_includeAccessibilityNotes);
         pptxNode->Add(L"title-slide", pptxOpts.m_includeTitleSlide);
         pptxNode->Add(L"title-slide-theme", pptxOpts.m_titleSlideTheme);
-        pptxNode->Add(L"author", pptxOpts.m_author);
         pptxNode->Add(L"publisher", pptxOpts.m_publisher);
         root->Add(L"powerpoint-export", pptxNode);
         }
@@ -234,7 +235,6 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
         odpNode->Add(L"accessibility-notes", odpOpts.m_includeAccessibilityNotes);
         odpNode->Add(L"title-slide", odpOpts.m_includeTitleSlide);
         odpNode->Add(L"title-slide-theme", odpOpts.m_titleSlideTheme);
-        odpNode->Add(L"author", odpOpts.m_author);
         odpNode->Add(L"publisher", odpOpts.m_publisher);
         root->Add(L"odp-export", odpNode);
         }

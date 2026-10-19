@@ -349,7 +349,6 @@ namespace Wisteria
         {
         // reset from previous calls
         m_tableLinks.clear();
-        m_name.clear();
         m_datasets.clear();
         m_svgExportOptions = SVGReportOptions{ wxString{} };
         m_htmlExportOptions = HtmlDashboardOptions{ wxString{} };
@@ -393,6 +392,11 @@ namespace Wisteria
         if (const auto subjectNode = json->GetProperty(_DT(L"subject")); subjectNode->IsOk())
             {
             m_subject = subjectNode->AsString();
+            }
+
+        if (const auto authorNode = json->GetProperty(_DT(L"author")); authorNode->IsOk())
+            {
+            m_author = authorNode->AsString();
             }
 
         if (const auto keywordsNode = json->GetProperty(_DT(L"keywords")); keywordsNode->IsOk())
@@ -726,10 +730,6 @@ namespace Wisteria
                 {
                 m_powerPointExportOptions.m_titleSlideTheme = themeNode->AsString();
                 }
-            if (const auto authorNode = pptxExportNode->GetProperty(L"author"); authorNode->IsOk())
-                {
-                m_powerPointExportOptions.m_author = authorNode->AsString();
-                }
             if (const auto publisherNode = pptxExportNode->GetProperty(L"publisher");
                 publisherNode->IsOk())
                 {
@@ -802,10 +802,6 @@ namespace Wisteria
                 themeNode->IsOk())
                 {
                 m_odpExportOptions.m_titleSlideTheme = themeNode->AsString();
-                }
-            if (const auto authorNode = odpExportNode->GetProperty(L"author"); authorNode->IsOk())
-                {
-                m_odpExportOptions.m_author = authorNode->AsString();
                 }
             if (const auto publisherNode = odpExportNode->GetProperty(L"publisher");
                 publisherNode->IsOk())

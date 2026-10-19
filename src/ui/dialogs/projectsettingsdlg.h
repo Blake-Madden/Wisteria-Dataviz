@@ -64,6 +64,14 @@ namespace Wisteria::UI
             return m_subject;
             }
 
+        /// @returns The project author entered by the user.
+        [[nodiscard]]
+        wxString GetAuthor()
+            {
+            TransferDataFromWindow();
+            return m_author;
+            }
+
         /// @returns The project keywords entered by the user.
         [[nodiscard]]
         wxString GetKeywords()
@@ -145,6 +153,7 @@ namespace Wisteria::UI
 
         wxString m_projectName;
         wxString m_subject;
+        wxString m_author;
         wxString m_keywords;
         wxString m_watermarkLabel;
         wxColour m_watermarkColor{ wxColour(255, 0, 0) };
