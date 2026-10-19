@@ -26,6 +26,7 @@ SET(TEST_SRC_FILES
     rtfencodetests.cpp
     rtfparsetests.cpp
     safemathtests.cpp
+    spcrulestests.cpp
     statstests.cpp
     stringutiltests.cpp
     tagfiltertests.cpp
