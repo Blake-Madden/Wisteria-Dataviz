@@ -1413,6 +1413,7 @@ namespace Wisteria::UI
         table->SetMinHeightProportion(GetMinHeightProportion());
         table->ClearTrailingRowFormatting(GetClearTrailingRowFormatting());
 
+        // cache property templates for round-tripping
         if (oldGraph != nullptr)
             {
             // carry forward highlight pen from original table
@@ -1421,49 +1422,9 @@ namespace Wisteria::UI
                 table->GetHighlightPen() = origTable->GetHighlightPen();
                 }
 
-            // cache property templates for round-tripping
             WisteriaView::CarryForwardProperty(*oldGraph, *table, L"dataset",
                                                GetSelectedDatasetName(),
                                                oldGraph->GetPropertyTemplate(L"dataset"));
-
-            if (!varFormula.empty())
-                {
-                table->SetPropertyTemplate(L"variables", wxString::Format(L"\"%s\"", varFormula));
-                }
-            else
-                {
-                // store the raw list entries (plain names and/or formulas) as a
-                // JSON array so that round-tripping preserves regex selections
-                const auto& entries = GetSelectedVariables();
-                wxString varsJson = L"[";
-                for (size_t i = 0; i < entries.size(); ++i)
-                    {
-                    if (i > 0)
-                        {
-                        varsJson += L", ";
-                        }
-                    varsJson += wxString::Format(L"\"%s\"", entries[i]);
-                    }
-                varsJson += L"]";
-                table->SetPropertyTemplate(L"variables", varsJson);
-                }
-
-            if (GetTranspose())
-                {
-                table->SetPropertyTemplate(L"transpose", L"true");
-                }
-            if (GetAlternateRowColors())
-                {
-                // use the full template so advanced sub-properties (start, stops) round-trip
-                table->SetPropertyTemplate(L"alternate-row-color", GetAlternateRowColorTemplate());
-                }
-
-            table->SetPropertyTemplate(L"ui.bold-header-row",
-                                       GetBoldHeaderRow() ? L"true" : L"false");
-            table->SetPropertyTemplate(L"ui.center-header-row",
-                                       GetCenterHeaderRow() ? L"true" : L"false");
-            table->SetPropertyTemplate(L"ui.bold-first-column",
-                                       GetBoldFirstColumn() ? L"true" : L"false");
 
             // carry forward any advanced property templates from the original table
             for (const auto& prop : { L"row-sort",
@@ -1494,302 +1455,176 @@ namespace Wisteria::UI
                     table->SetPropertyTemplate(wxString(prop), cached);
                     }
                 }
-
-            // set aggregates template
-            const auto& editAggregates = GetAggregates();
-            if (!editAggregates.empty())
-                {
-                wxString aggregatesJson{ L"[" };
-                for (size_t i = 0; i < editAggregates.size(); ++i)
-                    {
-                    const auto& agg = editAggregates[i];
-                    if (i > 0)
-                        {
-                        aggregatesJson += L", ";
-                        }
-
-                    wxString aggTypeStr;
-                    switch (agg.m_aggregateType)
-                        {
-                    case AggregateType::Total:
-                        aggTypeStr = L"total";
-                        break;
-                    case AggregateType::ChangePercent:
-                        aggTypeStr = L"percent-change";
-                        break;
-                    case AggregateType::Ratio:
-                        aggTypeStr = L"ratio";
-                        break;
-                    case AggregateType::Change:
-                        aggTypeStr = L"change";
-                        break;
-                        }
-
-                    aggregatesJson += wxString::Format(
-                        L"{\"name\":\"%s\", \"type\":\"%s\", \"aggregate-type\":\"%s\", "
-                        L"\"start\":%s, \"end\":%s, \"use-adjacent-color\":%s, "
-                        L"\"background\":\"%s\"",
-                        agg.m_name, agg.m_type, aggTypeStr,
-                        WisteriaView::BuildAggPosJson(
-                            agg.m_start,
-                            agg.m_startDimension.empty() ? agg.m_type : agg.m_startDimension,
-                            agg.m_startOffset),
-                        WisteriaView::BuildAggPosJson(
-                            agg.m_end, agg.m_endDimension.empty() ? agg.m_type : agg.m_endDimension,
-                            agg.m_endOffset),
-                        agg.m_useAdjacentColor ? L"true" : L"false",
-                        (!agg.m_bkColorStr.empty() &&
-                         GetReportBuilder()->ConvertColor(agg.m_bkColorStr) == agg.m_bkColor) ?
-                            agg.m_bkColorStr :
-                            agg.m_bkColor.GetAsString(wxC2S_HTML_SYNTAX));
-                    if (agg.m_position.has_value())
-                        {
-                        aggregatesJson +=
-                            wxString::Format(L", \"position\":%zu", agg.m_position.value());
-                        }
-                    aggregatesJson += L"}";
-                    }
-                aggregatesJson += L"]";
-                table->SetPropertyTemplate(L"aggregates", aggregatesJson);
-                }
-
-            // set footnotes template before ApplyTableFeatures so that
-            // ApplyTableFootnotes runs in the correct sequence (after
-            // cell-update/cell-annotations) and uses ExpandAndCache
-            const auto& editFootnotes = GetFootnotes();
-            if (!editFootnotes.empty())
-                {
-                wxString footnotesJson{ L"[" };
-                for (size_t i = 0; i < editFootnotes.size(); ++i)
-                    {
-                    if (i > 0)
-                        {
-                        footnotesJson += L",";
-                        }
-                    footnotesJson +=
-                        wxString::Format(L"{\"value\":\"%s\",\"footnote\":\"%s\"}",
-                                         editFootnotes[i].first, editFootnotes[i].second);
-                    }
-                footnotesJson += L"]";
-                table->SetPropertyTemplate(L"footnotes", footnotesJson);
-                }
-
-            // cell annotations template (set before ApplyTableFeatures so it runs in sequence)
-            const auto& editAnnotations = GetAnnotationEntries();
-            if (!editAnnotations.empty())
-                {
-                wxString annJson{ L"[" };
-                for (size_t i = 0; i < editAnnotations.size(); ++i)
-                    {
-                    if (i > 0)
-                        {
-                        annJson += L", ";
-                        }
-                    const auto& ann{ editAnnotations[i] };
-                    annJson += ReportTableLoader::BuildAnnotationEntryJson(
-                        ann.m_value, ann.m_sideRight, ann.m_bgColor,
-                        static_cast<int>(ann.m_cellMode), ann.m_columnName, ann.m_topN,
-                        ann.m_rangeStart, ann.m_rangeEnd);
-                    }
-                annJson += L"]";
-                table->SetPropertyTemplate(L"cell-annotations", annJson);
-                }
-
-            // re-apply procedural features from carried-forward templates
-            // (alternate-row-color is applied here, in the correct order -
-            // before row additions and aggregates)
-            GetReportBuilder()->ApplyTableFeatures(table);
-
-            // side annotations live in the gutters beside the table; a left- or
-            // right-aligned table only has one gutter, so Table::DeduceGutterSide()
-            // collapses every note into it. only force centering when both sides are
-            // in use - single-side annotations fit in the one available gutter
-            if (std::ranges::any_of(editAnnotations,
-                                    [](const auto& ann) { return !ann.m_sideRight; }) &&
-                std::ranges::any_of(editAnnotations,
-                                    [](const auto& ann) { return ann.m_sideRight; }))
-                {
-                table->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
-                }
-
-            // apply dialog-driven formatting after procedural features,
-            // since aggregates and row additions change the table structure
-            if (GetBoldHeaderRow())
-                {
-                table->BoldRow(0);
-                }
-            if (GetCenterHeaderRow())
-                {
-                table->SetRowHorizontalPageAlignment(0, PageHorizontalAlignment::Centered);
-                }
-            if (GetBoldFirstColumn())
-                {
-                table->BoldColumn(0);
-                }
             }
         else
             {
-            // cache property templates for round-tripping
             table->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
-            if (!varFormula.empty())
+            }
+
+        if (!varFormula.empty())
+            {
+            table->SetPropertyTemplate(L"variables", wxString::Format(L"\"%s\"", varFormula));
+            }
+        else
+            {
+            // store the raw list entries (plain names and/or formulas) as a
+            // JSON array so that round-tripping preserves regex selections
+            const auto& entries = GetSelectedVariables();
+            wxString varsJson = L"[";
+            for (size_t i = 0; i < entries.size(); ++i)
                 {
-                table->SetPropertyTemplate(L"variables", wxString::Format(L"\"%s\"", varFormula));
-                }
-            else
-                {
-                // store the raw list entries (plain names and/or formulas) as a
-                // JSON array so that round-tripping preserves regex selections
-                const auto& entries = GetSelectedVariables();
-                wxString varsJson = L"[";
-                for (size_t i = 0; i < entries.size(); ++i)
+                if (i > 0)
                     {
-                    if (i > 0)
-                        {
-                        varsJson += L", ";
-                        }
-                    varsJson += wxString::Format(L"\"%s\"", entries[i]);
+                    varsJson += L", ";
                     }
-                varsJson += L"]";
-                table->SetPropertyTemplate(L"variables", varsJson);
+                varsJson += wxString::Format(L"\"%s\"", entries[i]);
                 }
-            if (GetTranspose())
-                {
-                table->SetPropertyTemplate(L"transpose", L"true");
-                }
-            if (GetAlternateRowColors())
-                {
-                table->SetPropertyTemplate(L"alternate-row-color", GetAlternateRowColorTemplate());
-                }
-            table->SetPropertyTemplate(L"ui.bold-header-row",
-                                       GetBoldHeaderRow() ? L"true" : L"false");
-            table->SetPropertyTemplate(L"ui.center-header-row",
-                                       GetCenterHeaderRow() ? L"true" : L"false");
-            table->SetPropertyTemplate(L"ui.bold-first-column",
-                                       GetBoldFirstColumn() ? L"true" : L"false");
+            varsJson += L"]";
+            table->SetPropertyTemplate(L"variables", varsJson);
+            }
 
-            const auto& footnotes = GetFootnotes();
-            if (!footnotes.empty())
+        if (GetTranspose())
+            {
+            table->SetPropertyTemplate(L"transpose", L"true");
+            }
+        if (GetAlternateRowColors())
+            {
+            // use the full template so advanced sub-properties (start, stops) round-trip
+            table->SetPropertyTemplate(L"alternate-row-color", GetAlternateRowColorTemplate());
+            }
+
+        table->SetPropertyTemplate(L"ui.bold-header-row", GetBoldHeaderRow() ? L"true" : L"false");
+        table->SetPropertyTemplate(L"ui.center-header-row",
+                                   GetCenterHeaderRow() ? L"true" : L"false");
+        table->SetPropertyTemplate(L"ui.bold-first-column",
+                                   GetBoldFirstColumn() ? L"true" : L"false");
+
+        // aggregates template
+        const auto& aggregates = GetAggregates();
+        if (!aggregates.empty())
+            {
+            wxString aggregatesJson{ L"[" };
+            for (size_t i = 0; i < aggregates.size(); ++i)
                 {
-                wxString footnotesJson{ L"[" };
-                for (size_t i = 0; i < footnotes.size(); ++i)
+                const auto& agg = aggregates[i];
+                if (i > 0)
                     {
-                    if (i > 0)
-                        {
-                        footnotesJson += L",";
-                        }
-                    footnotesJson += wxString::Format(L"{\"value\":\"%s\",\"footnote\":\"%s\"}",
-                                                      footnotes[i].first, footnotes[i].second);
+                    aggregatesJson += L", ";
                     }
-                footnotesJson += L"]";
-                table->SetPropertyTemplate(L"footnotes", footnotesJson);
-                }
 
-            const auto& aggregates = GetAggregates();
-            if (!aggregates.empty())
-                {
-                wxString aggregatesJson{ L"[" };
-                for (size_t i = 0; i < aggregates.size(); ++i)
+                wxString aggTypeStr;
+                switch (agg.m_aggregateType)
                     {
-                    const auto& agg = aggregates[i];
-                    if (i > 0)
-                        {
-                        aggregatesJson += L", ";
-                        }
-
-                    wxString aggTypeStr;
-                    switch (agg.m_aggregateType)
-                        {
-                    case AggregateType::Total:
-                        aggTypeStr = L"total";
-                        break;
-                    case AggregateType::ChangePercent:
-                        aggTypeStr = L"percent-change";
-                        break;
-                    case AggregateType::Ratio:
-                        aggTypeStr = L"ratio";
-                        break;
-                    case AggregateType::Change:
-                        aggTypeStr = L"change";
-                        break;
-                        }
-
-                    aggregatesJson += wxString::Format(
-                        L"{\"name\":\"%s\", \"type\":\"%s\", \"aggregate-type\":\"%s\", "
-                        L"\"start\":%s, \"end\":%s, \"use-adjacent-color\":%s, "
-                        L"\"background\":\"%s\"",
-                        agg.m_name, agg.m_type, aggTypeStr,
-                        WisteriaView::BuildAggPosJson(
-                            agg.m_start,
-                            agg.m_startDimension.empty() ? agg.m_type : agg.m_startDimension,
-                            agg.m_startOffset),
-                        WisteriaView::BuildAggPosJson(
-                            agg.m_end, agg.m_endDimension.empty() ? agg.m_type : agg.m_endDimension,
-                            agg.m_endOffset),
-                        agg.m_useAdjacentColor ? L"true" : L"false",
-                        (!agg.m_bkColorStr.empty() &&
-                         GetReportBuilder()->ConvertColor(agg.m_bkColorStr) == agg.m_bkColor) ?
-                            agg.m_bkColorStr :
-                            agg.m_bkColor.GetAsString(wxC2S_HTML_SYNTAX));
-                    if (agg.m_position.has_value())
-                        {
-                        aggregatesJson +=
-                            wxString::Format(L", \"position\":%zu", agg.m_position.value());
-                        }
-                    aggregatesJson += L"}";
+                case AggregateType::Total:
+                    aggTypeStr = L"total";
+                    break;
+                case AggregateType::ChangePercent:
+                    aggTypeStr = L"percent-change";
+                    break;
+                case AggregateType::Ratio:
+                    aggTypeStr = L"ratio";
+                    break;
+                case AggregateType::Change:
+                    aggTypeStr = L"change";
+                    break;
                     }
-                aggregatesJson += L"]";
-                table->SetPropertyTemplate(L"aggregates", aggregatesJson);
-                }
 
-            // cell annotations template
-            const auto& annotations = GetAnnotationEntries();
-            if (!annotations.empty())
-                {
-                wxString annJson{ L"[" };
-                for (size_t i = 0; i < annotations.size(); ++i)
+                aggregatesJson += wxString::Format(
+                    L"{\"name\":\"%s\", \"type\":\"%s\", \"aggregate-type\":\"%s\", "
+                    L"\"start\":%s, \"end\":%s, \"use-adjacent-color\":%s, "
+                    L"\"background\":\"%s\"",
+                    agg.m_name, agg.m_type, aggTypeStr,
+                    WisteriaView::BuildAggPosJson(
+                        agg.m_start,
+                        agg.m_startDimension.empty() ? agg.m_type : agg.m_startDimension,
+                        agg.m_startOffset),
+                    WisteriaView::BuildAggPosJson(
+                        agg.m_end, agg.m_endDimension.empty() ? agg.m_type : agg.m_endDimension,
+                        agg.m_endOffset),
+                    agg.m_useAdjacentColor ? L"true" : L"false",
+                    (!agg.m_bkColorStr.empty() &&
+                     GetReportBuilder()->ConvertColor(agg.m_bkColorStr) == agg.m_bkColor) ?
+                        agg.m_bkColorStr :
+                        agg.m_bkColor.GetAsString(wxC2S_HTML_SYNTAX));
+                if (agg.m_position.has_value())
                     {
-                    if (i > 0)
-                        {
-                        annJson += L", ";
-                        }
-                    const auto& ann{ annotations[i] };
-                    annJson += ReportTableLoader::BuildAnnotationEntryJson(
-                        ann.m_value, ann.m_sideRight, ann.m_bgColor,
-                        static_cast<int>(ann.m_cellMode), ann.m_columnName, ann.m_topN,
-                        ann.m_rangeStart, ann.m_rangeEnd);
+                    aggregatesJson +=
+                        wxString::Format(L", \"position\":%zu", agg.m_position.value());
                     }
-                annJson += L"]";
-                table->SetPropertyTemplate(L"cell-annotations", annJson);
+                aggregatesJson += L"}";
                 }
+            aggregatesJson += L"]";
+            table->SetPropertyTemplate(L"aggregates", aggregatesJson);
+            }
 
-            // re-apply procedural features from carried-forward templates
-            GetReportBuilder()->ApplyTableFeatures(table);
+        // set footnotes template before ApplyTableFeatures so that
+        // ApplyTableFootnotes runs in the correct sequence (after
+        // cell-update/cell-annotations) and uses ExpandAndCache
+        const auto& footnotes = GetFootnotes();
+        if (!footnotes.empty())
+            {
+            wxString footnotesJson{ L"[" };
+            for (size_t i = 0; i < footnotes.size(); ++i)
+                {
+                if (i > 0)
+                    {
+                    footnotesJson += L",";
+                    }
+                footnotesJson += wxString::Format(L"{\"value\":\"%s\",\"footnote\":\"%s\"}",
+                                                  footnotes[i].first, footnotes[i].second);
+                }
+            footnotesJson += L"]";
+            table->SetPropertyTemplate(L"footnotes", footnotesJson);
+            }
 
-            // side annotations live in the gutters beside the table; a left- or
-            // right-aligned table only has one gutter, so Table::DeduceGutterSide()
-            // collapses every note into it. Only force centering when both sides are
-            // in use - single-side annotations fit in the one available gutter
-            if (std::ranges::any_of(annotations,
-                                    [](const auto& ann) { return !ann.m_sideRight; }) &&
-                std::ranges::any_of(annotations, [](const auto& ann) { return ann.m_sideRight; }))
+        // cell annotations template (set before ApplyTableFeatures so it runs in sequence)
+        const auto& annotations = GetAnnotationEntries();
+        if (!annotations.empty())
+            {
+            wxString annJson{ L"[" };
+            for (size_t i = 0; i < annotations.size(); ++i)
                 {
-                table->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+                if (i > 0)
+                    {
+                    annJson += L", ";
+                    }
+                const auto& ann{ annotations[i] };
+                annJson += ReportTableLoader::BuildAnnotationEntryJson(
+                    ann.m_value, ann.m_sideRight, ann.m_bgColor, static_cast<int>(ann.m_cellMode),
+                    ann.m_columnName, ann.m_topN, ann.m_rangeStart, ann.m_rangeEnd);
                 }
+            annJson += L"]";
+            table->SetPropertyTemplate(L"cell-annotations", annJson);
+            }
 
-            // apply dialog-driven formatting after procedural features,
-            // since aggregates change the table structure
-            if (GetBoldHeaderRow())
-                {
-                table->BoldRow(0);
-                }
-            if (GetCenterHeaderRow())
-                {
-                table->SetRowHorizontalPageAlignment(0, PageHorizontalAlignment::Centered);
-                }
-            if (GetBoldFirstColumn())
-                {
-                table->BoldColumn(0);
-                }
+        // apply procedural features from the templates
+        // (alternate-row-color is applied here, in the correct order -
+        // before row additions and aggregates)
+        GetReportBuilder()->ApplyTableFeatures(table);
+
+        // side annotations live in the gutters beside the table; a left- or
+        // right-aligned table only has one gutter, so Table::DeduceGutterSide()
+        // collapses every note into it. Only force centering when both sides are
+        // in use - single-side annotations fit in the one available gutter
+        if (std::ranges::any_of(annotations, [](const auto& ann) { return !ann.m_sideRight; }) &&
+            std::ranges::any_of(annotations, [](const auto& ann) { return ann.m_sideRight; }))
+            {
+            table->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+            }
+
+        // apply dialog-driven formatting after procedural features,
+        // since aggregates and row additions change the table structure
+        if (GetBoldHeaderRow())
+            {
+            table->BoldRow(0);
+            }
+        if (GetCenterHeaderRow())
+            {
+            table->SetRowHorizontalPageAlignment(0, PageHorizontalAlignment::Centered);
+            }
+        if (GetBoldFirstColumn())
+            {
+            table->BoldColumn(0);
             }
 
         return table;
