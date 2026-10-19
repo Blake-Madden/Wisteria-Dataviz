@@ -106,6 +106,8 @@ namespace Wisteria
         /// @brief Whether to include checkboxes that hide or show a graph's groups.
         /// @note Filterable graphs' choices are always included.
         bool m_includeGroupVisibilityToggles{ false };
+        /// @brief Whether the browser remembers the filter choices between visits.
+        bool m_rememberFilterChoices{ true };
         /// @brief The name of the theme that @c m_css was built from.
         /// @note This is only stored by the caller. The exporter uses @c m_css.
         wxString m_theme;
@@ -310,6 +312,16 @@ namespace Wisteria
         HtmlDashboardOptions& IncludeGroupVisibilityToggles(const bool include) noexcept
             {
             m_includeGroupVisibilityToggles = include;
+            return *this;
+            }
+
+        /// @brief Enables/disables the browser remembering the filter choices between visits.
+        /// @param remember @c true to remember the choices. @c false to always open on the
+        ///     exported choices.
+        /// @returns A reference to this object.
+        HtmlDashboardOptions& RememberFilterChoices(const bool remember) noexcept
+            {
+            m_rememberFilterChoices = remember;
             return *this;
             }
         };

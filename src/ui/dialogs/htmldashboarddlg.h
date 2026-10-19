@@ -128,6 +128,13 @@ namespace Wisteria::UI
             return m_includeGroupVisibilityToggles;
             }
 
+        /// @returns Whether the browser remembers the filter choices between visits.
+        [[nodiscard]]
+        bool RememberFilterChoices() const noexcept
+            {
+            return m_rememberFilterChoices;
+            }
+
         /// @returns The page size (in DIPs/pixels).
         [[nodiscard]]
         wxSize GetPageSize() const noexcept
@@ -177,6 +184,7 @@ namespace Wisteria::UI
         bool m_includePrint{ true };
         bool m_includeCopy{ true };
         bool m_includeGroupVisibilityToggles{ false };
+        bool m_rememberFilterChoices{ true };
         std::vector<Wisteria::HtmlDashboardOptions::FilterDefault> m_filterDefaults;
         // one control per filter default
         std::vector<wxChoice*> m_filterChoices;

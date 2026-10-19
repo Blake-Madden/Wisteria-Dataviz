@@ -28,7 +28,7 @@ namespace Wisteria::UI
           m_dualOrientations(options.m_dualOrientations), m_includeSave(options.m_includeSave),
           m_includePrint(options.m_includePrint), m_includeCopy(options.m_includeCopy),
           m_includeGroupVisibilityToggles(options.m_includeGroupVisibilityToggles),
-          m_filterDefaults(filterDefaults)
+          m_rememberFilterChoices(options.m_rememberFilterChoices), m_filterDefaults(filterDefaults)
         {
         m_view = (options.m_view == Wisteria::HtmlDashboardOptions::DashboardView::Gallery) ? 0 : 1;
         m_colorMode = (options.m_colorMode == Wisteria::HtmlDashboardOptions::ColorMode::Auto) ? 0 :
@@ -152,6 +152,12 @@ namespace Wisteria::UI
         if (!m_filterDefaults.empty())
             {
             auto* filterSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Filter Defaults"));
+
+            auto* rememberCheck = new wxCheckBox(filterSizer->GetStaticBox(), wxID_ANY,
+                                                 _(L"Remember filter choices in browser"));
+            rememberCheck->SetValidator(wxGenericValidator{ &m_rememberFilterChoices });
+            filterSizer->Add(rememberCheck, wxSizerFlags{}.Border());
+
             auto* filterGrid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
                                                               wxSizerFlags::GetDefaultBorder() });
             filterGrid->AddGrowableCol(1, 1);

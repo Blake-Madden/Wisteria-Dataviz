@@ -606,6 +606,13 @@ namespace Wisteria
                 m_htmlExportOptions.m_includeGroupVisibilityToggles =
                     groupTogglesNode->AsBool(m_htmlExportOptions.m_includeGroupVisibilityToggles);
                 }
+            if (const auto rememberChoicesNode =
+                    htmlExportNode->GetProperty(L"remember-filter-choices");
+                rememberChoicesNode->IsOk())
+                {
+                m_htmlExportOptions.m_rememberFilterChoices =
+                    rememberChoicesNode->AsBool(m_htmlExportOptions.m_rememberFilterChoices);
+                }
             if (const auto widthNode = htmlExportNode->GetProperty(L"page-width");
                 widthNode->IsOk() && widthNode->AsDouble(-1) > 0)
                 {

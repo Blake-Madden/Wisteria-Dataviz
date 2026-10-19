@@ -68,6 +68,9 @@ The following properties are available:
   - `"include-group-visibility-toggles"`: Whether the Filters menu includes checkboxes that hide or show a graph's groups (e.g., a pie slice or a line series). \
     A graph's `"filter"` choices are always included. \
     The default is `false`.
+  - `"remember-filter-choices"`: Whether the browser remembers the filter choices that the viewer selected and reopens the dashboard on them. \
+    Set this to `false` to always open on the exported choices (e.g., the latest fiscal year after new data is added). \
+    The default is `true`.
 - `"export-excluded-pages"`: Defines the pages that are left out of each export format. \
   Each property is an array of page `"guid"` values (see [Pages](#page-properties)). \
   Pages that aren't listed are included, so pages added later are exported by default. \

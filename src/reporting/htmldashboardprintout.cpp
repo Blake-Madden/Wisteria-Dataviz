@@ -39,6 +39,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptState()
   const hasModeToggle = {{TOGGLE}};
   const countUp = {{COUNTUP}};
   const hasGroupToggles = {{GROUPTOGGLES}};
+  const rememberChoices = {{REMEMBERCHOICES}};
   const layers = {{LAYERS}};
   const activeLayers = new Set(layers);
   let view = '{{VIEW}}';
@@ -65,7 +66,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptState()
     // the choice shown in each filter group of each page with filterable graphs
     const choices = {};
     pages.forEach(function(page, i) {
-      if (page.filters) {
+      if (rememberChoices && page.filters) {
         choices[i] = page.filters.map(function(filter) { return filter.labels[filter.index]; });
       }
     });
@@ -241,7 +242,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptChoiceMenu()
   }
   function restoreChoices() {
     const saved = savedState.choices;
-    if (!saved || typeof saved !== 'object') return;
+    if (!rememberChoices || !saved || typeof saved !== 'object') return;
     pages.forEach(function(page, i) {
       if (!page.filters || !Array.isArray(saved[i])) return;
       saved[i].forEach(function(label, filterIndex) {
@@ -2659,6 +2660,7 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
     script.Replace(L"{{COUNTUP}}", options.m_countUpNumbers ? L"true" : L"false");
     script.Replace(L"{{GROUPTOGGLES}}",
                    options.m_includeGroupVisibilityToggles ? L"true" : L"false");
+    script.Replace(L"{{REMEMBERCHOICES}}", options.m_rememberFilterChoices ? L"true" : L"false");
     script.Replace(L"{{MODE}}", initialMode);
     script.Replace(L"{{VIEW}}", initialView);
     script.Replace(L"{{DASHID}}", dashboardId);

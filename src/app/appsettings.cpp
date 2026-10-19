@@ -183,6 +183,10 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                 child->GetAttribute(
                     L"include-group-visibility-toggles",
                     m_htmlExportOptions.m_includeGroupVisibilityToggles ? L"1" : L"0") == L"1";
+            m_htmlExportOptions.m_rememberFilterChoices =
+                child->GetAttribute(L"remember-filter-choices",
+                                    m_htmlExportOptions.m_rememberFilterChoices ? L"1" : L"0") ==
+                L"1";
             long val{ 0 };
             if (child->GetAttribute(L"page-width").ToLong(&val) && val > 0)
                 {
@@ -443,6 +447,8 @@ bool AppSettings::SaveSettingsFile(const wxString& filePath)
     htmlNode->AddAttribute(L"include-copy", m_htmlExportOptions.m_includeCopy ? L"1" : L"0");
     htmlNode->AddAttribute(L"include-group-visibility-toggles",
                            m_htmlExportOptions.m_includeGroupVisibilityToggles ? L"1" : L"0");
+    htmlNode->AddAttribute(L"remember-filter-choices",
+                           m_htmlExportOptions.m_rememberFilterChoices ? L"1" : L"0");
     htmlNode->AddAttribute(L"page-width",
                            std::to_wstring(std::max(0, m_htmlExportOptions.m_pageSize.GetWidth())));
     htmlNode->AddAttribute(

@@ -1617,7 +1617,8 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
         (savedOptions.m_includePrint != optionsDlg.IncludePrint()) ||
         (savedOptions.m_includeCopy != optionsDlg.IncludeCopy()) ||
         (savedOptions.m_includeGroupVisibilityToggles !=
-         optionsDlg.IncludeGroupVisibilityToggles());
+         optionsDlg.IncludeGroupVisibilityToggles()) ||
+        (savedOptions.m_rememberFilterChoices != optionsDlg.RememberFilterChoices());
     savedOptions.m_theme = optionsDlg.GetTheme();
     savedOptions.m_logoPath = optionsDlg.GetLogoPath();
     savedOptions.m_view = optionsDlg.GetInitialView();
@@ -1630,6 +1631,7 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
     savedOptions.m_includePrint = optionsDlg.IncludePrint();
     savedOptions.m_includeCopy = optionsDlg.IncludeCopy();
     savedOptions.m_includeGroupVisibilityToggles = optionsDlg.IncludeGroupVisibilityToggles();
+    savedOptions.m_rememberFilterChoices = optionsDlg.RememberFilterChoices();
     if (changed)
         {
         GetDocument()->Modify(true);
@@ -1702,6 +1704,7 @@ void WisteriaView::ExportHtml(
             .IncludePrint(savedOptions.m_includePrint)
             .IncludeCopy(savedOptions.m_includeCopy)
             .IncludeGroupVisibilityToggles(savedOptions.m_includeGroupVisibilityToggles)
+            .RememberFilterChoices(savedOptions.m_rememberFilterChoices)
             .PageTitles(std::move(pageTitles))
             .FilterOverrides(filterOverrides));
     }
