@@ -170,15 +170,15 @@ namespace Wisteria::UI
         groupTogglesCheck->SetValidator(wxGenericValidator{ &m_includeGroupVisibilityToggles });
         mainSizer->Add(groupTogglesCheck, wxSizerFlags{}.Border());
 
+        auto* rememberCheck = new wxCheckBox(
+            this, wxID_ANY, _(L"Remember filter choices and group visibility in browser"));
+        rememberCheck->SetValidator(wxGenericValidator{ &m_rememberFilterChoices });
+        mainSizer->Add(rememberCheck, wxSizerFlags{}.Border());
+
         // the choice that each filter opens on
         if (!m_filterDefaults.empty())
             {
             auto* filterSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Filter Defaults"));
-
-            auto* rememberCheck = new wxCheckBox(filterSizer->GetStaticBox(), wxID_ANY,
-                                                 _(L"Remember filter choices in browser"));
-            rememberCheck->SetValidator(wxGenericValidator{ &m_rememberFilterChoices });
-            filterSizer->Add(rememberCheck, wxSizerFlags{}.Border());
 
             auto* filterGrid = new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2,
                                                               wxSizerFlags::GetDefaultBorder() });

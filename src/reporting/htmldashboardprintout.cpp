@@ -65,14 +65,17 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptState()
     const hidden = layers.filter(function(layer) { return !activeLayers.has(layer); });
     // the choice shown in each filter group of each page with filterable graphs
     const choices = {};
-    pages.forEach(function(page, i) {
+    pages.forEach(function(page) {
       if (rememberChoices && page.filters) {
-        choices[i] = page.filters.map(function(filter) { return filter.labels[filter.index]; });
+        choices[page.guid] = page.filters.map(function(filter) {
+          return filter.labels[filter.index];
+        });
       }
     });
+    const state = { view: view, hiddenLayers: hidden, choices: choices };
+    if (rememberChoices && hasGroupToggles) state.hiddenGroups = Array.from(hiddenFilters);
     try {
-      localStorage.setItem(stateKey,
-        JSON.stringify({ view: view, hiddenLayers: hidden, choices: choices }));
+      localStorage.setItem(stateKey, JSON.stringify(state));
     } catch (e) {}
   }
   const savedState = loadState();
@@ -135,6 +138,8 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptChoices()
     pages = Array.from(document.querySelectorAll('.page')).map(function(el, i) {
       const page = {
         el: el,
+        // identifies the page's saved settings
+        guid: el.getAttribute('data-guid') || String(i),
         layer: el.getAttribute('data-layer') || '',
         title: el.getAttribute('aria-label') || format(strings.page, i + 1)
       };
@@ -243,9 +248,9 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptChoiceMenu()
   function restoreChoices() {
     const saved = savedState.choices;
     if (!rememberChoices || !saved || typeof saved !== 'object') return;
-    pages.forEach(function(page, i) {
-      if (!page.filters || !Array.isArray(saved[i])) return;
-      saved[i].forEach(function(label, filterIndex) {
+    pages.forEach(function(page) {
+      if (!page.filters || !Array.isArray(saved[page.guid])) return;
+      saved[page.guid].forEach(function(label, filterIndex) {
         const filter = page.filters[filterIndex];
         const index = filter ? filter.labels.indexOf(label) : -1;
         if (index >= 0) setPageChoice(page, filterIndex, index);
@@ -461,7 +466,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptFilters()
   // a filter only affects the chart on its own page
   function filterScopeFor(el) {
     const page = el.closest('.page');
-    return (page ? page.dataset.index : '') + ':' + scopeIdFor(el);
+    return (page ? (page.dataset.guid || page.dataset.index) : '') + ':' + scopeIdFor(el);
   }
   function applyFilters() {
     document.querySelectorAll('.page-svg [data-filter]').forEach(function(el) {
@@ -499,6 +504,12 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptFilters()
     if (hiddenFilters.has(key)) hiddenFilters.delete(key);
     else hiddenFilters.add(key);
     applyFilters();
+    saveState();
+  }
+  function restoreGroups() {
+    const saved = savedState.hiddenGroups;
+    if (!rememberChoices || !hasGroupToggles || !Array.isArray(saved)) return;
+    saved.forEach(function(key) { if (typeof key === 'string') hiddenFilters.add(key); });
   }
 )JS";
     }
@@ -573,7 +584,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptFilterMenu()
       const box = document.createElement('input');
       box.type = 'checkbox';
       box.checked = true;
-      box.dataset.filterKey = pageIndex + ':' + section.chartId + '|' + entry.key;
+      box.dataset.filterKey = pages[pageIndex].guid + ':' + section.chartId + '|' + entry.key;
       box.addEventListener('change', function() { toggleFilter(box.dataset.filterKey); });
       row.appendChild(box);
       row.appendChild(document.createTextNode(entry.text));
@@ -1893,6 +1904,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptLoad()
     ensureCurrentVisible();
     buildFilters();
     restoreChoices();
+    restoreGroups();
     applyFilters();
     renderView();
     revealCurrent('auto');
@@ -2620,7 +2632,6 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         dashboardHash *= 16777619U;
     };
     hashText(options.m_title);
-    hashText(std::to_wstring(canvases.size()));
     for (const auto& layer : distinctLayers)
         {
         hashText(layer);
