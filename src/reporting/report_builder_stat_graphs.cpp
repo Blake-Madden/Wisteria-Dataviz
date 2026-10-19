@@ -196,14 +196,19 @@ namespace Wisteria
                 return (!colName.empty() ? std::optional<wxString>(colName) : std::nullopt);
             };
 
-            // face color (optional)
+            // face color range (optional)
             wxColour faceColor{ 255, 224, 189 }; // default flesh tone
-            if (graphNode->HasProperty(L"face-color"))
+            if (graphNode->HasProperty(L"face-color-2"))
                 {
-                faceColor = ConvertColor(graphNode->GetProperty(L"face-color"));
+                faceColor = ConvertColor(graphNode->GetProperty(L"face-color-2"));
                 }
 
             chernoffPlot = std::make_shared<Graphs::ChernoffFacesPlot>(canvas, faceColor);
+            if (graphNode->HasProperty(L"face-color-1"))
+                {
+                chernoffPlot->SetSkinColorRange(
+                    ConvertColor(graphNode->GetProperty(L"face-color-1")), faceColor);
+                }
 
             chernoffPlot->SetData(
                 foundPos->second,
@@ -516,7 +521,8 @@ namespace Wisteria
                 binIntervalDisplay.value_or(Graphs::Histogram::IntervalDisplay::Cutpoints),
                 binLabel.value_or(BinLabelDisplay::BinValue),
                 graphNode->GetProperty(L"show-full-range")->AsBool(true), startBinsValue,
-                std::make_pair(suggestedBinCount, maxBinCount));
+                std::make_pair(suggestedBinCount, maxBinCount),
+                graphNode->GetProperty(L"neat-intervals")->AsBool(false));
 
             LoadBarChart(graphNode, histo);
             LoadGraph(graphNode, canvas, currentRow, currentColumn, histo);

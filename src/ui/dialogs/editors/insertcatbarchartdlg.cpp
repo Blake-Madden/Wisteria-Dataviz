@@ -1935,7 +1935,7 @@ namespace Wisteria::UI
                 {
                 m_barGroups.emplace_back(bars[startIdx].GetAxisLabel().GetText(),
                                          bars[endIdx].GetAxisLabel().GetText(), group.m_barDecal,
-                                         group.m_barColor);
+                                         group.m_barColor, group.m_barBrush);
                 }
             }
         m_barGroupPlacement = barChart->GetBarGroupPlacement();
@@ -2021,6 +2021,12 @@ namespace Wisteria::UI
         ApplyPageOptions(*plot);
 
         plot->SetBarOrientation(GetBarOrientation());
+        // the dialog does not edit the number display, so keep the one from the chart being edited
+        if (const auto* oldBars = dynamic_cast<const Graphs::BarChart*>(oldGraph);
+            oldBars != nullptr)
+            {
+            plot->SetNumberDisplay(oldBars->GetNumberDisplay());
+            }
 
         const std::optional<wxString> weightCol = GetWeightVariable().empty() ?
                                                       std::nullopt :
@@ -2256,12 +2262,17 @@ namespace Wisteria::UI
             }
         for (const auto& group : GetBarGroups())
             {
+            // keep a loaded brush's style (e.g., hatching), but with the dialog's color
+            const auto brushStyle = (group.m_brush.IsOk() && group.m_brush != wxNullBrush) ?
+                                        group.m_brush.GetStyle() :
+                                        wxBRUSHSTYLE_SOLID;
             plot->AddBarGroup(
                 group.m_startLabel, group.m_endLabel,
                 group.m_decal.empty() ? std::nullopt : std::optional<wxString>(group.m_decal),
                 group.m_color.IsOk() ? std::optional<wxColour>(group.m_color) : std::nullopt,
-                group.m_color.IsOk() ? std::optional<wxBrush>(wxBrush(group.m_color)) :
-                                       std::nullopt);
+                group.m_color.IsOk() ?
+                    std::optional<wxBrush>(wxBrush{ group.m_color, brushStyle }) :
+                    std::nullopt);
             }
 
         plot->SetBarEffect(GetBoxEffect());

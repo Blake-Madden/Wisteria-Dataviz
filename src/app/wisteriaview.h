@@ -356,9 +356,13 @@ class WisteriaView final : public wxView
     /// @brief An edited graph (and its legend) and the cells that they were in.
     struct FilterableGraphFallback
         {
+        /// @brief The graph.
         std::shared_ptr<Wisteria::GraphItems::GraphItemBase> m_graph;
+        /// @brief The row and column of the graph.
         std::pair<size_t, size_t> m_graphCell{ 0, 0 };
+        /// @brief The graph's legend (may be null).
         std::shared_ptr<Wisteria::GraphItems::GraphItemBase> m_legend;
+        /// @brief The row and column of the legend, if there is one.
         std::optional<std::pair<size_t, size_t>> m_legendCell{ std::nullopt };
         };
 

@@ -550,6 +550,7 @@ namespace Wisteria::UI
         m_showFullRange = histogram->IsShowingFullRangeOfValues();
         m_neatIntervals = histogram->IsUsingNeatIntervals();
         m_ghostOpacity = histogram->GetGhostOpacity();
+        m_hideLabelsOnGhostedBars = histogram->IsHidingGhostedLabels();
         m_suggestedBinCount = histogram->GetSuggestedBinCount().has_value() ?
                                   static_cast<int>(histogram->GetSuggestedBinCount().value()) :
                                   0;

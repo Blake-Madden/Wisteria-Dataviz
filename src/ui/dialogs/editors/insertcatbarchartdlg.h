@@ -45,6 +45,8 @@ namespace Wisteria::UI
         wxString m_decal;
         /// @brief The color of the group bar.
         wxColour m_color;
+        /// @brief The brush of the group bar (its style is combined with @c m_color).
+        wxBrush m_brush;
         };
 
     class InsertCatBarChartDlg final : public InsertGraphDlg

@@ -61,6 +61,11 @@ namespace Wisteria
     void ReportBuilder::LoadLinePlotBaseOptions(const wxSimpleJSON::Ptr_t& graphNode,
                                                 Graphs::LinePlot* linePlot) const
         {
+        if (graphNode->HasProperty(L"auto-spline"))
+            {
+            linePlot->AutoSpline(graphNode->GetProperty(L"auto-spline")->AsBool(true));
+            }
+
         // showcasing
         if (graphNode->HasProperty(L"ghost-opacity"))
             {

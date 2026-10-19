@@ -211,6 +211,7 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         static wxString FormatConstants(const std::vector<wxString>& constants);
 
+        /// @param index The index of the branch.
         /// @returns The default label for the branch at @c index, or an empty string
         ///     if the index is beyond the default branches.
         [[nodiscard]]

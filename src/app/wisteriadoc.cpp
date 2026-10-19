@@ -3428,6 +3428,10 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
     if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::LinePlot)))
         {
         const auto* linePlot = dynamic_cast<const Wisteria::Graphs::LinePlot*>(graph);
+        if (!linePlot->IsAutoSplining())
+            {
+            node->Add(L"auto-spline", false);
+            }
         // LinePlot default ghost opacity is max(75, GHOST_OPACITY)
         if (linePlot->GetGhostOpacity() != std::max<uint8_t>(75, Wisteria::Settings::GHOST_OPACITY))
             {
@@ -3931,6 +3935,68 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             node->Add(L"icon-pen", wxSimpleJSON::Create(SavePenToStr(iconPen)));
             }
         }
+    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BulletChart)))
+        {
+        const auto* bulletChart = dynamic_cast<const Wisteria::Graphs::BulletChart*>(graph);
+        if (bulletChart->GetRangeColorScheme() !=
+            Wisteria::Graphs::BulletChartRangeColorScheme::GoalStatus)
+            {
+            const auto csStr =
+                Wisteria::ReportEnumConvert::ConvertBulletChartRangeColorSchemeToString(
+                    bulletChart->GetRangeColorScheme());
+            if (csStr.has_value())
+                {
+                node->Add(L"range-color-scheme", csStr.value());
+                }
+            }
+        if (bulletChart->GetRangeStartColor() != wxColour{ 217, 217, 217 })
+            {
+            node->Add(L"range-start-color", ColorToStr(bulletChart->GetRangeStartColor()));
+            }
+        if (bulletChart->GetRangeEndColor() != wxColour{ 89, 89, 89 })
+            {
+            node->Add(L"range-end-color", ColorToStr(bulletChart->GetRangeEndColor()));
+            }
+        if (bulletChart->GetGoalSuccessColor() !=
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::KellyGreen))
+            {
+            node->Add(L"goal-success-color", ColorToStr(bulletChart->GetGoalSuccessColor()));
+            }
+        if (bulletChart->GetGoalFailureColor() !=
+            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::FireEngineRed))
+            {
+            node->Add(L"goal-failure-color", ColorToStr(bulletChart->GetGoalFailureColor()));
+            }
+        if (bulletChart->GetValueDisplayFormat() != Wisteria::Graphs::BulletChartValueFormat::Value)
+            {
+            const auto vfStr = Wisteria::ReportEnumConvert::ConvertBulletChartValueFormatToString(
+                bulletChart->GetValueDisplayFormat());
+            if (vfStr.has_value())
+                {
+                node->Add(L"value-display-format", vfStr.value());
+                }
+            }
+        if (!bulletChart->IsShowingValueCallouts())
+            {
+            node->Add(L"show-value-callouts", false);
+            }
+        if (!bulletChart->IsShowingRangeLabels())
+            {
+            node->Add(L"show-range-labels", false);
+            }
+        if (!bulletChart->GetRanges().empty())
+            {
+            auto rangesArray = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_ARRAY);
+            for (const auto& range : bulletChart->GetRanges())
+                {
+                auto rangeObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+                rangeObj->Add(L"end", range.m_end);
+                rangeObj->Add(L"label", range.m_label);
+                rangesArray->ArrayAdd(rangeObj);
+                }
+            node->Add(L"ranges", rangesArray);
+            }
+        }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BarChart)))
         {
         const auto* barChart = dynamic_cast<const Wisteria::Graphs::BarChart*>(graph);
@@ -4337,11 +4403,47 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                 node->Add(L"suggested-bin-count",
                           static_cast<double>(histo->GetSuggestedBinCount().value()));
                 }
+            if (histo->IsUsingNeatIntervals())
+                {
+                node->Add(L"neat-intervals", true);
+                }
             if (histo->GetMaxNumberOfBins() != 255)
                 {
                 node->Add(L"max-bin-count", static_cast<double>(histo->GetMaxNumberOfBins()));
                 }
             }
+        // Gantt-specific options
+        else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::GanttChart)))
+            {
+            const auto* gantt = dynamic_cast<const Wisteria::Graphs::GanttChart*>(graph);
+            if (gantt->GetDateDisplayInterval() != Wisteria::DateInterval::FiscalQuarterly)
+                {
+                const auto diStr = Wisteria::ReportEnumConvert::ConvertDateIntervalToString(
+                    gantt->GetDateDisplayInterval());
+                if (diStr.has_value())
+                    {
+                    node->Add(L"date-interval", diStr.value());
+                    }
+                }
+            if (gantt->GetFiscalYearType() != Wisteria::FiscalYear::USBusiness)
+                {
+                const auto fyStr = Wisteria::ReportEnumConvert::ConvertFiscalYearToString(
+                    gantt->GetFiscalYearType());
+                if (fyStr.has_value())
+                    {
+                    node->Add(L"fy-type", fyStr.value());
+                    }
+                }
+            if (gantt->GetLabelDisplay() != Wisteria::Graphs::GanttChart::TaskLabelDisplay::Days)
+                {
+                const auto tlStr = Wisteria::ReportEnumConvert::ConvertTaskLabelDisplayToString(
+                    gantt->GetLabelDisplay());
+                if (tlStr.has_value())
+                    {
+                    node->Add(L"task-label-display", tlStr.value());
+                    }
+            }
+        }
         }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::PieChart)))
         {
@@ -4622,7 +4724,8 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot)))
         {
         const auto* chernoff = dynamic_cast<const Wisteria::Graphs::ChernoffFacesPlot*>(graph);
-        node->Add(L"face-color", ColorToStr(chernoff->GetFaceColor()));
+        node->Add(L"face-color-1", ColorToStr(chernoff->GetFaceColorLighter()));
+        node->Add(L"face-color-2", ColorToStr(chernoff->GetFaceColor()));
         node->Add(L"show-labels", chernoff->IsShowingLabels());
         node->Add(L"enhanced-legend", chernoff->GetPropertyTemplate(L"enhanced-legend") == L"true");
         node->Add(L"outline-color", ColorToStr(chernoff->GetOutlineColor()));
@@ -4796,69 +4899,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                 }
             node->Add(L"ghosted-wedges", ghostArray);
             }
-        }
-    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::BulletChart)))
-        {
-        const auto* bulletChart = dynamic_cast<const Wisteria::Graphs::BulletChart*>(graph);
-        if (bulletChart->GetRangeColorScheme() !=
-            Wisteria::Graphs::BulletChartRangeColorScheme::GoalStatus)
-            {
-            const auto csStr =
-                Wisteria::ReportEnumConvert::ConvertBulletChartRangeColorSchemeToString(
-                    bulletChart->GetRangeColorScheme());
-            if (csStr.has_value())
-                {
-                node->Add(L"range-color-scheme", csStr.value());
-                }
             }
-        if (bulletChart->GetRangeStartColor() != wxColour{ 217, 217, 217 })
-            {
-            node->Add(L"range-start-color", ColorToStr(bulletChart->GetRangeStartColor()));
-            }
-        if (bulletChart->GetRangeEndColor() != wxColour{ 89, 89, 89 })
-            {
-            node->Add(L"range-end-color", ColorToStr(bulletChart->GetRangeEndColor()));
-            }
-        if (bulletChart->GetGoalSuccessColor() !=
-            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::KellyGreen))
-            {
-            node->Add(L"goal-success-color", ColorToStr(bulletChart->GetGoalSuccessColor()));
-            }
-        if (bulletChart->GetGoalFailureColor() !=
-            Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::FireEngineRed))
-            {
-            node->Add(L"goal-failure-color", ColorToStr(bulletChart->GetGoalFailureColor()));
-            }
-        if (bulletChart->GetValueDisplayFormat() != Wisteria::Graphs::BulletChartValueFormat::Value)
-            {
-            const auto vfStr = Wisteria::ReportEnumConvert::ConvertBulletChartValueFormatToString(
-                bulletChart->GetValueDisplayFormat());
-            if (vfStr.has_value())
-                {
-                node->Add(L"value-display-format", vfStr.value());
-                }
-            }
-        if (!bulletChart->IsShowingValueCallouts())
-            {
-            node->Add(L"show-value-callouts", false);
-            }
-        if (!bulletChart->IsShowingRangeLabels())
-            {
-            node->Add(L"show-range-labels", false);
-            }
-        if (!bulletChart->GetRanges().empty())
-            {
-            auto rangesArray = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_ARRAY);
-            for (const auto& range : bulletChart->GetRanges())
-                {
-                auto rangeObj = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
-                rangeObj->Add(L"end", range.m_end);
-                rangeObj->Add(L"label", range.m_label);
-                rangesArray->ArrayAdd(rangeObj);
-                }
-            node->Add(L"ranges", rangesArray);
-            }
-        }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::IshikawaDiagram)))
         {
         const auto* ishikawa = dynamic_cast<const Wisteria::Graphs::IshikawaDiagram*>(graph);
@@ -5040,37 +5081,6 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                 Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Red))
             {
             node->Add(L"loss-brush", wxSimpleJSON::Create(SaveBrushToStr(lossBrush)));
-            }
-        }
-    else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::GanttChart)))
-        {
-        const auto* gantt = dynamic_cast<const Wisteria::Graphs::GanttChart*>(graph);
-        if (gantt->GetDateDisplayInterval() != Wisteria::DateInterval::FiscalQuarterly)
-            {
-            const auto diStr = Wisteria::ReportEnumConvert::ConvertDateIntervalToString(
-                gantt->GetDateDisplayInterval());
-            if (diStr.has_value())
-                {
-                node->Add(L"date-interval", diStr.value());
-                }
-            }
-        if (gantt->GetFiscalYearType() != Wisteria::FiscalYear::USBusiness)
-            {
-            const auto fyStr =
-                Wisteria::ReportEnumConvert::ConvertFiscalYearToString(gantt->GetFiscalYearType());
-            if (fyStr.has_value())
-                {
-                node->Add(L"fy-type", fyStr.value());
-                }
-            }
-        if (gantt->GetLabelDisplay() != Wisteria::Graphs::GanttChart::TaskLabelDisplay::Days)
-            {
-            const auto tlStr = Wisteria::ReportEnumConvert::ConvertTaskLabelDisplayToString(
-                gantt->GetLabelDisplay());
-            if (tlStr.has_value())
-                {
-                node->Add(L"task-label-display", tlStr.value());
-                }
             }
         }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::SankeyDiagram)))

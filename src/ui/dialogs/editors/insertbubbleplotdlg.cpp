@@ -396,7 +396,12 @@ namespace Wisteria::UI
     std::shared_ptr<Graphs::BubblePlot>
     InsertBubblePlotDlg::BuildBubblePlot(const Graphs::Graph2D* oldGraph)
         {
-        auto plot = std::make_shared<Graphs::BubblePlot>(GetCanvas());
+        // the dialog does not edit the regression line styles,
+        // so keep the ones from the plot being edited
+        const auto* oldScatterPlot = dynamic_cast<const Graphs::ScatterPlot*>(oldGraph);
+        auto plot = std::make_shared<Graphs::BubblePlot>(
+            GetCanvas(), nullptr, nullptr,
+            (oldScatterPlot != nullptr) ? oldScatterPlot->GetRegressionLineStyleScheme() : nullptr);
         if (oldGraph != nullptr)
             {
             plot->SetId(oldGraph->GetId());

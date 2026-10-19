@@ -586,6 +586,12 @@ namespace Wisteria::UI
         plot->SetHairColor(GetHairColor());
         plot->SetLipstickColor(GetLipstickColor());
         plot->ShowLabels(GetShowLabels());
+        // the dialog does not edit the outline color, so keep the one from the plot being edited
+        if (const auto* oldChernoff = dynamic_cast<const Graphs::ChernoffFacesPlot*>(oldGraph);
+            oldChernoff != nullptr)
+            {
+            plot->SetOutlineColor(oldChernoff->GetOutlineColor());
+            }
 
         plot->SetPropertyTemplate(L"enhanced-legend", GetUseEnhancedLegend() ? L"true" : L"false");
 

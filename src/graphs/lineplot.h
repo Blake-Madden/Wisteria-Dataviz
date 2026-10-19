@@ -688,6 +688,7 @@ namespace Wisteria::Graphs
         void SetXColumn(const wxString& xColumnName);
 
         /// @brief Recalculates the size of embedded objects on the plot.
+        /// @param dc The DC to measure content with.
         void RecalcSizes(wxDC& dc) override;
 
       private:

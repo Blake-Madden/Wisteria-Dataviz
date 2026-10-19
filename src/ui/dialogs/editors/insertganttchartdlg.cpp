@@ -1184,6 +1184,7 @@ namespace Wisteria::UI
 
         // showcase bars
         m_ghostOpacity = gantt->GetGhostOpacity();
+        m_hideLabelsOnGhostedBars = gantt->IsHidingGhostedLabels();
         m_showcaseBars = gantt->GetShowcasedLabels();
         if (m_showcaseListBox != nullptr)
             {
@@ -1371,13 +1372,25 @@ namespace Wisteria::UI
                 }
             }
 
-        // restore per-bar shapes (bars not listed stay at the default shape)
-        for (const auto& [label, shape] : GetBarShapes())
+        if (m_shapeAllRadio != nullptr && m_shapeAllRadio->GetValue())
             {
-            const auto barPos = plot->FindBar(label);
-            if (barPos.has_value())
+            // same shape for every bar, including bars from newly selected variables
+            const auto shape = BarShapeFromIndex(m_barShapeAllIndex);
+            for (auto& bar : plot->GetBars())
                 {
-                plot->GetBars().at(barPos.value()).SetShape(shape);
+                bar.SetShape(shape);
+                }
+            }
+        else
+            {
+            // restore per-bar shapes (bars not listed stay at the default shape)
+            for (const auto& [label, shape] : GetBarShapes())
+                {
+                const auto barPos = plot->FindBar(label);
+                if (barPos.has_value())
+                    {
+                    plot->GetBars().at(barPos.value()).SetShape(shape);
+                    }
                 }
             }
 

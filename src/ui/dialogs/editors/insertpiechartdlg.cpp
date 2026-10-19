@@ -1015,6 +1015,16 @@ namespace Wisteria::UI
         plot->ShowInnerPieLabels(GetShowInnerPieLabels());
         plot->SetGhostOpacity(static_cast<uint8_t>(GetGhostOpacity()));
 
+        // the dialog does not edit the margin notes or inner pie connection line,
+        // so keep the ones from the chart being edited
+        if (const auto* oldPie = dynamic_cast<const Graphs::PieChart*>(oldGraph); oldPie != nullptr)
+            {
+            plot->SetDynamicMargins(oldPie->HasDynamicMargins());
+            plot->GetLeftMarginNote() = oldPie->GetLeftMarginNote();
+            plot->GetRightMarginNote() = oldPie->GetRightMarginNote();
+            plot->GetInnerPieConnectionLinePen() = oldPie->GetInnerPieConnectionLinePen();
+            }
+
         // pie slice effect and image scheme
         plot->SetPieSliceEffect((GetPieSliceEffect() == 1) ? PieSliceEffect::Image :
                                                              PieSliceEffect::Solid);

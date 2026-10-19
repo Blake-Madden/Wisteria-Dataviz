@@ -1629,26 +1629,6 @@ namespace Wisteria::UI
             }
         else
             {
-            if (GetBoldHeaderRow())
-                {
-                table->BoldRow(0);
-                }
-            if (GetCenterHeaderRow())
-                {
-                table->SetRowHorizontalPageAlignment(0, PageHorizontalAlignment::Centered);
-                }
-            if (GetBoldFirstColumn())
-                {
-                table->BoldColumn(0);
-                }
-            if (GetAlternateRowColors())
-                {
-                // apply from the template so start/stops are honored
-                const ReportTableLoader loader(*GetReportBuilder());
-                loader.ApplyTableAlternateRowColor(
-                    table, wxSimpleJSON::Create(GetAlternateRowColorTemplate(), true));
-                }
-
             // cache property templates for round-tripping
             table->SetPropertyTemplate(L"dataset", GetSelectedDatasetName());
             if (!varFormula.empty())
@@ -1702,10 +1682,6 @@ namespace Wisteria::UI
                     }
                 footnotesJson += L"]";
                 table->SetPropertyTemplate(L"footnotes", footnotesJson);
-                for (const auto& [value, footnote] : footnotes)
-                    {
-                    table->AddFootnote(value, footnote);
-                    }
                 }
 
             const auto& aggregates = GetAggregates();
@@ -1760,79 +1736,6 @@ namespace Wisteria::UI
                             wxString::Format(L", \"position\":%zu", agg.m_position.value());
                         }
                     aggregatesJson += L"}";
-
-                    // apply to live graph
-                    Graphs::Table::AggregateInfo aggInfo(agg.m_aggregateType);
-                    if (agg.m_type.CmpNoCase(L"column") == 0)
-                        {
-                        auto startIdx = table->FindColumnIndex(agg.m_start);
-                        auto endIdx = table->FindColumnIndex(agg.m_end);
-                        if (!startIdx.has_value())
-                            {
-                            long val = 0;
-                            if (agg.m_start.ToLong(&val))
-                                {
-                                startIdx = val;
-                                }
-                            }
-                        if (!endIdx.has_value())
-                            {
-                            long val = 0;
-                            if (agg.m_end.ToLong(&val))
-                                {
-                                endIdx = val;
-                                }
-                            }
-
-                        if (startIdx.has_value())
-                            {
-                            aggInfo.FirstCell(startIdx.value());
-                            }
-                        if (endIdx.has_value())
-                            {
-                            aggInfo.LastCell(endIdx.value());
-                            }
-
-                        table->InsertAggregateColumn(
-                            aggInfo, agg.m_name, std::nullopt, agg.m_useAdjacentColor,
-                            (agg.m_bkColor.IsOk() ? std::optional<wxColour>(agg.m_bkColor) :
-                                                    std::nullopt));
-                        }
-                    else
-                        {
-                        auto startIdx = table->FindRowIndex(agg.m_start);
-                        auto endIdx = table->FindRowIndex(agg.m_end);
-                        if (!startIdx.has_value())
-                            {
-                            long val = 0;
-                            if (agg.m_start.ToLong(&val))
-                                {
-                                startIdx = val;
-                                }
-                            }
-                        if (!endIdx.has_value())
-                            {
-                            long val = 0;
-                            if (agg.m_end.ToLong(&val))
-                                {
-                                endIdx = val;
-                                }
-                            }
-
-                        if (startIdx.has_value())
-                            {
-                            aggInfo.FirstCell(startIdx.value());
-                            }
-                        if (endIdx.has_value())
-                            {
-                            aggInfo.LastCell(endIdx.value());
-                            }
-
-                        table->InsertAggregateRow(aggInfo, agg.m_name, std::nullopt,
-                                                  (agg.m_bkColor.IsOk() ?
-                                                       std::optional<wxColour>(agg.m_bkColor) :
-                                                       std::nullopt));
-                        }
                     }
                 aggregatesJson += L"]";
                 table->SetPropertyTemplate(L"aggregates", aggregatesJson);
@@ -1871,6 +1774,21 @@ namespace Wisteria::UI
                 std::ranges::any_of(annotations, [](const auto& ann) { return ann.m_sideRight; }))
                 {
                 table->SetPageHorizontalAlignment(PageHorizontalAlignment::Centered);
+                }
+
+            // apply dialog-driven formatting after procedural features,
+            // since aggregates change the table structure
+            if (GetBoldHeaderRow())
+                {
+                table->BoldRow(0);
+                }
+            if (GetCenterHeaderRow())
+                {
+                table->SetRowHorizontalPageAlignment(0, PageHorizontalAlignment::Centered);
+                }
+            if (GetBoldFirstColumn())
+                {
+                table->BoldColumn(0);
                 }
             }
 

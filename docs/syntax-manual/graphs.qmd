@@ -455,6 +455,7 @@ Properties for `"histogram"` nodes:
 - `"bins-start"`: A number specifying where on the X-axis to start the bins.
 - `"suggested-bin-count"`: A number specifying the suggested number of bins.
 - `"max-bin-count"`: A number specifying the maximum number of bins.
+- `"neat-intervals"`: `true` to round the bin ranges to multiples of 5, 10, etc. (only applies to `"bin-by-integer-range"`).
 - Properties available to [bar charts](#bar-chart-properties).
 - Some base properties available to [graphs](#graph-properties).
 :::
@@ -517,6 +518,7 @@ Properties for `"line-plot"` nodes:
   - `"x"`: The X column.
   - `"y"`: The Y column.
   - `"group"`: The grouping column (this is optional).
+- `"auto-spline"`: `true` to draw lines that zigzag back and forth along the X axis as splines (default is `true`).
 - `"ghost-opacity"`: A number specifying the opacity level of non-showcased lines.
 - `"showcase-lines"`: An array of strings specifying which lines to showcase.
 - Some base properties available to [graphs](#graph-properties).
@@ -591,7 +593,8 @@ Properties for `"chernoff-faces"` nodes:
   - `"mouth-curvature"`: The column controlling smile/frown (optional).
   - `"face-saturation"`: The column controlling face color saturation (optional).
   - `"ear-size"`: The column controlling ear size (optional).
-- `"face-color"`: The base face color (default is a flesh tone).
+- `"face-color-1"`: The lighter end of the face color range.
+- `"face-color-2"`: The darker end of the face color range.
 - `"outline-color"`: The outline color for facial features (default is black).
 - `"show-labels"`: `true` to show ID labels beneath each face (default is `true`). \
   Note that the dataset must have an ID column to pull the labels from.

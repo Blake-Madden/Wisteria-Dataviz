@@ -303,7 +303,11 @@ namespace Wisteria::UI
     std::shared_ptr<Graphs::MultiSeriesLinePlot>
     InsertMultiSeriesLinePlotDlg::BuildMultiSeriesLinePlot(const Graphs::Graph2D* oldGraph)
         {
-        auto plot = std::make_shared<Graphs::MultiSeriesLinePlot>(GetCanvas());
+        // the dialog does not edit the line styles, so keep the ones from the plot being edited
+        const auto* oldLinePlot = dynamic_cast<const Graphs::LinePlot*>(oldGraph);
+        auto plot = std::make_shared<Graphs::MultiSeriesLinePlot>(
+            GetCanvas(), nullptr, nullptr,
+            (oldLinePlot != nullptr) ? oldLinePlot->GetLineStyleScheme() : nullptr);
         if (oldGraph != nullptr)
             {
             plot->SetId(oldGraph->GetId());
