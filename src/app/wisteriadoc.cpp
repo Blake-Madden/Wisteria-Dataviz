@@ -242,7 +242,7 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
         // export-excluded-pages (per-project, GUIDs of the pages left out of each export format)
         {
         root->DeleteProperty(L"export-excluded-pages");
-        auto excludedNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT);
+        auto excludedNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT, true);
         bool hasExcludedPages{ false };
         for (const auto format : { Wisteria::ReportBuilder::ExportFormat::Svg,
                                    Wisteria::ReportBuilder::ExportFormat::Html,
