@@ -910,19 +910,26 @@ html.motion-ready .page:not(.is-revealed) .page-svg
 
 /* ---------- Theme menu ------------------------------------------- */
 
-.dash-theme-btn
+.dash-theme-btn, .dash-layers-btn, .dash-filters-btn, .dash-save-btn, .dash-copy-btn
   {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   }
 
-.dash-theme-caret
+/* downward chevron on buttons that open a menu */
+.dash-caret
   {
-  font-size: 0.8em;
+  width: 0.85em;
+  height: 0.85em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
   }
 
-.dash-save-btn, .dash-print-btn, .dash-copy-btn, .dash-full-btn
+.dash-print-btn, .dash-full-btn
   {
   display: inline-flex;
   align-items: center;

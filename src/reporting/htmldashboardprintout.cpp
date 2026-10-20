@@ -2731,6 +2731,9 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
     html += wxString::Format(L"<h1 class=\"dash-title\">%s</h1>\n</div>\n",
                              SVGReportPrintout::EscapeXmlText(title));
     html += L"<div class=\"dash-controls\">\n";
+    // downward chevron shown on buttons that open a menu
+    const wxString caretIcon{ L"<svg class=\"dash-caret\" viewBox=\"0 0 16 16\" "
+                              "aria-hidden=\"true\"><path d=\"M4.5 6.5l3.5 3.5 3.5-3.5\"/></svg>" };
     if (!singlePage)
         {
         html += wxString::Format(
@@ -2748,10 +2751,10 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         html += wxString::Format(
             L"<div class=\"dash-layers\">\n"
             "<button type=\"button\" class=\"dash-layers-btn\" aria-haspopup=\"true\" "
-            "aria-expanded=\"false\" aria-controls=\"dash-layers-menu\">%s</button>\n"
+            "aria-expanded=\"false\" aria-controls=\"dash-layers-menu\">%s%s</button>\n"
             "<div id=\"dash-layers-menu\" class=\"dash-layers-menu\" role=\"group\" "
             "aria-label=\"%s\" hidden>\n",
-            SVGReportPrintout::EscapeXmlText(_(L"Layers")),
+            SVGReportPrintout::EscapeXmlText(_(L"Layers")), caretIcon,
             SVGReportPrintout::EscapeXmlAttr(_(L"Layers")));
         for (const auto& layer : distinctLayers)
             {
@@ -2764,11 +2767,11 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
     html += wxString::Format(
         L"<div class=\"dash-filters\" hidden>\n"
         "<button type=\"button\" class=\"dash-filters-btn\" aria-haspopup=\"true\" "
-        "aria-expanded=\"false\" aria-controls=\"dash-filters-menu\">%s</button>\n"
+        "aria-expanded=\"false\" aria-controls=\"dash-filters-menu\">%s%s</button>\n"
         "<div id=\"dash-filters-menu\" class=\"dash-filters-menu\" role=\"group\" "
         "aria-label=\"%s\" hidden></div>\n"
         "</div>\n",
-        SVGReportPrintout::EscapeXmlText(_(L"Filters")),
+        SVGReportPrintout::EscapeXmlText(_(L"Filters")), caretIcon,
         SVGReportPrintout::EscapeXmlAttr(_(L"Filters")));
     if (options.m_includeColorModeToggle)
         {
@@ -2777,10 +2780,9 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
             "<button type=\"button\" id=\"dash-theme\" class=\"dash-theme-btn\" "
             "aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"dash-theme-menu\" "
             "aria-label=\"%s\"><span class=\"dash-theme-icon\" aria-hidden=\"true\">"
-            "◐</span><span class=\"dash-theme-caret\" aria-hidden=\"true\">"
-            "▾</span></button>\n"
+            "◐</span>%s</button>\n"
             "</div>\n",
-            SVGReportPrintout::EscapeXmlAttr(_(L"Theme")));
+            SVGReportPrintout::EscapeXmlAttr(_(L"Theme")), caretIcon);
         }
     html += wxString::Format(
         L"<button type=\"button\" id=\"dash-full\" class=\"dash-full-btn\" hidden "
@@ -2805,9 +2807,9 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
             "aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"dash-copy-menu\" "
             "aria-label=\"%s\" title=\"%s\"><svg class=\"dash-btn-icon\" viewBox=\"0 0 16 16\" "
             "aria-hidden=\"true\"><path d=\"M5.5 5.5h8v8h-8zM10.5 5.5v-3h-8v8h3\"/>"
-            "</svg></button>\n",
+            "</svg>%s</button>\n",
             SVGReportPrintout::EscapeXmlAttr(_(L"Copy")),
-            SVGReportPrintout::EscapeXmlAttr(_(L"Copy")));
+            SVGReportPrintout::EscapeXmlAttr(_(L"Copy")), caretIcon);
         }
     if (options.m_includeSave)
         {
@@ -2817,8 +2819,8 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
             "aria-label=\"%s\"><svg class=\"dash-btn-icon\" viewBox=\"0 0 16 16\" "
             "aria-hidden=\"true\"><path d=\"M3 2.5h8l2.5 2.5v8.5H3zM5 2.5v3.5h5V2.5M5 "
             "13.5v-4h6v4\"/>"
-            "</svg></button>\n",
-            SVGReportPrintout::EscapeXmlAttr(_(L"Save page")));
+            "</svg>%s</button>\n",
+            SVGReportPrintout::EscapeXmlAttr(_(L"Save page")), caretIcon);
         }
     html += wxString::Format(
         L"<button type=\"button\" id=\"dash-help\" class=\"dash-help-btn\" "
