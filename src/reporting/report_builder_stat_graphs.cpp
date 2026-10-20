@@ -79,6 +79,98 @@ namespace Wisteria
                     255.0)));
                 }
 
+            if (graphNode->HasProperty(_DT(L"baseline")))
+                {
+                const auto baselineNode = graphNode->GetProperty(_DT(L"baseline"));
+                const double baseline{ baselineNode->AsDouble(0) };
+                constexpr double MAX_BASELINE{ 1'000'000 };
+                if (!baselineNode->IsValueNumber() || !std::isfinite(baseline) || baseline < 1 ||
+                    baseline > MAX_BASELINE || baseline != std::trunc(baseline))
+                    {
+                    throw std::runtime_error(
+                        _(L"Run chart 'baseline' must be a whole number of at least 1.").ToUTF8());
+                    }
+                runChart->SetBaselineLength(static_cast<size_t>(baseline));
+                }
+
+            const auto rulesNode = graphNode->GetProperty(_DT(L"rules"));
+            if (rulesNode->IsOk())
+                {
+                const auto readRuleLength =
+                    [&rulesNode](const wxString& key,
+                                 const size_t smallest) -> std::optional<size_t>
+                {
+                    if (!rulesNode->HasProperty(key))
+                        {
+                        return std::nullopt;
+                        }
+                    const auto lengthNode = rulesNode->GetProperty(key);
+                    const double length{ lengthNode->AsDouble(0) };
+                    constexpr double MAX_RULE_LENGTH{ 1'000 };
+                    if (!lengthNode->IsValueNumber() || !std::isfinite(length) ||
+                        length < static_cast<double>(smallest) || length > MAX_RULE_LENGTH ||
+                        length != std::trunc(length))
+                        {
+                        throw std::runtime_error(
+                            wxString::Format(
+                                _(L"Run chart rule '%s' must be a whole number of at least %zu."),
+                                key, smallest)
+                                .ToUTF8());
+                        }
+                    return static_cast<size_t>(length);
+                };
+
+                if (const auto length =
+                        readRuleLength(_DT(L"shift"), statistics::spc_rules::MIN_SHIFT_LENGTH);
+                    length.has_value())
+                    {
+                    runChart->SetShiftLength(length.value());
+                    runChart->EnableRule(statistics::spc_rule::shift, true);
+                    }
+                if (const auto length =
+                        readRuleLength(_DT(L"trend"), statistics::spc_rules::MIN_TREND_LENGTH);
+                    length.has_value())
+                    {
+                    runChart->SetTrendLength(length.value());
+                    runChart->EnableRule(statistics::spc_rule::trend, true);
+                    }
+                if (const auto length = readRuleLength(
+                        _DT(L"alternating"), statistics::spc_rules::MIN_ALTERNATING_LENGTH);
+                    length.has_value())
+                    {
+                    runChart->SetAlternatingLength(length.value());
+                    runChart->EnableRule(statistics::spc_rule::alternating, true);
+                    }
+                if (rulesNode->HasProperty(_DT(L"runs")))
+                    {
+                    const auto runsNode = rulesNode->GetProperty(_DT(L"runs"));
+                    if (!runsNode->IsValueBoolean())
+                        {
+                        throw std::runtime_error(
+                            _(L"Run chart rule 'runs' must be true or false.").ToUTF8());
+                        }
+                    runChart->EnableRule(statistics::spc_rule::runs, runsNode->AsBool(false));
+                    }
+                if (rulesNode->HasProperty(_DT(L"colors")))
+                    {
+                    const auto colorsNode = rulesNode->GetProperty(_DT(L"colors"));
+                    for (const auto& [rule, key] :
+                         { std::pair{ statistics::spc_rule::shift, _DT(L"shift") },
+                           std::pair{ statistics::spc_rule::trend, _DT(L"trend") },
+                           std::pair{ statistics::spc_rule::alternating, _DT(L"alternating") } })
+                        {
+                        if (colorsNode->HasProperty(key))
+                            {
+                            const wxColour ruleColor{ ConvertColor(colorsNode->GetProperty(key)) };
+                            if (ruleColor.IsOk())
+                                {
+                                runChart->SetRuleColor(rule, ruleColor);
+                                }
+                            }
+                        }
+                    }
+                }
+
             LoadGraph(graphNode, canvas, currentRow, currentColumn, runChart);
             LoadLinePlotBaseOptions(graphNode, runChart.get());
 

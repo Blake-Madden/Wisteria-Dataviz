@@ -6193,9 +6193,10 @@ void WisteriaView::OnInsertRunChart([[maybe_unused]] wxCommandEvent& event)
     try
         {
         auto plot = dlg.BuildRunChart();
-        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
-                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
-                             Wisteria::UI::LegendPlacement::None);
+        const auto legendPlacement = dlg.GetLegendPlacement();
+
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -6229,10 +6230,16 @@ void WisteriaView::EditRunChart(const Wisteria::Graphs::Graph2D& graph, Wisteria
     try
         {
         auto plot = dlg.BuildRunChart(&graph);
-        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        const auto legendPlacement = dlg.GetLegendPlacement();
+
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
+
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              pasteAsNew ? dlg.GetSelectedRow() : graphRow,
-                             pasteAsNew ? dlg.GetSelectedColumn() : graphCol,
-                             Wisteria::UI::LegendPlacement::None);
+                             pasteAsNew ? dlg.GetSelectedColumn() : graphCol, legendPlacement);
         }
     catch (const std::exception& exc)
         {

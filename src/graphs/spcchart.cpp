@@ -184,6 +184,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
             m_sampleSize.reset();
             m_sampleStatistic = SampleStatistic::Mean;
             OnDataSet();
+            EvaluateRules();
             return;
             }
 
@@ -353,10 +354,406 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
         }
 
     //----------------------------------------------------------------
+    void SpcChart::EnableRule(const statistics::spc_rule rule, const bool enable)
+        {
+        if (enable)
+            {
+            m_enabledRules.insert(rule);
+            }
+        else
+            {
+            m_enabledRules.erase(rule);
+            }
+        EvaluateRules();
+        }
+
+    //----------------------------------------------------------------
+    size_t SpcChart::ValidateRuleLength(const size_t length, const size_t smallest)
+        {
+        if (length < smallest)
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"SPC rule length must be at least %zu."), smallest).ToUTF8());
+            }
+        return length;
+        }
+
+    //----------------------------------------------------------------
+    void SpcChart::SetShiftLength(const size_t length)
+        {
+        m_shiftLength = ValidateRuleLength(length, statistics::spc_rules::MIN_SHIFT_LENGTH);
+        EvaluateRules();
+        }
+
+    //----------------------------------------------------------------
+    void SpcChart::SetTrendLength(const size_t length)
+        {
+        m_trendLength = ValidateRuleLength(length, statistics::spc_rules::MIN_TREND_LENGTH);
+        EvaluateRules();
+        }
+
+    //----------------------------------------------------------------
+    void SpcChart::SetAlternatingLength(const size_t length)
+        {
+        m_alternatingLength =
+            ValidateRuleLength(length, statistics::spc_rules::MIN_ALTERNATING_LENGTH);
+        EvaluateRules();
+        }
+
+    //----------------------------------------------------------------
+    void SpcChart::SetBaselineLength(const size_t length)
+        {
+        m_baselineLength = length;
+        OnDataSet();
+        EvaluateRules();
+        }
+
+    //----------------------------------------------------------------
+    std::vector<double> SpcChart::GetBaselineValues() const
+        {
+        if (!HasBaseline())
+            {
+            return m_plottedValues;
+            }
+        return { m_plottedValues.cbegin(),
+                 std::next(m_plottedValues.cbegin(), static_cast<ptrdiff_t>(m_baselineLength)) };
+        }
+
+    //----------------------------------------------------------------
+    wxPen SpcChart::BaselineDividerPen()
+        {
+        return wxPen(Colors::ColorBrewer::GetColor(Colors::Color::SlateGray), 2,
+                     wxPenStyle::wxPENSTYLE_SHORT_DASH);
+        }
+
+    //----------------------------------------------------------------
+    wxColour SpcChart::GetDefaultRuleColor(const statistics::spc_rule rule)
+        {
+        switch (rule)
+            {
+        case statistics::spc_rule::shift:
+            return Colors::ColorBrewer::GetColor(Colors::Color::Orange);
+        case statistics::spc_rule::trend:
+            return Colors::ColorBrewer::GetColor(Colors::Color::Purple);
+        case statistics::spc_rule::alternating:
+            return Colors::ColorBrewer::GetColor(Colors::Color::Teal);
+        default:
+            return wxNullColour;
+            }
+        }
+
+    //----------------------------------------------------------------
+    wxColour SpcChart::GetRuleRingColor(const statistics::spc_rule rule) const
+        {
+        const wxColour ruleColor{ GetRuleColor(rule) };
+        return ruleColor.IsOk() ? Colors::ColorContrast::ChangeOpacity(ruleColor, RING_OPACITY) :
+                                  wxNullColour;
+        }
+
+    //----------------------------------------------------------------
+    bool SpcChart::HasRuleRings() const
+        {
+        return std::ranges::any_of(m_ruleViolations, [this](const auto& violation)
+                                   { return GetRuleColor(violation.rule).IsOk(); });
+        }
+
+    //----------------------------------------------------------------
+    void SpcChart::EvaluateRules()
+        {
+        m_ruleViolations.clear();
+        m_runsSummary.reset();
+
+        const auto& values = GetPlottedValues();
+        const auto center = GetCenterLine();
+        const auto addViolations = [this](std::vector<statistics::spc_rule_violation> violations)
+        { std::ranges::move(violations, std::back_inserter(m_ruleViolations)); };
+
+        if (center.has_value() && IsRuleEnabled(statistics::spc_rule::shift))
+            {
+            addViolations(
+                statistics::spc_rules::find_shifts(values, center.value(), m_shiftLength));
+            }
+        if (IsRuleEnabled(statistics::spc_rule::trend))
+            {
+            addViolations(statistics::spc_rules::find_trends(values, m_trendLength));
+            }
+        if (IsRuleEnabled(statistics::spc_rule::alternating))
+            {
+            addViolations(statistics::spc_rules::find_alternating(values, m_alternatingLength));
+            }
+        if (center.has_value() && IsRuleEnabled(statistics::spc_rule::runs))
+            {
+            m_runsSummary = statistics::spc_rules::count_runs(values, center.value());
+            }
+        }
+
+    //----------------------------------------------------------------
+    wxString SpcChart::FormatPValue(const double pValue)
+        {
+        constexpr double SMALLEST_SHOWN{ 0.001 };
+        return (pValue < SMALLEST_SHOWN) ?
+                   L"< " + wxNumberFormatter::ToString(SMALLEST_SHOWN, 3,
+                                                       wxNumberFormatter::Style::Style_None) :
+                   wxNumberFormatter::ToString(pValue, 3, wxNumberFormatter::Style::Style_None);
+        }
+
+    //----------------------------------------------------------------
+    wxString SpcChart::GetRunsNote() const
+        {
+        if (!IsRuleEnabled(statistics::spc_rule::runs) || !GetCenterLine().has_value())
+            {
+            return {};
+            }
+        if (!m_runsSummary.has_value())
+            {
+            // TRANSLATORS: %s is a heading such as "Runs about the median"
+            return wxString::Format(_(L"%s: too few points to test (at least %zu are needed)."),
+                                    GetRunsLabel(), statistics::spc_rules::MIN_RUNS_OBSERVATIONS);
+            }
+
+        wxString note{ wxString::Format(
+            // TRANSLATORS: the first %s is a heading such as "Runs about the median"
+            _(L"%s: %zu (expected %s), longest run: %zu\n"
+              "P-value for clustering: %s, for mixtures: %s"),
+            GetRunsLabel(), m_runsSummary->runs,
+            wxNumberFormatter::ToString(m_runsSummary->expected_runs, 1,
+                                        wxNumberFormatter::Style::Style_NoTrailingZeroes),
+            m_runsSummary->longest_run, FormatPValue(m_runsSummary->clustering_p_value),
+            FormatPValue(m_runsSummary->mixtures_p_value)) };
+        if (m_runsSummary->has_too_few_runs())
+            {
+            note += L"\n" + _(L"Too few runs, which suggests a shift in the process.");
+            }
+        else if (m_runsSummary->has_too_many_runs())
+            {
+            note += L"\n" + _(L"Too many runs, which suggests the process is oscillating.");
+            }
+        return note;
+        }
+
+    //----------------------------------------------------------------
+    std::unique_ptr<GraphItems::Label> SpcChart::CreateLegend(const LegendOptions& options)
+        {
+        SetLegendInfo(options);
+        const wxString runsNote{ GetRunsNote() };
+        const bool hasCircles{ HasRuleRings() };
+        // the median line is labeled on the opposite axis, so only count lines meant for the legend
+        const bool hasLegendReferences{
+            !GetReferenceAreas().empty() ||
+            std::ranges::any_of(
+                GetReferenceLines(), [](const auto& refLine)
+                { return refLine.GetLabelPlacement() == ReferenceLabelPlacement::Legend; })
+        };
+        const bool hasBaseline{ HasBaseline() };
+        const auto centerLineEntry = GetCenterLineLegendEntry();
+        if (!centerLineEntry.has_value() && !hasCircles && !hasBaseline && runsNote.empty() &&
+            !hasLegendReferences)
+            {
+            return nullptr;
+            }
+
+        auto legend = std::make_unique<GraphItems::Label>(
+            GraphItems::GraphItemInfo{}
+                .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs())
+                .DPIScaling(GetDPIScaleFactor())
+                .FontColor(GetLeftYAxis().GetFontColor()));
+        wxString legendText;
+        const wxString separatorText{ L"\n \n" };
+        // a separator goes between sections, but not before the first one
+        const auto startSection = [&legendText, &legend, &separatorText]()
+        {
+            if (!legendText.empty())
+                {
+                legendText += separatorText;
+                legend->GetLegendIcons().emplace_back(
+                    Icons::IconShape::HorizontalSeparator,
+                    wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black), 2 },
+                    *wxTRANSPARENT_BRUSH);
+                }
+        };
+        const auto addEntry = [&legendText, &legend, &separatorText](const wxString& text,
+                                                                     const Icons::LegendIcon& icon)
+        {
+            if (!legendText.empty() && !legendText.ends_with(separatorText))
+                {
+                legendText += L"\n";
+                }
+            legendText += text;
+            legend->GetLegendIcons().push_back(icon);
+        };
+
+        // one entry for each rule that found a pattern, in a fixed order
+        for (const auto& [rule, description] :
+             { std::pair{
+                   statistics::spc_rule::shift,
+                   wxString::Format(_(L"Shift (%zu or more points on one side)"), m_shiftLength) },
+               std::pair{ statistics::spc_rule::trend,
+                          wxString::Format(_(L"Trend (%zu or more points rising or falling)"),
+                                           m_trendLength) },
+               std::pair{ statistics::spc_rule::alternating,
+                          wxString::Format(_(L"Alternating (%zu or more points going up and down)"),
+                                           m_alternatingLength) } })
+            {
+            const wxColour ringColor{ GetRuleRingColor(rule) };
+            if (ringColor.IsOk() &&
+                std::ranges::any_of(m_ruleViolations, [rule](const auto& violation)
+                                    { return violation.rule == rule; }))
+                {
+                addEntry(description,
+                         Icons::LegendIcon{ Icons::IconShape::Circle, wxPen{ ringColor, 2 },
+                                            *wxTRANSPARENT_BRUSH });
+                }
+            }
+
+        // the center line and the end of the baseline
+        if (centerLineEntry.has_value() || hasBaseline)
+            {
+            startSection();
+            if (centerLineEntry.has_value())
+                {
+                addEntry(centerLineEntry->first,
+                         Icons::LegendIcon{ Icons::IconShape::HorizontalLine,
+                                            centerLineEntry->second, *wxTRANSPARENT_BRUSH });
+                }
+            if (hasBaseline)
+                {
+                const bool usesSamples{ m_sampleColumnName.has_value() ||
+                                        m_sampleSize.has_value() };
+                addEntry(wxString::Format(usesSamples ?
+                                              _(L"End of baseline (first %zu samples)") :
+                                              _(L"End of baseline (first %zu observations)"),
+                                          m_baselineLength),
+                         Icons::LegendIcon{ Icons::IconShape::VerticalLine, BaselineDividerPen(),
+                                            *wxTRANSPARENT_BRUSH });
+                }
+            }
+
+        // the runs note has no icon
+        if (!runsNote.empty())
+            {
+            startSection();
+            legendText += runsNote;
+            }
+        legend->SetText(legendText);
+
+        if (hasLegendReferences)
+            {
+            AddReferenceLinesAndAreasToLegend(*legend);
+            // the reference lines start with a separator, which is not needed
+            // if they are the only thing in the legend
+            if (legendText.empty() && legend->GetText().starts_with(separatorText) &&
+                !legend->GetLegendIcons().empty())
+                {
+                legend->SetText(legend->GetText().substr(separatorText.length()));
+                legend->GetLegendIcons().erase(legend->GetLegendIcons().begin());
+                }
+            }
+
+        // the header is added last, since it does not have an icon
+        if (options.IsIncludingHeader())
+            {
+            legend->SetText(wxString::Format(
+                L"%s\n%s", options.GetTitle().empty() ? _(L"Rules") : options.GetTitle(),
+                legend->GetText()));
+            legend->GetHeaderInfo()
+                .Enable(true)
+                .LabelAlignment(TextAlignment::FlushLeft)
+                .FontColor(GetLeftYAxis().GetFontColor());
+            }
+
+        AdjustLegendSettings(*legend, options.GetPlacementHint());
+        return legend;
+        }
+
+    //----------------------------------------------------------------
     void SpcChart::RecalcSizes(wxDC & dc)
         {
         LinePlot::RecalcSizes(dc);
 
+        AddIndividualPoints(dc);
+        AddBaselineDivider();
+        AddRuleViolationMarkers(dc);
+        }
+
+    //----------------------------------------------------------------
+    void SpcChart::AddBaselineDivider()
+        {
+        if (!HasBaseline())
+            {
+            return;
+            }
+
+        // drawn through the last baseline point
+        wxPoint pt;
+        if (!GetPhysicalCoordinates(static_cast<double>(m_baselineLength),
+                                    GetLeftYAxis().GetRange().first, pt))
+            {
+            return;
+            }
+        auto divider = std::make_unique<GraphItems::Lines>(BaselineDividerPen(), GetScaling());
+        divider->SetDPIScaleFactor(GetDPIScaleFactor());
+        divider->AddLine(wxPoint{ pt.x, GetPlotAreaBoundingBox().GetTop() },
+                         wxPoint{ pt.x, GetPlotAreaBoundingBox().GetBottom() });
+        AddObject(std::move(divider));
+        }
+
+    //----------------------------------------------------------------
+    void SpcChart::AddRuleViolationMarkers(wxDC & dc)
+        {
+        if (!HasRuleRings())
+            {
+            return;
+            }
+
+        auto markers = std::make_unique<GraphItems::Points2D>(wxNullPen);
+        markers->SetScaling(GetScaling());
+        markers->SetDPIScaleFactor(GetDPIScaleFactor());
+
+        // a point that is part of patterns from more than one rule gets a larger ring
+        // for each additional rule
+        std::map<size_t, size_t> ringsAtPoint;
+        constexpr size_t RING_SPACING{ 3 };
+        wxPoint pt;
+        for (const auto rule : { statistics::spc_rule::shift, statistics::spc_rule::trend,
+                                 statistics::spc_rule::alternating })
+            {
+            const wxColour ringColor{ GetRuleRingColor(rule) };
+            if (!ringColor.IsOk())
+                {
+                continue;
+                }
+            std::set<size_t> rulePoints;
+            for (const auto& violation : m_ruleViolations)
+                {
+                if (violation.rule == rule)
+                    {
+                    rulePoints.insert(violation.points.cbegin(), violation.points.cend());
+                    }
+                }
+            for (const auto index : rulePoints)
+                {
+                const size_t ringIndex{ ringsAtPoint[index]++ };
+                if (index < m_plottedValues.size() &&
+                    GetPhysicalCoordinates(static_cast<double>(index + 1), m_plottedValues[index],
+                                           pt))
+                    {
+                    markers->AddPoint(GraphItems::Point2D(GraphItems::GraphItemInfo{}
+                                                              .AnchorPoint(pt)
+                                                              .Pen(wxPen{ ringColor, 2 })
+                                                              .Brush(*wxTRANSPARENT_BRUSH),
+                                                          (Settings::GetPointRadius() * 2) +
+                                                              (ringIndex * RING_SPACING),
+                                                          Icons::IconShape::Circle),
+                                      dc);
+                    }
+                }
+            }
+        AddObject(std::move(markers));
+        }
+
+    //----------------------------------------------------------------
+    void SpcChart::AddIndividualPoints(wxDC & dc)
+        {
         if (!m_showIndividualPoints || m_observations.empty() || GetLines().empty())
             {
             return;
@@ -461,5 +858,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
             }
 
         OnDataSet();
+        EvaluateRules();
         }
     } // namespace Wisteria::Graphs

@@ -3528,6 +3528,59 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                     node->Add(L"sample-statistic", statisticStr.value());
                     }
                 }
+
+            if (runChart->GetBaselineLength() > 0)
+                {
+                node->Add(L"baseline", static_cast<double>(runChart->GetBaselineLength()));
+                }
+
+            auto rulesNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT, true);
+            bool hasRules{ false };
+            if (runChart->IsRuleEnabled(statistics::spc_rule::shift))
+                {
+                rulesNode->Add(L"shift", static_cast<double>(runChart->GetShiftLength()));
+                hasRules = true;
+                }
+            if (runChart->IsRuleEnabled(statistics::spc_rule::trend))
+                {
+                rulesNode->Add(L"trend", static_cast<double>(runChart->GetTrendLength()));
+                hasRules = true;
+                }
+            if (runChart->IsRuleEnabled(statistics::spc_rule::alternating))
+                {
+                rulesNode->Add(L"alternating",
+                               static_cast<double>(runChart->GetAlternatingLength()));
+                hasRules = true;
+                }
+            if (runChart->IsRuleEnabled(statistics::spc_rule::runs))
+                {
+                rulesNode->Add(L"runs", true);
+                hasRules = true;
+                }
+            auto colorsNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT, true);
+            bool hasColors{ false };
+            for (const auto& [rule, key] :
+                 { std::pair{ statistics::spc_rule::shift, L"shift" },
+                   std::pair{ statistics::spc_rule::trend, L"trend" },
+                   std::pair{ statistics::spc_rule::alternating, L"alternating" } })
+                {
+                const wxColour ruleColor{ runChart->GetRuleColor(rule) };
+                if (ruleColor.IsOk() &&
+                    ruleColor != Wisteria::Graphs::SpcChart::GetDefaultRuleColor(rule))
+                    {
+                    colorsNode->Add(key, ColorToStr(ruleColor));
+                    hasColors = true;
+                    }
+                }
+            if (hasColors)
+                {
+                rulesNode->Add(L"colors", colorsNode);
+                hasRules = true;
+                }
+            if (hasRules)
+                {
+                node->Add(L"rules", rulesNode);
+                }
             }
         }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ScatterPlot)))
@@ -4442,8 +4495,8 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                     {
                     node->Add(L"task-label-display", tlStr.value());
                     }
+                }
             }
-        }
         }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::PieChart)))
         {
@@ -4899,7 +4952,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                 }
             node->Add(L"ghosted-wedges", ghostArray);
             }
-            }
+        }
     else if (graph->IsKindOf(wxCLASSINFO(Wisteria::Graphs::IshikawaDiagram)))
         {
         const auto* ishikawa = dynamic_cast<const Wisteria::Graphs::IshikawaDiagram*>(graph);

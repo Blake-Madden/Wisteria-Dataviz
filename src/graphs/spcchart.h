@@ -12,8 +12,11 @@
 #ifndef WISTERIA_SPC_CHART_H
 #define WISTERIA_SPC_CHART_H
 
+#include "../math/spcrules.h"
 #include "lineplot.h"
 #include <functional>
+#include <map>
+#include <set>
 
 namespace Wisteria::Graphs
     {
@@ -192,8 +195,165 @@ namespace Wisteria::Graphs
             m_individualPointOpacity = opacity;
             }
 
+        /// @returns The number of points at the start of the chart used to compute
+        ///     the center line, or @c 0 if all points are used.
+        [[nodiscard]]
+        size_t GetBaselineLength() const noexcept
+            {
+            return m_baselineLength;
+            }
+
+        /// @brief Sets the number of points at the start of the chart used to compute
+        ///     the center line (i.e., freezes the center line to a baseline period).
+        /// @details The rules still apply to all points, which are compared against the
+        ///     baseline's center line. A dashed line is drawn through the last baseline point.
+        /// @param length The number of plotted points (i.e., samples when using samples,
+        ///     not rows), or @c 0 to use all points.
+        void SetBaselineLength(size_t length);
+
+        /// @name Rule Functions
+        /// @brief Functions for detecting non-random patterns in the plotted points.
+        /// @details Rules are applied to the plotted points (i.e., the sample statistics
+        ///     when using samples). Points that are part of a pattern are circled,
+        ///     with a different color for each rule.\n
+        ///     The default shift (6) and trend (5) lengths are from Perla et al. (2011),
+        ///     and the default alternating length (14) is from Nelson (1984).
+        ///     See statistics::spc_rules for the full citations.
+        /// @{
+
+        /// @brief Enables or disables a rule.
+        /// @param rule The rule.
+        /// @param enable @c true to enable the rule.
+        /// @note Rules that use the center line (shifts and runs) only apply to charts
+        ///     that have a center line.
+        void EnableRule(statistics::spc_rule rule, bool enable);
+
+        /// @param rule The rule.
+        /// @returns @c true if @p rule is enabled.
+        [[nodiscard]]
+        bool IsRuleEnabled(const statistics::spc_rule rule) const
+            {
+            return m_enabledRules.contains(rule);
+            }
+
+        /// @returns The fewest points on one side of the center line that make a shift.
+        [[nodiscard]]
+        size_t GetShiftLength() const noexcept
+            {
+            return m_shiftLength;
+            }
+
+        /// @brief Sets the fewest points on one side of the center line that make a shift.
+        /// @param length The number of points.
+        /// @throws std::runtime_error If @p length is less than 2, throws an exception.
+        void SetShiftLength(size_t length);
+
+        /// @returns The fewest points all increasing or decreasing that make a trend.
+        [[nodiscard]]
+        size_t GetTrendLength() const noexcept
+            {
+            return m_trendLength;
+            }
+
+        /// @brief Sets the fewest points all increasing or decreasing that make a trend.
+        /// @param length The number of points.
+        /// @throws std::runtime_error If @p length is less than 3, throws an exception.
+        void SetTrendLength(size_t length);
+
+        /// @returns The fewest points alternating up and down that make an alternating run.
+        [[nodiscard]]
+        size_t GetAlternatingLength() const noexcept
+            {
+            return m_alternatingLength;
+            }
+
+        /// @brief Sets the fewest points alternating up and down that make an alternating run.
+        /// @param length The number of points.
+        /// @throws std::runtime_error If @p length is less than 3, throws an exception.
+        void SetAlternatingLength(size_t length);
+
+        /// @param rule The rule.
+        /// @returns The color used to circle points that are part of a pattern found by @p rule.
+        [[nodiscard]]
+        wxColour GetRuleColor(const statistics::spc_rule rule) const
+            {
+            const auto ruleColor = m_ruleColors.find(rule);
+            return (ruleColor != m_ruleColors.cend()) ? ruleColor->second : wxNullColour;
+            }
+
+        /// @brief Sets the color used to circle points that are part of a pattern found by a rule.
+        /// @param rule The rule.
+        /// @param color The color.
+        /// @note The runs rule does not circle points, so its color is not used.
+        void SetRuleColor(const statistics::spc_rule rule, const wxColour& color)
+            {
+            m_ruleColors[rule] = color;
+            }
+
+        /// @param rule The rule.
+        /// @returns The default color used to circle points that are part of a pattern
+        ///     found by @p rule.
+        [[nodiscard]]
+        static wxColour GetDefaultRuleColor(statistics::spc_rule rule);
+
+        /// @returns The patterns found by the enabled rules.\n
+        ///     The point indices are zero-based positions in the sequence.
+        [[nodiscard]]
+        const std::vector<statistics::spc_rule_violation>& GetRuleViolations() const noexcept
+            {
+            return m_ruleViolations;
+            }
+
+        /// @returns The number of runs about the center line and its critical values,
+        ///     or @c std::nullopt if the runs rule is disabled or there are too few points.
+        [[nodiscard]]
+        const std::optional<statistics::runs_summary>& GetRunsSummary() const noexcept
+            {
+            return m_runsSummary;
+            }
+
+        /// @returns The results of the runs test (the number of runs, the expected number,
+        ///     the longest run, and the p-values for clustering and mixtures),
+        ///     or empty text if the runs rule is disabled.
+        /// @note This note is shown in the legend.
+        [[nodiscard]]
+        wxString GetRunsNote() const;
+
+        /// @}
+
+        /** @brief Builds a legend showing the center line, explaining the circled points,
+                showing the results of the runs test, and listing any reference lines and areas
+                meant for the legend.
+            @param options The options for how to build the legend.
+            @returns The legend for the chart, or @c nullptr if there is nothing to show.*/
+        [[nodiscard]]
+        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) override;
+
       protected:
         void RecalcSizes(wxDC& dc) override;
+
+        /// @returns The center line that the rules compare points against,
+        ///     or @c std::nullopt if the chart does not have one.
+        [[nodiscard]]
+        virtual std::optional<double> GetCenterLine() const
+            {
+            return std::nullopt;
+            }
+
+        /// @returns The heading of the runs note.
+        [[nodiscard]]
+        virtual wxString GetRunsLabel() const
+            {
+            return _(L"Runs about the center line");
+            }
+
+        /// @returns The legend text and pen of the center line,
+        ///     or @c std::nullopt if the center line is not drawn.
+        [[nodiscard]]
+        virtual std::optional<std::pair<wxString, wxPen>> GetCenterLineLegendEntry() const
+            {
+            return std::nullopt;
+            }
 
         /// @returns The values being plotted, one per point (i.e., per observation or sample).
         [[nodiscard]]
@@ -202,7 +362,20 @@ namespace Wisteria::Graphs
             return m_plottedValues;
             }
 
-        /// @brief Called after new data has been set and the plotted values are available.
+        /// @returns The values used to compute the center line, which are the first
+        ///     GetBaselineLength() plotted values, or all of them if there is no baseline.
+        [[nodiscard]]
+        std::vector<double> GetBaselineValues() const;
+
+        /// @returns @c true if a baseline is set and it ends before the last point.
+        [[nodiscard]]
+        bool HasBaseline() const noexcept
+            {
+            return m_baselineLength > 0 && m_baselineLength < m_plottedValues.size();
+            }
+
+        /// @brief Called after new data (or a new baseline) has been set and
+        ///     the plotted values are available.
         virtual void OnDataSet() {}
 
       private:
@@ -227,7 +400,31 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         static std::vector<size_t> SampleStartsBySize(size_t rowCount, size_t sampleSize);
 
+        [[nodiscard]]
+        static size_t ValidateRuleLength(size_t length, size_t smallest);
+
+        [[nodiscard]]
+        static wxString FormatPValue(double pValue);
+
         void UpdateYAxisRange();
+        void EvaluateRules();
+        void AddIndividualPoints(wxDC& dc);
+        void AddRuleViolationMarkers(wxDC& dc);
+        void AddBaselineDivider();
+
+        [[nodiscard]]
+        static wxPen BaselineDividerPen();
+
+        /// @returns The color of the rings drawn for @p rule,
+        ///     or an invalid color if the rule is not drawn.
+        [[nodiscard]]
+        wxColour GetRuleRingColor(statistics::spc_rule rule) const;
+
+        /// @returns @c true if any pattern was found by a rule that has a color.
+        [[nodiscard]]
+        bool HasRuleRings() const;
+
+        constexpr static uint8_t RING_OPACITY{ 160 };
 
         void SetSamplesAt(const std::shared_ptr<const Data::Dataset>& data,
                           const wxString& valueColumnName, const std::vector<size_t>& starts,
@@ -248,6 +445,20 @@ namespace Wisteria::Graphs
         std::optional<wxString> m_sampleColumnName;
         std::optional<size_t> m_sampleSize;
         SampleStatistic m_sampleStatistic{ SampleStatistic::Mean };
+        size_t m_baselineLength{ 0 };
+
+        std::set<statistics::spc_rule> m_enabledRules;
+        size_t m_shiftLength{ 6 };
+        size_t m_trendLength{ 5 };
+        size_t m_alternatingLength{ 14 };
+        std::map<statistics::spc_rule, wxColour> m_ruleColors{
+            { statistics::spc_rule::shift, GetDefaultRuleColor(statistics::spc_rule::shift) },
+            { statistics::spc_rule::trend, GetDefaultRuleColor(statistics::spc_rule::trend) },
+            { statistics::spc_rule::alternating,
+              GetDefaultRuleColor(statistics::spc_rule::alternating) }
+        };
+        std::vector<statistics::spc_rule_violation> m_ruleViolations;
+        std::optional<statistics::runs_summary> m_runsSummary;
         };
     } // namespace Wisteria::Graphs
 

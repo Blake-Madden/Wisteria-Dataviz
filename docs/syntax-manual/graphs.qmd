@@ -167,12 +167,39 @@ Properties for `"run-chart"` nodes:
   - `"mean"`: The sample's mean (the default).
   - `"median"`: The sample's median.
 - `"show-median-line"`: `false` to hide the median line.
+- `"baseline"`: The number of observations at the start of the chart used to compute the median.
+  When using samples, this is the number of samples instead (e.g., `25` is the first 25 samples, not the first 25 rows).
+  The median is then extended across the rest of the chart, and the rules compare all points against it.
+  A dashed line is drawn through the last baseline point.
+  By default, all points are used.
   Default is `true`.
 - `"show-individual-points"`: `true` to also draw each observation of a sample as a faint point.
   This only applies when the data is collected into samples.
   Default is `false`.
 - `"individual-point-opacity"`: The opacity (`0` to `255`) of the individual observation points.
   Default is `90`.
+- `"rules"`: An (optional) object of rules that look for non-random patterns.
+  Points that are part of a pattern are circled.
+  Including `"shift"`, `"trend"`, or `"alternating"` enables that rule with the given length.
+  `"runs"` is enabled with `true`.
+  No rules are enabled by default.
+  - `"shift"`: The fewest points in a row on one side of the median that make a shift (at least `2`).
+    Points on the median are skipped.
+    The usual value is `6`.
+  - `"trend"`: The fewest points in a row all rising or all falling that make a trend (at least `3`).
+    Repeated values are skipped, and a missing value starts a new trend.
+    The usual value is `5`.
+  - `"alternating"`: The fewest points in a row going up and down that make an alternating run (at least `3`).
+    The usual value is `14`.
+  - `"runs"`: `true` to test for too few or too many runs about the median.
+    The results are shown in the legend: the number of runs, the expected number, the longest run, and the p-values for clustering (too few runs) and mixtures (too many runs).
+    It needs at least 10 points that are not missing and not on the median.
+  - `"colors"`: The colors (named colors or hex values) used to circle points that are part of a
+    pattern, with a `"shift"`, `"trend"`, and `"alternating"` key for each rule.
+    Defaults are orange, purple, and teal.
+    The circles are translucent, and a point found by more than one rule gets a ring for each rule.
+
+  The legend shows the median, lists each rule that found a pattern (with its color), and shows the results of the runs test, so include a `"legend"` to see them.
 - Some base properties available to [graphs](#graph-properties).
 
 Missing values are drawn as gaps and are not included in the median.
@@ -186,7 +213,13 @@ Missing values are drawn as gaps and are not included in the median.
     "label": "Day",
     "sample": "Day"
   },
-  "sample-statistic": "median"
+  "sample-statistic": "median",
+  "rules": {
+    "shift": 6,
+    "trend": 5,
+    "runs": true
+  },
+  "legend": { "placement": "right" }
 }
 ```
 :::

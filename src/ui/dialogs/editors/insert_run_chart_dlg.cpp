@@ -218,7 +218,77 @@ namespace Wisteria::UI
                                          wxGenericValidator{ &m_showMedianLine }),
                           wxSizerFlags{}.Border());
 
+        // baseline
+        auto* baselineSizer = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        // the label is set by UpdateSampleControls(), based on whether samples are used
+        m_baselineCheck = new wxCheckBox(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
+                                         wxDefaultSize, 0, wxGenericValidator{ &m_useBaseline });
+        baselineSizer->Add(m_baselineCheck, wxSizerFlags{}.CenterVertical());
+        m_baselineLengthSpin = new wxSpinCtrl(optionsPage, wxID_ANY);
+        m_baselineLengthSpin->SetRange(1, 100'000);
+        m_baselineLengthSpin->SetValidator(wxGenericValidator{ &m_baselineLength });
+        baselineSizer->Add(m_baselineLengthSpin);
+        optionsSizer->Add(baselineSizer, wxSizerFlags{}.Border());
+
+        // rules
+        auto* rulesBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Rules"));
+        auto* rulesGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+
+        const auto addLengthRule = [&rulesBox, &rulesGrid](const wxString& label, bool* useRule,
+                                                           int* length, wxSpinCtrl*& lengthSpin,
+                                                           const size_t smallest)
+        {
+            auto* ruleCheck =
+                new wxCheckBox(rulesBox->GetStaticBox(), wxID_ANY, label, wxDefaultPosition,
+                               wxDefaultSize, 0, wxGenericValidator{ useRule });
+            rulesGrid->Add(ruleCheck, wxSizerFlags{}.CenterVertical());
+            lengthSpin = new wxSpinCtrl(rulesBox->GetStaticBox(), wxID_ANY);
+            lengthSpin->SetRange(static_cast<int>(smallest), 1000);
+            lengthSpin->SetValidator(wxGenericValidator{ length });
+            rulesGrid->Add(lengthSpin);
+            return ruleCheck;
+        };
+
+        auto* shiftCheck = addLengthRule(_(L"Shift (points on one side of the median):"),
+                                         &m_useShiftRule, &m_shiftLength, m_shiftLengthSpin,
+                                         statistics::spc_rules::MIN_SHIFT_LENGTH);
+        auto* trendCheck = addLengthRule(_(L"Trend (points all rising or all falling):"),
+                                         &m_useTrendRule, &m_trendLength, m_trendLengthSpin,
+                                         statistics::spc_rules::MIN_TREND_LENGTH);
+        auto* alternatingCheck =
+            addLengthRule(_(L"Alternating (points going up and down):"), &m_useAlternatingRule,
+                          &m_alternatingLength, m_alternatingLengthSpin,
+                          statistics::spc_rules::MIN_ALTERNATING_LENGTH);
+        rulesBox->Add(rulesGrid, wxSizerFlags{}.Border());
+
+        rulesBox->Add(new wxCheckBox(rulesBox->GetStaticBox(), wxID_ANY,
+                                     _(L"Too few or too many runs about the median"),
+                                     wxDefaultPosition, wxDefaultSize, 0,
+                                     wxGenericValidator{ &m_useRunsRule }),
+                      wxSizerFlags{}.Border());
+
+        optionsSizer->Add(rulesBox, wxSizerFlags{}.Border());
+
         // bind events
+        for (auto* ruleCheck : { shiftCheck, trendCheck, alternatingCheck })
+            {
+            ruleCheck->Bind(wxEVT_CHECKBOX,
+                            [this]([[maybe_unused]] wxCommandEvent&)
+                            {
+                                TransferDataFromWindow();
+                                UpdateRuleControls();
+                            });
+            }
+
+        m_baselineCheck->Bind(wxEVT_CHECKBOX,
+                              [this]([[maybe_unused]] wxCommandEvent&)
+                              {
+                                  TransferDataFromWindow();
+                                  UpdateBaselineControls();
+                              });
+
         datasetChoice->Bind(wxEVT_CHOICE,
                             [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
 
@@ -242,7 +312,10 @@ namespace Wisteria::UI
                                       { ResetAxisOptions(); });
 
         UpdateSampleControls();
+        UpdateRuleControls();
+        UpdateBaselineControls();
 
+        CreateLegendOptionsPage();
         CreateAnnotationsPage();
         CreateAxisOptionsPage();
         CreateGraphOptionsPage();
@@ -269,6 +342,40 @@ namespace Wisteria::UI
         if (m_individualOpacitySpin != nullptr)
             {
             m_individualOpacitySpin->Enable(isCollecting);
+            }
+        // the baseline counts plotted points, which are samples when collecting samples
+        if (m_baselineCheck != nullptr)
+            {
+            m_baselineCheck->SetLabel(
+                isCollecting ? _(L"Compute the median from the first (baseline) samples:") :
+                               _(L"Compute the median from the first (baseline) observations:"));
+            m_baselineCheck->GetParent()->Layout();
+            }
+        }
+
+    //-------------------------------------------
+    void InsertRunChartDlg::UpdateBaselineControls()
+        {
+        if (m_baselineLengthSpin != nullptr)
+            {
+            m_baselineLengthSpin->Enable(m_useBaseline);
+            }
+        }
+
+    //-------------------------------------------
+    void InsertRunChartDlg::UpdateRuleControls()
+        {
+        if (m_shiftLengthSpin != nullptr)
+            {
+            m_shiftLengthSpin->Enable(m_useShiftRule);
+            }
+        if (m_trendLengthSpin != nullptr)
+            {
+            m_trendLengthSpin->Enable(m_useTrendRule);
+            }
+        if (m_alternatingLengthSpin != nullptr)
+            {
+            m_alternatingLengthSpin->Enable(m_useAlternatingRule);
             }
         }
 
@@ -444,18 +551,37 @@ namespace Wisteria::UI
         m_sampleStatistic =
             (runChart->GetSampleStatistic() == Graphs::SampleStatistic::Median) ? 1 : 0;
         m_showMedianLine = runChart->IsShowingMedianLine();
+        m_useBaseline = (runChart->GetBaselineLength() > 0);
+        if (m_useBaseline)
+            {
+            m_baselineLength = static_cast<int>(runChart->GetBaselineLength());
+            }
         m_showIndividualPoints = runChart->IsShowingIndividualPoints();
         m_individualPointOpacity = runChart->GetIndividualPointOpacity();
 
+        m_useShiftRule = runChart->IsRuleEnabled(statistics::spc_rule::shift);
+        m_shiftLength = static_cast<int>(runChart->GetShiftLength());
+        m_useTrendRule = runChart->IsRuleEnabled(statistics::spc_rule::trend);
+        m_trendLength = static_cast<int>(runChart->GetTrendLength());
+        m_useAlternatingRule = runChart->IsRuleEnabled(statistics::spc_rule::alternating);
+        m_alternatingLength = static_cast<int>(runChart->GetAlternatingLength());
+        m_useRunsRule = runChart->IsRuleEnabled(statistics::spc_rule::runs);
+
         TransferDataToWindow();
         UpdateSampleControls();
+        UpdateRuleControls();
+        UpdateBaselineControls();
         }
 
     //-------------------------------------------
     std::shared_ptr<Graphs::RunChart>
     InsertRunChartDlg::BuildRunChart(const Graphs::Graph2D* oldGraph)
         {
-        auto plot = std::make_shared<Graphs::RunChart>(GetCanvas());
+        // the dialog does not edit the line styles, so keep the ones from the chart being edited
+        const auto* oldLinePlot = dynamic_cast<const Graphs::LinePlot*>(oldGraph);
+        auto plot = std::make_shared<Graphs::RunChart>(
+            GetCanvas(), nullptr, nullptr,
+            (oldLinePlot != nullptr) ? oldLinePlot->GetLineStyleScheme() : nullptr);
         if (oldGraph != nullptr)
             {
             plot->SetId(oldGraph->GetId());
@@ -484,8 +610,26 @@ namespace Wisteria::UI
             plot->SetData(GetSelectedDataset(), GetValueVariable(), labelColumn);
             }
         plot->ShowMedianLine(m_showMedianLine);
+        plot->SetBaselineLength(m_useBaseline ? static_cast<size_t>(m_baselineLength) : 0);
         plot->ShowIndividualPoints(m_showIndividualPoints);
         plot->SetIndividualPointOpacity(static_cast<uint8_t>(m_individualPointOpacity));
+        plot->SetShiftLength(static_cast<size_t>(m_shiftLength));
+        plot->EnableRule(statistics::spc_rule::shift, m_useShiftRule);
+        plot->SetTrendLength(static_cast<size_t>(m_trendLength));
+        plot->EnableRule(statistics::spc_rule::trend, m_useTrendRule);
+        plot->SetAlternatingLength(static_cast<size_t>(m_alternatingLength));
+        plot->EnableRule(statistics::spc_rule::alternating, m_useAlternatingRule);
+        plot->EnableRule(statistics::spc_rule::runs, m_useRunsRule);
+        // the dialog does not edit the rule colors, so keep the ones from the chart being edited
+        if (const auto* oldRuleChart = dynamic_cast<const Graphs::SpcChart*>(oldGraph);
+            oldRuleChart != nullptr)
+            {
+            for (const auto rule : { statistics::spc_rule::shift, statistics::spc_rule::trend,
+                                     statistics::spc_rule::alternating })
+                {
+                plot->SetRuleColor(rule, oldRuleChart->GetRuleColor(rule));
+                }
+            }
         ApplyAxisOverrides(*plot);
 
         const bool usesSampleVariable = (m_sampleMode == static_cast<int>(SampleMode::ByVariable));

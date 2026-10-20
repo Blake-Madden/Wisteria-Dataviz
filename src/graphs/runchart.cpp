@@ -33,6 +33,28 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::RunChart, Wisteria::Graphs::SpcChart
     wxString RunChart::MedianLabelPrefix() { return _(L"Median: "); }
 
     //----------------------------------------------------------------
+    wxString RunChart::MedianLabel() const
+        {
+        if (!m_median.has_value())
+            {
+            return {};
+            }
+        return MedianLabelPrefix() +
+               wxNumberFormatter::ToString(m_median.value(), 4,
+                                           wxNumberFormatter::Style::Style_NoTrailingZeroes);
+        }
+
+    //----------------------------------------------------------------
+    std::optional<std::pair<wxString, wxPen>> RunChart::GetCenterLineLegendEntry() const
+        {
+        if (!m_showMedianLine || !m_median.has_value())
+            {
+            return std::nullopt;
+            }
+        return std::pair{ MedianLabel(), MedianLinePen() };
+        }
+
+    //----------------------------------------------------------------
     bool RunChart::IsMedianLine(const GraphItems::ReferenceLine& refLine) const
         {
         const wxPen medianPen{ MedianLinePen() };
@@ -55,7 +77,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::RunChart, Wisteria::Graphs::SpcChart
     void RunChart::OnDataSet()
         {
         m_median.reset();
-        const auto& values = GetPlottedValues();
+        const auto values = GetBaselineValues();
         if (std::ranges::any_of(values, [](const auto val) noexcept { return std::isfinite(val); }))
             {
             m_median = statistics::median(values);
@@ -73,12 +95,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::RunChart, Wisteria::Graphs::SpcChart
             return;
             }
 
-        const wxString medianLabel{ MedianLabelPrefix() +
-                                    wxNumberFormatter::ToString(
-                                        m_median.value(), 4,
-                                        wxNumberFormatter::Style::Style_NoTrailingZeroes) };
         AddReferenceLine(GraphItems::ReferenceLine(AxisType::LeftYAxis, m_median.value(),
-                                                   medianLabel, MedianLinePen(),
+                                                   MedianLabel(), MedianLinePen(),
                                                    ReferenceLabelPlacement::OppositeAxis));
         }
     } // namespace Wisteria::Graphs

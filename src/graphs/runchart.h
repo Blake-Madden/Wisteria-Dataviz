@@ -26,6 +26,14 @@ namespace Wisteria::Graphs
             Observations can also be collected into samples (see SetSampleData()),
             in which case each sample's mean or median is plotted.
             Missing values (NaN) are shown as gaps and are not included in the median.
+            The median can be computed from a baseline period at the start of the chart
+            instead of from all points (see SetBaselineLength()).
+            The baseline is known as Phase I, where the median is set from data that
+            represent how the process normally behaves. The points after it are Phase II,
+            where new data are compared against that frozen median to see if the process
+            has changed.
+            Rules for shifts, trends, alternating points, and the number of runs about the
+            median can be enabled to circle non-random patterns (see EnableRule()).
         @par %Data:
             This chart accepts a Data::Dataset with one continuous column (the measurement)
             and, optionally, a column of labels for the x-axis (e.g., dates or batch IDs).
@@ -66,7 +74,8 @@ namespace Wisteria::Graphs
                           const std::shared_ptr<LineStyleScheme>& linePenStyles = nullptr);
 
         /// @returns The median of the plotted points (the observations, or the sample
-        ///     statistics when using samples), or @c std::nullopt if there is no valid data.
+        ///     statistics when using samples) in the baseline period,
+        ///     or @c std::nullopt if there is no valid data.
         [[nodiscard]]
         const std::optional<double>& GetMedian() const noexcept
             {
@@ -96,12 +105,35 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         bool IsMedianLine(const GraphItems::ReferenceLine& refLine) const;
 
+      protected:
+        /// @returns The median, which the rules compare points against.
+        [[nodiscard]]
+        std::optional<double> GetCenterLine() const override
+            {
+            return m_median;
+            }
+
+        /// @returns The heading of the runs note.
+        [[nodiscard]]
+        wxString GetRunsLabel() const override
+            {
+            return _(L"Runs about the median");
+            }
+
+        /// @returns The median line's label and pen, or @c std::nullopt if it is not shown.
+        [[nodiscard]]
+        std::optional<std::pair<wxString, wxPen>> GetCenterLineLegendEntry() const override;
+
       private:
         [[nodiscard]]
         static wxPen MedianLinePen();
 
         [[nodiscard]]
         static wxString MedianLabelPrefix();
+
+        /// @returns The prefix followed by the median, or empty text if there is no median.
+        [[nodiscard]]
+        wxString MedianLabel() const;
 
         void OnDataSet() override;
         void RemoveMedianLine();

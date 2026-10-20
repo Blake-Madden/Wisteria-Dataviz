@@ -30,7 +30,10 @@ namespace Wisteria::UI
               for selecting the value, label, and sample columns.
             - Sample options (none, by sample variable, or a fixed size) and
               the statistic plotted for each sample.
-            - A checkbox for showing the median line.*/
+            - A checkbox for showing the median line, and the number of points at the start
+              of the chart (the baseline) used to compute it.
+            - Rules for circling shifts, trends, alternating points, and too few or
+              too many runs.*/
     class InsertRunChartDlg final : public InsertGraphDlg
         {
       public:
@@ -111,6 +114,8 @@ namespace Wisteria::UI
         void UpdateVariableLabels();
         void UpdateSampleControls();
         void SyncSampleModeToVariable();
+        void UpdateRuleControls();
+        void UpdateBaselineControls();
 
         // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
         constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };
@@ -124,6 +129,11 @@ namespace Wisteria::UI
         wxChoice* m_statisticChoice{ nullptr };
         wxCheckBox* m_individualPointsCheck{ nullptr };
         wxSpinCtrl* m_individualOpacitySpin{ nullptr };
+        wxSpinCtrl* m_shiftLengthSpin{ nullptr };
+        wxSpinCtrl* m_trendLengthSpin{ nullptr };
+        wxSpinCtrl* m_alternatingLengthSpin{ nullptr };
+        wxCheckBox* m_baselineCheck{ nullptr };
+        wxSpinCtrl* m_baselineLengthSpin{ nullptr };
 
         wxString m_valueVariable;
         wxString m_labelVariable;
@@ -134,8 +144,19 @@ namespace Wisteria::UI
         int m_sampleSize{ 5 };
         int m_sampleStatistic{ 0 };
         bool m_showMedianLine{ true };
+        bool m_useBaseline{ false };
+        int m_baselineLength{ 20 };
         bool m_showIndividualPoints{ false };
         int m_individualPointOpacity{ 90 };
+
+        // new charts start with the run chart rules on, unlike RunChart, which starts with none
+        bool m_useShiftRule{ true };
+        int m_shiftLength{ 6 };
+        bool m_useTrendRule{ true };
+        int m_trendLength{ 5 };
+        bool m_useAlternatingRule{ false };
+        int m_alternatingLength{ 14 };
+        bool m_useRunsRule{ true };
         };
     } // namespace Wisteria::UI
 
