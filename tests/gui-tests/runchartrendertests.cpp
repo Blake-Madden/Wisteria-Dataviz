@@ -461,20 +461,55 @@ TEST_CASE("RunChart legend explains the circles", "[runchart][render][rules]")
     CHECK(legend->GetLegendIcons()[1].m_shape == Icons::IconShape::HorizontalSeparator);
     CHECK(legend->GetLegendIcons()[2].m_shape == Icons::IconShape::HorizontalLine);
 
-    // the median and the end of the baseline share a section, before the runs results
+    // the median and the end of the baseline share a section, before the runs results,
+    // and a baseline with too few points is noted
     chart->SetBaselineLength(4);
     chart->EnableRule(statistics::spc_rule::runs, true);
     legend = chart->CreateLegend(options);
     REQUIRE(legend != nullptr);
     CHECK(legend->GetText().starts_with(L"Trend (5 or more points rising or falling)\n \n"
-                                        "Median: 2.5\nEnd of baseline (first 4 observations)"
+                                        "Median: 2.5\nEnd of baseline (first 4 observations)\n"
+                                        "Baseline has 4 points (at least 10 are recommended)."
                                         "\n \nRuns about the median"));
-    REQUIRE(legend->GetLegendIcons().size() == 5);
+    REQUIRE(legend->GetLegendIcons().size() == 6);
     CHECK(legend->GetLegendIcons()[0].m_shape == Icons::IconShape::Circle);
     CHECK(legend->GetLegendIcons()[1].m_shape == Icons::IconShape::HorizontalSeparator);
     CHECK(legend->GetLegendIcons()[2].m_shape == Icons::IconShape::HorizontalLine);
     CHECK(legend->GetLegendIcons()[3].m_shape == Icons::IconShape::VerticalLine);
-    CHECK(legend->GetLegendIcons()[4].m_shape == Icons::IconShape::HorizontalSeparator);
+    CHECK(legend->GetLegendIcons()[4].m_shape == Icons::IconShape::Blank);
+    CHECK(legend->GetLegendIcons()[5].m_shape == Icons::IconShape::HorizontalSeparator);
+    }
+
+TEST_CASE("RunChart legend notes a short baseline", "[runchart][render][baseline]")
+    {
+    auto* canvas = MakeCanvas();
+    const auto options = LegendOptions{}.PlacementHint(LegendCanvasPlacementHint::RightOfGraph);
+
+    SECTION("Ten valid points is enough")
+        {
+        const auto chart = BuildRunChart(canvas, { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 });
+        chart->SetBaselineLength(10);
+        const auto legend = chart->CreateLegend(options);
+        REQUIRE(legend != nullptr);
+        CHECK_FALSE(legend->GetText().Contains(L"recommended"));
+        }
+
+    SECTION("Missing values do not count toward the baseline")
+        {
+        const auto chart = BuildRunChart(canvas, { 1, MISSING, 3, 4, 5, 6, 7, 8, 9, 10, 11 });
+        chart->SetBaselineLength(10);
+        const auto legend = chart->CreateLegend(options);
+        REQUIRE(legend != nullptr);
+        CHECK(legend->GetText().Contains(L"Baseline has 9 points (at least 10 are recommended)."));
+        }
+
+    SECTION("No note without a baseline")
+        {
+        const auto chart = BuildRunChart(canvas, { 1, 2, 3, 4, 5 });
+        const auto legend = chart->CreateLegend(options);
+        REQUIRE(legend != nullptr);
+        CHECK_FALSE(legend->GetText().Contains(L"recommended"));
+        }
     }
 
 TEST_CASE("RunChart rules each have their own color", "[runchart][render][rules]")
@@ -599,8 +634,7 @@ TEST_CASE("RunChart baseline freezes the median", "[runchart][render][baseline]"
     REQUIRE(chart->GetMedian().has_value());
     CHECK(chart->GetMedian().value() == 3.0);
     REQUIRE(chart->GetRuleViolations().size() == 1);
-    CHECK(chart->GetRuleViolations()[0].points ==
-          std::vector<size_t>{ 3, 4, 5, 6, 7, 8, 9 });
+    CHECK(chart->GetRuleViolations()[0].points == std::vector<size_t>{ 3, 4, 5, 6, 7, 8, 9 });
 
     const auto options = LegendOptions{}.PlacementHint(LegendCanvasPlacementHint::RightOfGraph);
     const auto legend = chart->CreateLegend(options);
@@ -634,8 +668,7 @@ TEST_CASE("RunChart baseline draws a divider", "[runchart][render][baseline]")
     CHECK(frozen->GetObjectCount() == plain->GetObjectCount() + 1);
 
     // the baseline is kept for new data
-    frozen->SetData(MakeContinuousDataset(L"value", { 9, 9, 1, 1, 1, 1 }), L"value",
-                    std::nullopt);
+    frozen->SetData(MakeContinuousDataset(L"value", { 9, 9, 1, 1, 1, 1 }), L"value", std::nullopt);
     CHECK(frozen->GetBaselineLength() == 5);
     REQUIRE(frozen->GetMedian().has_value());
     CHECK(frozen->GetMedian().value() == 1.0);
@@ -652,8 +685,8 @@ TEST_CASE("RunChart baseline counts samples", "[runchart][render][baseline]")
     REQUIRE(chart->GetMedian().has_value());
     CHECK(chart->GetMedian().value() == 4.0);
 
-    const auto legend = chart->CreateLegend(
-        LegendOptions{}.PlacementHint(LegendCanvasPlacementHint::RightOfGraph));
+    const auto legend =
+        chart->CreateLegend(LegendOptions{}.PlacementHint(LegendCanvasPlacementHint::RightOfGraph));
     REQUIRE(legend != nullptr);
     CHECK(legend->GetText().Contains(L"End of baseline (first 3 samples)"));
     }

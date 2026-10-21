@@ -206,7 +206,11 @@ namespace Wisteria::Graphs
         /// @brief Sets the number of points at the start of the chart used to compute
         ///     the center line (i.e., freezes the center line to a baseline period).
         /// @details The rules still apply to all points, which are compared against the
-        ///     baseline's center line. A dashed line is drawn through the last baseline point.
+        ///     baseline's center line. A dashed line is drawn through the last baseline point.\n
+        ///     The legend notes when the baseline has fewer than 10 valid points,
+        ///     which is the minimum recommended by Perla, R. J., Provost, L. P., and Murray, S. K.
+        ///     "The run chart: a simple analytical tool for learning from variation in healthcare
+        ///     processes." BMJ Quality & Safety, 20(1), 46-51, 2011.
         /// @param length The number of plotted points (i.e., samples when using samples,
         ///     not rows), or @c 0 to use all points.
         void SetBaselineLength(size_t length);
@@ -430,6 +434,8 @@ namespace Wisteria::Graphs
         bool HasRuleRings() const;
 
         constexpr static uint8_t RING_OPACITY{ 160 };
+        // fewest valid baseline points recommended for a stable center line (Perla et al., 2011)
+        constexpr static size_t MIN_BASELINE_POINTS{ 10 };
 
         void SetSamplesAt(const std::shared_ptr<const Data::Dataset>& data,
                           const wxString& valueColumnName, const std::vector<size_t>& starts,

@@ -625,6 +625,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
                                           m_baselineLength),
                          Icons::LegendIcon{ Icons::IconShape::VerticalLine, BaselineDividerPen(),
                                             *wxTRANSPARENT_BRUSH });
+
+                const auto baselineValues = GetBaselineValues();
+                const auto validBaselineCount = static_cast<size_t>(std::ranges::count_if(
+                    baselineValues, [](const double val) noexcept { return std::isfinite(val); }));
+                if (validBaselineCount < MIN_BASELINE_POINTS)
+                    {
+                    addEntry(wxString::Format(
+                                 _(L"Baseline has %zu points (at least %zu are recommended)."),
+                                 validBaselineCount, MIN_BASELINE_POINTS),
+                             Icons::LegendIcon{ Icons::IconShape::Blank, *wxTRANSPARENT_PEN,
+                                                *wxTRANSPARENT_BRUSH });
+                    }
                 }
             }
 
