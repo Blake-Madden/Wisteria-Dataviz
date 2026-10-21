@@ -29,6 +29,18 @@ namespace Wisteria::Graphs
         Median
         };
 
+    /// @brief The set of rules used to find non-random patterns.
+    enum class SpcRuleSet
+        {
+        /// @brief The rules chosen with SpcChart::EnableRule(), using fixed lengths
+        ///     (Perla et al., 2011, and Nelson, 1984).
+        Perla,
+        /// @brief The Anhøj rules, which test for an unusually long run and unusually few
+        ///     crossings of the center line, with limits based on the number of points
+        ///     (Anhøj and Olesen, 2014).
+        Anhoej
+        };
+
     /** @brief Base class for statistical process control (SPC) charts.
         @details Observations are plotted in the order that they appear in the data,
             at equally spaced positions along the x-axis (1, 2, 3, ...).
@@ -225,11 +237,29 @@ namespace Wisteria::Graphs
         ///     See statistics::spc_rules for the full citations.
         /// @{
 
+        /// @returns The set of rules used to find patterns.
+        [[nodiscard]]
+        SpcRuleSet GetRuleSet() const noexcept
+            {
+            return m_ruleSet;
+            }
+
+        /// @brief Sets the set of rules used to find patterns.
+        /// @details With SpcRuleSet::Anhoej, the points of any run longer than its limit
+        ///     are circled with the shift color, and the legend shows the longest run and
+        ///     the number of crossings against their limits.
+        ///     The rules chosen with EnableRule() are kept, but not applied.\n
+        ///     The default is SpcRuleSet::Anhoej.
+        /// @param ruleSet The set of rules.
+        /// @note The Anhøj rules only apply to charts that have a center line.
+        void SetRuleSet(SpcRuleSet ruleSet);
+
         /// @brief Enables or disables a rule.
         /// @param rule The rule.
         /// @param enable @c true to enable the rule.
         /// @note Rules that use the center line (shifts and runs) only apply to charts
-        ///     that have a center line.
+        ///     that have a center line.\n
+        ///     Rules are only applied when using the SpcRuleSet::Perla rule set.
         void EnableRule(statistics::spc_rule rule, bool enable);
 
         /// @param rule The rule.
@@ -316,9 +346,20 @@ namespace Wisteria::Graphs
             return m_runsSummary;
             }
 
+        /// @returns The longest run and the number of crossings with their limits,
+        ///     or @c std::nullopt if not using the SpcRuleSet::Anhoej rule set
+        ///     or there are no useful points.
+        [[nodiscard]]
+        const std::optional<statistics::anhoej_summary>& GetAnhoejSummary() const noexcept
+            {
+            return m_anhoejSummary;
+            }
+
         /// @returns The results of the runs test (the number of runs, the expected number,
         ///     the longest run, and the p-values for clustering and mixtures),
-        ///     or empty text if the runs rule is disabled.
+        ///     or empty text if the runs rule is disabled.\n
+        ///     With the SpcRuleSet::Anhoej rule set, this is the longest run and the number of
+        ///     crossings with their limits instead.
         /// @note This note is shown in the legend.
         [[nodiscard]]
         wxString GetRunsNote() const;
@@ -458,6 +499,7 @@ namespace Wisteria::Graphs
         SampleStatistic m_sampleStatistic{ SampleStatistic::Mean };
         size_t m_baselineLength{ 0 };
 
+        SpcRuleSet m_ruleSet{ SpcRuleSet::Anhoej };
         std::set<statistics::spc_rule> m_enabledRules;
         size_t m_shiftLength{ 6 };
         size_t m_trendLength{ 5 };
@@ -470,6 +512,7 @@ namespace Wisteria::Graphs
         };
         std::vector<statistics::spc_rule_violation> m_ruleViolations;
         std::optional<statistics::runs_summary> m_runsSummary;
+        std::optional<statistics::anhoej_summary> m_anhoejSummary;
         };
     } // namespace Wisteria::Graphs
 

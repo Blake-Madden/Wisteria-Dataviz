@@ -80,6 +80,44 @@ namespace statistics
             }
         };
 
+    /// @brief The results of the Anhøj rules: the longest run and the number of crossings
+    ///     of the center line, with limits based on the number of useful observations.
+    struct anhoej_summary
+        {
+        /// @brief The number of points that are not missing and not on the center line.
+        size_t useful_observations{ 0 };
+        /// @brief The most points in a single run on one side of the center line.
+        size_t longest_run{ 0 };
+        /// @brief A run longer than this is a signal.
+        size_t longest_run_limit{ 0 };
+        /// @brief The number of times that consecutive useful points are on opposite sides
+        ///     of the center line.
+        size_t crossings{ 0 };
+        /// @brief Having fewer crossings than this is a signal.
+        size_t crossings_limit{ 0 };
+
+        /// @returns @c true if the longest run is longer than its limit, suggesting a shift.
+        [[nodiscard]]
+        bool has_long_run() const noexcept
+            {
+            return longest_run > longest_run_limit;
+            }
+
+        /// @returns @c true if there are fewer crossings than the limit, suggesting a shift.
+        [[nodiscard]]
+        bool has_too_few_crossings() const noexcept
+            {
+            return crossings < crossings_limit;
+            }
+
+        /// @returns @c true if either rule found a signal.
+        [[nodiscard]]
+        bool has_signal() const noexcept
+            {
+            return has_long_run() || has_too_few_crossings();
+            }
+        };
+
     /** @brief Run chart rules for detecting non-random patterns in a sequence of values.
         @details Missing values (NaN) are skipped by shifts and run counts,
             but restart a trend or an alternating run.
@@ -92,7 +130,11 @@ namespace statistics
             Journal of Quality Technology, 16(4), 237-239, 1984.
 
             Swed, F. S., and Eisenhart, C. "Tables for testing randomness of grouping in a
-            sequence of alternatives." The Annals of Mathematical Statistics, 14(1), 66-87, 1943.*/
+            sequence of alternatives." The Annals of Mathematical Statistics, 14(1), 66-87, 1943.
+
+            Anhøj, J., and Olesen, A. V. "Run charts revisited: a simulation study of run chart
+            rules for detection of non-random variation in health care processes."
+            PLoS ONE, 9(11), e113825, 2014.*/
     class spc_rules
         {
       public:
@@ -372,6 +414,107 @@ namespace statistics
                 }
 
             return { lowerLimit, upperLimit };
+            }
+
+        /** @brief Applies the Anhøj rules, which test for an unusually long run and
+                unusually few crossings of the center line.
+            @details Both limits depend on the number of useful observations, so the rate of
+                false signals stays about the same as the chart grows.
+                Points that are missing or on the center line are skipped.
+            @param values The values, in sequence.
+            @param center The center line.
+            @returns The longest run, the number of crossings, and their limits,
+                or @c std::nullopt if there are no useful observations.*/
+        [[nodiscard]]
+        static std::optional<anhoej_summary> anhoej_analysis(const std::vector<double>& values,
+                                                             const double center)
+            {
+            if (!std::isfinite(center))
+                {
+                return std::nullopt;
+                }
+
+            size_t useful{ 0 };
+            size_t crossings{ 0 };
+            size_t currentLength{ 0 };
+            size_t longestRun{ 0 };
+            int side{ 0 };
+            for (const auto value : values)
+                {
+                if (!std::isfinite(value) || value == center)
+                    {
+                    continue;
+                    }
+                ++useful;
+                const int currentSide{ (value > center) ? 1 : -1 };
+                if (currentSide != side)
+                    {
+                    if (side != 0)
+                        {
+                        ++crossings;
+                        }
+                    side = currentSide;
+                    currentLength = 0;
+                    }
+                ++currentLength;
+                longestRun = std::max(longestRun, currentLength);
+                }
+
+            if (useful == 0)
+                {
+                return std::nullopt;
+                }
+            return anhoej_summary{ .useful_observations = useful,
+                                   .longest_run = longestRun,
+                                   .longest_run_limit = anhoej_longest_run_limit(useful),
+                                   .crossings = crossings,
+                                   .crossings_limit = anhoej_crossings_limit(useful) };
+            }
+
+        /// @brief Calculates the Anhøj limit for the longest run.
+        /// @param useful_observations The number of points that are not missing and
+        ///     not on the center line.
+        /// @returns The longest run expected in a random sequence, which is
+        ///     `log2(n) + 3`, rounded to the nearest whole number.
+        [[nodiscard]]
+        static size_t anhoej_longest_run_limit(const size_t useful_observations)
+            {
+            if (useful_observations == 0)
+                {
+                return 0;
+                }
+            return static_cast<size_t>(
+                std::round(std::log2(static_cast<double>(useful_observations)) + 3));
+            }
+
+        /// @brief Calculates the Anhøj limit for the number of crossings.
+        /// @param useful_observations The number of points that are not missing and
+        ///     not on the center line.
+        /// @returns The fewest crossings expected in a random sequence, which is the
+        ///     lower 5th percentile of a binomial distribution with n - 1 trials and
+        ///     a probability of 0.5.
+        [[nodiscard]]
+        static size_t anhoej_crossings_limit(const size_t useful_observations)
+            {
+            if (useful_observations < 2)
+                {
+                return 0;
+                }
+            const size_t trials{ useful_observations - 1 };
+            constexpr double PERCENTILE{ 0.05 };
+            // allows for rounding error in the cumulative sum
+            constexpr double TOLERANCE{ 1e-12 };
+            const double logOutcomes{ static_cast<double>(trials) * std::log(2.0) };
+            double cumulative{ 0 };
+            for (size_t successes = 0; successes <= trials; ++successes)
+                {
+                cumulative += std::exp(log_binomial(trials, successes) - logOutcomes);
+                if (cumulative >= PERCENTILE - TOLERANCE)
+                    {
+                    return successes;
+                    }
+                }
+            return trials;
             }
 
       private:

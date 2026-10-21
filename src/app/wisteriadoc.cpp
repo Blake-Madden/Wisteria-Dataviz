@@ -3536,6 +3536,16 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
 
             auto rulesNode = wxSimpleJSON::Create(wxSimpleJSON::JSONType::IS_OBJECT, true);
             bool hasRules{ false };
+            if (runChart->GetRuleSet() != Wisteria::Graphs::SpcRuleSet::Anhoej)
+                {
+                const auto ruleSetStr =
+                    Wisteria::ReportEnumConvert::ConvertSpcRuleSetToString(runChart->GetRuleSet());
+                if (ruleSetStr.has_value())
+                    {
+                    rulesNode->Add(L"set", ruleSetStr.value());
+                    hasRules = true;
+                    }
+                }
             if (runChart->IsRuleEnabled(statistics::spc_rule::shift))
                 {
                 rulesNode->Add(L"shift", static_cast<double>(runChart->GetShiftLength()));

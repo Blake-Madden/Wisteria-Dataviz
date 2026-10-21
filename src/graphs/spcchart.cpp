@@ -354,6 +354,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
         }
 
     //----------------------------------------------------------------
+    void SpcChart::SetRuleSet(const SpcRuleSet ruleSet)
+        {
+        m_ruleSet = ruleSet;
+        EvaluateRules();
+        }
+
+    //----------------------------------------------------------------
     void SpcChart::EnableRule(const statistics::spc_rule rule, const bool enable)
         {
         if (enable)
@@ -462,11 +469,27 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
         {
         m_ruleViolations.clear();
         m_runsSummary.reset();
+        m_anhoejSummary.reset();
 
         const auto& values = GetPlottedValues();
         const auto center = GetCenterLine();
         const auto addViolations = [this](std::vector<statistics::spc_rule_violation> violations)
         { std::ranges::move(violations, std::back_inserter(m_ruleViolations)); };
+
+        if (m_ruleSet == SpcRuleSet::Anhoej)
+            {
+            if (center.has_value())
+                {
+                m_anhoejSummary = statistics::spc_rules::anhoej_analysis(values, center.value());
+                // the points of any run longer than the limit are shown as a shift
+                if (m_anhoejSummary.has_value())
+                    {
+                    addViolations(statistics::spc_rules::find_shifts(
+                        values, center.value(), m_anhoejSummary->longest_run_limit + 1));
+                    }
+                }
+            return;
+            }
 
         if (center.has_value() && IsRuleEnabled(statistics::spc_rule::shift))
             {
@@ -500,6 +523,29 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
     //----------------------------------------------------------------
     wxString SpcChart::GetRunsNote() const
         {
+        if (m_ruleSet == SpcRuleSet::Anhoej)
+            {
+            if (!m_anhoejSummary.has_value())
+                {
+                return {};
+                }
+            wxString note{ wxString::Format(
+                // TRANSLATORS: %s is a heading such as "Runs about the median"
+                _(L"%s (Anhøj rules)\nLongest run: %zu (signal if more than %zu)\n"
+                  "Crossings: %zu (signal if fewer than %zu)"),
+                GetRunsLabel(), m_anhoejSummary->longest_run, m_anhoejSummary->longest_run_limit,
+                m_anhoejSummary->crossings, m_anhoejSummary->crossings_limit) };
+            if (m_anhoejSummary->has_long_run())
+                {
+                note += L"\n" + _(L"Unusually long run, which suggests a shift in the process.");
+                }
+            if (m_anhoejSummary->has_too_few_crossings())
+                {
+                note += L"\n" + _(L"Too few crossings, which suggests a shift in the process.");
+                }
+            return note;
+            }
+
         if (!IsRuleEnabled(statistics::spc_rule::runs) || !GetCenterLine().has_value())
             {
             return {};
@@ -582,11 +628,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
             legend->GetLegendIcons().push_back(icon);
         };
 
+        // the Anhøj rules find runs longer than a limit based on the number of points
+        const bool isAnhoej{ m_ruleSet == SpcRuleSet::Anhoej && m_anhoejSummary.has_value() };
+        const wxString shiftDescription{
+            isAnhoej ? wxString::Format(_(L"Long run (%zu or more points on one side)"),
+                                        m_anhoejSummary->longest_run_limit + 1) :
+                       wxString::Format(_(L"Shift (%zu or more points on one side)"), m_shiftLength)
+        };
         // one entry for each rule that found a pattern, in a fixed order
         for (const auto& [rule, description] :
-             { std::pair{
-                   statistics::spc_rule::shift,
-                   wxString::Format(_(L"Shift (%zu or more points on one side)"), m_shiftLength) },
+             { std::pair{ statistics::spc_rule::shift, shiftDescription },
                std::pair{ statistics::spc_rule::trend,
                           wxString::Format(_(L"Trend (%zu or more points rising or falling)"),
                                            m_trendLength) },

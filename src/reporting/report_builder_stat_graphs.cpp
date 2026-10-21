@@ -151,6 +151,17 @@ namespace Wisteria
                         }
                     runChart->EnableRule(statistics::spc_rule::runs, runsNode->AsBool(false));
                     }
+                if (rulesNode->HasProperty(_DT(L"set")))
+                    {
+                    const auto ruleSet = ReportEnumConvert::ConvertSpcRuleSet(
+                        rulesNode->GetProperty(_DT(L"set"))->AsString());
+                    if (!ruleSet.has_value())
+                        {
+                        throw std::runtime_error(
+                            _(L"Run chart rule 'set' must be \"perla\" or \"anhoej\".").ToUTF8());
+                        }
+                    runChart->SetRuleSet(ruleSet.value());
+                    }
                 if (rulesNode->HasProperty(_DT(L"colors")))
                     {
                     const auto colorsNode = rulesNode->GetProperty(_DT(L"colors"));

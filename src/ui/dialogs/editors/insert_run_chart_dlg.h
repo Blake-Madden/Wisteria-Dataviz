@@ -12,14 +12,10 @@
 #ifndef INSERT_RUN_CHART_DIALOG_H
 #define INSERT_RUN_CHART_DIALOG_H
 
+#include "../../graphs/runchart.h"
 #include "insertgraphdlg.h"
 #include <vector>
 #include <wx/wx.h>
-
-namespace Wisteria::Graphs
-    {
-    class RunChart;
-    } // namespace Wisteria::Graphs
 
 namespace Wisteria::UI
     {
@@ -32,8 +28,8 @@ namespace Wisteria::UI
               the statistic plotted for each sample.
             - A checkbox for showing the median line, and the number of points at the start
               of the chart (the baseline) used to compute it.
-            - Rules for circling shifts, trends, alternating points, and too few or
-              too many runs.*/
+            - A choice of rule set: the Perla rules for circling shifts, trends, alternating
+              points, and too few or too many runs, or the Anhøj rules.*/
     class InsertRunChartDlg final : public InsertGraphDlg
         {
       public:
@@ -129,6 +125,10 @@ namespace Wisteria::UI
         wxChoice* m_statisticChoice{ nullptr };
         wxCheckBox* m_individualPointsCheck{ nullptr };
         wxSpinCtrl* m_individualOpacitySpin{ nullptr };
+        wxCheckBox* m_shiftCheck{ nullptr };
+        wxCheckBox* m_trendCheck{ nullptr };
+        wxCheckBox* m_alternatingCheck{ nullptr };
+        wxCheckBox* m_runsCheck{ nullptr };
         wxSpinCtrl* m_shiftLengthSpin{ nullptr };
         wxSpinCtrl* m_trendLengthSpin{ nullptr };
         wxSpinCtrl* m_alternatingLengthSpin{ nullptr };
@@ -149,6 +149,8 @@ namespace Wisteria::UI
         bool m_showIndividualPoints{ false };
         int m_individualPointOpacity{ 90 };
 
+        // index into the rule set choice (Perla, then Anhøj)
+        int m_ruleSet{ static_cast<int>(Graphs::SpcRuleSet::Anhoej) };
         // new charts start with the run chart rules on, unlike RunChart, which starts with none
         bool m_useShiftRule{ true };
         int m_shiftLength{ 6 };

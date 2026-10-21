@@ -180,9 +180,18 @@ Properties for `"run-chart"` nodes:
   Default is `90`.
 - `"rules"`: An (optional) object of rules that look for non-random patterns.
   Points that are part of a pattern are circled.
-  Including `"shift"`, `"trend"`, or `"alternating"` enables that rule with the given length.
-  `"runs"` is enabled with `true`.
-  No rules are enabled by default.
+  The Anhøj rules are used by default.
+  To use the fixed-length rules instead, set `"set"` to `"perla"`.
+  Then including `"shift"`, `"trend"`, or `"alternating"` enables that rule with the given length, and `"runs"` is enabled with `true`.
+  - `"set"`: The set of rules to use.
+    Available options are:
+    - `"anhoej"`: The Anhøj rules (the default), which use limits based on the number of useful points (points that are not missing and not on the median).
+      A run longer than `log2(n) + 3 (rounded)` is a signal, and its points are circled with the shift color.
+      Fewer crossings of the median than the lower 5th percentile of a binomial distribution (n - 1 trials, probability 0.5) is also a signal.
+      The longest run, the number of crossings, and their limits are shown in the legend.
+      The other rules are ignored, because they test for the same patterns with fixed lengths.
+    - `"perla"`: The rules chosen below, with fixed lengths.
+      No rules are enabled until they are included.
   - `"shift"`: The fewest points in a row on one side of the median that make a shift (at least `2`).
     Points on the median are skipped.
     The usual value is `6`.
@@ -199,7 +208,7 @@ Properties for `"run-chart"` nodes:
     Defaults are orange, purple, and teal.
     The circles are translucent, and a point found by more than one rule gets a ring for each rule.
 
-  The legend shows the median, lists each rule that found a pattern (with its color), and shows the results of the runs test, so include a `"legend"` to see them.
+  The legend shows the median, lists each rule that found a pattern (with its color), and shows the results of the runs test (or the Anhøj rules), so include a `"legend"` to see them.
 - Some base properties available to [graphs](#graph-properties).
 
 Missing values are drawn as gaps and are not included in the median.
@@ -215,6 +224,7 @@ Missing values are drawn as gaps and are not included in the median.
   },
   "sample-statistic": "median",
   "rules": {
+    "set": "perla",
     "shift": 6,
     "trend": 5,
     "runs": true

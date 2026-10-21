@@ -27,9 +27,18 @@ using namespace wisteria_render_tests;
 
 constexpr static double MISSING{ std::numeric_limits<double>::quiet_NaN() };
 
-static std::shared_ptr<RunChart> BuildRunChart(Canvas* canvas, const std::vector<double>& values)
+// most tests cover the fixed-length (Perla) rules, so they start from that rule set
+// instead of the default (Anhøj), and the Anhøj tests switch to it explicitly
+static std::shared_ptr<RunChart> MakeRunChart(Canvas* canvas)
     {
     auto chart = std::make_shared<RunChart>(canvas);
+    chart->SetRuleSet(SpcRuleSet::Perla);
+    return chart;
+    }
+
+static std::shared_ptr<RunChart> BuildRunChart(Canvas* canvas, const std::vector<double>& values)
+    {
+    auto chart = MakeRunChart(canvas);
     chart->SetData(MakeContinuousDataset(L"value", values), L"value", std::nullopt);
     return chart;
     }
@@ -128,7 +137,7 @@ TEST_CASE("RunChart labels do not change the spacing", "[runchart][render]")
     LayOutOffscreen(plainCanvas, plain);
 
     auto* labeledCanvas = MakeCanvas();
-    auto labeled = std::make_shared<RunChart>(labeledCanvas);
+    auto labeled = MakeRunChart(labeledCanvas);
     labeled->SetData(MakeLabeledDataset({ 4, 8, 6, 5, 7 }), L"value",
                      std::optional<wxString>{ L"batch" });
     LayOutOffscreen(labeledCanvas, labeled);
@@ -188,7 +197,7 @@ static std::shared_ptr<Dataset> MakeSampleDataset(const std::vector<double>& val
 TEST_CASE("RunChart plots one point per sample", "[runchart][render]")
     {
     auto* canvas = MakeCanvas();
-    auto chart = std::make_shared<RunChart>(canvas);
+    auto chart = MakeRunChart(canvas);
 
     SECTION("fixed size with mean")
         {
@@ -223,7 +232,7 @@ TEST_CASE("RunChart plots one point per sample", "[runchart][render]")
 TEST_CASE("RunChart sample IDs define adjacent runs", "[runchart][render]")
     {
     auto* canvas = MakeCanvas();
-    auto chart = std::make_shared<RunChart>(canvas);
+    auto chart = MakeRunChart(canvas);
 
     // A, A, B, B, A, A is three samples because the second A run is not adjacent to the first
     chart->SetSampleData(MakeSampleDataset({ 1, 3, 10, 14, 5, 7 }, { 0, 0, 1, 1, 0, 0 }), L"value",
@@ -253,7 +262,7 @@ TEST_CASE("RunChart numeric sample IDs must be whole numbers", "[runchart][rende
     };
 
     auto* canvas = MakeCanvas();
-    auto chart = std::make_shared<RunChart>(canvas);
+    auto chart = MakeRunChart(canvas);
 
     SECTION("whole numbers define adjacent runs")
         {
@@ -271,7 +280,7 @@ TEST_CASE("RunChart numeric sample IDs must be whole numbers", "[runchart][rende
 TEST_CASE("RunChart sample gaps and missing values", "[runchart][render]")
     {
     auto* canvas = MakeCanvas();
-    auto chart = std::make_shared<RunChart>(canvas);
+    auto chart = MakeRunChart(canvas);
 
     // second sample is entirely missing, third has one missing value
     chart->SetSampleData(
@@ -288,12 +297,12 @@ TEST_CASE("RunChart can overlay individual observations", "[runchart][render]")
     const auto dataset = MakeContinuousDataset(L"value", { 1, 2, 9, 4, 5, 6 });
 
     auto* hiddenCanvas = MakeCanvas();
-    auto hidden = std::make_shared<RunChart>(hiddenCanvas);
+    auto hidden = MakeRunChart(hiddenCanvas);
     hidden->SetSampleData(dataset, L"value", 3);
     LayOutOffscreen(hiddenCanvas, hidden);
 
     auto* shownCanvas = MakeCanvas();
-    auto shown = std::make_shared<RunChart>(shownCanvas);
+    auto shown = MakeRunChart(shownCanvas);
     shown->SetSampleData(dataset, L"value", 3);
     shown->ShowIndividualPoints(true);
     LayOutOffscreen(shownCanvas, shown);
@@ -315,12 +324,12 @@ TEST_CASE("RunChart does not overlay without samples", "[runchart][render]")
     const auto dataset = MakeContinuousDataset(L"value", { 1, 2, 9, 4, 5, 6 });
 
     auto* hiddenCanvas = MakeCanvas();
-    auto hidden = std::make_shared<RunChart>(hiddenCanvas);
+    auto hidden = MakeRunChart(hiddenCanvas);
     hidden->SetData(dataset, L"value", std::nullopt);
     LayOutOffscreen(hiddenCanvas, hidden);
 
     auto* shownCanvas = MakeCanvas();
-    auto shown = std::make_shared<RunChart>(shownCanvas);
+    auto shown = MakeRunChart(shownCanvas);
     shown->SetData(dataset, L"value", std::nullopt);
     shown->ShowIndividualPoints(true);
     LayOutOffscreen(shownCanvas, shown);
@@ -331,12 +340,12 @@ TEST_CASE("RunChart does not overlay without samples", "[runchart][render]")
 TEST_CASE("RunChart samples use the first row's label", "[runchart][render]")
     {
     auto* plainCanvas = MakeCanvas();
-    auto plain = std::make_shared<RunChart>(plainCanvas);
+    auto plain = MakeRunChart(plainCanvas);
     plain->SetSampleData(MakeSampleDataset({ 1, 3, 10, 14 }, { 0, 0, 1, 1 }), L"value", L"sample");
     LayOutOffscreen(plainCanvas, plain);
 
     auto* labeledCanvas = MakeCanvas();
-    auto labeled = std::make_shared<RunChart>(labeledCanvas);
+    auto labeled = MakeRunChart(labeledCanvas);
     labeled->SetSampleData(MakeSampleDataset({ 1, 3, 10, 14 }, { 0, 0, 1, 1 }), L"value", L"sample",
                            std::optional<wxString>{ L"sample" });
     LayOutOffscreen(labeledCanvas, labeled);
@@ -392,7 +401,7 @@ TEST_CASE("RunChart rules are re-evaluated for new data", "[runchart][render][ru
 TEST_CASE("RunChart rules apply to sample statistics", "[runchart][render][rules]")
     {
     auto* canvas = MakeCanvas();
-    auto chart = std::make_shared<RunChart>(canvas);
+    auto chart = MakeRunChart(canvas);
     // the raw values zigzag, but the sample means (2, 4, 6, 8, 10) rise steadily
     chart->SetSampleData(MakeContinuousDataset(L"value", { 3, 1, 5, 3, 7, 5, 9, 7, 11, 9 }),
                          L"value", 2);
@@ -431,6 +440,139 @@ TEST_CASE("RunChart runs summary", "[runchart][render][rules]")
     CHECK(legend->GetLeftPadding() == 0);
     LayOutOffscreen(canvas, chart);
     CHECK(chart->GetCaption().GetText() == L"My caption");
+    }
+
+TEST_CASE("RunChart uses the Anhoej rules by default", "[runchart][render][rules][anhoej]")
+    {
+    auto* canvas = MakeCanvas();
+    std::vector<double> values(10, 1.0);
+    values.insert(values.end(), 10, 9.0);
+    const auto chart = std::make_shared<RunChart>(canvas);
+    chart->SetData(MakeContinuousDataset(L"value", values), L"value", std::nullopt);
+    CHECK(chart->GetRuleSet() == SpcRuleSet::Anhoej);
+    REQUIRE(chart->GetAnhoejSummary().has_value());
+    CHECK(chart->GetAnhoejSummary()->has_signal());
+    CHECK_FALSE(chart->GetRuleViolations().empty());
+    }
+
+/* To cross-check in R with qicharts2, run:
+
+    library(qicharts2)
+    y <- c(rep(1, 10), rep(9, 10))
+    print(summary(qic(seq_along(y), y, chart = "run"))[
+      c("n.useful", "longest.run", "longest.run.max", "n.crossings", "n.crossings.min",
+        "runs.signal")])
+
+   Expected output (the center line is the median, 5):
+
+      n.useful longest.run longest.run.max n.crossings n.crossings.min runs.signal
+    1       20          10               7           1               6           1
+
+   Compare with GetAnhoejSummary(): useful_observations, longest_run, longest_run_limit,
+   crossings, crossings_limit, and has_signal().*/
+TEST_CASE("RunChart Anhoej rule set", "[runchart][render][rules][anhoej]")
+    {
+    auto* canvas = MakeCanvas();
+    // ten points below the median and ten above, so 20 useful points:
+    // the longest run limit is 7 and the crossings limit is 6
+    std::vector<double> values(10, 1.0);
+    values.insert(values.end(), 10, 9.0);
+    const auto chart = BuildRunChart(canvas, values);
+    CHECK(chart->GetRuleSet() == SpcRuleSet::Perla);
+    CHECK_FALSE(chart->GetAnhoejSummary().has_value());
+
+    // the Perla rules are kept, but not applied
+    chart->EnableRule(statistics::spc_rule::trend, true);
+    chart->EnableRule(statistics::spc_rule::runs, true);
+    chart->SetRuleSet(SpcRuleSet::Anhoej);
+    CHECK(chart->GetRuleSet() == SpcRuleSet::Anhoej);
+    CHECK_FALSE(chart->GetRunsSummary().has_value());
+
+    REQUIRE(chart->GetAnhoejSummary().has_value());
+    CHECK(chart->GetAnhoejSummary()->useful_observations == 20);
+    CHECK(chart->GetAnhoejSummary()->longest_run == 10);
+    CHECK(chart->GetAnhoejSummary()->longest_run_limit == 7);
+    CHECK(chart->GetAnhoejSummary()->crossings == 1);
+    CHECK(chart->GetAnhoejSummary()->crossings_limit == 6);
+    CHECK(chart->GetAnhoejSummary()->has_long_run());
+    CHECK(chart->GetAnhoejSummary()->has_too_few_crossings());
+    CHECK(chart->GetAnhoejSummary()->has_signal());
+
+    // both runs are longer than the limit, so they are circled as shifts
+    REQUIRE(chart->GetRuleViolations().size() == 2);
+    CHECK(chart->GetRuleViolations()[0].rule == statistics::spc_rule::shift);
+    CHECK(chart->GetRuleViolations()[0].points.size() == 10);
+    CHECK(chart->GetRuleViolations()[1].rule == statistics::spc_rule::shift);
+
+    const wxString note{ chart->GetRunsNote() };
+    CHECK(note.starts_with(L"Runs about the median (Anhøj rules)\n"
+                           "Longest run: 10 (signal if more than 7)\n"
+                           "Crossings: 1 (signal if fewer than 6)"));
+    CHECK(note.Contains(L"Unusually long run"));
+    CHECK(note.Contains(L"Too few crossings"));
+
+    // the long run entry shows the Anhøj length, which is one more than the limit
+    const auto legend =
+        chart->CreateLegend(LegendOptions{}.PlacementHint(LegendCanvasPlacementHint::RightOfGraph));
+    REQUIRE(legend != nullptr);
+    CHECK(legend->GetText().starts_with(L"Long run (8 or more points on one side)"));
+    CHECK_FALSE(legend->GetText().Contains(L"Trend"));
+
+    // switching back restores the Perla rules
+    // (the single rise from 1 to 9 is not a trend, since repeated values are skipped)
+    chart->SetRuleSet(SpcRuleSet::Perla);
+    CHECK_FALSE(chart->GetAnhoejSummary().has_value());
+    REQUIRE(chart->GetRunsSummary().has_value());
+    CHECK(chart->GetRunsSummary()->has_too_few_runs());
+    CHECK(chart->GetRuleViolations().empty());
+    }
+
+/* To cross-check in R with qicharts2, run:
+
+    library(qicharts2)
+    y <- rep(c(1, 9), 10)
+    print(summary(qic(seq_along(y), y, chart = "run"))[
+      c("n.useful", "longest.run", "longest.run.max", "n.crossings", "n.crossings.min",
+        "runs.signal")])
+
+   Expected output (the center line is the median, 5):
+
+      n.useful longest.run longest.run.max n.crossings n.crossings.min runs.signal
+    1       20           1               7          19               6           0
+
+   Compare with GetAnhoejSummary(): useful_observations, longest_run, longest_run_limit,
+   crossings, crossings_limit, and has_signal().*/
+TEST_CASE("RunChart Anhoej rules without a signal", "[runchart][render][rules][anhoej]")
+    {
+    auto* canvas = MakeCanvas();
+    // alternates about the median of 5
+    std::vector<double> values;
+    for (size_t i = 0; i < 10; ++i)
+        {
+        values.push_back(1);
+        values.push_back(9);
+        }
+    const auto chart = BuildRunChart(canvas, values);
+    chart->SetRuleSet(SpcRuleSet::Anhoej);
+    REQUIRE(chart->GetAnhoejSummary().has_value());
+    CHECK(chart->GetAnhoejSummary()->useful_observations == 20);
+    CHECK(chart->GetAnhoejSummary()->longest_run == 1);
+    CHECK(chart->GetAnhoejSummary()->longest_run_limit == 7);
+    CHECK(chart->GetAnhoejSummary()->crossings == 19);
+    CHECK(chart->GetAnhoejSummary()->crossings_limit == 6);
+    CHECK_FALSE(chart->GetAnhoejSummary()->has_long_run());
+    CHECK_FALSE(chart->GetAnhoejSummary()->has_too_few_crossings());
+    CHECK_FALSE(chart->GetAnhoejSummary()->has_signal());
+    CHECK(chart->GetRuleViolations().empty());
+    // only the results, without any signal lines
+    CHECK(chart->GetRunsNote() == L"Runs about the median (Anhøj rules)\n"
+                                  "Longest run: 1 (signal if more than 7)\n"
+                                  "Crossings: 19 (signal if fewer than 6)");
+
+    // no data, no summary
+    chart->SetData(nullptr, L"value", std::nullopt);
+    CHECK_FALSE(chart->GetAnhoejSummary().has_value());
+    CHECK(chart->GetRunsNote().empty());
     }
 
 TEST_CASE("RunChart legend explains the circles", "[runchart][render][rules]")
@@ -656,16 +798,17 @@ TEST_CASE("RunChart baseline draws a divider", "[runchart][render][baseline]")
     const auto dataset = MakeContinuousDataset(L"value", { 1, 2, 3, 4, 5, 10, 11, 12, 13, 14 });
 
     auto* plainCanvas = MakeCanvas();
-    auto plain = std::make_shared<RunChart>(plainCanvas);
+    auto plain = MakeRunChart(plainCanvas);
     plain->SetData(dataset, L"value", std::nullopt);
     LayOutOffscreen(plainCanvas, plain);
 
     auto* frozenCanvas = MakeCanvas();
-    auto frozen = std::make_shared<RunChart>(frozenCanvas);
+    auto frozen = MakeRunChart(frozenCanvas);
     frozen->SetData(dataset, L"value", std::nullopt);
     frozen->SetBaselineLength(5);
     LayOutOffscreen(frozenCanvas, frozen);
-    CHECK(frozen->GetObjectCount() == plain->GetObjectCount() + 1);
+    // the divider, plus the dashed part of the median past the baseline
+    CHECK(frozen->GetObjectCount() == plain->GetObjectCount() + 2);
 
     // the baseline is kept for new data
     frozen->SetData(MakeContinuousDataset(L"value", { 9, 9, 1, 1, 1, 1 }), L"value", std::nullopt);
@@ -677,7 +820,7 @@ TEST_CASE("RunChart baseline draws a divider", "[runchart][render][baseline]")
 TEST_CASE("RunChart baseline counts samples", "[runchart][render][baseline]")
     {
     auto* canvas = MakeCanvas();
-    auto chart = std::make_shared<RunChart>(canvas);
+    auto chart = MakeRunChart(canvas);
     // sample means are 2, 4, 6, 8, 10
     chart->SetSampleData(MakeContinuousDataset(L"value", { 1, 3, 3, 5, 5, 7, 7, 9, 9, 11 }),
                          L"value", 2);
@@ -696,12 +839,12 @@ TEST_CASE("RunChart circles rule violations", "[runchart][render][rules]")
     const auto dataset = MakeContinuousDataset(L"value", { 1, 2, 3, 4, 5, 6, 7, 8 });
 
     auto* plainCanvas = MakeCanvas();
-    auto plain = std::make_shared<RunChart>(plainCanvas);
+    auto plain = MakeRunChart(plainCanvas);
     plain->SetData(dataset, L"value", std::nullopt);
     LayOutOffscreen(plainCanvas, plain);
 
     auto* flaggedCanvas = MakeCanvas();
-    auto flagged = std::make_shared<RunChart>(flaggedCanvas);
+    auto flagged = MakeRunChart(flaggedCanvas);
     flagged->SetData(dataset, L"value", std::nullopt);
     flagged->EnableRule(statistics::spc_rule::trend, true);
     LayOutOffscreen(flaggedCanvas, flagged);
@@ -712,7 +855,7 @@ TEST_CASE("RunChart circles rule violations", "[runchart][render][rules]")
 
     // an enabled rule that finds nothing draws nothing
     auto* quietCanvas = MakeCanvas();
-    auto quiet = std::make_shared<RunChart>(quietCanvas);
+    auto quiet = MakeRunChart(quietCanvas);
     quiet->SetData(dataset, L"value", std::nullopt);
     quiet->EnableRule(statistics::spc_rule::alternating, true);
     LayOutOffscreen(quietCanvas, quiet);

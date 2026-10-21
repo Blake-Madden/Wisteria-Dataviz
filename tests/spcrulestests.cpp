@@ -415,5 +415,163 @@ TEST_CASE("SPC count runs", "[spc][runs]")
         }
     }
 
+// limits from Anhøj, J., and Olesen, A. V. "Run charts revisited: a simulation study of run
+// chart rules for detection of non-random variation in health care processes."
+// PLoS ONE, 9(11), e113825, 2014.
+// The expected values below are computed by hand from the formulas.
+
+/* To cross-check in R (base R implements both formulas directly), run:
+
+    n <- c(1, 10, 12, 20, 30)
+    print(data.frame(n,
+                     longest.run.max = round(log2(n) + 3),
+                     n.crossings.min = qbinom(0.05, n - 1, 0.5)))
+
+   Expected output (one row for each n checked below):
+
+       n longest.run.max n.crossings.min
+    1  1               3               0
+    2 10               6               2
+    3 12               7               3
+    4 20               7               6
+    5 30               8              10*/
+TEST_CASE("SPC Anhoej limits", "[spc][anhoej]")
+    {
+    SECTION("Longest run is log2(n) + 3, rounded")
+        {
+        CHECK(spc_rules::anhoej_longest_run_limit(0) == 0);
+        CHECK(spc_rules::anhoej_longest_run_limit(1) == 3);
+        // 6.32
+        CHECK(spc_rules::anhoej_longest_run_limit(10) == 6);
+        // 6.58
+        CHECK(spc_rules::anhoej_longest_run_limit(12) == 7);
+        // 7.32
+        CHECK(spc_rules::anhoej_longest_run_limit(20) == 7);
+        // 7.91
+        CHECK(spc_rules::anhoej_longest_run_limit(30) == 8);
+        }
+    SECTION("Crossings is the lower 5th percentile of Binomial(n - 1, 0.5)")
+        {
+        CHECK(spc_rules::anhoej_crossings_limit(0) == 0);
+        CHECK(spc_rules::anhoej_crossings_limit(1) == 0);
+        // P(X <= 1) = 10/512 and P(X <= 2) = 46/512 for 9 trials
+        CHECK(spc_rules::anhoej_crossings_limit(10) == 2);
+        // P(X <= 2) = 67/2,048 and P(X <= 3) = 232/2,048 for 11 trials
+        CHECK(spc_rules::anhoej_crossings_limit(12) == 3);
+        // P(X <= 5) = 16,664/524,288 and P(X <= 6) = 43,796/524,288 for 19 trials
+        CHECK(spc_rules::anhoej_crossings_limit(20) == 6);
+        // P(X <= 9) = 16,489,546/536,870,912 and P(X <= 10) = 36,519,556/536,870,912
+        // for 29 trials
+        CHECK(spc_rules::anhoej_crossings_limit(30) == 10);
+        }
+    }
+
+/* To cross-check in R with qicharts2, run
+   (cl = 0 sets the center line to 0, like the tests, instead of using the median):
+
+    library(qicharts2)
+    anhoej <- function(y) {
+      summary(qic(seq_along(y), y, chart = "run", cl = 0))[
+        c("n.useful", "longest.run", "longest.run.max", "n.crossings", "n.crossings.min",
+          "runs.signal")]
+    }
+    results <- rbind(anhoej(c(rep(1, 10), rep(-1, 10))),
+                     anhoej(rep(c(1, -1), 10)),
+                     anhoej(c(1, 1, 1, 1, 1, 1, -1, 1, -1, 1)),
+                     anhoej(c(1, 1, 1, 1, 1, 1, 1, -1, 1, -1)),
+                     anhoej(c(1, 0, 1, NA, -1)))
+    rownames(results) <- c("long run", "alternating", "at limit", "over limit", "skipped")
+    print(results)
+
+   Expected output (one row for each test section):
+
+                n.useful longest.run longest.run.max n.crossings n.crossings.min runs.signal
+    long run          20          10               7           1               6           1
+    alternating       20           1               7          19               6           0
+    at limit          10           6               6           4               2           0
+    over limit        10           7               6           3               2           1
+    skipped            3           2               5           1               0           0
+
+   Compare with anhoej_analysis(): useful_observations, longest_run, longest_run_limit,
+   crossings, crossings_limit, and has_signal().*/
+TEST_CASE("SPC Anhoej analysis", "[spc][anhoej]")
+    {
+    SECTION("No useful observations")
+        {
+        CHECK_FALSE(spc_rules::anhoej_analysis({}, 0).has_value());
+        CHECK_FALSE(spc_rules::anhoej_analysis({ 0, 0, NaN }, 0).has_value());
+        CHECK_FALSE(spc_rules::anhoej_analysis({ 1, -1 }, NaN).has_value());
+        }
+    SECTION("Long run and too few crossings")
+        {
+        std::vector<double> values(10, 1.0);
+        values.insert(values.end(), 10, -1.0);
+        const auto summary = spc_rules::anhoej_analysis(values, 0);
+        REQUIRE(summary.has_value());
+        CHECK(summary->useful_observations == 20);
+        CHECK(summary->longest_run == 10);
+        CHECK(summary->longest_run_limit == 7);
+        CHECK(summary->crossings == 1);
+        CHECK(summary->crossings_limit == 6);
+        CHECK(summary->has_long_run());
+        CHECK(summary->has_too_few_crossings());
+        CHECK(summary->has_signal());
+        }
+    SECTION("Random-looking sequence has no signal")
+        {
+        std::vector<double> values;
+        for (size_t i = 0; i < 10; ++i)
+            {
+            values.push_back(1);
+            values.push_back(-1);
+            }
+        const auto summary = spc_rules::anhoej_analysis(values, 0);
+        REQUIRE(summary.has_value());
+        CHECK(summary->useful_observations == 20);
+        CHECK(summary->longest_run == 1);
+        CHECK(summary->longest_run_limit == 7);
+        CHECK(summary->crossings == 19);
+        CHECK(summary->crossings_limit == 6);
+        CHECK_FALSE(summary->has_signal());
+        }
+    SECTION("A run at the limit is not a signal, one point longer is")
+        {
+        // ten useful points, so the limit is 6
+        const auto atLimit =
+            spc_rules::anhoej_analysis({ 1, 1, 1, 1, 1, 1, -1, 1, -1, 1 }, 0);
+        REQUIRE(atLimit.has_value());
+        CHECK(atLimit->useful_observations == 10);
+        CHECK(atLimit->longest_run == 6);
+        CHECK(atLimit->longest_run_limit == 6);
+        CHECK(atLimit->crossings == 4);
+        CHECK(atLimit->crossings_limit == 2);
+        CHECK_FALSE(atLimit->has_signal());
+
+        const auto overLimit =
+            spc_rules::anhoej_analysis({ 1, 1, 1, 1, 1, 1, 1, -1, 1, -1 }, 0);
+        REQUIRE(overLimit.has_value());
+        CHECK(overLimit->useful_observations == 10);
+        CHECK(overLimit->longest_run == 7);
+        CHECK(overLimit->longest_run_limit == 6);
+        CHECK(overLimit->crossings == 3);
+        CHECK(overLimit->crossings_limit == 2);
+        CHECK(overLimit->has_long_run());
+        CHECK_FALSE(overLimit->has_too_few_crossings());
+        CHECK(overLimit->has_signal());
+        }
+    SECTION("Points on the center line and missing values neither count nor break a run")
+        {
+        const auto summary = spc_rules::anhoej_analysis({ 1, 0, 1, NaN, -1 }, 0);
+        REQUIRE(summary.has_value());
+        CHECK(summary->useful_observations == 3);
+        CHECK(summary->longest_run == 2);
+        // round(log2(3) + 3) = round(4.58)
+        CHECK(summary->longest_run_limit == 5);
+        CHECK(summary->crossings == 1);
+        CHECK(summary->crossings_limit == 0);
+        CHECK_FALSE(summary->has_signal());
+        }
+    }
+
 // NOLINTEND
 // clang-format on

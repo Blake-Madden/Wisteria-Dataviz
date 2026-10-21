@@ -597,6 +597,20 @@ namespace Wisteria
 
         //---------------------------------------------------
         [[nodiscard]]
+        static std::optional<Graphs::SpcRuleSet> ConvertSpcRuleSet(const wxString& value)
+            {
+            static const std::map<std::wstring, Graphs::SpcRuleSet> ruleSets = {
+                { L"perla", Graphs::SpcRuleSet::Perla }, { L"anhoej", Graphs::SpcRuleSet::Anhoej }
+            };
+
+            const auto foundValue = ruleSets.find(value.Lower().ToStdWstring());
+            return ((foundValue != ruleSets.cend()) ?
+                        std::optional<Graphs::SpcRuleSet>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
         static std::optional<Graphs::SampleStatistic> ConvertSampleStatistic(const wxString& value)
             {
             static const std::map<std::wstring, Graphs::SampleStatistic> statistics = {
@@ -2237,6 +2251,21 @@ namespace Wisteria
             static const std::map<Graphs::SampleStatistic, wxString> values = {
                 { Graphs::SampleStatistic::Mean, L"mean" },
                 { Graphs::SampleStatistic::Median, L"median" }
+            };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts an SpcRuleSet enum to its JSON string.
+        /// @param value The rule set enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString> ConvertSpcRuleSetToString(Graphs::SpcRuleSet value)
+            {
+            static const std::map<Graphs::SpcRuleSet, wxString> values = {
+                { Graphs::SpcRuleSet::Perla, L"perla" }, { Graphs::SpcRuleSet::Anhoej, L"anhoej" }
             };
 
             const auto foundValue = values.find(value);

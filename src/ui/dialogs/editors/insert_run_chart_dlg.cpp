@@ -8,7 +8,6 @@
 
 #include "insert_run_chart_dlg.h"
 #include "../../app/wisteriaview.h"
-#include "../../graphs/runchart.h"
 #include "../variableselectdlg.h"
 #include <wx/spinctrl.h>
 #include <wx/valgen.h>
@@ -233,6 +232,21 @@ namespace Wisteria::UI
 
         // rules
         auto* rulesBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Rules"));
+
+        auto* ruleSetSizer = new wxBoxSizer(wxHORIZONTAL);
+        ruleSetSizer->Add(new wxStaticText(rulesBox->GetStaticBox(), wxID_ANY, _(L"Rule set:")),
+                          wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+        wxArrayString ruleSetChoices;
+        // TRANSLATORS: Perla is the author of these run chart rules
+        ruleSetChoices.Add(_(L"Perla (fixed lengths)"));
+        // TRANSLATORS: Anhøj is the author of these run chart rules
+        ruleSetChoices.Add(_(L"Anhøj (based on the number of points)"));
+        auto* ruleSetChoice =
+            new wxChoice(rulesBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                         ruleSetChoices, 0, wxGenericValidator{ &m_ruleSet });
+        ruleSetSizer->Add(ruleSetChoice);
+        rulesBox->Add(ruleSetSizer, wxSizerFlags{}.Border());
+
         auto* rulesGrid = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
 
@@ -251,28 +265,33 @@ namespace Wisteria::UI
             return ruleCheck;
         };
 
-        auto* shiftCheck = addLengthRule(_(L"Shift (points on one side of the median):"),
-                                         &m_useShiftRule, &m_shiftLength, m_shiftLengthSpin,
-                                         statistics::spc_rules::MIN_SHIFT_LENGTH);
-        auto* trendCheck = addLengthRule(_(L"Trend (points all rising or all falling):"),
-                                         &m_useTrendRule, &m_trendLength, m_trendLengthSpin,
-                                         statistics::spc_rules::MIN_TREND_LENGTH);
-        auto* alternatingCheck =
+        m_shiftCheck = addLengthRule(_(L"Shift (points on one side of the median):"),
+                                     &m_useShiftRule, &m_shiftLength, m_shiftLengthSpin,
+                                     statistics::spc_rules::MIN_SHIFT_LENGTH);
+        m_trendCheck = addLengthRule(_(L"Trend (points all rising or all falling):"),
+                                     &m_useTrendRule, &m_trendLength, m_trendLengthSpin,
+                                     statistics::spc_rules::MIN_TREND_LENGTH);
+        m_alternatingCheck =
             addLengthRule(_(L"Alternating (points going up and down):"), &m_useAlternatingRule,
                           &m_alternatingLength, m_alternatingLengthSpin,
                           statistics::spc_rules::MIN_ALTERNATING_LENGTH);
         rulesBox->Add(rulesGrid, wxSizerFlags{}.Border());
 
-        rulesBox->Add(new wxCheckBox(rulesBox->GetStaticBox(), wxID_ANY,
-                                     _(L"Too few or too many runs about the median"),
-                                     wxDefaultPosition, wxDefaultSize, 0,
-                                     wxGenericValidator{ &m_useRunsRule }),
-                      wxSizerFlags{}.Border());
+        m_runsCheck = new wxCheckBox(
+            rulesBox->GetStaticBox(), wxID_ANY, _(L"Too few or too many runs about the median"),
+            wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator{ &m_useRunsRule });
+        rulesBox->Add(m_runsCheck, wxSizerFlags{}.Border());
 
         optionsSizer->Add(rulesBox, wxSizerFlags{}.Border());
 
         // bind events
-        for (auto* ruleCheck : { shiftCheck, trendCheck, alternatingCheck })
+        ruleSetChoice->Bind(wxEVT_CHOICE,
+                            [this]([[maybe_unused]] wxCommandEvent&)
+                            {
+                                TransferDataFromWindow();
+                                UpdateRuleControls();
+                            });
+        for (auto* ruleCheck : { m_shiftCheck, m_trendCheck, m_alternatingCheck })
             {
             ruleCheck->Bind(wxEVT_CHECKBOX,
                             [this]([[maybe_unused]] wxCommandEvent&)
@@ -365,17 +384,26 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertRunChartDlg::UpdateRuleControls()
         {
+        // the individual rules only apply to the Perla rule set
+        const bool isPerla{ m_ruleSet == static_cast<int>(Graphs::SpcRuleSet::Perla) };
+        for (auto* ruleCheck : { m_shiftCheck, m_trendCheck, m_alternatingCheck, m_runsCheck })
+            {
+            if (ruleCheck != nullptr)
+                {
+                ruleCheck->Enable(isPerla);
+                }
+            }
         if (m_shiftLengthSpin != nullptr)
             {
-            m_shiftLengthSpin->Enable(m_useShiftRule);
+            m_shiftLengthSpin->Enable(isPerla && m_useShiftRule);
             }
         if (m_trendLengthSpin != nullptr)
             {
-            m_trendLengthSpin->Enable(m_useTrendRule);
+            m_trendLengthSpin->Enable(isPerla && m_useTrendRule);
             }
         if (m_alternatingLengthSpin != nullptr)
             {
-            m_alternatingLengthSpin->Enable(m_useAlternatingRule);
+            m_alternatingLengthSpin->Enable(isPerla && m_useAlternatingRule);
             }
         }
 
@@ -559,6 +587,7 @@ namespace Wisteria::UI
         m_showIndividualPoints = runChart->IsShowingIndividualPoints();
         m_individualPointOpacity = runChart->GetIndividualPointOpacity();
 
+        m_ruleSet = static_cast<int>(runChart->GetRuleSet());
         m_useShiftRule = runChart->IsRuleEnabled(statistics::spc_rule::shift);
         m_shiftLength = static_cast<int>(runChart->GetShiftLength());
         m_useTrendRule = runChart->IsRuleEnabled(statistics::spc_rule::trend);
@@ -620,6 +649,7 @@ namespace Wisteria::UI
         plot->SetAlternatingLength(static_cast<size_t>(m_alternatingLength));
         plot->EnableRule(statistics::spc_rule::alternating, m_useAlternatingRule);
         plot->EnableRule(statistics::spc_rule::runs, m_useRunsRule);
+        plot->SetRuleSet(static_cast<Graphs::SpcRuleSet>(m_ruleSet));
         // the dialog does not edit the rule colors, so keep the ones from the chart being edited
         if (const auto* oldRuleChart = dynamic_cast<const Graphs::SpcChart*>(oldGraph);
             oldRuleChart != nullptr)

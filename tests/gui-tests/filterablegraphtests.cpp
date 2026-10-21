@@ -499,10 +499,11 @@ TEST_CASE("Dashboard export scopes checkbox filters to their page", "[dashboard]
     CHECK(firstPage.Contains(L"data-filter=\"Apples\""));
     CHECK(secondPage.Contains(L"data-filter=\"Apples\""));
 
-    // filter keys include the page index along with the chart ID
-    CHECK(html.Contains(L"return (page ? page.dataset.index : '') + ':' + scopeIdFor(el);"));
-    CHECK(html.Contains(L"box.dataset.filterKey = pageIndex + ':' + section.chartId + '|' + "
-                        "entry.key;"));
+    // filter keys include the page GUID (or index) along with the chart ID
+    CHECK(html.Contains(L"return (page ? (page.dataset.guid || page.dataset.index) : '') + ':' + "
+                        "scopeIdFor(el);"));
+    CHECK(html.Contains(L"box.dataset.filterKey = pages[pageIndex].guid + ':' + section.chartId + "
+                        "'|' + entry.key;"));
     CHECK(html.Contains(L"const key = filterScopeFor(el) + '|' + el.getAttribute('data-filter');"));
     CHECK(html.Contains(L"const scope = filterScopeFor(hit);"));
     CHECK_FALSE(html.Contains(L"const key = scopeIdFor(el) + '|'"));
