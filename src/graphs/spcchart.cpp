@@ -596,8 +596,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
             {
             const wxColour ringColor{ GetRuleRingColor(rule) };
             if (ringColor.IsOk() &&
-                std::ranges::any_of(m_ruleViolations, [rule](const auto& violation)
-                                    { return violation.rule == rule; }))
+                std::ranges::find(m_ruleViolations, rule, &statistics::spc_rule_violation::rule) !=
+                    m_ruleViolations.end())
                 {
                 addEntry(description,
                          Icons::LegendIcon{ Icons::IconShape::Circle, wxPen{ ringColor, 2 },
@@ -673,6 +673,48 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
         AddIndividualPoints(dc);
         AddBaselineDivider();
         AddRuleViolationMarkers(dc);
+        }
+
+    //----------------------------------------------------------------
+    void SpcChart::AddUnderlayObjects()
+        {
+        const auto center = GetCenterLine();
+        const auto centerLineEntry = GetCenterLineLegendEntry();
+        wxCoord centerY{ 0 };
+        if (!center.has_value() || !centerLineEntry.has_value() ||
+            !GetLeftYAxis().GetPhysicalCoordinate(center.value(), centerY))
+            {
+            return;
+            }
+
+        const wxCoord leftX{ GetPlotAreaBoundingBox().GetLeft() };
+        const wxCoord rightX{ GetPlotAreaBoundingBox().GetRight() };
+        // the center line is frozen past the last baseline point
+        wxCoord baselineEndX{ rightX };
+        wxPoint pt;
+        if (HasBaseline() &&
+            GetPhysicalCoordinates(static_cast<double>(m_baselineLength), center.value(), pt))
+            {
+            baselineEndX = std::clamp(pt.x, leftX, rightX);
+            }
+
+        const auto addSegment =
+            [this, centerY](const wxPen& pen, const wxCoord startX, const wxCoord endX)
+        {
+            auto segment = std::make_unique<GraphItems::Lines>(pen, GetScaling());
+            segment->SetDPIScaleFactor(GetDPIScaleFactor());
+            segment->AddLine(wxPoint{ startX, centerY }, wxPoint{ endX, centerY });
+            AddObject(std::move(segment));
+        };
+
+        const wxPen& centerPen{ centerLineEntry->second };
+        addSegment(centerPen, leftX, baselineEndX);
+        if (baselineEndX < rightX)
+            {
+            wxPen extendedPen{ centerPen };
+            extendedPen.SetStyle(wxPenStyle::wxPENSTYLE_LONG_DASH);
+            addSegment(extendedPen, baselineEndX, rightX);
+            }
         }
 
     //----------------------------------------------------------------
@@ -800,7 +842,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
             {
             m_sequenceData->AddRow(
                 Data::RowInfo{}
-                    .Id(labels[index].empty() ? wxString::Format(L"%zu", index + 1) : labels[index])
+                    .Id(labels[index].empty() ? wxString{ std::to_wstring(index + 1) } :
+                                                labels[index])
                     .Continuous({ static_cast<double>(index + 1), values[index] }));
             }
 
@@ -853,7 +896,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
                 GetBottomXAxis().SetCustomLabel(
                     static_cast<double>(position),
                     GraphItems::Label(hasText ? labels[position - 1] :
-                                                wxString::Format(L"%zu", position)));
+                                                wxString{ std::to_wstring(position) }));
                 }
             }
 

@@ -1051,6 +1051,11 @@ namespace Wisteria::Graphs
         // reference lines
         for (const auto& refLine : GetReferenceLines())
             {
+            // a transparent line only places its label (e.g., on the opposite axis)
+            if (refLine.m_pen.GetStyle() == wxPenStyle::wxPENSTYLE_TRANSPARENT)
+                {
+                continue;
+                }
             wxCoord axisCoord{ 0 };
             auto dividerLine = std::make_unique<GraphItems::Lines>(
                 wxPen(refLine.m_pen.GetColour(), 2, refLine.m_pen.GetStyle()), GetScaling());
@@ -1201,6 +1206,8 @@ namespace Wisteria::Graphs
                     }
                 }
             }
+
+        AddUnderlayObjects();
 
         // embed client object once the axes' physical coordinates have been recalculated
         for (auto& object : m_embeddedObjects)

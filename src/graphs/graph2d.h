@@ -1094,6 +1094,10 @@ namespace Wisteria::Graphs
                 }
             }
 
+        /// @brief Called after the reference lines and areas are added during layout.
+        /// @details Objects added here are drawn beneath the derived class's data.
+        virtual void AddUnderlayObjects() {}
+
         /** @brief Sets the DPI scaling.
             @param scaling The DPI scaling.*/
         void SetDPIScaleFactor(double scaling) override;

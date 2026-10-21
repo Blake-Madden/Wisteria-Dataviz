@@ -26,7 +26,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::RunChart, Wisteria::Graphs::SpcChart
     wxPen RunChart::MedianLinePen()
         {
         return wxPen(Colors::ColorBrewer::GetColor(Colors::Color::TractorRed), 2,
-                     wxPenStyle::wxPENSTYLE_LONG_DASH);
+                     wxPenStyle::wxPENSTYLE_SOLID);
+        }
+
+    //----------------------------------------------------------------
+    wxPen RunChart::MedianLabelPen()
+        {
+        return wxPen{ MedianLinePen().GetColour(), 2, wxPenStyle::wxPENSTYLE_TRANSPARENT };
         }
 
     //----------------------------------------------------------------
@@ -57,7 +63,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::RunChart, Wisteria::Graphs::SpcChart
     //----------------------------------------------------------------
     bool RunChart::IsMedianLine(const GraphItems::ReferenceLine& refLine) const
         {
-        const wxPen medianPen{ MedianLinePen() };
+        const wxPen medianPen{ MedianLabelPen() };
         return refLine.GetAxisType() == AxisType::LeftYAxis &&
                refLine.GetLabel().starts_with(MedianLabelPrefix()) &&
                refLine.GetLabelPlacement() == ReferenceLabelPlacement::OppositeAxis &&
@@ -95,8 +101,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::RunChart, Wisteria::Graphs::SpcChart
             return;
             }
 
+        // the line itself is drawn by SpcChart, so this only places the label on the right axis
         AddReferenceLine(GraphItems::ReferenceLine(AxisType::LeftYAxis, m_median.value(),
-                                                   MedianLabel(), MedianLinePen(),
+                                                   MedianLabel(), MedianLabelPen(),
                                                    ReferenceLabelPlacement::OppositeAxis));
         }
     } // namespace Wisteria::Graphs

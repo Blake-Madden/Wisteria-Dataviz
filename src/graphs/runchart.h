@@ -128,6 +128,10 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         static wxPen MedianLinePen();
 
+        /// @returns The transparent pen of the reference line that places the median's label.
+        [[nodiscard]]
+        static wxPen MedianLabelPen();
+
         [[nodiscard]]
         static wxString MedianLabelPrefix();
 

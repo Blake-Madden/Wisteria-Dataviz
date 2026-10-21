@@ -332,6 +332,11 @@ namespace Wisteria::Graphs
       protected:
         void RecalcSizes(wxDC& dc) override;
 
+        /// @brief Draws the center line beneath the data.
+        /// @details When a baseline is set, the line is drawn with its pen across the
+        ///     baseline and dashed past it, where the center line is frozen.
+        void AddUnderlayObjects() override;
+
         /// @returns The center line that the rules compare points against,
         ///     or @c std::nullopt if the chart does not have one.
         [[nodiscard]]
@@ -347,7 +352,7 @@ namespace Wisteria::Graphs
             return _(L"Runs about the center line");
             }
 
-        /// @returns The legend text and pen of the center line,
+        /// @returns The legend text and the pen used to draw the center line,
         ///     or @c std::nullopt if the center line is not drawn.
         [[nodiscard]]
         virtual std::optional<std::pair<wxString, wxPen>> GetCenterLineLegendEntry() const
