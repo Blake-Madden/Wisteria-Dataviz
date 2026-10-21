@@ -120,6 +120,7 @@ SET(WISTERIA_SRC
     src/ui/controls/dataguidectrl.cpp
     src/ui/controls/listctrlexcelexporter.cpp
     src/ui/controls/thumbnail.cpp
+    src/ui/dialogs/aboutdlg.cpp
     src/ui/dialogs/editors/accessibilityoptionspanel.cpp
     src/ui/dialogs/editors/axisoptionspanel.cpp
     src/ui/dialogs/editors/filterablegraphdlg.cpp

@@ -16,6 +16,7 @@
 # quarto-docs: builds the JSON syntax documentation (included with ALL if Quarto is found)
 
 # Options:
+# ENABLE_SANITIZERS to use ASAN & UBSAN (ignored in release build)
 # ALLOW_DIRTY_SUBMODULES to allow building even if submodules have local changes (ON in debug build, OFF in release)
 
 # Declare the minimum required CMake version
@@ -51,6 +52,11 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING "Choose the type of build." FORCE)
     # Set the possible values of build type for cmake-gui
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
+endif()
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    include(cmake/CheckASAN.cmake)
+    include(cmake/EnableSanitizers.cmake)
 endif()
 
 option(ALLOW_DIRTY_SUBMODULES "Allow building even if submodules have local changes" OFF)
@@ -194,6 +200,11 @@ endif()
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/version.h.in"
                "${CMAKE_CURRENT_SOURCE_DIR}/src/base/version.h")
+set(CITATION_FILES citations.bib citations.mla citations.apa)
+foreach(CITATION_FILE IN LISTS CITATION_FILES)
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/${CITATION_FILE}.in"
+                   "${CMAKE_BINARY_DIR}/${CITATION_FILE}")
+endforeach()
 
 # Software Bill of Materials
 #############################
@@ -218,7 +229,7 @@ set(SUBMODULES
     ${wxWidgets_BASEDIR}/src/stc/lexilla
     ${wxWidgets_BASEDIR}/src/stc/scintilla
     ${wxWidgets_BASEDIR}/3rdparty/libwebp
-    ${wxWidgets_BASEDIR}/3rdparty/nanosvg
+    ${wxWidgets_BASEDIR}/3rdparty/lunasvg
     ${wxWidgets_BASEDIR}/3rdparty/pcre)
 
 if(Git_FOUND)
@@ -321,7 +332,7 @@ target_compile_definitions(${WISTERIA_LIB} PUBLIC
 # Set definitions, warnings, and optimizations (will propagate to the demo project also)
 if(MSVC)
     target_compile_definitions(${WISTERIA_LIB} PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS _UNICODE
-        $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
+        $<$<CONFIG:Debug>:__WXDEBUG__ ${SANITIZER_DEFS}> $<$<CONFIG:Release>:NDEBUG>)
     # /Zc:__cplusplus tells MSVC to set the C++ version what we are
     # actually compiling as. The default behavior in MSVC is to say that the
     # C++ version is 98 always (for compatibility reasons).
@@ -337,14 +348,17 @@ if(MSVC)
     # wxWidgets uses heap-based objects for most everything, and MVSC complains
     # about not wrapping all of this logic in try blocks.
     target_compile_options(${WISTERIA_LIB} PUBLIC /Zc:__cplusplus /MP /W3 /WX /wd6211 /permissive- /sdl
-                           $<$<CONFIG:Debug>:/Od> $<$<CONFIG:Release>:/O2>)
+                           $<$<CONFIG:Debug>:/Od ${SANITIZER_FLAGS}> $<$<CONFIG:Release>:/O2>)
 elseif(MINGW OR MSYS)
     target_compile_definitions(${WISTERIA_LIB} PUBLIC __WXMSW__ _CRT_SECURE_NO_WARNINGS _UNICODE
             $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
     target_compile_options(${WISTERIA_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
                            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-fstack-protector-strong>
                            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-D_FORTIFY_SOURCE=2>
-                           $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
+                           $<$<CONFIG:Debug>:-Og ${SANITIZER_FLAGS} ${SANITIZER_EXTRA_FLAGS}>
+                           $<$<CONFIG:Release>:-O2>)
+    target_link_options(${WISTERIA_LIB} PUBLIC
+        $<$<CONFIG:Debug>:${SANITIZER_LINK_FLAGS}>)
 elseif(APPLE)
     target_compile_definitions(${WISTERIA_LIB} PUBLIC __WXOSX__
         $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
@@ -352,21 +366,40 @@ elseif(APPLE)
                            # Security hardening (only for GCC and Clang)
                            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-fstack-protector-strong>
                            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-D_FORTIFY_SOURCE=2>
-                           $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
+                           $<$<CONFIG:Debug>:-Og ${SANITIZER_FLAGS} ${SANITIZER_EXTRA_FLAGS}>
+                           $<$<CONFIG:Release>:-O2>)
+    target_link_options(${WISTERIA_LIB} PUBLIC
+        $<$<CONFIG:Debug>:${SANITIZER_LINK_FLAGS}>)
 elseif(UNIX)
     target_compile_definitions(${WISTERIA_LIB} PUBLIC __WXGTK__
         $<$<CONFIG:Debug>:__WXDEBUG__> $<$<CONFIG:Release>:NDEBUG>)
     target_compile_options(${WISTERIA_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
                            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-fstack-protector-strong>
                            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-D_FORTIFY_SOURCE=2>
-                           $<$<CONFIG:Debug>:-Og> $<$<CONFIG:Release>:-O2>)
+                           $<$<CONFIG:Debug>:-Og ${SANITIZER_FLAGS} ${SANITIZER_EXTRA_FLAGS}>
+                           $<$<CONFIG:Release>:-O2>)
     target_link_options(${WISTERIA_LIB} PUBLIC
-        $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wl,-z,relro,-z,now>)
+        $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wl,-z,relro,-z,now>
+        $<$<CONFIG:Debug>:${SANITIZER_LINK_FLAGS}>)
 endif()
 
 if(DEFINED wxBUILD_DEBUG_LEVEL AND NOT "${wxBUILD_DEBUG_LEVEL}" STREQUAL "${PROJECT_WX_DEBUG_LEVEL}")
     message(FATAL_ERROR "Mismatch: wxBUILD_DEBUG_LEVEL=${wxBUILD_DEBUG_LEVEL} but your code uses wxDEBUG_LEVEL=${PROJECT_WX_DEBUG_LEVEL}")
 endif()
+
+target_compile_definitions(${WISTERIA_LIB} PUBLIC
+    $<$<CONFIG:Debug>:
+        ENABLED_SANITIZERS_STR="${ENABLED_SANITIZERS_STR}"
+        SANITIZER_ENV_HINTS_STR="${SANITIZER_ENV_HINTS_STR}">)
+
+# Print per-target summary
+if(ENABLE_SANITIZERS AND ENABLED_SANITIZERS_SUMMARY)
+    message(STATUS "Target ${WISTERIA_LIB} built with sanitizers (Debug): ${ENABLED_SANITIZERS_SUMMARY}")
+endif()
+include(cmake/PrintCompilerFlags.cmake)
+print_compile_flags_summary(${WISTERIA_LIB})
+target_compile_definitions(${WISTERIA_LIB} PUBLIC
+    COMPILE_FLAGS_SUMMARY_STR="${COMPILE_FLAGS_SUMMARY_STR}")
 
 # Build the library demo
 ########################
@@ -468,6 +501,15 @@ add_custom_command(TARGET ${WISTERIA_APP}
                    ${CMAKE_SOURCE_DIR}/dashboard
                    $<TARGET_FILE_DIR:${WISTERIA_APP}>/res/dashboard
                    COMMENT "Copying dashboard resources...")
+
+# Copy citation files into build folder
+foreach(CITATION_FILE IN LISTS CITATION_FILES)
+    add_custom_command(TARGET ${WISTERIA_APP}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                       "${CMAKE_BINARY_DIR}/${CITATION_FILE}"
+                       $<TARGET_FILE_DIR:${WISTERIA_APP}>/${CITATION_FILE})
+endforeach()
 
 # Copy datasets into build folder
 add_custom_command(TARGET ${WISTERIA_APP}

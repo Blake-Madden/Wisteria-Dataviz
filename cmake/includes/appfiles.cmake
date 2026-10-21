@@ -130,6 +130,7 @@ SET(APP_WISTERIA_SRC
     src/ui/controls/sidebar.cpp
     src/ui/controls/sidebarbook.cpp
     src/ui/controls/thumbnail.cpp
+    src/ui/dialogs/aboutdlg.cpp
     src/ui/dialogs/datasetimportdlg.cpp
     src/ui/dialogs/editors/accessibilityoptionspanel.cpp
     src/ui/dialogs/editors/axisoptionspanel.cpp

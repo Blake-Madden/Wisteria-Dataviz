@@ -140,6 +140,7 @@ SET(WISTERIA_SRC
     ../../src/ui/controls/sidebar.cpp
     ../../src/ui/controls/sidebarbook.cpp
     ../../src/ui/controls/thumbnail.cpp
+    ../../src/ui/dialogs/aboutdlg.cpp
     ../../src/ui/dialogs/archivedlg.cpp
     ../../src/ui/dialogs/datasetimportdlg.cpp
     ../../src/ui/dialogs/editors/filterablegraphdlg.cpp

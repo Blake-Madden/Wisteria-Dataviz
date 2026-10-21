@@ -224,6 +224,10 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     /// @param parent The parent window of the dialog.
     void ShowOptionsDialog(wxWindow* parent);
 
+    /// @brief Shows the About dialog.
+    /// @param parent The parent window of the dialog.
+    void ShowAboutDialog(wxWindow* parent);
+
     /// @returns The data file a newly created project should import, or an
     ///     empty string if none.
     [[nodiscard]]

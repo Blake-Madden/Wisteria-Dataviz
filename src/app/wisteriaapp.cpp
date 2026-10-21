@@ -7,9 +7,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "wisteriaapp.h"
+#include "../CRCpp/inc/CRC.h"
+#include "../base/settings.h"
 #include "../data/dataset.h"
+#include "../easyexif/exif.h"
 #include "../import/text_matrix.h"
+#include "../ui/dialogs/aboutdlg.h"
 #include "../ui/dialogs/optionsdlg.h"
+#include "../wxpdfdoc/include/wx/pdfdoc_version.h"
+#include "sbom.h"
 #include "wisteriadoc.h"
 #include "wisteriaview.h"
 #include <algorithm>
@@ -18,20 +24,28 @@
 #include <functional>
 #include <iterator>
 #include <utility>
-#include <wx/aboutdlg.h>
 #include <wx/clipbrd.h>
 #include <wx/cmdline.h>
 #include <wx/dataobj.h>
 #include <wx/datetime.h>
 #include <wx/filedlg.h>
 #include <wx/filename.h>
+#include <wx/imagjpeg.h>
+#include <wx/imagpng.h>
+#include <wx/imagtiff.h>
+#include <wx/imagwebp.h>
 #include <wx/log.h>
 #include <wx/numformatter.h>
+#include <wx/regex.h>
 #include <wx/simplebook.h>
 #include <wx/spinctrl.h>
+#include <wx/stc/stc.h>
 #include <wx/stdpaths.h>
 #include <wx/utils.h>
 #include <wx/valgen.h>
+#include <wx/webview.h>
+#include <wx/xml/xml.h>
+#include <wx/zstream.h>
 #ifdef __WXMSW__
     #include <wx/msw/wrapwin.h>
 #endif
@@ -139,6 +153,49 @@ bool WisteriaApp::OnInit()
 
     return true;
     // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
+    }
+
+//-------------------------------------------
+void WisteriaApp::ShowAboutDialog(wxWindow* parent)
+    {
+    Wisteria::UI::AboutDlgInfo info;
+    info.AppName(GetAppName())
+        .AppVersion(Wisteria::GetLibraryVersionInfo().GetNumericVersionString())
+        .Logo(GetMainFrame()->GetLogo())
+        .Copyright(WISTERIA_COPYRIGHT)
+        .AddCitationFile(_DT(L"MLA:"), FindResourceFile(_DT(L"citations.mla")))
+        .AddCitationFile(_DT(L"APA:"), FindResourceFile(_DT(L"citations.apa")))
+        .AddCitationFile(_DT(L"BibTeX:"), FindResourceFile(_DT(L"citations.bib")),
+                         Wisteria::UI::CitationFormat::PlainText)
+        .AddLibrary(wxGetLibraryVersionInfo(), WXWIDGETS_HASH, WXWIDGETS_ORIGIN)
+        .AddLibrary(wxTIFFHandler::GetLibraryVersionInfo(), TIFF_HASH, TIFF_ORIGIN)
+        .AddLibrary(wxJPEGHandler::GetLibraryVersionInfo(), JPEG_HASH, JPEG_ORIGIN)
+        .AddLibrary(wxPNGHandler::GetLibraryVersionInfo(), PNG_HASH, PNG_ORIGIN)
+        .AddLibrary(wxWEBPHandler::GetLibraryVersionInfo(), LIBWEBP_HASH, LIBWEBP_ORIGIN)
+        .AddLibrary(wxRegEx::GetLibraryVersionInfo(), PCRE_HASH, PCRE_ORIGIN)
+        .AddLibrary(wxXmlDocument::GetLibraryVersionInfo(), EXPAT_HASH, EXPAT_ORIGIN)
+        .AddLibrary(wxStyledTextCtrl::GetLibraryVersionInfo(), SCINTILLA_HASH, SCINTILLA_ORIGIN)
+        .AddLibrary(wxStyledTextCtrl::GetLexerVersionInfo(), LEXILLA_HASH, LEXILLA_ORIGIN)
+        .AddLibrary(wxGetZlibVersionInfo(), ZLIB_HASH, ZLIB_ORIGIN)
+        .AddLibrary(wxVersionInfo{ L"wxPDFDocument", PDFDOC_MAJOR_VERSION, PDFDOC_MINOR_VERSION,
+                                   PDFDOC_RELEASE_NUMBER, PDFDOC_SUBRELEASE_NUMBER, wxString{},
+                                   wxString{} },
+                    WXPDFDOC_HASH, WXPDFDOC_ORIGIN)
+        .AddLibrary(wxWebView::GetBackendVersionInfo())
+        .AddLibrary(wxVersionInfo{ L"LunaSVG", -1 }, LUNASVG_HASH, LUNASVG_ORIGIN)
+        .AddLibrary(wxVersionInfo{ L"CRC++", CRCPP_MAJOR_VERSION, CRCPP_MINOR_VERSION,
+                                   CRCPP_PATCH_VERSION, CRCPP_REVISION_VERSION, wxString{},
+                                   CRCPP_COPYRIGHT },
+                    CRCPP_HASH, CRCPP_ORIGIN)
+        .AddLibrary(wxVersionInfo{ L"wxStartPage", -1 }, WXSTARTPAGE_HASH, WXSTARTPAGE_ORIGIN)
+        .AddLibrary(wxVersionInfo{ L"wxSimpleJSON", -1 }, WXSIMPLEJSON_HASH, WXSIMPLEJSON_ORIGIN)
+        .AddLibrary(
+            wxVersionInfo{ L"easyexif", -1, 0, 0, 0, wxString{}, easyexif::EASYEXIF_COPYRIGHT },
+            EASYEXIF_HASH, EASYEXIF_ORIGIN)
+        .AddLibrary(wxVersionInfo{ L"UTF8-CPP", -1 }, UTFCPP_HASH, UTFCPP_ORIGIN);
+
+    Wisteria::UI::AboutDlg aboutDlg(parent, std::move(info));
+    aboutDlg.ShowModal();
     }
 
 //-------------------------------------------
@@ -480,17 +537,7 @@ void WisteriaApp::LoadInterface()
     GetMainFrame()->Bind(
         wxEVT_RIBBONBUTTONBAR_CLICKED,
         [this]([[maybe_unused]]
-               wxCommandEvent& event)
-        {
-            wxAboutDialogInfo aboutInfo;
-            aboutInfo.SetCopyright(_(L"Copyright (c) 2005-2026 Blake Madden"));
-            wxArrayString devs;
-            devs.Add(_DT(L"Blake Madden"));
-            aboutInfo.SetDevelopers(devs);
-            aboutInfo.SetName(WISTERIA_APP_NAME);
-            aboutInfo.SetDescription(_(L"Data visualization application."));
-            wxAboutBox(aboutInfo, GetMainFrame());
-        },
+               wxCommandEvent& event) { ShowAboutDialog(GetMainFrame()); },
         wxID_ABOUT);
 
     GetMainFrame()->Bind(
