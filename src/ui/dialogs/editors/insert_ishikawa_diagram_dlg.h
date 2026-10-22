@@ -23,7 +23,7 @@ namespace Wisteria::UI
     /** @brief Dialog for inserting an Ishikawa (cause-and-effect) diagram into a canvas cell.
         @details Extends InsertGraphDlg with an "Ishikawa Diagram" page containing:
             - A dataset selector and the effect text.
-            - A grid of branches (six by default). Each branch has a label,
+            - A grid of branches (eight by default). Each branch has a label,
               the column containing its causes, and a "Sub-causes..." button for assigning
               columns of sub-causes to its causes.
             - Display options.*/
@@ -109,7 +109,7 @@ namespace Wisteria::UI
 
         // DDX data members
         wxString m_effect;
-        bool m_showEmptyBranches{ true };
+        bool m_showEmptyBranches{ false };
         bool m_showBranchLabels{ true };
         bool m_showCauseCounts{ false };
         bool m_taperedLines{ true };

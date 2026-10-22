@@ -144,11 +144,20 @@ TEST_CASE("IshikawaDiagram parses and formats typed causes", "[ishikawadiagram]"
 
 TEST_CASE("IshikawaDiagram default branch names", "[ishikawadiagram]")
     {
-    CHECK(IshikawaDiagram::GetDefaultBranchLabel(0) == _(L"People"));
-    CHECK(IshikawaDiagram::IsDefaultBranchName(0, _(L"People")));
+    CHECK(IshikawaDiagram::GetDefaultBranchLabel(0) == _(L"Manpower"));
+    CHECK(IshikawaDiagram::GetDefaultBranchLabel(5) == _(L"Mother Nature"));
+    CHECK(IshikawaDiagram::GetDefaultBranchLabel(6) == _(L"Management"));
+    CHECK(IshikawaDiagram::GetDefaultBranchLabel(7) == _(L"Maintenance"));
+    CHECK(IshikawaDiagram::GetDefaultBranchLabel(IshikawaDiagram::DEFAULT_BRANCH_COUNT).empty());
+    CHECK(IshikawaDiagram::IsDefaultBranchName(0, _(L"Manpower")));
     CHECK(IshikawaDiagram::IsDefaultBranchName(0, L"man"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(0, L"people"));
     CHECK_FALSE(IshikawaDiagram::IsDefaultBranchName(1, L"Man"));
     CHECK(IshikawaDiagram::IsDefaultBranchName(1, L"MACHINE"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(4, L"Measure"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(5, L"environment"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(5, L"Enviro"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(7, L"maintenance"));
     CHECK_FALSE(
         IshikawaDiagram::IsDefaultBranchName(IshikawaDiagram::DEFAULT_BRANCH_COUNT, wxString{}));
     }

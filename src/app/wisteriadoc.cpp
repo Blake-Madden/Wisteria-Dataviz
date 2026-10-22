@@ -4967,9 +4967,9 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
         {
         const auto* ishikawa = dynamic_cast<const Wisteria::Graphs::IshikawaDiagram*>(graph);
         node->Add(L"effect", ishikawa->GetEffect());
-        if (!ishikawa->IsShowingEmptyBranches())
+        if (ishikawa->IsShowingEmptyBranches())
             {
-            node->Add(L"show-empty-branches", false);
+            node->Add(L"show-empty-branches", true);
             }
         if (!ishikawa->IsShowingBranchLabels())
             {

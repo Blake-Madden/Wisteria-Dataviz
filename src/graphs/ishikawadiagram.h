@@ -31,10 +31,17 @@ namespace Wisteria::Graphs
          Each cell is a cause, and blank cells are ignored. A cause can also have
          its own column of sub-causes.
 
-         | Man      | Machine | Material | Method    | Measure       | Environment |
-         | :--      | :--     | :--      | :--       | :--           | :--         |
-         | Training | Speed   | Alloy    | Procedure | Micrometers   | Humidity    |
-         | Fatigue  | Age     | Supplier |           | Gauge wear    |             |
+         | Manpower | Machine | Material | Method    |
+         | :--      | :--     | :--      | :--       |
+         | Training | Speed   | Alloy    | Procedure |
+         | Fatigue  | Age     | Supplier |           |
+
+         The dataset's remaining columns:
+
+         | Measurement | Mother Nature | Management | Maintenance | Training Details |
+         | :--         | :--           | :--        | :--         | :--              |
+         | Micrometers | Humidity      | Scheduling | Lubrication | Basic            |
+         | Gauge wear  |               | Staffing   |             | Advanced         |
 
          @par Missing Data:
           - Blank causes and sub-causes are skipped.
@@ -44,9 +51,16 @@ namespace Wisteria::Graphs
          @par Example:
          @code
           auto ishikawa = std::make_shared<IshikawaDiagram>(canvas);
+          // empty labels use the default labels (the 8 Ms)
           ishikawa->SetData(causeData, _(L"Surface flaws"),
-              { { _(L"Personnel"), L"Man", { { L"Training", L"Training Details" } } },
-                { _(L"Machines"), L"Machine" } });
+              { { wxString{}, L"Manpower", { { L"Training", L"Training Details" } } },
+                { wxString{}, L"Machine" },
+                { wxString{}, L"Material" },
+                { wxString{}, L"Method" },
+                { wxString{}, L"Measurement" },
+                { wxString{}, L"Mother Nature" },
+                { wxString{}, L"Management" },
+                { wxString{}, L"Maintenance" } });
           canvas->SetFixedObject(0, 0, ishikawa);
          @endcode
     */
@@ -130,7 +144,7 @@ namespace Wisteria::Graphs
         /// @{
 
         /// @brief Sets whether branches that have no causes are shown.
-        /// @param show @c true to show empty branches.
+        /// @param show @c true to show empty branches. The default is @c false.
         void ShowEmptyBranches(const bool show) noexcept { m_showEmptyBranches = show; }
 
         /// @returns @c true if branches without causes are shown.
@@ -152,7 +166,7 @@ namespace Wisteria::Graphs
             }
 
         /// @brief Sets whether each branch label shows how many causes the branch has.
-        /// @param show @c true to show the cause counts (e.g., "People (3)").
+        /// @param show @c true to show the cause counts (e.g., "Manpower (3)").
         void ShowCauseCounts(const bool show) noexcept { m_showCauseCounts = show; }
 
         /// @returns @c true if the branch labels show their cause counts.
@@ -219,14 +233,14 @@ namespace Wisteria::Graphs
 
         /** @brief Determines whether a name (e.g., a column name) matches a default branch label.
             @param index The index of the branch.
-            @param name The name to compare, ignoring case. The first branch also matches
-                the traditional label "Man".
+            @param name The name to compare, ignoring case. Some branches also match
+                alternative labels (e.g., "Man" or "People" for "Manpower").
             @returns @c true if @c name matches the default label for the branch.*/
         [[nodiscard]]
         static bool IsDefaultBranchName(size_t index, const wxString& name);
 
         /// @brief The number of branches that have a default label.
-        constexpr static size_t DEFAULT_BRANCH_COUNT{ 6 };
+        constexpr static size_t DEFAULT_BRANCH_COUNT{ 8 };
 
         /// @}
 
@@ -330,7 +344,7 @@ namespace Wisteria::Graphs
         wxString m_effect;
         std::vector<Branch> m_branchSpecs;
         std::vector<BranchItem> m_branches;
-        bool m_showEmptyBranches{ true };
+        bool m_showEmptyBranches{ false };
         bool m_showBranchLabels{ true };
         bool m_showCauseCounts{ false };
         bool m_taperedLines{ true };

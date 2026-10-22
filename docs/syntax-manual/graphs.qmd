@@ -96,7 +96,7 @@ Properties for `"ishikawa-diagram"` nodes:
 - `"branches"`: An array of branch objects, drawn alternating above and below the spine. \
   Each branch contains:
   - `"label"`: The branch's label.
-    If omitted, a default label is used (People/Man, Machine, Material, Method, Measurement, Environment).
+    If omitted, a default label is used (Manpower, Machine, Material, Method, Measurement, Mother Nature, Management, Maintenance).
   - `"variable"`: The categorical column containing the branch's causes.
     Blank cells are skipped.
     If omitted, `"causes"` is used instead.
@@ -112,13 +112,13 @@ Properties for `"ishikawa-diagram"` nodes:
   Default is `false`.
 - `"color-scheme"`: The colors used for the branches (one per branch, repeating if needed).
   If not specified, the default color scheme is used.
-- `"show-empty-branches"`: `false` to hide branches that have no causes.
-  Default is `true`.
+- `"show-empty-branches"`: `true` to show branches that have no causes.
+  Default is `false`.
 - `"show-branch-labels"`: `false` to hide the branch labels.
   Default is `true`.
 - `"tapered"`: `false` to draw the spine and ribs with a constant width, instead of widening them toward the effect.
   Default is `true`.
-- `"show-cause-counts"`: `true` to show the number of causes in each branch label (e.g., "People (3)").
+- `"show-cause-counts"`: `true` to show the number of causes in each branch label (e.g., "Manpower (3)").
   Default is `false`.
 - `"fish-style"`: A string specifying the style of the fish (its head, tail, eye, and mouth). \
   Available options are:

@@ -31,11 +31,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
     //----------------------------------------------------------------
     wxString IshikawaDiagram::GetDefaultBranchLabel(const size_t index)
         {
-        // the 6 Ms
+        // the 8 Ms
         switch (index)
             {
         case 0:
-            return _(L"People"); // "Man"
+            return _(L"Manpower");
         case 1:
             return _(L"Machine");
         case 2:
@@ -45,7 +45,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
         case 4:
             return _(L"Measurement");
         case 5:
-            return _(L"Environment"); // "Mother Nature"
+            return _(L"Mother Nature");
+        case 6:
+            return _(L"Management");
+        case 7:
+            return _(L"Maintenance");
         default:
             return {};
             }
@@ -56,9 +60,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
         {
         const wxString defaultLabel{ GetDefaultBranchLabel(index) };
         return (!defaultLabel.empty() && name.CmpNoCase(defaultLabel) == 0) ||
-               (index == 0 && name.CmpNoCase(L"Man") == 0) ||
+               (index == 0 && (name.CmpNoCase(L"Man") == 0 || name.CmpNoCase(_(L"People")) == 0)) ||
                (index == 4 && name.CmpNoCase(L"Measure") == 0) ||
-               (index == 5 && name.CmpNoCase(L"Enviro") == 0);
+               (index == 5 &&
+                (name.CmpNoCase(L"Enviro") == 0 || name.CmpNoCase(_(L"Environment")) == 0));
         }
 
     //----------------------------------------------------------------

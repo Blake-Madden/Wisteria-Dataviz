@@ -313,13 +313,22 @@ namespace Wisteria::UI
 
         DataGuideExample causes;
         causes.m_title = _(L"Example: causes of surface flaws");
-        causes.m_columns = { { _(L"Man"), _(L"Causes") },
+        causes.m_columns = { { _(L"Manpower"), _(L"Causes") },
                              { _(L"Machine"), _(L"Causes") },
                              { _(L"Material"), _(L"Causes") },
+                             { _(L"Method"), _(L"Causes") },
+                             { _(L"Measurement"), _(L"Causes") },
+                             { _(L"Mother Nature"), _(L"Causes") },
+                             { _(L"Management"), _(L"Causes") },
+                             { _(L"Maintenance"), _(L"Causes") },
                              { _(L"Training Details"), _(L"Sub-causes") } };
-        causes.m_rows = { { _(L"Training"), _(L"Speed"), _(L"Alloy"), _(L"Basic") },
-                          { _(L"Fatigue"), _(L"Age"), _(L"Supplier"), _(L"Advanced") },
-                          { wxString{}, wxString{}, _(L"Moisture"), wxString{} } };
+        causes.m_rows = { { _(L"Training"), _(L"Speed"), _(L"Alloy"), _(L"Procedure"),
+                            _(L"Micrometers"), _(L"Humidity"), _(L"Scheduling"), _(L"Lubrication"),
+                            _(L"Basic") },
+                          { _(L"Fatigue"), _(L"Age"), _(L"Supplier"), wxString{}, _(L"Gauge wear"),
+                            wxString{}, _(L"Staffing"), wxString{}, _(L"Advanced") },
+                          { wxString{}, wxString{}, _(L"Moisture"), wxString{}, wxString{},
+                            wxString{}, wxString{}, wxString{}, wxString{} } };
         guide.m_examples = { std::move(causes) };
 
         guide.m_missingData = { _(L"Blank cells are skipped.") };
@@ -357,7 +366,7 @@ namespace Wisteria::UI
         grid->Add(effectCtrl);
         optionsSizer->Add(grid, wxSizerFlags{}.Border());
 
-        // branches, which start as the six standard categories
+        // branches, which start as the eight standard categories
         auto* branchesBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Branches"));
         m_branchPanel = new wxScrolledWindow(branchesBox->GetStaticBox(), wxID_ANY,
                                              wxDefaultPosition, wxSize{ -1, FromDIP(220) });
@@ -421,7 +430,7 @@ namespace Wisteria::UI
         RebuildBranchRows();
 
         // map the branches to the preselected dataset's columns (e.g., a column
-        // named "Man" becomes the "People" branch); the choice's initial selection
+        // named "Man" becomes the "Manpower" branch); the choice's initial selection
         // doesn't fire an event, so this has to be done once up-front
         OnDatasetChanged();
 
