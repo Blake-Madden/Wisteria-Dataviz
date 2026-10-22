@@ -1558,6 +1558,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                             .Pen(wxNullPen)
                             .Scaling(GetScaling())
                             .DPIScaling(GetDPIScaleFactor())
+                            .Selectable(false)
                             .Anchoring(Anchoring::Center)
                             .AnchorPoint(wxPoint{ faceCenterX, faceCenterY }));
                     AddObject(std::move(noDataLabel));
@@ -1593,6 +1594,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                             .Pen(wxNullPen)
                             .Scaling(GetScaling())
                             .DPIScaling(GetDPIScaleFactor())
+                            .Selectable(false)
                             .Anchoring(Anchoring::TopLeftCorner)
                             .AnchorPoint(wxPoint{ x, y + faceSize }));
                     label->SetTextAlignment(TextAlignment::Centered);

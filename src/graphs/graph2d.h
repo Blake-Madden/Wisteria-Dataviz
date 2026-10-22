@@ -759,16 +759,11 @@ namespace Wisteria::Graphs
         /// @param variableName The variable name to truncate.
         /// @note This is useful for shortening long variable names being displayed on a legend.
         [[nodiscard]]
-        static wxString TruncateLabel(wxString variableName)
+        static wxString TruncateLabel(const wxString& variableName)
             {
             if (variableName.length() <= 32)
                 {
                 return variableName;
-                }
-            const auto explanationSeparator = variableName.find_first_of(L"([-:");
-            if (explanationSeparator != wxString::npos && explanationSeparator < 31)
-                {
-                return variableName.substr(0, explanationSeparator);
                 }
             return variableName.substr(0, 31) + L'…';
             }
