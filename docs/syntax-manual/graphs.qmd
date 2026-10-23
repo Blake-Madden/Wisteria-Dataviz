@@ -126,6 +126,7 @@ Properties for `"ishikawa-diagram"` nodes:
   The effect is shown in a box at the end of the spine.
   - `"fish"`: A fish with a simple line for the mouth (the default).
   - `"shark"`: A notched mouth with teeth.
+  - `"skeleton"`: The bones of a fish: an outlined skull and tail, with vertebrae along the spine.
 
 ```json
 {

@@ -78,7 +78,10 @@ namespace Wisteria::Graphs
             /// @brief A fish with a simple line for the mouth.
             Fish,
             /// @brief A notched mouth with teeth.
-            Shark
+            Shark,
+            /// @brief The bones of a fish: an outlined skull and tail,
+            ///     with vertebrae along the spine.
+            Skeleton
             };
 
         /// @brief Standard sets of branch categories.
@@ -304,8 +307,11 @@ namespace Wisteria::Graphs
             /** @brief Constructor.
                 @param outline The starting point, followed by a control point and an
                     end point for each curve. The outline is closed back to the starting point.
-                @param color The fill color of the fin.*/
-            TailFin(std::vector<wxPoint> outline, const wxColour& color);
+                @param color The fill color of the fin.
+                @param fishStyle The style of the fish.
+                @param scaling The canvas scaling, used to scale the fin's pens.*/
+            TailFin(std::vector<wxPoint> outline, const wxColour& color, const FishStyle fishStyle,
+                    const double scaling);
 
             /// @private
             [[nodiscard]]
@@ -323,6 +329,7 @@ namespace Wisteria::Graphs
 
             std::vector<wxPoint> m_outline;
             wxColour m_color;
+            FishStyle m_fishStyle;
             };
 
         // a shark's dorsal fin above the ribs, with a convex leading edge and a concave

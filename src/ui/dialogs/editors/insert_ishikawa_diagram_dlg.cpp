@@ -421,7 +421,7 @@ namespace Wisteria::UI
         auto* fishStyleSizer = new wxBoxSizer(wxHORIZONTAL);
         fishStyleSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Fish style:")),
                             wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
-        const wxArrayString fishStyleChoices{ _(L"None"), _(L"Fish"), _(L"Shark") };
+        const wxArrayString fishStyleChoices{ _(L"None"), _(L"Fish"), _(L"Shark"), _(L"Skeleton") };
         auto* fishStyleChoice =
             new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, FromDIP(wxSize{ 120, -1 }),
                          fishStyleChoices, 0, wxGenericValidator{ &m_fishStyle });

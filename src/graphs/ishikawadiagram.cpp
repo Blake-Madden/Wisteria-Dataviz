@@ -318,10 +318,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
         }
 
     //----------------------------------------------------------------
-    IshikawaDiagram::TailFin::TailFin(std::vector<wxPoint> outline, const wxColour& color)
-        : m_outline(std::move(outline)), m_color(color)
+    IshikawaDiagram::TailFin::TailFin(std::vector<wxPoint> outline, const wxColour& color,
+                                      const FishStyle fishStyle, const double scaling)
+        : m_outline(std::move(outline)), m_color(color), m_fishStyle(fishStyle)
         {
         GetGraphItemInfo().Selectable(false);
+        SetScaling(scaling);
         }
 
     //----------------------------------------------------------------
@@ -364,9 +366,44 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
             }
         path.CloseSubpath();
 
-        gc->SetPen(*wxTRANSPARENT_PEN);
-        gc->SetBrush(wxBrush{ m_color });
-        gc->FillPath(path);
+        if (m_fishStyle != FishStyle::Skeleton)
+            {
+            gc->SetPen(*wxTRANSPARENT_PEN);
+            gc->SetBrush(wxBrush{ m_color });
+            gc->FillPath(path);
+            return boundingBox;
+            }
+
+        // a skeleton's fin is an outline, with rays fanning out from the spine
+        gc->SetPen(wxPen{
+            m_color, static_cast<int>(std::lround(std::max(1.0, ScaleToScreenAndCanvas(2)))) });
+        gc->SetBrush(*wxTRANSPARENT_BRUSH);
+        gc->StrokePath(path);
+
+        gc->SetPen(wxPen{
+            m_color, static_cast<int>(std::lround(std::max(1.0, ScaleToScreenAndCanvas(1)))) });
+        const wxPoint& rayStart{ m_outline.front() };
+        // rays stop short of the outline
+        constexpr double RAY_REACH{ 0.85 };
+        for (size_t i = 1; i + 1 < m_outline.size(); i += 2)
+            {
+            const wxPoint& curveStart{ m_outline[i - 1] };
+            const wxPoint& control{ m_outline[i] };
+            const wxPoint& curveEnd{ m_outline[i + 1] };
+            for (const double tVal : { 0.25, 0.5, 0.75 })
+                {
+                const double startWeight{ (1.0 - tVal) * (1.0 - tVal) };
+                const double controlWeight{ 2.0 * tVal * (1.0 - tVal) };
+                const double endWeight{ tVal * tVal };
+                const double curveX{ (startWeight * curveStart.x) + (controlWeight * control.x) +
+                                     (endWeight * curveEnd.x) };
+                const double curveY{ (startWeight * curveStart.y) + (controlWeight * control.y) +
+                                     (endWeight * curveEnd.y) };
+                gc->StrokeLine(rayStart.x, rayStart.y,
+                               rayStart.x + ((curveX - rayStart.x) * RAY_REACH),
+                               rayStart.y + ((curveY - rayStart.y) * RAY_REACH));
+                }
+            }
 
         return boundingBox;
         }
@@ -687,13 +724,43 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
         path.AddQuadCurveToPoint(topVertex.x, topVertex.y, topTowardBottom.x, topTowardBottom.y);
         path.CloseSubpath();
 
+        const double eyeX{ m_topLeft.x + (headWidth * 0.3) };
+        const double eyeY{ m_topLeft.y + (headHeight * 0.3) };
+        if (m_fishStyle == FishStyle::Skeleton)
+            {
+            // an outlined skull with a hollow eye socket and a toothed jaw
+            const int outlineWidth{ static_cast<int>(
+                std::lround(std::max(1.0, ScaleToScreenAndCanvas(2)))) };
+            gc->SetPen(wxPen{ m_color, outlineWidth });
+            gc->SetBrush(*wxTRANSPARENT_BRUSH);
+            gc->StrokePath(path);
+
+            const double socketRadius{ ScaleToScreenAndCanvas(10) };
+            gc->SetPen(wxPen{ m_featureColor, outlineWidth });
+            gc->DrawEllipse(eyeX - socketRadius, eyeY - socketRadius, socketRadius * 2,
+                            socketRadius * 2);
+
+            const int jawStartX{ rightBoundaryX - (headWidth / 3) };
+            gc->StrokeLine(jawStartX, mouthY, rightBoundaryX, mouthY);
+            constexpr int TOOTH_COUNT{ 4 };
+            const double toothHalfHeight{ std::max(ScaleToScreenAndCanvas(3),
+                                                   static_cast<double>(headHeight) / 30) };
+            const double toothSpacing{ safe_divide<double>(rightBoundaryX - jawStartX,
+                                                           TOOTH_COUNT + 1) };
+            for (int i = 1; i <= TOOTH_COUNT; ++i)
+                {
+                const double toothX{ jawStartX + (toothSpacing * i) };
+                gc->StrokeLine(toothX, mouthY - toothHalfHeight, toothX, mouthY + toothHalfHeight);
+                }
+
+            return boundingBox;
+            }
+
         gc->SetPen(*wxTRANSPARENT_PEN);
         gc->SetBrush(wxBrush{ m_color });
         gc->FillPath(path);
 
         const double eyeRadius{ ScaleToScreenAndCanvas(8) };
-        const double eyeX{ m_topLeft.x + (headWidth * 0.3) };
-        const double eyeY{ m_topLeft.y + (headHeight * 0.3) };
         gc->SetBrush(wxBrush{ m_featureColor });
         gc->DrawEllipse(eyeX - eyeRadius, eyeY - eyeRadius, eyeRadius * 2, eyeRadius * 2);
 
@@ -873,11 +940,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
         if (hasFish)
             {
             // effect label centered inside the fish head; transparent background, no outline
+            // (a skeleton's head is hollow, so its text contrasts with the background)
             effectLabel = std::make_unique<GraphItems::Label>(
                 GraphItems::GraphItemInfo{ effectText }
                     .Pen(wxNullPen)
                     .Brush(wxNullBrush)
-                    .FontColor((spineColor.GetLuminance() > 0.5) ? *wxBLACK : *wxWHITE)
+                    .FontColor((m_fishStyle == FishStyle::Skeleton) ? contrastedText :
+                               (spineColor.GetLuminance() > 0.5)    ? *wxBLACK :
+                                                                      *wxWHITE)
                     .Padding(4, 6, 4, 6)
                     .Scaling(GetScaling())
                     .DPIScaling(GetDPIScaleFactor())
@@ -1093,7 +1163,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
                                           tailPoint(0.5, 0.45), tailPoint(0.2, 0.65),
                                           // lower leading edge, bowed slightly outward
                                           tailPoint(0.7, 0.5), spinePt },
-                    spineColor));
+                    spineColor, m_fishStyle, GetScaling()));
                 }
             else
                 {
@@ -1102,7 +1172,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
                 AddObject(std::make_unique<TailFin>(
                     std::vector<wxPoint>{ spinePt, tailPoint(0.0, -1.0), tailPoint(0.45, 0.0),
                                           tailPoint(0.0, 1.0), spinePt },
-                    spineColor));
+                    spineColor, m_fishStyle, GetScaling()));
                 }
 
             // a dorsal fin above the middle top ribs, sitting on the line running along
@@ -1185,8 +1255,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
                 }
 
             // the eye and mouth: white or black, whichever contrasts with the head
-            // (a colored shark has cold, black eyes)
+            // (a colored shark has cold, black eyes, and a skeleton's match its bones)
             const wxColour featureColor{
+                (m_fishStyle == FishStyle::Skeleton) ? spineColor :
                 m_monochrome ? ((spineColor.GetLuminance() > 0.5) ? *wxBLACK : *wxWHITE) :
                 (m_fishStyle == FishStyle::Shark) ? *wxBLACK :
                                                     *wxWHITE
@@ -1284,6 +1355,34 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
                     }
                 AddObject(makeLine(wxPoint{ connectorX, causePt.y }, wxPoint{ connectorX, lastY },
                                    subColor, 1));
+                }
+            }
+
+        // a skeleton's vertebrae cross the spine at even intervals, growing toward the head
+        if (m_fishStyle == FishStyle::Skeleton)
+            {
+            const int vertebraSpacing{ static_cast<int>(ScaleToScreenAndCanvas(16)) };
+            const int vertebraCount{ safe_divide<int>(spineEndX - spineStartX, vertebraSpacing) };
+            if (vertebraCount > 1)
+                {
+                const double vertebraGap{ safe_divide<double>(spineEndX - spineStartX,
+                                                              vertebraCount) };
+                const double smallestHalfHeight{ ScaleToScreenAndCanvas(4) };
+                const double largestHalfHeight{ ScaleToScreenAndCanvas(8) };
+                auto vertebrae =
+                    std::make_unique<GraphItems::Lines>(wxPen{ spineColor, 2 }, GetScaling());
+                for (int i = 1; i < vertebraCount; ++i)
+                    {
+                    const int vertebraX{ spineStartX +
+                                         static_cast<int>(std::lround(vertebraGap * i)) };
+                    const double headward{ safe_divide<double>(i, vertebraCount) };
+                    const int vertebraHalfHeight{ static_cast<int>(
+                        std::lround(smallestHalfHeight +
+                                    ((largestHalfHeight - smallestHalfHeight) * headward))) };
+                    vertebrae->AddLine(wxPoint{ vertebraX, spineY - vertebraHalfHeight },
+                                       wxPoint{ vertebraX, spineY + vertebraHalfHeight });
+                    }
+                AddObject(std::move(vertebrae));
                 }
             }
 

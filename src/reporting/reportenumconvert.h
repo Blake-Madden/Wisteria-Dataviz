@@ -801,7 +801,8 @@ namespace Wisteria
             static const std::map<std::wstring_view, FishStyle> fishStyles = {
                 { L"none", FishStyle::None },
                 { L"fish", FishStyle::Fish },
-                { L"shark", FishStyle::Shark }
+                { L"shark", FishStyle::Shark },
+                { L"skeleton", FishStyle::Skeleton }
             };
 
             const auto foundValue = fishStyles.find(value.Lower().ToStdWstring());
@@ -1993,7 +1994,9 @@ namespace Wisteria
             using FishStyle = Graphs::IshikawaDiagram::FishStyle;
             static const std::map<FishStyle, wxString> values = { { FishStyle::None, L"none" },
                                                                   { FishStyle::Fish, L"fish" },
-                                                                  { FishStyle::Shark, L"shark" } };
+                                                                  { FishStyle::Shark, L"shark" },
+                                                                  { FishStyle::Skeleton,
+                                                                    L"skeleton" } };
 
             const auto foundValue = values.find(value);
             return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
