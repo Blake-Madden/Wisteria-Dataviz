@@ -149,17 +149,76 @@ TEST_CASE("IshikawaDiagram default branch names", "[ishikawadiagram]")
     CHECK(IshikawaDiagram::GetDefaultBranchLabel(6) == _(L"Management"));
     CHECK(IshikawaDiagram::GetDefaultBranchLabel(7) == _(L"Maintenance"));
     CHECK(IshikawaDiagram::GetDefaultBranchLabel(IshikawaDiagram::DEFAULT_BRANCH_COUNT).empty());
-    CHECK(IshikawaDiagram::IsDefaultBranchName(0, _(L"Manpower")));
-    CHECK(IshikawaDiagram::IsDefaultBranchName(0, L"man"));
-    CHECK(IshikawaDiagram::IsDefaultBranchName(0, L"people"));
-    CHECK_FALSE(IshikawaDiagram::IsDefaultBranchName(1, L"Man"));
-    CHECK(IshikawaDiagram::IsDefaultBranchName(1, L"MACHINE"));
-    CHECK(IshikawaDiagram::IsDefaultBranchName(4, L"Measure"));
-    CHECK(IshikawaDiagram::IsDefaultBranchName(5, L"environment"));
-    CHECK(IshikawaDiagram::IsDefaultBranchName(5, L"Enviro"));
-    CHECK(IshikawaDiagram::IsDefaultBranchName(7, L"maintenance"));
-    CHECK_FALSE(
-        IshikawaDiagram::IsDefaultBranchName(IshikawaDiagram::DEFAULT_BRANCH_COUNT, wxString{}));
+    constexpr auto MANUFACTURING{ IshikawaDiagram::CauseCategories::Manufacturing };
+    CHECK(IshikawaDiagram::IsDefaultBranchName(MANUFACTURING, 0, _(L"Manpower")));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(MANUFACTURING, 0, L"man"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(MANUFACTURING, 0, L"people"));
+    CHECK_FALSE(IshikawaDiagram::IsDefaultBranchName(MANUFACTURING, 1, L"Man"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(MANUFACTURING, 1, L"MACHINE"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(MANUFACTURING, 4, L"Measure"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(MANUFACTURING, 5, L"environment"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(MANUFACTURING, 5, L"Enviro"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(MANUFACTURING, 7, L"maintenance"));
+    CHECK_FALSE(IshikawaDiagram::IsDefaultBranchName(
+        MANUFACTURING, IshikawaDiagram::DEFAULT_BRANCH_COUNT, wxString{}));
+    }
+
+TEST_CASE("IshikawaDiagram marketing branch names", "[ishikawadiagram]")
+    {
+    constexpr auto MARKETING{ IshikawaDiagram::CauseCategories::Marketing };
+    CHECK(IshikawaDiagram::IsDefaultBranchName(MARKETING, 0, L"product"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(MARKETING, 0, L"Product Elements"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(MARKETING, 1, L"PRICING"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(MARKETING, 2, L"Distribution"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(MARKETING, 3, L"Promotion and Education"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(MARKETING, 4, L"people"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(MARKETING, 4, L"Participants"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(MARKETING, 5, L"Processes"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(MARKETING, 6, L"Physical Environment"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(MARKETING, 7, L"Productivity"));
+    // "People" is the fifth P, not an alternative name for the first one
+    CHECK_FALSE(IshikawaDiagram::IsDefaultBranchName(MARKETING, 0, L"People"));
+    // alternative names from the 8 Ms don't apply
+    CHECK_FALSE(IshikawaDiagram::IsDefaultBranchName(MARKETING, 0, L"Man"));
+    CHECK_FALSE(IshikawaDiagram::IsDefaultBranchName(MARKETING, 0, L"Manpower"));
+    CHECK_FALSE(IshikawaDiagram::IsDefaultBranchName(MARKETING, 1, L"Cost"));
+    CHECK_FALSE(IshikawaDiagram::IsDefaultBranchName(MARKETING, 8, wxString{}));
+    }
+
+TEST_CASE("IshikawaDiagram service branch names", "[ishikawadiagram]")
+    {
+    constexpr auto SERVICE{ IshikawaDiagram::CauseCategories::Service };
+    CHECK(IshikawaDiagram::IsDefaultBranchName(SERVICE, 0, L"surroundings"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(SERVICE, 0, L"Environment"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(SERVICE, 1, L"Vendors"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(SERVICE, 2, L"Systems"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(SERVICE, 3, L"Training"));
+    CHECK(IshikawaDiagram::IsDefaultBranchName(SERVICE, 4, L"SAFETY"));
+    CHECK_FALSE(IshikawaDiagram::IsDefaultBranchName(SERVICE, 1, L"Environment"));
+    CHECK_FALSE(IshikawaDiagram::IsDefaultBranchName(SERVICE, 5, L"Safety"));
+    }
+
+TEST_CASE("IshikawaDiagram cause category sets", "[ishikawadiagram]")
+    {
+    const auto manufacturing =
+        IshikawaDiagram::GetCauseCategoryLabels(IshikawaDiagram::CauseCategories::Manufacturing);
+    REQUIRE(manufacturing.size() == IshikawaDiagram::DEFAULT_BRANCH_COUNT);
+    for (size_t i = 0; i < manufacturing.size(); ++i)
+        {
+        CHECK(manufacturing[i] == IshikawaDiagram::GetDefaultBranchLabel(i));
+        }
+
+    const auto marketing =
+        IshikawaDiagram::GetCauseCategoryLabels(IshikawaDiagram::CauseCategories::Marketing);
+    REQUIRE(marketing.size() == 8);
+    CHECK(marketing.front() == _(L"Product"));
+    CHECK(marketing.back() == _(L"Performance"));
+
+    const auto service =
+        IshikawaDiagram::GetCauseCategoryLabels(IshikawaDiagram::CauseCategories::Service);
+    REQUIRE(service.size() == 5);
+    CHECK(service.front() == _(L"Surroundings"));
+    CHECK(service.back() == _(L"Safety"));
     }
 
 TEST_CASE("IshikawaDiagram typed causes round-trip", "[ishikawadiagram]")

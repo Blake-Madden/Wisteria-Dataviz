@@ -8,6 +8,7 @@
 
 #include "insert_ishikawa_diagram_dlg.h"
 #include "../../app/wisteriaview.h"
+#include <algorithm>
 #include <set>
 #include <wx/valgen.h>
 
@@ -366,8 +367,23 @@ namespace Wisteria::UI
         grid->Add(effectCtrl);
         optionsSizer->Add(grid, wxSizerFlags{}.Border());
 
-        // branches, which start as the eight standard categories
+        // branches, which start as the selected set of standard categories
         auto* branchesBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Branches"));
+
+        auto* categoriesSizer = new wxBoxSizer(wxHORIZONTAL);
+        categoriesSizer->Add(
+            new wxStaticText(branchesBox->GetStaticBox(), wxID_ANY, _(L"Categories:")),
+            wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+        // in the same order as IshikawaDiagram::CauseCategories
+        const wxArrayString categoryChoices{ _(L"8 Ms (manufacturing)"), _(L"8 Ps (marketing)"),
+                                             _(L"5 Ss (service)") };
+        auto* categoriesChoice =
+            new wxChoice(branchesBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                         categoryChoices, 0, wxGenericValidator{ &m_causeCategories });
+        categoriesChoice->SetSelection(m_causeCategories);
+        categoriesSizer->Add(categoriesChoice);
+        branchesBox->Add(categoriesSizer, wxSizerFlags{}.Border(wxLEFT | wxTOP | wxRIGHT));
+
         m_branchPanel = new wxScrolledWindow(branchesBox->GetStaticBox(), wxID_ANY,
                                              wxDefaultPosition, wxSize{ -1, FromDIP(220) });
         m_branchPanel->SetScrollRate(0, FromDIP(10));
@@ -420,19 +436,12 @@ namespace Wisteria::UI
                             [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
         addBranchBtn->Bind(wxEVT_BUTTON,
                            [this]([[maybe_unused]] wxCommandEvent&) { OnAddBranch(); });
+        categoriesChoice->Bind(wxEVT_CHOICE,
+                               [this, categoriesChoice]([[maybe_unused]] wxCommandEvent&)
+                               { OnCauseCategoriesChanged(categoriesChoice); });
 
         // LoadFromGraph() will overwrite these for edit mode
-        for (size_t i = 0; i < Graphs::IshikawaDiagram::DEFAULT_BRANCH_COUNT; ++i)
-            {
-            m_branches.push_back(
-                { Graphs::IshikawaDiagram::GetDefaultBranchLabel(i), wxString{}, {}, {} });
-            }
-        RebuildBranchRows();
-
-        // map the branches to the preselected dataset's columns (e.g., a column
-        // named "Man" becomes the "Manpower" branch); the choice's initial selection
-        // doesn't fire an event, so this has to be done once up-front
-        OnDatasetChanged();
+        FillBranchesFromCategories();
 
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
@@ -617,10 +626,14 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertIshikawaDiagramDlg::OnAddBranch()
         {
-        m_branches.push_back({ Graphs::IshikawaDiagram::GetDefaultBranchLabel(m_branches.size()),
-                               wxString{},
-                               {},
-                               {} });
+        // use the next label from the selected categories, if there is one
+        const auto labels = Graphs::IshikawaDiagram::GetCauseCategoryLabels(
+            static_cast<Graphs::IshikawaDiagram::CauseCategories>(m_causeCategories));
+        m_branches.push_back(
+            { (m_branches.size() < labels.size()) ? labels[m_branches.size()] : wxString{},
+              wxString{},
+              {},
+              {} });
         RebuildBranchRows();
         m_branchPanel->Scroll(0, m_branchPanel->GetScrollRange(wxVERTICAL));
         }
@@ -667,21 +680,93 @@ namespace Wisteria::UI
                 }
             // the sub-causes belonged to the previous dataset's causes
             branch.m_subCauses.clear();
-            branch.m_column.clear();
             // reselect the column that is named after the branch
-            for (const auto& name : names)
-                {
-                if ((!branch.m_label.empty() && name.CmpNoCase(branch.m_label) == 0) ||
-                    Graphs::IshikawaDiagram::IsDefaultBranchName(branchIndex, name))
-                    {
-                    branch.m_column = name;
-                    break;
-                    }
-                }
+            branch.m_column = FindBranchColumn(
+                static_cast<Graphs::IshikawaDiagram::CauseCategories>(m_causeCategories),
+                branchIndex, branch.m_label, names);
             }
         // typed branches may still have sub-causes that name columns of the previous dataset
         RemoveStaleSubCauses();
         RebuildBranchRows();
+        }
+
+    //-------------------------------------------
+    wxString InsertIshikawaDiagramDlg::FindBranchColumn(
+        const Graphs::IshikawaDiagram::CauseCategories categories, const size_t index,
+        const wxString& label, const wxArrayString& columnNames)
+        {
+        // alternative names (e.g., "Man") only apply to a branch still labeled as its category
+        const auto labels = Graphs::IshikawaDiagram::GetCauseCategoryLabels(categories);
+        const bool isDefaultLabel{ label.empty() ||
+                                   (index < labels.size() && label == labels[index]) };
+        for (const auto& name : columnNames)
+            {
+            if ((!label.empty() && name.CmpNoCase(label) == 0) ||
+                (isDefaultLabel &&
+                 Graphs::IshikawaDiagram::IsDefaultBranchName(categories, index, name)))
+                {
+                return name;
+                }
+            }
+        return {};
+        }
+
+    //-------------------------------------------
+    void InsertIshikawaDiagramDlg::FillBranchesFromCategories()
+        {
+        m_branches.clear();
+        for (const auto& label : Graphs::IshikawaDiagram::GetCauseCategoryLabels(
+                 static_cast<Graphs::IshikawaDiagram::CauseCategories>(m_causeCategories)))
+            {
+            m_branches.push_back({ label, wxString{}, {}, {} });
+            }
+        // map the branches to the selected dataset's columns
+        // (e.g., a column named "Man" becomes the "Manpower" branch)
+        OnDatasetChanged();
+        }
+
+    //-------------------------------------------
+    bool InsertIshikawaDiagramDlg::HasCustomBranches() const
+        {
+        const auto categories{ static_cast<Graphs::IshikawaDiagram::CauseCategories>(
+            m_causeCategories) };
+        const auto labels = Graphs::IshikawaDiagram::GetCauseCategoryLabels(categories);
+        if (labels.size() != m_branches.size())
+            {
+            return true;
+            }
+        const auto names = GetColumnNames();
+        for (size_t i = 0; i < m_branches.size(); ++i)
+            {
+            const auto& branch{ m_branches[i] };
+            if (branch.m_label != labels[i] || !branch.m_constants.empty() ||
+                !branch.m_subCauses.empty() ||
+                branch.m_column != FindBranchColumn(categories, i, labels[i], names))
+                {
+                return true;
+                }
+            }
+        return false;
+        }
+
+    //-------------------------------------------
+    void InsertIshikawaDiagramDlg::OnCauseCategoriesChanged(wxChoice* categoriesChoice)
+        {
+        if (categoriesChoice->GetSelection() == m_causeCategories)
+            {
+            return;
+            }
+        if (HasCustomBranches() &&
+            wxMessageBox(_(L"Changing the categories will replace all branches, including "
+                           "their labels, columns, causes, and sub-causes.\n\n"
+                           "Do you wish to continue?"),
+                         _(L"Replace Branches"), wxYES_NO | wxICON_WARNING, this) != wxYES)
+            {
+            categoriesChoice->SetSelection(m_causeCategories);
+            return;
+            }
+        m_causeCategories = categoriesChoice->GetSelection();
+        FillBranchesFromCategories();
         }
 
     //-------------------------------------------
@@ -781,6 +866,19 @@ namespace Wisteria::UI
         m_monochrome = diagram->IsMonochrome();
         m_fishStyle = static_cast<int>(diagram->GetFishStyle());
         m_branches = diagram->GetBranches();
+        // select the set of categories that the branches are labeled with, if any
+        for (const auto categories : { Graphs::IshikawaDiagram::CauseCategories::Manufacturing,
+                                       Graphs::IshikawaDiagram::CauseCategories::Marketing,
+                                       Graphs::IshikawaDiagram::CauseCategories::Service })
+            {
+            if (std::ranges::equal(Graphs::IshikawaDiagram::GetCauseCategoryLabels(categories),
+                                   m_branches, {}, {},
+                                   [](const auto& branch) { return branch.m_label; }))
+                {
+                m_causeCategories = static_cast<int>(categories);
+                break;
+                }
+            }
         RebuildBranchRows();
 
         TransferDataToWindow();

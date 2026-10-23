@@ -29,41 +29,76 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
         }
 
     //----------------------------------------------------------------
-    wxString IshikawaDiagram::GetDefaultBranchLabel(const size_t index)
+    std::vector<wxString> IshikawaDiagram::GetCauseCategoryLabels(const CauseCategories categories)
         {
-        // the 8 Ms
-        switch (index)
+        switch (categories)
             {
-        case 0:
-            return _(L"Manpower");
-        case 1:
-            return _(L"Machine");
-        case 2:
-            return _(L"Material");
-        case 3:
-            return _(L"Method");
-        case 4:
-            return _(L"Measurement");
-        case 5:
-            return _(L"Mother Nature");
-        case 6:
-            return _(L"Management");
-        case 7:
-            return _(L"Maintenance");
+        case CauseCategories::Marketing:
+            return { _(L"Product"),           _(L"Price"),      _(L"Place"),
+                     _(L"Promotion"),         _(L"People"),     _(L"Process"),
+                     _(L"Physical Evidence"), _(L"Performance") };
+        case CauseCategories::Service:
+            return { _(L"Surroundings"), _(L"Suppliers"), _(L"Systems"), _(L"Skills"),
+                     _(L"Safety") };
+        case CauseCategories::Manufacturing:
+            [[fallthrough]];
         default:
-            return {};
+            return { _(L"Manpower"),    _(L"Machine"),       _(L"Material"),   _(L"Method"),
+                     _(L"Measurement"), _(L"Mother Nature"), _(L"Management"), _(L"Maintenance") };
             }
         }
 
     //----------------------------------------------------------------
-    bool IshikawaDiagram::IsDefaultBranchName(const size_t index, const wxString& name)
+    wxString IshikawaDiagram::GetDefaultBranchLabel(const size_t index)
         {
-        const wxString defaultLabel{ GetDefaultBranchLabel(index) };
-        return (!defaultLabel.empty() && name.CmpNoCase(defaultLabel) == 0) ||
-               (index == 0 && (name.CmpNoCase(L"Man") == 0 || name.CmpNoCase(_(L"People")) == 0)) ||
-               (index == 4 && name.CmpNoCase(L"Measure") == 0) ||
-               (index == 5 &&
-                (name.CmpNoCase(L"Enviro") == 0 || name.CmpNoCase(_(L"Environment")) == 0));
+        const auto labels = GetCauseCategoryLabels(CauseCategories::Manufacturing);
+        return (index < labels.size()) ? labels[index] : wxString{};
+        }
+
+    //----------------------------------------------------------------
+    bool IshikawaDiagram::IsDefaultBranchName(const CauseCategories categories, const size_t index,
+                                              const wxString& name)
+        {
+        const auto labels = GetCauseCategoryLabels(categories);
+        if (index >= labels.size())
+            {
+            return false;
+            }
+        if (name.CmpNoCase(labels[index]) == 0)
+            {
+            return true;
+            }
+        // alternative names for each branch, in the same order as the labels
+        const auto aliases = [categories]() -> std::vector<std::vector<wxString>>
+        {
+            switch (categories)
+                {
+            case CauseCategories::Marketing:
+                return { { _(L"Product Elements"), _(L"Products"), _(L"Offering") },
+                         { _(L"Pricing"), _(L"Prices") },
+                         { _(L"Place and Time"), _(L"Distribution"), _(L"Channel"),
+                           _(L"Channels") },
+                         { _(L"Promotion and Education"), _(L"Promotions"), _(L"Communication") },
+                         { _(L"Participants"), _(L"Personnel"), _(L"Staff") },
+                         { _(L"Processes"), _(L"Procedures") },
+                         { _(L"Physical Environment"), _(L"Physical"), _(L"Evidence") },
+                         { _(L"Productivity"), _(L"Productivity and Quality") } };
+            case CauseCategories::Service:
+                return { { _(L"Environment") },
+                         { _(L"Supplier"), _(L"Vendors") },
+                         {},
+                         { _(L"Training") },
+                         {} };
+            case CauseCategories::Manufacturing:
+                [[fallthrough]];
+            default:
+                return { { L"Man", _(L"People") },         {}, {}, {}, { L"Measure" },
+                         { L"Enviro", _(L"Environment") }, {}, {} };
+                }
+        }();
+        return index < aliases.size() && std::ranges::any_of(
+                                             aliases[index], [&name](const wxString& alias)
+                                             { return name.CmpNoCase(alias) == 0; });
         }
 
     //----------------------------------------------------------------

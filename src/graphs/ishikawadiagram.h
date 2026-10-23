@@ -81,6 +81,29 @@ namespace Wisteria::Graphs
             Shark
             };
 
+        /// @brief Standard sets of branch categories.
+        enum class CauseCategories
+            {
+            /** @brief The 8 Ms (manufacturing): Manpower, Machine, Material, Method,
+                    Measurement, Mother Nature, Management, and Maintenance.
+                @par Citation:
+                 Bradley, Edgar. <i>Reliability Engineering: A Life Cycle Approach</i>.
+                 CRC Press, 2016.*/
+            Manufacturing,
+            /** @brief The 8 Ps (product marketing): Product, Price, Place, Promotion, People,
+                    Process, Physical Evidence, and Performance.
+                @par Citation:
+                 Bradley, Edgar. <i>Reliability Engineering: A Life Cycle Approach</i>.
+                 CRC Press, 2016.*/
+            Marketing,
+            /** @brief The 5 Ss (service industries): Surroundings, Suppliers, Systems, Skills,
+                    and Safety.
+                @par Citation:
+                 Dudbridge, Michael. <i>Handbook of Lean Manufacturing in the Food Industry</i>.
+                 John Wiley & Sons, 2011.*/
+            Service
+            };
+
         /// @brief Sub-causes for a single cause.
         struct SubCauses
             {
@@ -225,19 +248,27 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         static wxString FormatConstants(const std::vector<wxString>& constants);
 
+        /// @param categories The set of categories.
+        /// @returns The branch labels for the set of categories.
+        [[nodiscard]]
+        static std::vector<wxString> GetCauseCategoryLabels(CauseCategories categories);
+
         /// @param index The index of the branch.
-        /// @returns The default label for the branch at @c index, or an empty string
-        ///     if the index is beyond the default branches.
+        /// @returns The default label (from the 8 Ms) for the branch at @c index,
+        ///     or an empty string if the index is beyond the default branches.
         [[nodiscard]]
         static wxString GetDefaultBranchLabel(size_t index);
 
-        /** @brief Determines whether a name (e.g., a column name) matches a default branch label.
+        /** @brief Determines whether a name (e.g., a column name) matches a
+            category's branch label.
+            @param categories The set of categories.
             @param index The index of the branch.
             @param name The name to compare, ignoring case. Some branches also match
                 alternative labels (e.g., "Man" or "People" for "Manpower").
-            @returns @c true if @c name matches the default label for the branch.*/
+            @returns @c true if @c name matches the label for the branch.*/
         [[nodiscard]]
-        static bool IsDefaultBranchName(size_t index, const wxString& name);
+        static bool IsDefaultBranchName(CauseCategories categories, size_t index,
+                                        const wxString& name);
 
         /// @brief The number of branches that have a default label.
         constexpr static size_t DEFAULT_BRANCH_COUNT{ 8 };

@@ -23,7 +23,8 @@ namespace Wisteria::UI
     /** @brief Dialog for inserting an Ishikawa (cause-and-effect) diagram into a canvas cell.
         @details Extends InsertGraphDlg with an "Ishikawa Diagram" page containing:
             - A dataset selector and the effect text.
-            - A grid of branches (eight by default). Each branch has a label,
+            - A set of categories (8 Ms, 8 Ps, or 5 Ss) that fills the branches.
+            - A grid of branches (the 8 Ms by default). Each branch has a label,
               the column containing its causes, and a "Sub-causes..." button for assigning
               columns of sub-causes to its causes.
             - Display options.*/
@@ -92,6 +93,16 @@ namespace Wisteria::UI
         void RemoveStaleSubCauses();
 
         // branch grid helpers
+        void FillBranchesFromCategories();
+        void OnCauseCategoriesChanged(wxChoice* categoriesChoice);
+        /// @returns @c true if the branches differ from the selected categories' defaults.
+        [[nodiscard]]
+        bool HasCustomBranches() const;
+        /// @returns The column matching a branch's label, or an empty string if none match.
+        [[nodiscard]]
+        static wxString FindBranchColumn(Graphs::IshikawaDiagram::CauseCategories categories,
+                                         size_t index, const wxString& label,
+                                         const wxArrayString& columnNames);
         void RebuildBranchRows();
         void OnAddBranch();
         void OnRemoveBranch(size_t index);
@@ -115,6 +126,8 @@ namespace Wisteria::UI
         bool m_taperedLines{ true };
         bool m_monochrome{ false };
         int m_fishStyle{ 1 };
+        int m_causeCategories{ static_cast<int>(
+            Graphs::IshikawaDiagram::CauseCategories::Manufacturing) };
 
         // the branches that the grid shows
         std::vector<Graphs::IshikawaDiagram::Branch> m_branches;
