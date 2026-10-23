@@ -2135,6 +2135,8 @@ void WisteriaView::OnInsertPage([[maybe_unused]] wxCommandEvent& event)
                     static_cast<uint8_t>(dlg.GetBackgroundImageOpacity()));
                 }
             }
+        // the rows were sized while the page was empty, so size them to the placed items
+        UpdateCanvas(newCanvas);
         }
     }
 
