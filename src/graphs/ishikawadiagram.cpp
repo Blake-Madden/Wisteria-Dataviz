@@ -8,6 +8,7 @@
 
 #include "ishikawadiagram.h"
 #include <algorithm>
+#include <ranges>
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::Graph2D)
 
@@ -317,11 +318,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
         }
 
     //----------------------------------------------------------------
-    IshikawaDiagram::TailFin::TailFin(const wxPoint& spinePoint, const wxPoint& topControl,
-                                      const wxPoint& bottomControl, const wxPoint& notchPoint,
-                                      const wxColour& color)
-        : m_spinePoint(spinePoint), m_topControl(topControl), m_bottomControl(bottomControl),
-          m_notchPoint(notchPoint), m_color(color)
+    IshikawaDiagram::TailFin::TailFin(std::vector<wxPoint> outline, const wxColour& color)
+        : m_outline(std::move(outline)), m_color(color)
         {
         GetGraphItemInfo().Selectable(false);
         }
@@ -331,14 +329,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
                                                     wxDC &
                                                     dc) const
         {
-        const int minX =
-            std::min({ m_spinePoint.x, m_topControl.x, m_bottomControl.x, m_notchPoint.x });
-        const int maxX =
-            std::max({ m_spinePoint.x, m_topControl.x, m_bottomControl.x, m_notchPoint.x });
-        const int minY =
-            std::min({ m_spinePoint.y, m_topControl.y, m_bottomControl.y, m_notchPoint.y });
-        const int maxY =
-            std::max({ m_spinePoint.y, m_topControl.y, m_bottomControl.y, m_notchPoint.y });
+        if (m_outline.empty())
+            {
+            return {};
+            }
+        const auto [minX, maxX] = std::ranges::minmax(
+            m_outline | std::views::transform([](const wxPoint& pt) { return pt.x; }));
+        const auto [minY, maxY] = std::ranges::minmax(
+            m_outline | std::views::transform([](const wxPoint& pt) { return pt.y; }));
         return wxRect{ wxPoint{ minX, minY }, wxPoint{ maxX, maxY } };
         }
 
@@ -353,13 +351,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
             return boundingBox;
             }
 
+        if (m_outline.empty())
+            {
+            return boundingBox;
+            }
         wxGraphicsPath path = gc->CreatePath();
-        path.MoveToPoint(m_spinePoint.x, m_spinePoint.y);
-        // upper lobe: curves out to the top tip and back in to the notch
-        path.AddQuadCurveToPoint(m_topControl.x, m_topControl.y, m_notchPoint.x, m_notchPoint.y);
-        // lower lobe: mirrors the upper lobe back to the spine
-        path.AddQuadCurveToPoint(m_bottomControl.x, m_bottomControl.y, m_spinePoint.x,
-                                 m_spinePoint.y);
+        path.MoveToPoint(m_outline.front().x, m_outline.front().y);
+        for (size_t i = 1; i + 1 < m_outline.size(); i += 2)
+            {
+            path.AddQuadCurveToPoint(m_outline[i].x, m_outline[i].y, m_outline[i + 1].x,
+                                     m_outline[i + 1].y);
+            }
         path.CloseSubpath();
 
         gc->SetPen(*wxTRANSPARENT_PEN);
@@ -378,20 +380,95 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
     //----------------------------------------------------------------
     void IshikawaDiagram::TailFin::Offset(const int xOffset, const int yOffset)
         {
-        m_spinePoint.x += xOffset;
-        m_spinePoint.y += yOffset;
-        m_topControl.x += xOffset;
-        m_topControl.y += yOffset;
-        m_bottomControl.x += xOffset;
-        m_bottomControl.y += yOffset;
-        m_notchPoint.x += xOffset;
-        m_notchPoint.y += yOffset;
+        for (auto& pt : m_outline)
+            {
+            pt.x += xOffset;
+            pt.y += yOffset;
+            }
         }
 
     //----------------------------------------------------------------
     void IshikawaDiagram::TailFin::SetBoundingBox([[maybe_unused]] const wxRect& rect,
                                                   [[maybe_unused]] wxDC& dc,
                                                   [[maybe_unused]] const double scaling)
+        {
+        }
+
+    //----------------------------------------------------------------
+    IshikawaDiagram::DorsalFin::DorsalFin(const wxPoint& frontPoint, const wxPoint& frontControl,
+                                          const wxPoint& tipPoint, const wxPoint& rearControl,
+                                          const wxPoint& rearPoint, const wxColour& color)
+        : m_frontPoint(frontPoint), m_frontControl(frontControl), m_tipPoint(tipPoint),
+          m_rearControl(rearControl), m_rearPoint(rearPoint), m_color(color)
+        {
+        GetGraphItemInfo().Selectable(false);
+        }
+
+    //----------------------------------------------------------------
+    wxRect IshikawaDiagram::DorsalFin::GetBoundingBox([[maybe_unused]]
+                                                      wxDC &
+                                                      dc) const
+        {
+        const int minX = std::min(
+            { m_frontPoint.x, m_frontControl.x, m_tipPoint.x, m_rearControl.x, m_rearPoint.x });
+        const int maxX = std::max(
+            { m_frontPoint.x, m_frontControl.x, m_tipPoint.x, m_rearControl.x, m_rearPoint.x });
+        const int minY = std::min(
+            { m_frontPoint.y, m_frontControl.y, m_tipPoint.y, m_rearControl.y, m_rearPoint.y });
+        const int maxY = std::max(
+            { m_frontPoint.y, m_frontControl.y, m_tipPoint.y, m_rearControl.y, m_rearPoint.y });
+        return wxRect{ wxPoint{ minX, minY }, wxPoint{ maxX, maxY } };
+        }
+
+    //----------------------------------------------------------------
+    wxRect IshikawaDiagram::DorsalFin::Draw(wxDC & dc) const
+        {
+        const auto boundingBox = GetBoundingBox(dc);
+        const GraphItems::GraphicsContextFallback gcf{ &dc, boundingBox };
+        auto* gc = gcf.GetGraphicsContext();
+        if (gc == nullptr)
+            {
+            return boundingBox;
+            }
+
+        wxGraphicsPath path = gc->CreatePath();
+        path.MoveToPoint(m_frontPoint.x, m_frontPoint.y);
+        path.AddQuadCurveToPoint(m_frontControl.x, m_frontControl.y, m_tipPoint.x, m_tipPoint.y);
+        path.AddQuadCurveToPoint(m_rearControl.x, m_rearControl.y, m_rearPoint.x, m_rearPoint.y);
+        path.CloseSubpath();
+
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(wxBrush{ m_color });
+        gc->FillPath(path);
+
+        return boundingBox;
+        }
+
+    //----------------------------------------------------------------
+    bool IshikawaDiagram::DorsalFin::HitTest(const wxPoint pt, wxDC& dc) const
+        {
+        return GetBoundingBox(dc).Contains(pt);
+        }
+
+    //----------------------------------------------------------------
+    void IshikawaDiagram::DorsalFin::Offset(const int xOffset, const int yOffset)
+        {
+        m_frontPoint.x += xOffset;
+        m_frontPoint.y += yOffset;
+        m_frontControl.x += xOffset;
+        m_frontControl.y += yOffset;
+        m_tipPoint.x += xOffset;
+        m_tipPoint.y += yOffset;
+        m_rearControl.x += xOffset;
+        m_rearControl.y += yOffset;
+        m_rearPoint.x += xOffset;
+        m_rearPoint.y += yOffset;
+        }
+
+    //----------------------------------------------------------------
+    void IshikawaDiagram::DorsalFin::SetBoundingBox([[maybe_unused]] const wxRect& rect,
+                                                    [[maybe_unused]] wxDC& dc,
+                                                    [[maybe_unused]] const double scaling)
         {
         }
 
@@ -518,44 +595,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
         const int upperLipX{ edgePointX(upperLipY) };
         const int innerX{ edgePointX(mouthY) - biteDepth };
 
-        wxGraphicsPath path = gc->CreatePath();
-        path.MoveToPoint(topTowardBottom.x, topTowardBottom.y);
-        path.AddLineToPoint(bottomTowardTop.x, bottomTowardTop.y);
-        path.AddQuadCurveToPoint(bottomVertex.x, bottomVertex.y, bottomTowardApex.x,
-                                 bottomTowardApex.y);
+        // teeth along each lip, pointing into the mouth, drawn before the head so that
+        // their bases are hidden in the gums
         if (m_fishStyle == FishStyle::Shark)
             {
-            path.AddLineToPoint(lowerLipX, lowerLipY);
-            path.AddLineToPoint(innerX, mouthY);
-            path.AddLineToPoint(upperLipX, upperLipY);
-            }
-        path.AddLineToPoint(apexTowardBottom.x, apexTowardBottom.y);
-        path.AddQuadCurveToPoint(apexVertex.x, apexVertex.y, apexTowardTop.x, apexTowardTop.y);
-        path.AddLineToPoint(topTowardApex.x, topTowardApex.y);
-        path.AddQuadCurveToPoint(topVertex.x, topVertex.y, topTowardBottom.x, topTowardBottom.y);
-        path.CloseSubpath();
-
-        gc->SetPen(*wxTRANSPARENT_PEN);
-        gc->SetBrush(wxBrush{ m_color });
-        gc->FillPath(path);
-
-        const double eyeRadius{ ScaleToScreenAndCanvas(8) };
-        const double eyeX{ m_topLeft.x + (headWidth * 0.3) };
-        const double eyeY{ m_topLeft.y + (headHeight * 0.3) };
-        gc->SetBrush(wxBrush{ m_featureColor });
-        gc->DrawEllipse(eyeX - eyeRadius, eyeY - eyeRadius, eyeRadius * 2, eyeRadius * 2);
-
-        if (m_fishStyle == FishStyle::Fish)
-            {
-            const int mouthStartX{ rightBoundaryX - (headWidth / 4) };
-            gc->SetPen(wxPen{ m_featureColor, static_cast<int>(std::lround(
-                                                  std::max(1.0, ScaleToScreenAndCanvas(2)))) });
-            gc->StrokeLine(mouthStartX, mouthY, rightBoundaryX, mouthY);
-            }
-        else if (m_fishStyle == FishStyle::Shark)
-            {
-            // teeth along each lip, pointing into the mouth
             const double toothHeight{ static_cast<double>(biteHalfHeight) * 0.45 };
+            // how far each tooth's base reaches into the gums
+            const double rootDepth{ std::max(2.0, ScaleToScreenAndCanvas(2)) };
 
             const auto drawTeeth = [&](const double startX, const double startY, const double endX,
                                        const double endY, const int count, const int verticalSign,
@@ -603,10 +649,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
                                                                  toothHeight };
                     const double apexX{ baseX + (normalX * toothLen) };
                     const double apexY{ baseY + (normalY * toothLen) };
+                    // the base is pushed back into the jaw, which the head covers
+                    const double rootX{ normalX * rootDepth };
+                    const double rootY{ normalY * rootDepth };
                     wxGraphicsPath tooth = gc->CreatePath();
-                    tooth.MoveToPoint(baseX, baseY);
+                    tooth.MoveToPoint(baseX - rootX, baseY - rootY);
                     tooth.AddLineToPoint(apexX, apexY);
-                    tooth.AddLineToPoint(baseEndX, baseEndY);
+                    tooth.AddLineToPoint(baseEndX - rootX, baseEndY - rootY);
                     tooth.CloseSubpath();
                     gc->SetPen(wxPen{
                         wxColour{ 80, 80, 80 },
@@ -619,6 +668,41 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
 
             drawTeeth(upperLipX, upperLipY, innerX, mouthY, 4, 1, 0.25, 0.8);
             drawTeeth(lowerLipX, lowerLipY, innerX, mouthY, 4, 0, 0.0, 0.7);
+            }
+
+        wxGraphicsPath path = gc->CreatePath();
+        path.MoveToPoint(topTowardBottom.x, topTowardBottom.y);
+        path.AddLineToPoint(bottomTowardTop.x, bottomTowardTop.y);
+        path.AddQuadCurveToPoint(bottomVertex.x, bottomVertex.y, bottomTowardApex.x,
+                                 bottomTowardApex.y);
+        if (m_fishStyle == FishStyle::Shark)
+            {
+            path.AddLineToPoint(lowerLipX, lowerLipY);
+            path.AddLineToPoint(innerX, mouthY);
+            path.AddLineToPoint(upperLipX, upperLipY);
+            }
+        path.AddLineToPoint(apexTowardBottom.x, apexTowardBottom.y);
+        path.AddQuadCurveToPoint(apexVertex.x, apexVertex.y, apexTowardTop.x, apexTowardTop.y);
+        path.AddLineToPoint(topTowardApex.x, topTowardApex.y);
+        path.AddQuadCurveToPoint(topVertex.x, topVertex.y, topTowardBottom.x, topTowardBottom.y);
+        path.CloseSubpath();
+
+        gc->SetPen(*wxTRANSPARENT_PEN);
+        gc->SetBrush(wxBrush{ m_color });
+        gc->FillPath(path);
+
+        const double eyeRadius{ ScaleToScreenAndCanvas(8) };
+        const double eyeX{ m_topLeft.x + (headWidth * 0.3) };
+        const double eyeY{ m_topLeft.y + (headHeight * 0.3) };
+        gc->SetBrush(wxBrush{ m_featureColor });
+        gc->DrawEllipse(eyeX - eyeRadius, eyeY - eyeRadius, eyeRadius * 2, eyeRadius * 2);
+
+        if (m_fishStyle == FishStyle::Fish)
+            {
+            const int mouthStartX{ rightBoundaryX - (headWidth / 4) };
+            gc->SetPen(wxPen{ m_featureColor, static_cast<int>(std::lround(
+                                                  std::max(1.0, ScaleToScreenAndCanvas(2)))) });
+            gc->StrokeLine(mouthStartX, mouthY, rightBoundaryX, mouthY);
             }
 
         return boundingBox;
@@ -855,6 +939,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
                 }
             }
         const int edgeMargin{ static_cast<int>(ScaleToScreenAndCanvas(4)) };
+        const auto getBranchLabelText = [this](const BranchItem& branch)
+        {
+            return m_showCauseCounts ?
+                       wxString::Format(_DT(L"%s (%zu)"), branch.m_label, branch.m_causes.size()) :
+                       branch.m_label;
+        };
+        // branch labels are pushed left of their rib's outer end (away from the rib)
+        const int branchLabelOffset{ static_cast<int>(ScaleToScreenAndCanvas(12)) };
 
         const int pairCount{ static_cast<int>((shownBranches.size() + 1) / 2) };
         // a small plot area must not produce negative sizes, which would flip the ribs
@@ -907,6 +999,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
         // the first branches are nearest the effect, so the pairs run right to left
         const auto getPairIndex = [pairCount](const size_t branchIndex)
         { return pairCount - 1 - static_cast<int>(branchIndex / 2); };
+        // where a pair's ribs meet the spine
+        const auto getAttachPoint = [spineStartX, slotWidth, spineY](const int pairIndex)
+        {
+            return wxPoint{ spineStartX + ((pairIndex + 1) * slotWidth) -
+                                static_cast<int>(slotWidth * 0.05),
+                            spineY };
+        };
         // the spacing between the slots on a rib, which grows as the ribs approach the head
         const auto getSlotSpacing = [&ribHalfHeight, mostSlots](const int pairIndex)
         {
@@ -973,17 +1072,124 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
 
         if (hasFish)
             {
-            // forked whale-tail fin: two smooth quad bezier lobes with a concave notch between them
-            const int lobeTipX{ drawArea.GetX() };
-            const int notchX{ drawArea.GetX() + static_cast<int>(tailWidth * 0.45) };
-            AddObject(std::make_unique<TailFin>(wxPoint{ spineStartX, spineY },
-                                                wxPoint{ lobeTipX, spineY - tailHalfHeight },
-                                                wxPoint{ lobeTipX, spineY + tailHalfHeight },
-                                                wxPoint{ notchX, spineY }, spineColor));
+            // a position in the tail, as fractions of its width (from the left) and
+            // its half height (from the spine, downward)
+            const auto tailPoint = [&](const double across, const double down)
+            {
+                return wxPoint{ drawArea.GetX() + static_cast<int>(std::lround(tailWidth * across)),
+                                spineY + static_cast<int>(std::lround(tailHalfHeight * down)) };
+            };
+            const wxPoint spinePt{ spineStartX, spineY };
+            if (m_fishStyle == FishStyle::Shark)
+                {
+                // crescent shark tail: pointed tips, with the upper lobe longer than the lower
+                AddObject(std::make_unique<TailFin>(
+                    std::vector<wxPoint>{ spinePt,
+                                          // upper leading edge, bowed slightly outward
+                                          tailPoint(0.55, -0.65), tailPoint(0.0, -1.0),
+                                          // upper trailing edge, curving in to the notch
+                                          tailPoint(0.45, -0.45), tailPoint(0.5, 0.15),
+                                          // lower trailing edge, curving out to the lower tip
+                                          tailPoint(0.5, 0.45), tailPoint(0.2, 0.65),
+                                          // lower leading edge, bowed slightly outward
+                                          tailPoint(0.7, 0.5), spinePt },
+                    spineColor));
+                }
+            else
+                {
+                // forked whale-tail fin: two smooth quad bezier lobes with a concave notch
+                // between them
+                AddObject(std::make_unique<TailFin>(
+                    std::vector<wxPoint>{ spinePt, tailPoint(0.0, -1.0), tailPoint(0.45, 0.0),
+                                          tailPoint(0.0, 1.0), spinePt },
+                    spineColor));
+                }
+
+            // a dorsal fin above the middle top ribs, sitting on the line running along
+            // their outer ends and fitted between their branch labels
+            if (m_fishStyle == FishStyle::Shark && pairCount > 1 && slotWidth > 0)
+                {
+                const int frontPair{ pairCount / 2 };
+                const int rearPair{ frontPair - 1 };
+                const auto getOuterPoint = [&](const int pairIndex)
+                {
+                    return wxPoint{ getAttachPoint(pairIndex).x - ribShift,
+                                    spineY - ribHalfHeight(pairIndex) };
+                };
+                const wxPoint frontOuter{ getOuterPoint(frontPair) };
+                const wxPoint rearOuter{ getOuterPoint(rearPair) };
+                // the top branch of a pair comes first
+                const auto getLabelWidth = [&](const int pairIndex)
+                {
+                    if (!m_showBranchLabels)
+                        {
+                        return 0;
+                        }
+                    const size_t branchIndex{ static_cast<size_t>(2 *
+                                                                  (pairCount - 1 - pairIndex)) };
+                    return makeBranchLabel(getBranchLabelText(*shownBranches[branchIndex]),
+                                           wxPoint{ 0, 0 }, spineColor)
+                        ->GetBoundingBox(dc)
+                        .GetWidth();
+                };
+                const int finMargin{ static_cast<int>(ScaleToScreenAndCanvas(6)) };
+                const int labelShift{ m_showBranchLabels ? branchLabelOffset : 0 };
+                const int gapLeft{ rearOuter.x - labelShift + (getLabelWidth(rearPair) / 2) +
+                                   finMargin };
+                const int gapRight{ frontOuter.x - labelShift - (getLabelWidth(frontPair) / 2) -
+                                    finMargin };
+                const int baseLength{ std::min(gapRight - gapLeft,
+                                               static_cast<int>(slotWidth * 0.5)) };
+                // the y position along the line through the ribs' outer ends
+                const auto getBackY = [&](const double xPos)
+                {
+                    return rearOuter.y +
+                           ((xPos - rearOuter.x) * safe_divide<double>(frontOuter.y - rearOuter.y,
+                                                                       frontOuter.x - rearOuter.x));
+                };
+                const double rearX{ gapLeft + ((gapRight - gapLeft - baseLength) / 2.0) };
+                const double frontX{ rearX + baseLength };
+                const double rearY{ getBackY(rearX) };
+                const double frontY{ getBackY(frontX) };
+                // unit vector along the base (toward the head) and its upward normal
+                const double baseDist{ std::hypot(frontX - rearX, frontY - rearY) };
+                const double unitX{ safe_divide<double>(frontX - rearX, baseDist) };
+                const double unitY{ safe_divide<double>(frontY - rearY, baseDist) };
+                const double normalX{ unitY };
+                const double normalY{ -unitX };
+                // the tip is swept back toward the tail, and must stay inside the plot area
+                constexpr double tipAlong{ 0.15 };
+                const double finHeight{ std::min(baseDist * 1.4,
+                                                 getBackY(rearX + (baseDist * tipAlong)) -
+                                                     drawArea.GetTop() - edgeMargin) };
+                // a position on the fin, measured along its base and up from it
+                const auto finPoint = [&](const double along, const double upward)
+                {
+                    return wxPoint{
+                        static_cast<int>(std::lround(rearX + (unitX * baseDist * along) +
+                                                     (normalX * finHeight * upward))),
+                        static_cast<int>(std::lround(rearY + (unitY * baseDist * along) +
+                                                     (normalY * finHeight * upward)))
+                    };
+                };
+                if (baseLength >= ScaleToScreenAndCanvas(12) &&
+                    finHeight >= ScaleToScreenAndCanvas(8))
+                    {
+                    AddObject(std::make_unique<DorsalFin>(
+                        finPoint(1.0, 0.0),
+                        // bowed out to make the leading edge convex
+                        finPoint(0.55, 0.75), finPoint(tipAlong, 1.0),
+                        // pulled in toward the leading edge to make the trailing edge concave
+                        finPoint(0.35, 0.3), finPoint(0.0, 0.0), spineColor));
+                    }
+                }
 
             // the eye and mouth: white or black, whichever contrasts with the head
+            // (a colored shark has cold, black eyes)
             const wxColour featureColor{
-                m_monochrome ? ((spineColor.GetLuminance() > 0.5) ? *wxBLACK : *wxWHITE) : *wxWHITE
+                m_monochrome ? ((spineColor.GetLuminance() > 0.5) ? *wxBLACK : *wxWHITE) :
+                (m_fishStyle == FishStyle::Shark) ? *wxBLACK :
+                                                    *wxWHITE
             };
 
             // fish head (with its eye and mouth): triangle with rounded corners,
@@ -1005,9 +1211,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
             const int halfHeight{ ribHalfHeight(pairIndex) };
             labelBoxHeight = getLabelBoxHeight(pairIndex, labelScale);
 
-            const wxPoint attachPt{ spineStartX + ((pairIndex + 1) * slotWidth) -
-                                        static_cast<int>(slotWidth * 0.05),
-                                    spineY };
+            const wxPoint attachPt{ getAttachPoint(pairIndex) };
             const wxPoint outerPt{ attachPt.x - ribShift, spineY + (direction * halfHeight) };
             const wxColour branchColor{ getBranchColor(i) };
             // sub-causes are a lighter shade of their branch's color
@@ -1018,15 +1222,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
 
             if (m_showBranchLabels)
                 {
-                const wxString labelText{ m_showCauseCounts ?
-                                              wxString::Format(_DT(L"%s (%zu)"), branch.m_label,
-                                                               branch.m_causes.size()) :
-                                              branch.m_label };
-                // push labels further left (away from the rib)
-                const int labelOffset{ static_cast<int>(ScaleToScreenAndCanvas(12)) };
                 AddObject(
-                    makeBranchLabel(labelText,
-                                    wxPoint{ outerPt.x - labelOffset,
+                    makeBranchLabel(getBranchLabelText(branch),
+                                    wxPoint{ outerPt.x - branchLabelOffset,
                                              outerPt.y + (direction * branchLabelHeight / 2) },
                                     branchColor));
                 }

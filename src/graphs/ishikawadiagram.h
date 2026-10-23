@@ -302,13 +302,10 @@ namespace Wisteria::Graphs
             {
           public:
             /** @brief Constructor.
-                @param spinePoint The point where the fin meets the spine.
-                @param topControl The control point for the upper lobe's curve.
-                @param bottomControl The control point for the lower lobe's curve.
-                @param notchPoint The concave notch between the two lobes.
+                @param outline The starting point, followed by a control point and an
+                    end point for each curve. The outline is closed back to the starting point.
                 @param color The fill color of the fin.*/
-            TailFin(const wxPoint& spinePoint, const wxPoint& topControl,
-                    const wxPoint& bottomControl, const wxPoint& notchPoint, const wxColour& color);
+            TailFin(std::vector<wxPoint> outline, const wxColour& color);
 
             /// @private
             [[nodiscard]]
@@ -324,10 +321,45 @@ namespace Wisteria::Graphs
 
             void SetBoundingBox(const wxRect& rect, wxDC& dc, double scaling) final;
 
-            wxPoint m_spinePoint;
-            wxPoint m_topControl;
-            wxPoint m_bottomControl;
-            wxPoint m_notchPoint;
+            std::vector<wxPoint> m_outline;
+            wxColour m_color;
+            };
+
+        // a shark's dorsal fin above the ribs, with a convex leading edge and a concave
+        // trailing edge, drawn with quad bezier curves
+        class DorsalFin final : public GraphItems::GraphItemBase
+            {
+          public:
+            /** @brief Constructor.
+                @param frontPoint The front of the fin's base.
+                @param frontControl The control point for the leading edge's curve.
+                @param tipPoint The tip of the fin.
+                @param rearControl The control point for the trailing edge's curve.
+                @param rearPoint The rear of the fin's base.
+                @param color The fill color of the fin.*/
+            DorsalFin(const wxPoint& frontPoint, const wxPoint& frontControl,
+                      const wxPoint& tipPoint, const wxPoint& rearControl, const wxPoint& rearPoint,
+                      const wxColour& color);
+
+            /// @private
+            [[nodiscard]]
+            wxRect GetBoundingBox(wxDC& dc) const final;
+
+          private:
+            wxRect Draw(wxDC& dc) const final;
+
+            [[nodiscard]]
+            bool HitTest(wxPoint pt, wxDC& dc) const final;
+
+            void Offset(int xOffset, int yOffset) final;
+
+            void SetBoundingBox(const wxRect& rect, wxDC& dc, double scaling) final;
+
+            wxPoint m_frontPoint;
+            wxPoint m_frontControl;
+            wxPoint m_tipPoint;
+            wxPoint m_rearControl;
+            wxPoint m_rearPoint;
             wxColour m_color;
             };
 
