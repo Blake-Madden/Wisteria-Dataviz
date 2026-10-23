@@ -899,15 +899,68 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
         const int causeLabelHeight{
             makeLabel(L"Ag", wxPoint{ 0, 0 }, Anchoring::Center)->GetBoundingBox(dc).GetHeight()
         };
-        // recomputed per branch, as each rib's height now varies
-        double labelScale{ 1.0 };
-        int labelBoxHeight{ causeLabelHeight + 1 };
         // a label can't reach past the neighboring rib, so long text is wrapped
         // (and then truncated)
-        const int maxCauseWidth{ std::max(1, static_cast<int>((slotWidth - ribShift) * 0.95) -
-                                                 labelGap) };
+        const int maxCauseWidth{ std::max(1, static_cast<int>(slotWidth * 0.9) - labelGap) };
         const int maxSubCauseWidth{ std::max(1,
                                              maxCauseWidth - static_cast<int>(twigLength * 0.4)) };
+        // the first branches are nearest the effect, so the pairs run right to left
+        const auto getPairIndex = [pairCount](const size_t branchIndex)
+        { return pairCount - 1 - static_cast<int>(branchIndex / 2); };
+        // the spacing between the slots on a rib, which grows as the ribs approach the head
+        const auto getSlotSpacing = [&ribHalfHeight, mostSlots](const int pairIndex)
+        {
+            return safe_divide<double>(static_cast<double>(ribHalfHeight(pairIndex)),
+                                       static_cast<double>(mostSlots + 1));
+        };
+        // the height of a label's box on a rib, which may let its text wrap
+        const auto getLabelBoxHeight =
+            [&getSlotSpacing, causeLabelHeight](const int pairIndex, const double scale)
+        {
+            return std::max(static_cast<int>(getSlotSpacing(pairIndex)),
+                            static_cast<int>(causeLabelHeight * scale) + 1);
+        };
+
+        // all cause labels share one scale, starting with what fits the shortest rib's spacing
+        constexpr double minLabelScale{ 0.5 };
+        double fitScale{ std::clamp(
+            safe_divide<double>(getSlotSpacing(0),
+                                static_cast<double>(causeLabelHeight + (2 * labelGap))),
+            minLabelScale, 1.0) };
+        // causes too long for the lines that fit on their rib shrink every label
+        // (down to a point), rather than being truncated
+        const double spacingScale{ fitScale };
+        for (size_t i = 0; i < shownBranches.size(); ++i)
+            {
+            const int pairIndex{ getPairIndex(i) };
+            const int linesThatFit{ std::max(
+                1, safe_divide<int>(getLabelBoxHeight(pairIndex, spacingScale),
+                                    static_cast<int>(causeLabelHeight * spacingScale))) };
+            const auto fitText = [&](const wxString& text, const int maxWidth)
+            {
+                const int textWidth{ makeLabel(text, wxPoint{ 0, 0 }, Anchoring::Center,
+                                               spacingScale)
+                                         ->GetBoundingBox(dc)
+                                         .GetWidth() };
+                const int availableWidth{ maxWidth * linesThatFit };
+                if (textWidth > availableWidth)
+                    {
+                    fitScale = std::min(
+                        fitScale, spacingScale * safe_divide<double>(availableWidth, textWidth));
+                    }
+            };
+            for (const auto& cause : shownBranches[i]->m_causes)
+                {
+                fitText(cause.m_text, maxCauseWidth);
+                for (const auto& subCause : cause.m_subCauses)
+                    {
+                    fitText(subCause, maxSubCauseWidth);
+                    }
+                }
+            }
+        const double labelScale{ std::max(minLabelScale, fitScale) };
+        // recomputed per branch, as each rib's height varies
+        int labelBoxHeight{ causeLabelHeight + 1 };
         const auto makeCauseLabel = [&](const wxString& text, const wxPoint& pt, const int maxWidth)
         {
             auto label = makeLabel(text, pt, Anchoring::BottomRightCorner, labelScale);
@@ -947,19 +1000,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
             const auto& branch{ *shownBranches[i] };
             const bool isTop{ i % 2 == 0 };
             const int direction{ isTop ? -1 : 1 };
-            // the first branches are nearest the effect, so the pairs run right to left
-            const int pairIndex{ pairCount - 1 - static_cast<int>(i / 2) };
+            const int pairIndex{ getPairIndex(i) };
             // ribs grow taller as they approach the head
             const int halfHeight{ ribHalfHeight(pairIndex) };
-            // labels shrink to fit the spacing between slots on this rib
-            const double slotSpacing{ safe_divide<double>(static_cast<double>(halfHeight),
-                                                          static_cast<double>(mostSlots + 1)) };
-            labelScale =
-                std::clamp(safe_divide<double>(
-                               slotSpacing, static_cast<double>(causeLabelHeight + (2 * labelGap))),
-                           0.5, 1.0);
-            labelBoxHeight = std::max(static_cast<int>(slotSpacing),
-                                      static_cast<int>(causeLabelHeight * labelScale) + 1);
+            labelBoxHeight = getLabelBoxHeight(pairIndex, labelScale);
 
             const wxPoint attachPt{ spineStartX + ((pairIndex + 1) * slotWidth) -
                                         static_cast<int>(slotWidth * 0.05),
