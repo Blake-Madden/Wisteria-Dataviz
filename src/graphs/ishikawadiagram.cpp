@@ -97,9 +97,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
                          { L"Enviro", _(L"Environment") }, {}, {} };
                 }
         }();
-        return index < aliases.size() && std::ranges::any_of(
-                                             aliases[index], [&name](const wxString& alias)
-                                             { return name.CmpNoCase(alias) == 0; });
+        return (index < aliases.size()) &&
+               std::ranges::any_of(aliases[index], [&name](const wxString& alias)
+                                   { return name.CmpNoCase(alias) == 0; });
         }
 
     //----------------------------------------------------------------

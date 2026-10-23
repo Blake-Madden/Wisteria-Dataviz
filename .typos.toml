@@ -48,6 +48,7 @@ Paeth = "Paeth"
 parms = "parms"
 Parms = "Parms"
 localY = "localY"
+Autor = "Autor"
 
 [type.svg]
 extend-glob = ["*.svg"]
