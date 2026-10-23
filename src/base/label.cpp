@@ -1734,72 +1734,97 @@ namespace Wisteria::GraphItems
             }
         // note that fonts are only scaled to the canvas (via GetFontScaling()),
         // unless the scaling is locked, in which case the screen scale is included
-        const DCFontChangerIfDifferent fc(dc, GetFont().Scaled(GetFontScaling()));
+        const DCFontChangerIfDifferent fc{ dc, GetFont().Scaled(GetFontScaling()) };
 
         wxString text = GetText();
         text.Trim(false);
         text.Trim(true);
 
         wxCoord textWidth = 0, textHeight = 0, totalHeight = 0;
+        const double lineSpacing{ std::ceil(
+            ScaleToScreenAndCanvasAllowNegative(GetLineSpacing())) };
+
+        // shortens a line until it and a trailing ellipsis fit the width
+        const auto truncateLine = [&dc, &boundingBoxSize](wxString line)
+        {
+            const wxString ellipsis{ wchar_t{ 8230 } };
+            line.Trim(true);
+            while (!line.empty() &&
+                   dc.GetTextExtent(line + ellipsis).GetWidth() > boundingBoxSize.GetWidth())
+                {
+                line.erase(line.length() - 1);
+                line.Trim(true);
+                }
+            return line + ellipsis;
+        };
+
+        std::vector<wxString> lines;
+        // ends the text with the last line that fits, followed by an ellipsis
+        // (if no lines fit, then the text is empty)
+        const auto truncateText = [&lines, &truncateLine]()
+        {
+            if (!lines.empty())
+                {
+                lines.back() = truncateLine(lines.back());
+                }
+        };
 
         wxStringTokenizer tok(text);
-        text.clear(); // tokenizer will reconstruct this
         wxString currentLine;
-        wxString nextToken;
+        bool isTruncated{ false };
         while (tok.HasMoreTokens())
             {
-            nextToken = tok.GetNextToken();
-            dc.GetTextExtent(currentLine + L" " + nextToken, &textWidth, &textHeight);
-            if (textWidth > boundingBoxSize.GetWidth())
+            const wxString nextToken{ tok.GetNextToken() };
+            // a word starts a line, even if it is too wide by itself
+            if (currentLine.empty())
                 {
-                dc.GetTextExtent(currentLine, &textWidth, &textHeight);
-                // if the next line will make this too tall, then show the current line
-                // being truncated with an ellipsis and stop
-                if ((totalHeight + textHeight +
-                     std::ceil(ScaleToScreenAndCanvasAllowNegative(GetLineSpacing()))) >
-                    boundingBoxSize.GetHeight())
-                    {
-                    if (!text.empty())
-                        {
-                        text[text.length() - 1] = wchar_t{ 8230 };
-                        }
-                    break;
-                    }
-                text += "\n" + currentLine;
-                totalHeight +=
-                    textHeight + std::ceil(ScaleToScreenAndCanvasAllowNegative(GetLineSpacing()));
-                // start the next line with the word that made the previous line too wide
                 currentLine = nextToken;
+                continue;
+                }
+            dc.GetTextExtent(currentLine + L" " + nextToken, &textWidth, &textHeight);
+            if (textWidth <= boundingBoxSize.GetWidth())
+                {
+                currentLine += L" " + nextToken;
+                continue;
+                }
+            dc.GetTextExtent(currentLine, &textWidth, &textHeight);
+            // if the current line will make this too tall, then show the previous line
+            // truncated with an ellipsis and stop
+            if ((totalHeight + textHeight + lineSpacing) > boundingBoxSize.GetHeight())
+                {
+                truncateText();
+                isTruncated = true;
+                break;
+                }
+            lines.push_back(currentLine);
+            totalHeight += textHeight + lineSpacing;
+            // start the next line with the word that made the previous line too wide
+            currentLine = nextToken;
+            }
+        // add any trailing line
+        if (!isTruncated && !currentLine.empty())
+            {
+            dc.GetTextExtent(currentLine, &textWidth, &textHeight);
+            if ((static_cast<double>(totalHeight + textHeight) + lineSpacing) >
+                boundingBoxSize.GetHeight())
+                {
+                truncateText();
                 }
             else
                 {
-                if (currentLine.empty())
-                    {
-                    currentLine = nextToken;
-                    }
-                else
-                    {
-                    currentLine += L" " + nextToken;
-                    }
+                lines.push_back(currentLine);
                 }
             }
-        // add any trailing line
-        dc.GetTextExtent(currentLine, &textWidth, &textHeight);
-        if ((static_cast<double>(totalHeight + textHeight) +
-             std::ceil(ScaleToScreenAndCanvasAllowNegative(GetLineSpacing()))) >
-            boundingBoxSize.GetHeight())
+
+        text.clear();
+        for (const auto& line : lines)
             {
             if (!text.empty())
                 {
-                text[text.length() - 1] = wchar_t{ 8230 };
+                text += L"\n";
                 }
+            text += line;
             }
-        else
-            {
-            text += "\n" + currentLine;
-            }
-        text.Trim(false);
-        text.Trim(true);
         SetText(text);
         }
 
