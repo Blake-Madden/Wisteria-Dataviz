@@ -229,7 +229,7 @@ set(SUBMODULES
     ${wxWidgets_BASEDIR}/src/stc/lexilla
     ${wxWidgets_BASEDIR}/src/stc/scintilla
     ${wxWidgets_BASEDIR}/3rdparty/libwebp
-    ${wxWidgets_BASEDIR}/3rdparty/lunasvg
+    ${wxWidgets_BASEDIR}/3rdparty/nanosvg
     ${wxWidgets_BASEDIR}/3rdparty/pcre)
 
 if(Git_FOUND)

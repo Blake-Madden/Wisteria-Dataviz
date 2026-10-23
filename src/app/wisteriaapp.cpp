@@ -182,7 +182,7 @@ void WisteriaApp::ShowAboutDialog(wxWindow* parent)
                                    wxString{} },
                     WXPDFDOC_HASH, WXPDFDOC_ORIGIN)
         .AddLibrary(wxWebView::GetBackendVersionInfo())
-        .AddLibrary(wxVersionInfo{ L"LunaSVG", -1 }, LUNASVG_HASH, LUNASVG_ORIGIN)
+        .AddLibrary(wxVersionInfo{ L"NanoSVG", -1 }, NANOSVG_HASH, NANOSVG_ORIGIN)
         .AddLibrary(wxVersionInfo{ L"CRC++", CRCPP_MAJOR_VERSION, CRCPP_MINOR_VERSION,
                                    CRCPP_PATCH_VERSION, CRCPP_REVISION_VERSION, wxString{},
                                    CRCPP_COPYRIGHT },
