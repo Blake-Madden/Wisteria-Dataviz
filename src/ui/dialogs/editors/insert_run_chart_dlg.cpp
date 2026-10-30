@@ -20,7 +20,7 @@ namespace Wisteria::UI
                                          const wxWindowID id, const wxPoint& pos,
                                          const wxSize& size, const long style, EditMode editMode)
         : InsertGraphDlg(canvas, reportBuilder, parent, caption, id, pos, size, style, editMode,
-                         GraphDlgIncludeAll)
+                         GraphDlgIncludeShapeScheme)
         {
         CreateControls();
         FinalizeControls();
@@ -56,6 +56,22 @@ namespace Wisteria::UI
                    .m_multiple = false,
                    .m_condition = _(L"Needed when collecting rows into samples by a variable."),
                    .m_group = wxString{} },
+                 { .m_name = _(L"Stage"),
+                   .m_types = { Data::Dataset::ColumnImportType::String,
+                                Data::Dataset::ColumnImportType::Discrete,
+                                Data::Dataset::ColumnImportType::Numeric,
+                                Data::Dataset::ColumnImportType::Date,
+                                Data::Dataset::ColumnImportType::DichotomousString,
+                                Data::Dataset::ColumnImportType::DichotomousDiscrete },
+                   .m_requirement = DataGuideRequirement::Optional,
+                   .m_description =
+                       _(L"Divides the chart into stages, such as before and after a change. "
+                         "A new stage starts whenever the value changes from the previous row. "
+                         "Each stage gets its own median and its own rule check."),
+                   .m_values = {},
+                   .m_multiple = false,
+                   .m_condition = wxString{},
+                   .m_group = wxString{} },
                  { .m_name = _(L"Label"),
                    .m_types = { Data::Dataset::ColumnImportType::String,
                                 Data::Dataset::ColumnImportType::Discrete,
@@ -88,10 +104,13 @@ namespace Wisteria::UI
         readings.m_title = _(L"Example: two readings taken each day");
         readings.m_columns = { { _(L"Sample"), _(L"Sample") },
                                { _(L"Radon"), _(L"Value") },
-                               { _(L"Day"), _(L"Label") } };
-        readings.m_rows = { { L"1", L"4.1", L"Mon" }, { L"1", L"4.5", L"Mon" },
-                            { L"2", L"3.8", L"Tue" }, { L"2", L"4.0", L"Tue" },
-                            { L"3", L"5.2", L"Wed" }, { L"3", L"4.9", L"Wed" } };
+                               { _(L"Day"), _(L"Label") },
+                               { _(L"Stage"), _(L"Stage") } };
+        readings.m_rows = {
+            { L"1", L"4.1", L"Mon", L"Before" }, { L"1", L"4.5", L"Mon", L"Before" },
+            { L"2", L"3.8", L"Tue", L"Before" }, { L"2", L"4.0", L"Tue", L"Before" },
+            { L"3", L"5.2", L"Wed", L"After" },  { L"3", L"4.9", L"Wed", L"After" }
+        };
         guide.m_examples = { std::move(readings) };
 
         guide.m_missingData = { _(
@@ -99,7 +118,10 @@ namespace Wisteria::UI
             "A sample with no values is also drawn as a gap.") };
         guide.m_notes = { _(L"The order of the rows is the order of the points. Rows are never "
                             "sorted. The same sample value in rows that are not next to each "
-                            "other starts a new sample.") };
+                            "other starts a new sample."),
+                          _(L"Each stage gets its own median and its own rule check, so the "
+                            "streaks restart at the start of a stage. Every row needs a stage "
+                            "label, and a sample cannot span two stages.") };
         return guide;
         }
 
@@ -146,6 +168,13 @@ namespace Wisteria::UI
         m_sampleVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
         m_sampleVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
         varGrid->Add(m_sampleVarLabel, wxSizerFlags{}.CenterVertical());
+
+        auto* stageLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Stage:"));
+        stageLabel->SetFont(stageLabel->GetFont().Bold());
+        varGrid->Add(stageLabel, wxSizerFlags{}.CenterVertical());
+        m_stageVarLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, wxString{});
+        m_stageVarLabel->SetForegroundColour(Wisteria::Settings::GetHighlightedLabelColor());
+        varGrid->Add(m_stageVarLabel, wxSizerFlags{}.CenterVertical());
 
         auto* labelLabel = new wxStaticText(varsBox->GetStaticBox(), wxID_ANY, _(L"Label:"));
         labelLabel->SetFont(labelLabel->GetFont().Bold());
@@ -216,6 +245,12 @@ namespace Wisteria::UI
                                          wxDefaultPosition, wxDefaultSize, 0,
                                          wxGenericValidator{ &m_showMedianLine }),
                           wxSizerFlags{}.Border());
+
+        // stages
+        m_stageCheck = new wxCheckBox(
+            optionsPage, wxID_ANY, _(L"Split the chart into stages (a median for each)"),
+            wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator{ &m_useStages });
+        optionsSizer->Add(m_stageCheck, wxSizerFlags{}.Border());
 
         // baseline
         auto* baselineSizer = new wxFlexGridSizer(
@@ -305,8 +340,15 @@ namespace Wisteria::UI
                               [this]([[maybe_unused]] wxCommandEvent&)
                               {
                                   TransferDataFromWindow();
-                                  UpdateBaselineControls();
+                                  UpdateStageControls();
                               });
+
+        m_stageCheck->Bind(wxEVT_CHECKBOX,
+                           [this]([[maybe_unused]] wxCommandEvent&)
+                           {
+                               TransferDataFromWindow();
+                               UpdateStageControls();
+                           });
 
         datasetChoice->Bind(wxEVT_CHOICE,
                             [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
@@ -332,6 +374,7 @@ namespace Wisteria::UI
 
         UpdateSampleControls();
         UpdateRuleControls();
+        UpdateStageControls();
         UpdateBaselineControls();
 
         CreateLegendOptionsPage();
@@ -377,8 +420,21 @@ namespace Wisteria::UI
         {
         if (m_baselineLengthSpin != nullptr)
             {
-            m_baselineLengthSpin->Enable(m_useBaseline);
+            m_baselineLengthSpin->Enable(m_useBaseline && !m_useStages);
             }
+        }
+
+    //-------------------------------------------
+    void InsertRunChartDlg::UpdateStageControls()
+        {
+        if (m_stageCheck == nullptr || m_baselineCheck == nullptr)
+            {
+            return;
+            }
+        // a stage column must be chosen before the chart can be split into stages
+        m_stageCheck->Enable(!m_useBaseline && !m_stageVariable.empty());
+        m_baselineCheck->Enable(!m_useStages);
+        UpdateBaselineControls();
         }
 
     //-------------------------------------------
@@ -431,8 +487,15 @@ namespace Wisteria::UI
         m_valueVariable.clear();
         m_labelVariable.clear();
         m_sampleVariable.clear();
+        m_stageVariable.clear();
+        m_useStages = false;
+        if (m_stageCheck != nullptr)
+            {
+            m_stageCheck->SetValue(false);
+            }
         UpdateVariableLabels();
         SyncSampleModeToVariable();
+        UpdateStageControls();
         ResetAxisOptions();
         }
 
@@ -473,7 +536,10 @@ namespace Wisteria::UI
               MakeVariableList(parameters[1], m_sampleVariable.empty() ?
                                                   std::vector<wxString>{} :
                                                   std::vector<wxString>{ m_sampleVariable }),
-              MakeVariableList(parameters[2], m_labelVariable.empty() ?
+              MakeVariableList(parameters[2], m_stageVariable.empty() ?
+                                                  std::vector<wxString>{} :
+                                                  std::vector<wxString>{ m_stageVariable }),
+              MakeVariableList(parameters[3], m_labelVariable.empty() ?
                                                   std::vector<wxString>{} :
                                                   std::vector<wxString>{ m_labelVariable }) });
 
@@ -488,11 +554,30 @@ namespace Wisteria::UI
         const auto sampleVars = dlg.GetSelectedVariables(1);
         m_sampleVariable = sampleVars.empty() ? wxString{} : sampleVars.front();
 
-        const auto labelVars = dlg.GetSelectedVariables(2);
+        const auto labelVars = dlg.GetSelectedVariables(3);
         m_labelVariable = labelVars.empty() ? wxString{} : labelVars.front();
+
+        const auto stageVars = dlg.GetSelectedVariables(2);
+        m_stageVariable = stageVars.empty() ? wxString{} : stageVars.front();
+        // choosing a stage column turns the stages on, and clearing it turns them back off
+        m_useStages = !m_stageVariable.empty();
+        // the two cannot be used together, so a chosen stage column drops the baseline
+        if (m_useStages)
+            {
+            m_useBaseline = false;
+            if (m_baselineCheck != nullptr)
+                {
+                m_baselineCheck->SetValue(false);
+                }
+            }
+        if (m_stageCheck != nullptr)
+            {
+            m_stageCheck->SetValue(m_useStages);
+            }
 
         UpdateVariableLabels();
         SyncSampleModeToVariable();
+        UpdateStageControls();
         ResetAxisOptions();
         }
 
@@ -502,6 +587,7 @@ namespace Wisteria::UI
         m_valueVarLabel->SetLabel(m_valueVariable);
         m_labelVarLabel->SetLabel(m_labelVariable);
         m_sampleVarLabel->SetLabel(m_sampleVariable);
+        m_stageVarLabel->SetLabel(m_stageVariable);
 
         GetSideBarBook()->GetCurrentPage()->Layout();
         }
@@ -528,6 +614,15 @@ namespace Wisteria::UI
             {
             wxMessageBox(_(L"Please select the sample variable, or choose a different way "
                            "to collect the rows."),
+                         _(L"Variable Not Specified"), wxOK | wxICON_WARNING, this);
+            OnSelectVariables();
+            return false;
+            }
+
+        if (m_useStages && m_stageVariable.empty())
+            {
+            wxMessageBox(_(L"Please select the stage variable, or stop splitting the chart "
+                           "into stages."),
                          _(L"Variable Not Specified"), wxOK | wxICON_WARNING, this);
             OnSelectVariables();
             return false;
@@ -560,6 +655,8 @@ namespace Wisteria::UI
         m_valueVariable = runChart->GetYColumnName();
         m_labelVariable = runChart->GetLabelColumnName().value_or(wxString{});
         m_sampleVariable = runChart->GetSampleColumnName().value_or(wxString{});
+        m_stageVariable = runChart->GetStageColumnName().value_or(wxString{});
+        m_useStages = runChart->HasStages();
         UpdateVariableLabels();
 
         // run-chart-specific options
@@ -599,6 +696,7 @@ namespace Wisteria::UI
         TransferDataToWindow();
         UpdateSampleControls();
         UpdateRuleControls();
+        UpdateStageControls();
         UpdateBaselineControls();
         }
 
@@ -621,25 +719,32 @@ namespace Wisteria::UI
 
         const std::optional<wxString> labelColumn =
             GetLabelVariable().empty() ? std::nullopt : std::optional<wxString>(GetLabelVariable());
+        // a baseline can't be combined with stages
+        const std::optional<wxString> stageColumn =
+            (m_useStages && !GetStageVariable().empty()) ?
+                std::optional<wxString>(GetStageVariable()) :
+                std::nullopt;
         const auto statistic = (m_sampleStatistic == 1) ? Graphs::SampleStatistic::Median :
                                                           Graphs::SampleStatistic::Mean;
 
         if (m_sampleMode == static_cast<int>(SampleMode::ByVariable))
             {
             plot->SetSampleData(GetSelectedDataset(), GetValueVariable(), GetSampleVariable(),
-                                labelColumn, statistic);
+                                labelColumn, statistic, stageColumn);
             }
         else if (m_sampleMode == static_cast<int>(SampleMode::FixedSize))
             {
             plot->SetSampleData(GetSelectedDataset(), GetValueVariable(),
-                                static_cast<size_t>(m_sampleSize), labelColumn, statistic);
+                                static_cast<size_t>(m_sampleSize), labelColumn, statistic,
+                                stageColumn);
             }
         else
             {
-            plot->SetData(GetSelectedDataset(), GetValueVariable(), labelColumn);
+            plot->SetData(GetSelectedDataset(), GetValueVariable(), labelColumn, stageColumn);
             }
         plot->ShowMedianLine(m_showMedianLine);
-        plot->SetBaselineLength(m_useBaseline ? static_cast<size_t>(m_baselineLength) : 0);
+        plot->SetBaselineLength(
+            !stageColumn.has_value() && m_useBaseline ? static_cast<size_t>(m_baselineLength) : 0);
         plot->ShowIndividualPoints(m_showIndividualPoints);
         plot->SetIndividualPointOpacity(static_cast<uint8_t>(m_individualPointOpacity));
         plot->SetShiftLength(static_cast<size_t>(m_shiftLength));
@@ -663,6 +768,7 @@ namespace Wisteria::UI
         ApplyAxisOverrides(*plot);
 
         const bool usesSampleVariable = (m_sampleMode == static_cast<int>(SampleMode::ByVariable));
+        const bool usesStages{ stageColumn.has_value() };
         if (oldGraph != nullptr)
             {
             const auto* oldRunChart = dynamic_cast<const Graphs::RunChart*>(oldGraph);
@@ -689,6 +795,14 @@ namespace Wisteria::UI
                         oldRunChart->GetSampleColumnName().value_or(wxString{}) :
                         wxString{});
                 }
+            if (usesStages)
+                {
+                WisteriaView::CarryForwardProperty(
+                    *oldGraph, *plot, L"variables.stage", stageColumn.value(),
+                    oldRunChart != nullptr ?
+                        oldRunChart->GetStageColumnName().value_or(wxString{}) :
+                        wxString{});
+                }
             }
         else
             {
@@ -701,6 +815,10 @@ namespace Wisteria::UI
             if (usesSampleVariable)
                 {
                 plot->SetPropertyTemplate(L"variables.sample", GetSampleVariable());
+                }
+            if (usesStages)
+                {
+                plot->SetPropertyTemplate(L"variables.stage", stageColumn.value());
                 }
             }
 

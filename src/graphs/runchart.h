@@ -32,17 +32,27 @@ namespace Wisteria::Graphs
             represent how the process normally behaves. The points after it are Phase II,
             where new data are compared against that frozen median to see if the process
             has changed.
+            Instead of a baseline, the chart can be divided into stages (see the
+            @c stageColumnName parameter of SetSampleData()), where each stage
+            (e.g., "Baseline" and "New protocol") gets its own median and its own rules,
+            with a divider drawn at each break and the stage's name shown in a bracket
+            under the x-axis.
+            A baseline is the simple form of this: one median taken from the first @c n
+            points and frozen for the rest of the chart. Stages generalize that to one
+            median for each named group.
+            Stages and a baseline cannot be used together.
             Rules for shifts, trends, alternating points, and the number of runs about the
             median can be enabled to circle non-random patterns (see EnableRule()).
         @par %Data:
             This chart accepts a Data::Dataset with one continuous column (the measurement)
-            and, optionally, a column of labels for the x-axis (e.g., dates or batch IDs).
+            and, optionally, columns for the x-axis labels (e.g., dates or batch IDs)
+            and for the stage of each row.
 
-         | DIAMETER | BATCH   |
-         | --:      | :--     |
-         | 74.030   | Mon     |
-         | 74.002   | Tue     |
-         | 74.019   | Wed     |
+         | DIAMETER | BATCH   | STAGE         |
+         | --:      | :--     | :--           |
+         | 74.030   | Mon     | Baseline      |
+         | 74.002   | Tue     | Baseline      |
+         | 74.019   | Wed     | New protocol  |
 
         @code
          auto runChart = std::make_shared<RunChart>(canvas);
@@ -63,7 +73,7 @@ namespace Wisteria::Graphs
         /** @brief Constructor.
             @param canvas The canvas to draw the chart on.
             @param colors The color scheme to apply to the points.
-                Leave as @c nullptr to use the default theme.
+                Leave as @c nullptr to draw them in black.
             @param shapes The shape scheme to use for the points.
                 Leave as @c nullptr to use the standard shapes.
             @param linePenStyles The line styles to use for the lines.
@@ -75,11 +85,23 @@ namespace Wisteria::Graphs
 
         /// @returns The median of the plotted points (the observations, or the sample
         ///     statistics when using samples) in the baseline period,
-        ///     or @c std::nullopt if there is no valid data.
+        ///     or @c std::nullopt if there is no valid data.\n
+        ///     When the chart is divided into stages, each stage has its own median,
+        ///     so this is @c std::nullopt (unless there is only one stage).
+        ///     Use GetStageMedians() instead.
         [[nodiscard]]
         const std::optional<double>& GetMedian() const noexcept
             {
             return m_median;
+            }
+
+        /// @returns The median of each stage, or an empty list if the chart is not
+        ///     divided into stages.\n
+        ///     A stage without any valid points has no median.
+        [[nodiscard]]
+        const std::vector<std::optional<double>>& GetStageMedians() const noexcept
+            {
+            return m_stageMedians;
             }
 
         /// @returns @c true if the median line is shown.
@@ -103,16 +125,9 @@ namespace Wisteria::Graphs
         ///     It is rebuilt from the data, so it should not be saved or loaded
         ///     as a user-defined reference line.
         [[nodiscard]]
-        bool IsMedianLine(const GraphItems::ReferenceLine& refLine) const;
+        static bool IsMedianLine(const GraphItems::ReferenceLine& refLine);
 
       protected:
-        /// @returns The median, which the rules compare points against.
-        [[nodiscard]]
-        std::optional<double> GetCenterLine() const override
-            {
-            return m_median;
-            }
-
         /// @returns The heading of the runs note.
         [[nodiscard]]
         wxString GetRunsLabel() const override
@@ -120,9 +135,10 @@ namespace Wisteria::Graphs
             return _(L"Runs about the median");
             }
 
-        /// @returns The median line's label and pen, or @c std::nullopt if it is not shown.
+        /// @returns The legend text and pen for each stage's median line, with one entry
+        ///     for each stage, or an empty list if the median line is not shown.
         [[nodiscard]]
-        std::optional<std::pair<wxString, wxPen>> GetCenterLineLegendEntry() const override;
+        std::vector<std::pair<wxString, wxPen>> GetCenterLineLegendEntries() const override;
 
       private:
         [[nodiscard]]
@@ -135,15 +151,21 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         static wxString MedianLabelPrefix();
 
-        /// @returns The prefix followed by the median, or empty text if there is no median.
+        /// @returns The prefix followed by @p median, or empty text if there is no median.
         [[nodiscard]]
-        wxString MedianLabel() const;
+        static wxString MedianLabel(const std::optional<double>& median);
+
+        /// @returns The median of @p stage, prefixed by the stage's label
+        ///     for the legend, or empty text if the stage has no median.
+        [[nodiscard]]
+        wxString StageMedianLabel(size_t stage) const;
 
         void OnDataSet() override;
         void RemoveMedianLine();
         void UpdateMedianLine();
 
         std::optional<double> m_median;
+        std::vector<std::optional<double>> m_stageMedians;
         bool m_showMedianLine{ true };
         };
     } // namespace Wisteria::Graphs

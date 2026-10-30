@@ -351,11 +351,12 @@ TEST_CASE("IshikawaDiagram can change its fish style", "[ishikawadiagram][render
         return chart->GetObjectCount();
     };
     // a shark only changes the head's outline and mouth, a skeleton adds its vertebrae,
-    // and without a fish there is no tail or head (and so no eye or mouth)
+    // and without a fish there is no tail or head (and so no eye or mouth), but the spine
+    // ends in an arrow head
     const size_t fish{ draw(IshikawaDiagram::FishStyle::Fish) };
     CHECK(draw(IshikawaDiagram::FishStyle::Shark) == fish);
     CHECK(draw(IshikawaDiagram::FishStyle::Skeleton) == fish + 1);
-    CHECK(draw(IshikawaDiagram::FishStyle::None) == fish - 2);
+    CHECK(draw(IshikawaDiagram::FishStyle::None) == fish - 1);
     }
 
 TEST_CASE("IshikawaDiagram shows a repeated cause once", "[ishikawadiagram][render]")

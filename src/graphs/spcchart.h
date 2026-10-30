@@ -41,6 +41,27 @@ namespace Wisteria::Graphs
         Anhoej
         };
 
+    /// @brief The center line and results of the rules for one stage of a chart.
+    /// @note A chart that is not divided into stages has a single entry, which covers
+    ///     all of the points and has no label.
+    struct StageSummary
+        {
+        /// @brief The stage's label, or empty text if the chart is not divided into stages.
+        wxString label;
+        /// @brief The zero-based plotted point where the stage starts.
+        size_t firstPoint{ 0 };
+        /// @brief The number of plotted points in the stage.
+        size_t pointCount{ 0 };
+        /// @brief The stage's center line, or @c std::nullopt if it does not have one.
+        std::optional<double> center;
+        /// @brief The runs about the center line, or @c std::nullopt if the runs rule
+        ///     is disabled or there are too few points.
+        std::optional<statistics::runs_summary> runs;
+        /// @brief The Anhøj results, or @c std::nullopt if not using the SpcRuleSet::Anhoej
+        ///     rule set or there are no useful points.
+        std::optional<statistics::anhoej_summary> anhoej;
+        };
+
     /** @brief Base class for statistical process control (SPC) charts.
         @details Observations are plotted in the order that they appear in the data,
             at equally spaced positions along the x-axis (1, 2, 3, ...).
@@ -55,6 +76,17 @@ namespace Wisteria::Graphs
             plotted as one point (its mean or median). A sample is either a fixed number of
             consecutive rows, or a run of adjacent rows sharing the same sample ID.
             The same ID in non-adjacent rows starts a new sample.
+
+            A chart can also be divided into stages (see the @c stageColumnName parameter of
+            SetData() and SetSampleData()), where a column labels each row's stage
+            (e.g., "Baseline" and "New protocol"). A new stage starts wherever the label
+            differs from the previous sample's label, so a label that comes back later
+            starts a new stage.\n
+            Each stage has its own center line, and the rules restart at each stage break,
+            so a run that spans two stages is not a pattern. A dashed divider is drawn at each
+            break, and each stage's name is shown in a bracket under the x-axis.\n
+            A stage cannot be combined with a baseline, since a baseline freezes one center
+            line for the whole chart.
         @par %Data:
             This plot accepts a Data::Dataset with one continuous column (the measurement)
             and, optionally, a column (categorical, date, or continuous) of labels for the
@@ -99,14 +131,19 @@ namespace Wisteria::Graphs
             @param valueColumnName The measurement column (a continuous column).
             @param labelColumnName The (optional) column to use for the x-axis labels.
                 This can be a categorical, date, or continuous column.
+            @param stageColumnName The (optional) column labeling each row's stage
+                (a categorical, date, or continuous column).\n
+                Leave as @c std::nullopt to not divide the chart into stages.
             @note Call the parent canvas's `CalcAllSizes()` when setting to a new dataset to
                 re-plot the data.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
+                A stage cannot be combined with a baseline (see SetBaselineLength()).\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         virtual void SetData(const std::shared_ptr<const Data::Dataset>& data,
                              const wxString& valueColumnName,
-                             const std::optional<wxString>& labelColumnName);
+                             const std::optional<wxString>& labelColumnName,
+                             const std::optional<wxString>& stageColumnName = std::nullopt);
 #if defined(__clang__) || defined(__GNUC__)
     #pragma GCC diagnostic pop
 #endif
@@ -121,15 +158,22 @@ namespace Wisteria::Graphs
             @param labelColumnName The (optional) column to use for the x-axis labels.
                 The label from the first row of each sample is used.
             @param statistic Whether to plot each sample's mean or median.
+            @param stageColumnName The (optional) column labeling each row's stage
+                (a categorical, date, or continuous column).\n
+                Leave as @c std::nullopt to not divide the chart into stages.
             @note Missing values are left out of a sample's statistic.
                 A sample with no valid values is drawn as a gap.
             @throws std::runtime_error If any columns can't be found by name, throws an exception.\n
+                Every row of a sample must have the same stage, and a stage cannot be
+                combined with a baseline (see SetBaselineLength()), otherwise an exception
+                is thrown.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetSampleData(const std::shared_ptr<const Data::Dataset>& data,
                            const wxString& valueColumnName, const wxString& sampleColumnName,
                            const std::optional<wxString>& labelColumnName = std::nullopt,
-                           SampleStatistic statistic = SampleStatistic::Mean);
+                           SampleStatistic statistic = SampleStatistic::Mean,
+                           const std::optional<wxString>& stageColumnName = std::nullopt);
 
         /** @brief Sets the data, plotting one point for each run of @p sampleSize
                 consecutive rows.
@@ -140,14 +184,21 @@ namespace Wisteria::Graphs
             @param labelColumnName The (optional) column to use for the x-axis labels.
                 The label from the first row of each sample is used.
             @param statistic Whether to plot each sample's mean or median.
+            @param stageColumnName The (optional) column labeling each row's stage
+                (a categorical, date, or continuous column).\n
+                Leave as @c std::nullopt to not divide the chart into stages.
             @throws std::runtime_error If any columns can't be found by name,
                 or if @p sampleSize is zero, throws an exception.\n
+                Every row of a sample must have the same stage, and a stage cannot be
+                combined with a baseline (see SetBaselineLength()), otherwise an exception
+                is thrown.\n
                 The exception's @c what() message is UTF-8 encoded, so pass it to
                 @c wxString::FromUTF8() when formatting it for an error message.*/
         void SetSampleData(const std::shared_ptr<const Data::Dataset>& data,
                            const wxString& valueColumnName, size_t sampleSize,
                            const std::optional<wxString>& labelColumnName = std::nullopt,
-                           SampleStatistic statistic = SampleStatistic::Mean);
+                           SampleStatistic statistic = SampleStatistic::Mean,
+                           const std::optional<wxString>& stageColumnName = std::nullopt);
 
         /// @returns The column used for the x-axis labels, if any.
         [[nodiscard]]
@@ -177,6 +228,46 @@ namespace Wisteria::Graphs
         SampleStatistic GetSampleStatistic() const noexcept
             {
             return m_sampleStatistic;
+            }
+
+        /// @returns The column labeling each row's stage, if the chart is divided
+        ///     into stages.
+        [[nodiscard]]
+        const std::optional<wxString>& GetStageColumnName() const noexcept
+            {
+            return m_stageColumnName;
+            }
+
+        /// @returns @c true if the chart is divided into stages.
+        [[nodiscard]]
+        bool HasStages() const noexcept
+            {
+            return m_stageColumnName.has_value();
+            }
+
+        /// @returns The label of each stage, in order.\n
+        ///     Empty if the chart is not divided into stages.
+        [[nodiscard]]
+        const std::vector<wxString>& GetStageLabels() const noexcept
+            {
+            return m_stageLabels;
+            }
+
+        /// @returns The zero-based plotted point where each stage starts, in order.\n
+        ///     Empty if the chart is not divided into stages.
+        [[nodiscard]]
+        const std::vector<size_t>& GetStageStarts() const noexcept
+            {
+            return m_stageStarts;
+            }
+
+        /// @returns The center line and the results of the rules for each stage.\n
+        ///     A chart that is not divided into stages has a single entry,
+        ///     which covers all points and has no label.
+        [[nodiscard]]
+        const std::vector<StageSummary>& GetStageSummaries() const noexcept
+            {
+            return m_stageSummaries;
             }
 
         /// @returns @c true if the individual observations in each sample are drawn
@@ -225,6 +316,11 @@ namespace Wisteria::Graphs
         ///     processes." BMJ Quality & Safety, 20(1), 46-51, 2011.
         /// @param length The number of plotted points (i.e., samples when using samples,
         ///     not rows), or @c 0 to use all points.
+        /// @note A baseline cannot be combined with stages (see SetData() and
+        ///     SetSampleData()), because each stage sets its own center line.
+        ///     Pass @c 0 to clear the baseline before setting staged data.
+        /// @throws std::runtime_error If @p length is not zero and the chart is divided
+        ///     into stages, throws an exception.
         void SetBaselineLength(size_t length);
 
         /// @name Rule Functions
@@ -340,6 +436,8 @@ namespace Wisteria::Graphs
 
         /// @returns The number of runs about the center line and its critical values,
         ///     or @c std::nullopt if the runs rule is disabled or there are too few points.
+        /// @note When the chart is divided into stages, this is the first stage's results.
+        ///     Use GetStageSummaries() for all of them.
         [[nodiscard]]
         const std::optional<statistics::runs_summary>& GetRunsSummary() const noexcept
             {
@@ -349,6 +447,8 @@ namespace Wisteria::Graphs
         /// @returns The longest run and the number of crossings with their limits,
         ///     or @c std::nullopt if not using the SpcRuleSet::Anhoej rule set
         ///     or there are no useful points.
+        /// @note When the chart is divided into stages, this is the first stage's results.
+        ///     Use GetStageSummaries() for all of them.
         [[nodiscard]]
         const std::optional<statistics::anhoej_summary>& GetAnhoejSummary() const noexcept
             {
@@ -359,7 +459,9 @@ namespace Wisteria::Graphs
         ///     the longest run, and the p-values for clustering and mixtures),
         ///     or empty text if the runs rule is disabled.\n
         ///     With the SpcRuleSet::Anhoej rule set, this is the longest run and the number of
-        ///     crossings with their limits instead.
+        ///     crossings with their limits instead.\n
+        ///     When the chart is divided into stages, each stage's results are
+        ///     listed under its label.
         /// @note This note is shown in the legend.
         [[nodiscard]]
         wxString GetRunsNote() const;
@@ -379,16 +481,15 @@ namespace Wisteria::Graphs
 
         /// @brief Draws the center line beneath the data.
         /// @details When a baseline is set, the line is drawn with its pen across the
-        ///     baseline and dashed past it, where the center line is frozen.
+        ///     baseline and dashed past it, where the center line is frozen.\n
+        ///     When the chart is divided into stages, each stage is drawn from its own
+        ///     center line.
         void AddUnderlayObjects() override;
 
-        /// @returns The center line that the rules compare points against,
-        ///     or @c std::nullopt if the chart does not have one.
+        /// @returns The center line of the first stage, or @c std::nullopt if the chart
+        ///     does not have one.
         [[nodiscard]]
-        virtual std::optional<double> GetCenterLine() const
-            {
-            return std::nullopt;
-            }
+        std::optional<double> GetCenterLine() const noexcept;
 
         /// @returns The heading of the runs note.
         [[nodiscard]]
@@ -397,13 +498,21 @@ namespace Wisteria::Graphs
             return _(L"Runs about the center line");
             }
 
-        /// @returns The legend text and the pen used to draw the center line,
-        ///     or @c std::nullopt if the center line is not drawn.
+        /// @returns The legend text and the pen for drawing the center line, with one entry
+        ///     for each stage (or a single entry if the chart is not divided into stages).
+        ///     Empty if the center line is not drawn.
         [[nodiscard]]
-        virtual std::optional<std::pair<wxString, wxPen>> GetCenterLineLegendEntry() const
+        virtual std::vector<std::pair<wxString, wxPen>> GetCenterLineLegendEntries() const
             {
-            return std::nullopt;
+            return {};
             }
+
+        /// @brief Sets the center line that is drawn for each stage.
+        /// @param centers One center line per stage, in the order of GetStageStarts(),
+        ///     with @c std::nullopt for a stage that does not have one.\n
+        ///     A chart that is not divided into stages has a single center line.
+        /// @note This is called from OnDataSet(), once the plotted values are available.
+        void SetStageCenterLines(std::vector<std::optional<double>> centers);
 
         /// @returns The values being plotted, one per point (i.e., per observation or sample).
         [[nodiscard]]
@@ -456,11 +565,40 @@ namespace Wisteria::Graphs
         [[nodiscard]]
         static wxString FormatPValue(double pValue);
 
+        /// @returns The stage label of every row.
+        /// @throws std::runtime_error If the column can't be found or has a blank label.
+        [[nodiscard]]
+        static std::vector<wxString>
+        ReadStageLabels(const std::shared_ptr<const Data::Dataset>& data,
+                        const wxString& stageColumnName);
+
+        /// @brief Stores the stage of each plotted point.
+        /// @param stagePerPoint The stage label of each plotted point, in order.
+        /// @param stageColumnName The stage column, or @c std::nullopt to clear the stages.
+        /// @throws std::runtime_error If @p stageColumnName is set and a baseline is in use.
+        void ApplyStages(const std::vector<wxString>& stagePerPoint,
+                         const std::optional<wxString>& stageColumnName);
+
+        /// @brief Clears the stages and their results.
+        void ClearStages();
+
+        /// @returns The first and past-the-last plotted point of each stage.
+        [[nodiscard]]
+        std::vector<std::pair<size_t, size_t>> GetStageRanges() const;
+
+        /// @brief Rebuilds the brackets that label each stage along the bottom x-axis.
+        /// @details These brackets are generated from the data, so they are not saved.
+        void UpdateStageBrackets();
+
+        /// @returns The results of the rules for @p stage, as shown in the legend.
+        [[nodiscard]]
+        wxString RunsNoteForStage(const StageSummary& stage) const;
+
         void UpdateYAxisRange();
         void EvaluateRules();
         void AddIndividualPoints(wxDC& dc);
         void AddRuleViolationMarkers(wxDC& dc);
-        void AddBaselineDivider();
+        void AddDividers();
 
         [[nodiscard]]
         static wxPen BaselineDividerPen();
@@ -480,8 +618,8 @@ namespace Wisteria::Graphs
 
         void SetSamplesAt(const std::shared_ptr<const Data::Dataset>& data,
                           const wxString& valueColumnName, const std::vector<size_t>& starts,
-                          const std::optional<wxString>& labelColumnName,
-                          SampleStatistic statistic);
+                          const std::optional<wxString>& labelColumnName, SampleStatistic statistic,
+                          const std::optional<wxString>& stageColumnName);
 
         void SetSequence(const std::vector<double>& values, const std::vector<wxString>& labels,
                          const wxString& valueColumnName, const wxString& sequenceName,
@@ -498,6 +636,13 @@ namespace Wisteria::Graphs
         std::optional<size_t> m_sampleSize;
         SampleStatistic m_sampleStatistic{ SampleStatistic::Mean };
         size_t m_baselineLength{ 0 };
+
+        // stage division and the results of the rules for each stage
+        std::optional<wxString> m_stageColumnName;
+        std::vector<size_t> m_stageStarts;
+        std::vector<wxString> m_stageLabels;
+        std::vector<std::optional<double>> m_stageCenterLines;
+        std::vector<StageSummary> m_stageSummaries;
 
         SpcRuleSet m_ruleSet{ SpcRuleSet::Anhoej };
         std::set<statistics::spc_rule> m_enabledRules;

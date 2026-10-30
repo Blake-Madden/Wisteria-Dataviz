@@ -2557,13 +2557,14 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
         {
         if (prop.StartsWith(L"variables."))
             {
-            const auto varName = prop.Mid(10); // skip "variables."
+            const auto varName = prop.substr(10); // skip "variables."
             // check for indexed pattern like "y[0]"
             const auto bracketPos = varName.find(L'[');
             if (bracketPos != wxString::npos && varName.EndsWith(L"]"))
                 {
                 const auto baseName = varName.Left(bracketPos);
-                const auto idxStr = varName.Mid(bracketPos + 1, varName.length() - bracketPos - 2);
+                const auto idxStr =
+                    varName.substr(bracketPos + 1, varName.length() - bracketPos - 2);
                 unsigned long idx = 0;
                 if (idxStr.ToULong(&idx))
                     {

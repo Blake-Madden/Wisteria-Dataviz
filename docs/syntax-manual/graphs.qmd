@@ -184,6 +184,12 @@ Properties for `"run-chart"` nodes:
     A continuous column must contain whole numbers.
     A new sample starts whenever the value changes from the previous row.
     The same value in rows that are not next to each other starts a new sample.
+  - `"stage"`: An (optional) categorical, date, or continuous column labeling each row's stage, such as `Baseline` and `New protocol`. \
+    A new stage starts whenever the value changes from the previous row, and a dashed line marks each break.
+    Each stage gets its own median and its own rule check, so streaks restart at the start of a stage.
+    Only start a new stage at a known change in the process, because restarting the rules at an arbitrary point can hide a real shift.
+    Every row must have a stage, and a sample cannot span two stages.
+    A stage cannot be combined with `"baseline"`.
 - `"sample-size"`: An (optional) number of consecutive rows to collect into each sample. \
   Ignored if `"sample"` is specified.
   The last sample can be smaller.
@@ -198,6 +204,7 @@ Properties for `"run-chart"` nodes:
   A dashed line is drawn through the last baseline point.
   By default, all points are used.
   Default is `true`.
+  Cannot be combined with `"stage"`, because each stage computes its own median.
 - `"show-individual-points"`: `true` to also draw each observation of a sample as a faint point.
   This only applies when the data is collected into samples.
   Default is `false`.
@@ -233,7 +240,7 @@ Properties for `"run-chart"` nodes:
     Defaults are orange, purple, and teal.
     The circles are translucent, and a point found by more than one rule gets a ring for each rule.
 
-  The legend shows the median, lists each rule that found a pattern (with its color), and shows the results of the runs test (or the Anhøj rules), so include a `"legend"` to see them.
+  The legend shows the median (one entry for each stage when `"stage"` is used), lists each rule that found a pattern (with its color), and shows the results of the runs test (or the Anhøj rules), so include a `"legend"` to see them.
 - Some base properties available to [graphs](#graph-properties).
 
 Missing values are drawn as gaps and are not included in the median.

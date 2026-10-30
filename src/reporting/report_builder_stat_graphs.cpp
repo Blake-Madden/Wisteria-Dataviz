@@ -40,6 +40,12 @@ namespace Wisteria
                         ExpandAndCache(runChart.get(), L"variables.label",
                                        variablesNode->GetProperty(_DT(L"label"))->AsString())) :
                     std::nullopt;
+            const std::optional<wxString> stageVar =
+                variablesNode->HasProperty(_DT(L"stage")) ?
+                    std::optional<wxString>(
+                        ExpandAndCache(runChart.get(), L"variables.stage",
+                                       variablesNode->GetProperty(_DT(L"stage"))->AsString())) :
+                    std::nullopt;
             const auto statistic = ReportEnumConvert::ConvertSampleStatistic(
                                        graphNode->GetProperty(_DT(L"sample-statistic"))->AsString())
                                        .value_or(Graphs::SampleStatistic::Mean);
@@ -50,7 +56,7 @@ namespace Wisteria
                     foundPos->second, valueVar,
                     ExpandAndCache(runChart.get(), L"variables.sample",
                                    variablesNode->GetProperty(_DT(L"sample"))->AsString()),
-                    labelVar, statistic);
+                    labelVar, statistic, stageVar);
                 }
             else if (graphNode->GetProperty(_DT(L"sample-size"))->IsValueNumber())
                 {
@@ -63,11 +69,11 @@ namespace Wisteria
                             .ToUTF8());
                     }
                 runChart->SetSampleData(foundPos->second, valueVar, static_cast<size_t>(sampleSize),
-                                        labelVar, statistic);
+                                        labelVar, statistic, stageVar);
                 }
             else
                 {
-                runChart->SetData(foundPos->second, valueVar, labelVar);
+                runChart->SetData(foundPos->second, valueVar, labelVar, stageVar);
                 }
 
             runChart->ShowIndividualPoints(
@@ -81,6 +87,12 @@ namespace Wisteria
 
             if (graphNode->HasProperty(_DT(L"baseline")))
                 {
+                if (stageVar.has_value())
+                    {
+                    throw std::runtime_error(
+                        _(L"Run chart 'baseline' cannot be combined with 'variables.stage'.")
+                            .ToUTF8());
+                    }
                 const auto baselineNode = graphNode->GetProperty(_DT(L"baseline"));
                 const double baseline{ baselineNode->AsDouble(0) };
                 constexpr double MAX_BASELINE{ 1'000'000 };

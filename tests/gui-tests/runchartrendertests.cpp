@@ -861,3 +861,177 @@ TEST_CASE("RunChart circles rule violations", "[runchart][render][rules]")
     LayOutOffscreen(quietCanvas, quiet);
     CHECK(quiet->GetObjectCount() == plain->GetObjectCount());
     }
+
+static std::shared_ptr<Dataset> MakeStageDataset(const std::vector<double>& values,
+                                                 const std::vector<GroupIdType>& stageCodes)
+    {
+    return MakeGroupedContinuousDataset(
+        L"value", values, L"stage", stageCodes,
+        { { 0, L"Before" }, { 1, L"After" }, { 2, L"Final" }, { 3, wxString{} } });
+    }
+
+TEST_CASE("RunChart stages have their own medians", "[runchart][render][stages]")
+    {
+    auto* canvas = MakeCanvas();
+    auto chart = MakeRunChart(canvas);
+    chart->SetData(MakeStageDataset({ 1, 2, 3, 7, 8, 9 }, { 0, 0, 0, 1, 1, 1 }), L"value",
+                   std::nullopt, L"stage");
+    CHECK(chart->HasStages());
+    CHECK(chart->GetStageStarts() == std::vector<size_t>{ 0, 3 });
+    CHECK(chart->GetStageLabels() == std::vector<wxString>{ L"Before", L"After" });
+    REQUIRE(chart->GetStageMedians().size() == 2);
+    CHECK(chart->GetStageMedians()[0] == 2);
+    CHECK(chart->GetStageMedians()[1] == 8);
+    CHECK_FALSE(chart->GetMedian().has_value());
+
+    // the same data without a stage column is one chart again
+    chart->SetData(MakeStageDataset({ 1, 2, 3, 7, 8, 9 }, { 0, 0, 0, 1, 1, 1 }), L"value",
+                   std::nullopt);
+    CHECK_FALSE(chart->HasStages());
+    CHECK(chart->GetStageMedians().empty());
+    CHECK(chart->GetMedian() == 5);
+    }
+
+TEST_CASE("RunChart label that comes back starts a new stage", "[runchart][render][stages]")
+    {
+    auto* canvas = MakeCanvas();
+    auto chart = MakeRunChart(canvas);
+    chart->SetData(MakeStageDataset({ 1, 2, 3 }, { 0, 1, 0 }), L"value", std::nullopt, L"stage");
+    CHECK(chart->GetStageStarts() == std::vector<size_t>{ 0, 1, 2 });
+    CHECK(chart->GetStageLabels() == std::vector<wxString>{ L"Before", L"After", L"Before" });
+    }
+
+TEST_CASE("RunChart rules restart at a stage break", "[runchart][render][stages][rules]")
+    {
+    auto* canvas = MakeCanvas();
+    const std::vector<double> values{ 1, 2, 3, 4, 5, 6 };
+    auto whole = BuildRunChart(canvas, values);
+    whole->EnableRule(statistics::spc_rule::trend, true);
+    CHECK_FALSE(whole->GetRuleViolations().empty());
+
+    auto staged = MakeRunChart(canvas);
+    staged->SetData(MakeStageDataset(values, { 0, 0, 0, 1, 1, 1 }), L"value", std::nullopt,
+                    L"stage");
+    staged->EnableRule(statistics::spc_rule::trend, true);
+    CHECK(staged->GetRuleViolations().empty());
+    }
+
+TEST_CASE("RunChart violations are numbered across the whole chart",
+          "[runchart][render][stages][rules]")
+    {
+    auto* canvas = MakeCanvas();
+    auto chart = MakeRunChart(canvas);
+    chart->SetData(MakeStageDataset({ 5, 1, 5, 1, 2, 3, 4, 5 }, { 0, 0, 0, 1, 1, 1, 1, 1 }),
+                   L"value", std::nullopt, L"stage");
+    chart->EnableRule(statistics::spc_rule::trend, true);
+    REQUIRE(chart->GetRuleViolations().size() == 1);
+    CHECK(chart->GetRuleViolations()[0].points == std::vector<size_t>{ 3, 4, 5, 6, 7 });
+    }
+
+TEST_CASE("RunChart sample cannot span two stages", "[runchart][render][stages]")
+    {
+    auto* canvas = MakeCanvas();
+    auto chart = MakeRunChart(canvas);
+    chart->SetSampleData(MakeStageDataset({ 1, 2, 3, 4 }, { 0, 0, 1, 1 }), L"value", 2,
+                         std::nullopt, SampleStatistic::Mean, L"stage");
+    CHECK(chart->GetStageStarts() == std::vector<size_t>{ 0, 1 });
+
+    CHECK_THROWS(chart->SetSampleData(MakeStageDataset({ 1, 2, 3, 4 }, { 0, 1, 1, 1 }), L"value", 2,
+                                      std::nullopt, SampleStatistic::Mean, L"stage"));
+    }
+
+TEST_CASE("RunChart stage column must be valid", "[runchart][render][stages]")
+    {
+    auto* canvas = MakeCanvas();
+    auto chart = MakeRunChart(canvas);
+    // every row needs a stage
+    CHECK_THROWS(
+        chart->SetData(MakeStageDataset({ 1, 2 }, { 0, 3 }), L"value", std::nullopt, L"stage"));
+    CHECK_THROWS(
+        chart->SetData(MakeStageDataset({ 1, 2 }, { 0, 0 }), L"value", std::nullopt, L"nope"));
+    }
+
+TEST_CASE("RunChart stages cannot be combined with a baseline", "[runchart][render][stages]")
+    {
+    auto* canvas = MakeCanvas();
+    const auto dataset = MakeStageDataset({ 1, 2, 3, 4 }, { 0, 0, 1, 1 });
+
+    auto staged = MakeRunChart(canvas);
+    staged->SetData(dataset, L"value", std::nullopt, L"stage");
+    CHECK_THROWS(staged->SetBaselineLength(2));
+    CHECK_NOTHROW(staged->SetBaselineLength(0));
+
+    auto baselined = MakeRunChart(canvas);
+    baselined->SetData(dataset, L"value", std::nullopt);
+    baselined->SetBaselineLength(2);
+    CHECK_THROWS(baselined->SetData(dataset, L"value", std::nullopt, L"stage"));
+    }
+
+TEST_CASE("RunChart legend lists each stage", "[runchart][render][stages]")
+    {
+    auto* canvas = MakeCanvas();
+    auto chart = MakeRunChart(canvas);
+    chart->SetData(MakeStageDataset({ 1, 2, 3, 7, 8, 9 }, { 0, 0, 0, 1, 1, 1 }), L"value",
+                   std::nullopt, L"stage");
+    const auto legend =
+        chart->CreateLegend(LegendOptions{}.PlacementHint(LegendCanvasPlacementHint::RightOfGraph));
+    REQUIRE(legend != nullptr);
+    CHECK(legend->GetText().Contains(L"Before: median 2"));
+    CHECK(legend->GetText().Contains(L"After: median 8"));
+    CHECK(legend->GetText().Contains(L"Stage breaks (2 stages)"));
+    }
+
+TEST_CASE("RunChart legend uses Anhoej wording for a later stage",
+          "[runchart][render][stages][rules][anhoej]")
+    {
+    auto* canvas = MakeCanvas();
+    // the first stage has no valid points, and the second has a long run
+    std::vector<double> values{ MISSING, MISSING };
+    std::vector<GroupIdType> stageCodes{ 0, 0 };
+    values.insert(values.end(), 10, 1.0);
+    values.insert(values.end(), 10, 9.0);
+    stageCodes.insert(stageCodes.end(), 20, 1);
+
+    auto chart = std::make_shared<RunChart>(canvas);
+    chart->SetData(MakeStageDataset(values, stageCodes), L"value", std::nullopt, L"stage");
+    CHECK_FALSE(chart->GetAnhoejSummary().has_value());
+    REQUIRE_FALSE(chart->GetRuleViolations().empty());
+
+    const auto legend =
+        chart->CreateLegend(LegendOptions{}.PlacementHint(LegendCanvasPlacementHint::RightOfGraph));
+    REQUIRE(legend != nullptr);
+    CHECK(legend->GetText().Contains(L"Long run (longer than the limit for its stage)"));
+    CHECK_FALSE(legend->GetText().Contains(L"Shift ("));
+    }
+
+TEST_CASE("RunChart labels stages with brackets", "[runchart][render][stages]")
+    {
+    auto* canvas = MakeCanvas();
+    auto chart = MakeRunChart(canvas);
+    const auto dataset = MakeStageDataset({ 1, 2, 3, 7, 8, 9 }, { 0, 0, 0, 1, 1, 1 });
+    chart->SetData(dataset, L"value", std::nullopt, L"stage");
+    CHECK(chart->GetBottomXAxis().GetBrackets().size() == 2);
+    CHECK(chart->GetBottomXAxis().AreBracketsDynamic());
+
+    // the brackets are rebuilt, not added to
+    chart->SetData(dataset, L"value", std::nullopt, L"stage");
+    CHECK(chart->GetBottomXAxis().GetBrackets().size() == 2);
+
+    chart->SetData(dataset, L"value", std::nullopt);
+    CHECK(chart->GetBottomXAxis().GetBrackets().empty());
+    }
+
+TEST_CASE("RunChart draws a divider and median for each stage", "[runchart][render][stages]")
+    {
+    const std::vector<double> values{ 1, 2, 3, 4, 5, 6 };
+    const auto draw = [&values](const std::vector<GroupIdType>& stageCodes)
+    {
+        auto* canvas = MakeCanvas();
+        auto chart = MakeRunChart(canvas);
+        chart->SetData(MakeStageDataset(values, stageCodes), L"value", std::nullopt, L"stage");
+        LayOutOffscreen(canvas, chart);
+        return chart->GetObjectCount();
+    };
+    // a third stage adds one median segment and one divider
+    CHECK(draw({ 0, 0, 1, 1, 2, 2 }) == draw({ 0, 0, 0, 1, 1, 1 }) + 2);
+    }

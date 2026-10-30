@@ -23,11 +23,14 @@ namespace Wisteria::UI
         @details Extends InsertGraphDlg with a "Run Chart" page containing:
             - A dataset selector (from the project's datasets).
             - A "Variables..." button that opens a VariableSelectDlg
-              for selecting the value, label, and sample columns.
+              for selecting the value, sample, stage, and label columns.
             - Sample options (none, by sample variable, or a fixed size) and
               the statistic plotted for each sample.
             - A checkbox for showing the median line, and the number of points at the start
               of the chart (the baseline) used to compute it.
+            - A checkbox for splitting the chart into stages, where a new stage starts whenever
+              a row's stage label changes. Each stage gets its own median and its own rule
+              check, so a baseline cannot be used alongside it.
             - A choice of rule set: the Perla rules for circling shifts, trends, alternating
               points, and too few or too many runs, or the Anhøj rules.*/
     class InsertRunChartDlg final : public InsertGraphDlg
@@ -76,6 +79,13 @@ namespace Wisteria::UI
             return m_sampleVariable;
             }
 
+        /// @returns The stage variable name (empty if not used).
+        [[nodiscard]]
+        const wxString& GetStageVariable() const noexcept
+            {
+            return m_stageVariable;
+            }
+
         /// @brief Populates all dialog controls from an existing run chart.
         /// @param graph The graph to read settings from.
         void LoadFromGraph(const Graphs::Graph2D& graph);
@@ -112,6 +122,7 @@ namespace Wisteria::UI
         void SyncSampleModeToVariable();
         void UpdateRuleControls();
         void UpdateBaselineControls();
+        void UpdateStageControls();
 
         // starts at +2 to avoid collision with InsertItemDlg::ID_PAGE_SECTION (+1)
         constexpr static wxWindowID ID_OPTIONS_SECTION{ wxID_HIGHEST + 2 };
@@ -121,6 +132,7 @@ namespace Wisteria::UI
         wxStaticText* m_valueVarLabel{ nullptr };
         wxStaticText* m_labelVarLabel{ nullptr };
         wxStaticText* m_sampleVarLabel{ nullptr };
+        wxStaticText* m_stageVarLabel{ nullptr };
         wxSpinCtrl* m_sampleSizeSpin{ nullptr };
         wxChoice* m_statisticChoice{ nullptr };
         wxCheckBox* m_individualPointsCheck{ nullptr };
@@ -132,18 +144,21 @@ namespace Wisteria::UI
         wxSpinCtrl* m_shiftLengthSpin{ nullptr };
         wxSpinCtrl* m_trendLengthSpin{ nullptr };
         wxSpinCtrl* m_alternatingLengthSpin{ nullptr };
+        wxCheckBox* m_stageCheck{ nullptr };
         wxCheckBox* m_baselineCheck{ nullptr };
         wxSpinCtrl* m_baselineLengthSpin{ nullptr };
 
         wxString m_valueVariable;
         wxString m_labelVariable;
         wxString m_sampleVariable;
+        wxString m_stageVariable;
 
         // indexes into the sample mode and statistic choices
         int m_sampleMode{ 0 };
         int m_sampleSize{ 5 };
         int m_sampleStatistic{ 0 };
         bool m_showMedianLine{ true };
+        bool m_useStages{ false };
         bool m_useBaseline{ false };
         int m_baselineLength{ 20 };
         bool m_showIndividualPoints{ false };

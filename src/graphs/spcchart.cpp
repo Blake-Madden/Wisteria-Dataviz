@@ -155,6 +155,151 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
         }
 
     //----------------------------------------------------------------
+    std::vector<wxString> SpcChart::ReadStageLabels(
+        const std::shared_ptr<const Data::Dataset>& data, const wxString& stageColumnName)
+        {
+        if (data->GetContinuousColumn(stageColumnName) == data->GetContinuousColumns().cend() &&
+            data->GetCategoricalColumn(stageColumnName) == data->GetCategoricalColumns().cend() &&
+            data->GetDateColumn(stageColumnName) == data->GetDateColumns().cend())
+            {
+            throw std::runtime_error(
+                wxString::Format(_(L"'%s': stage column not found for SPC chart."), stageColumnName)
+                    .ToUTF8());
+            }
+
+        const auto readStage = MakeLabelReader(data, stageColumnName);
+        std::vector<wxString> labels;
+        labels.reserve(data->GetRowCount());
+        for (size_t row = 0; row < data->GetRowCount(); ++row)
+            {
+            const wxString label{ readStage(row) };
+            // a row has to belong to a stage, otherwise its points would be unlabeled
+            if (label.empty())
+                {
+                throw std::runtime_error(
+                    wxString::Format(
+                        _(L"'%s': row %zu does not have a stage. Every row needs a stage label."),
+                        stageColumnName, row + 1)
+                        .ToUTF8());
+                }
+            labels.push_back(label);
+            }
+        return labels;
+        }
+
+    //----------------------------------------------------------------
+    // a new stage starts wherever the label differs from the previous point's label
+    void SpcChart::ApplyStages(const std::vector<wxString>& stagePerPoint,
+                               const std::optional<wxString>& stageColumnName)
+        {
+        if (!stageColumnName.has_value())
+            {
+            ClearStages();
+            return;
+            }
+        if (m_baselineLength > 0)
+            {
+            throw std::runtime_error(
+                _(L"Stages cannot be combined with a baseline. Set the baseline length to zero "
+                  L"first.")
+                    .ToUTF8());
+            }
+
+        m_stageColumnName = stageColumnName;
+        m_stageStarts.clear();
+        m_stageLabels.clear();
+        for (size_t point = 0; point < stagePerPoint.size(); ++point)
+            {
+            if (point == 0 || stagePerPoint[point] != stagePerPoint[point - 1])
+                {
+                m_stageStarts.push_back(point);
+                m_stageLabels.push_back(stagePerPoint[point]);
+                }
+            }
+        }
+
+    //----------------------------------------------------------------
+    void SpcChart::ClearStages()
+        {
+        m_stageColumnName.reset();
+        m_stageStarts.clear();
+        m_stageLabels.clear();
+        m_stageCenterLines.clear();
+        m_stageSummaries.clear();
+        }
+
+    //----------------------------------------------------------------
+    void SpcChart::UpdateStageBrackets()
+        {
+        auto& brackets{ GetBottomXAxis().GetBrackets() };
+        // only remove the brackets that this chart added, so user-defined ones are kept
+        const auto isStageBracket = [](const GraphItems::Axis::AxisBracket& bracket)
+        { return !bracket.GetLabel().GetPropertyTemplate(L"stage-bracket").empty(); };
+        std::erase_if(brackets, isStageBracket);
+
+        if (m_stageStarts.empty() || m_plottedValues.empty())
+            {
+            return;
+            }
+
+        // each stage is labeled with its name, spanning the points that belong to it
+        const auto ranges{ GetStageRanges() };
+        for (size_t stage = 0; stage < ranges.size() && stage < m_stageLabels.size(); ++stage)
+            {
+            const wxString& label{ m_stageLabels[stage] };
+            if (label.empty())
+                {
+                continue;
+                }
+            // the points are placed at one-based positions
+            const double start{ static_cast<double>(ranges[stage].first + 1) };
+            const double end{ static_cast<double>(ranges[stage].second) };
+            // the default bracket color, which also lets an HTML dashboard invert it in dark mode
+            GraphItems::Axis::AxisBracket bracket(
+                start, end, (start + end) / 2, label,
+                wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black), 1),
+                BracketLineStyle::Lines);
+            // marks the bracket as generated from the data, so that it isn't saved to a report
+            bracket.GetLabel().SetPropertyTemplate(L"stage-bracket", L"true");
+            GetBottomXAxis().AddBracket(std::move(bracket));
+            }
+
+        // the labels are rebuilt from the data, so they shouldn't be persisted anywhere
+        GetBottomXAxis().SetBracketsAreDynamic(true);
+        }
+
+    //----------------------------------------------------------------
+    std::vector<std::pair<size_t, size_t>> SpcChart::GetStageRanges() const
+        {
+        if (m_stageStarts.empty())
+            {
+            return { std::pair<size_t, size_t>{ 0, m_plottedValues.size() } };
+            }
+
+        std::vector<std::pair<size_t, size_t>> ranges;
+        ranges.reserve(m_stageStarts.size());
+        for (size_t stage = 0; stage < m_stageStarts.size(); ++stage)
+            {
+            ranges.emplace_back(m_stageStarts[stage], (stage + 1 < m_stageStarts.size()) ?
+                                                          m_stageStarts[stage + 1] :
+                                                          m_plottedValues.size());
+            }
+        return ranges;
+        }
+
+    //----------------------------------------------------------------
+    void SpcChart::SetStageCenterLines(std::vector<std::optional<double>> centers)
+        {
+        m_stageCenterLines = std::move(centers);
+        }
+
+    //----------------------------------------------------------------
+    std::optional<double> SpcChart::GetCenterLine() const noexcept
+        {
+        return m_stageCenterLines.empty() ? std::nullopt : m_stageCenterLines.front();
+        }
+
+    //----------------------------------------------------------------
     SpcChart::SpcChart(Canvas * canvas,
                        const std::shared_ptr<Colors::Schemes::ColorScheme>& colors /*= nullptr*/,
                        const std::shared_ptr<Icons::Schemes::IconScheme>& shapes /*= nullptr*/,
@@ -170,7 +315,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
     //----------------------------------------------------------------
     void SpcChart::SetData(const std::shared_ptr<const Data::Dataset>& data,
                            const wxString& valueColumnName,
-                           const std::optional<wxString>& labelColumnName)
+                           const std::optional<wxString>& labelColumnName,
+                           const std::optional<wxString>& stageColumnName)
         {
         if (data == nullptr)
             {
@@ -183,6 +329,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
             m_sampleColumnName.reset();
             m_sampleSize.reset();
             m_sampleStatistic = SampleStatistic::Mean;
+            ClearStages();
+            UpdateStageBrackets();
             OnDataSet();
             EvaluateRules();
             return;
@@ -190,6 +338,10 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
 
         const auto& valueColumn = FindValueColumn(data, valueColumnName);
         const auto readLabel = MakeLabelReader(data, labelColumnName);
+        const std::vector<wxString> stageLabels{
+            stageColumnName.has_value() ? ReadStageLabels(data, stageColumnName.value()) :
+                                          std::vector<wxString>{}
+        };
 
         std::vector<double> values;
         std::vector<wxString> labels;
@@ -201,6 +353,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
             labels.push_back(readLabel(row));
             }
 
+        ApplyStages(stageLabels, stageColumnName);
         m_observations.clear();
         SetSequence(values, labels, valueColumnName, _(L"Observation"),
                     labelColumnName.has_value());
@@ -212,18 +365,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
         }
 
     //----------------------------------------------------------------
-    void SpcChart::SetSampleData(const std::shared_ptr<const Data::Dataset>& data,
-                                 const wxString& valueColumnName, const wxString& sampleColumnName,
-                                 const std::optional<wxString>& labelColumnName,
-                                 const SampleStatistic statistic)
+    void SpcChart::SetSampleData(
+        const std::shared_ptr<const Data::Dataset>& data, const wxString& valueColumnName,
+        const wxString& sampleColumnName, const std::optional<wxString>& labelColumnName,
+        const SampleStatistic statistic, const std::optional<wxString>& stageColumnName)
         {
         if (data == nullptr)
             {
-            SetData(data, valueColumnName, labelColumnName);
+            SetData(data, valueColumnName, labelColumnName, stageColumnName);
             return;
             }
         SetSamplesAt(data, valueColumnName, SampleStartsById(data, sampleColumnName),
-                     labelColumnName, statistic);
+                     labelColumnName, statistic, stageColumnName);
 
         m_labelColumnName = labelColumnName;
         m_sampleColumnName = sampleColumnName;
@@ -232,18 +385,18 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
         }
 
     //----------------------------------------------------------------
-    void SpcChart::SetSampleData(const std::shared_ptr<const Data::Dataset>& data,
-                                 const wxString& valueColumnName, const size_t sampleSize,
-                                 const std::optional<wxString>& labelColumnName,
-                                 const SampleStatistic statistic)
+    void SpcChart::SetSampleData(
+        const std::shared_ptr<const Data::Dataset>& data, const wxString& valueColumnName,
+        const size_t sampleSize, const std::optional<wxString>& labelColumnName,
+        const SampleStatistic statistic, const std::optional<wxString>& stageColumnName)
         {
         if (data == nullptr)
             {
-            SetData(data, valueColumnName, labelColumnName);
+            SetData(data, valueColumnName, labelColumnName, stageColumnName);
             return;
             }
         SetSamplesAt(data, valueColumnName, SampleStartsBySize(data->GetRowCount(), sampleSize),
-                     labelColumnName, statistic);
+                     labelColumnName, statistic, stageColumnName);
 
         m_labelColumnName = labelColumnName;
         m_sampleColumnName.reset();
@@ -252,18 +405,24 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
         }
 
     //----------------------------------------------------------------
-    void SpcChart::SetSamplesAt(const std::shared_ptr<const Data::Dataset>& data,
-                                const wxString& valueColumnName, const std::vector<size_t>& starts,
-                                const std::optional<wxString>& labelColumnName,
-                                const SampleStatistic statistic)
+    void SpcChart::SetSamplesAt(
+        const std::shared_ptr<const Data::Dataset>& data, const wxString& valueColumnName,
+        const std::vector<size_t>& starts, const std::optional<wxString>& labelColumnName,
+        const SampleStatistic statistic, const std::optional<wxString>& stageColumnName)
         {
         const auto& valueColumn = FindValueColumn(data, valueColumnName);
         const auto readLabel = MakeLabelReader(data, labelColumnName);
+        const std::vector<wxString> rowStages{ stageColumnName.has_value() ?
+                                                   ReadStageLabels(data, stageColumnName.value()) :
+                                                   std::vector<wxString>{} };
 
         std::vector<double> values;
         std::vector<wxString> labels;
+        // the stage of each sample, which must not differ from the stages of its rows
+        std::vector<wxString> stagePerSample;
         values.reserve(starts.size());
         labels.reserve(starts.size());
+        stagePerSample.reserve(starts.size());
         std::vector<std::pair<size_t, double>> allObservations;
         for (size_t sample = 0; sample < starts.size(); ++sample)
             {
@@ -275,11 +434,26 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
             observations.reserve(last - first);
             for (size_t row = first; row < last; ++row)
                 {
+                // a sample belongs to one stage, so that it has a single median to plot
+                if (stageColumnName.has_value() && rowStages[row] != rowStages[first])
+                    {
+                    throw std::runtime_error(
+                        wxString::Format(
+                            // TRANSLATORS: the first %s is a column name, %zu is the
+                            // (one-based) number of a sample, and the other two are stage labels
+                            _(L"'%s': sample %zu spans two stages ('%s' and '%s')."),
+                            stageColumnName.value(), sample + 1, rowStages[first], rowStages[row])
+                            .ToUTF8());
+                    }
                 if (std::isfinite(valueColumn.GetValue(row)))
                     {
                     observations.push_back(valueColumn.GetValue(row));
                     allObservations.emplace_back(sample + 1, valueColumn.GetValue(row));
                     }
+                }
+            if (stageColumnName.has_value())
+                {
+                stagePerSample.push_back(rowStages[first]);
                 }
 
             // a sample without any valid values is a gap
@@ -293,6 +467,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
             labels.push_back(readLabel(first));
             }
 
+        ApplyStages(stagePerSample, stageColumnName);
         m_observations = std::move(allObservations);
         SetSequence(values, labels, valueColumnName, _(L"Sample"), labelColumnName.has_value());
         }
@@ -344,10 +519,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
         // use the same interval that the range was rounded to, rather than the axis's own
         // deduction (which uses an interval of 0.2 for any range under 1, no matter its scale)
         uint8_t precision{ 0 };
-        for (double scaled{ interval };
-             precision < 8 && std::abs(scaled - std::round(scaled)) > 1e-9; scaled *= 10)
+        double scaled{ interval };
+        while (precision < 8 && std::abs(scaled - std::round(scaled)) > 1e-9)
             {
             ++precision;
+            scaled *= 10;
             }
         // end a hair early so that floating-point error can't add an extra tick
         GetLeftYAxis().SetRange(yStart, yEnd - (interval * 1e-6), precision, interval, 1);
@@ -410,6 +586,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
     //----------------------------------------------------------------
     void SpcChart::SetBaselineLength(const size_t length)
         {
+        if (length != 0 && HasStages())
+            {
+            throw std::runtime_error(
+                _(L"A baseline cannot be combined with stages. Remove the chart's stages first.")
+                    .ToUTF8());
+            }
         m_baselineLength = length;
         OnDataSet();
         EvaluateRules();
@@ -429,8 +611,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
     //----------------------------------------------------------------
     wxPen SpcChart::BaselineDividerPen()
         {
-        return wxPen(Colors::ColorBrewer::GetColor(Colors::Color::SlateGray), 2,
-                     wxPenStyle::wxPENSTYLE_SHORT_DASH);
+        return { Colors::ColorBrewer::GetColor(Colors::Color::SlateGray), 2,
+                 wxPenStyle::wxPENSTYLE_SHORT_DASH };
         }
 
     //----------------------------------------------------------------
@@ -470,43 +652,84 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
         m_ruleViolations.clear();
         m_runsSummary.reset();
         m_anhoejSummary.reset();
+        m_stageSummaries.clear();
 
         const auto& values = GetPlottedValues();
-        const auto center = GetCenterLine();
-        const auto addViolations = [this](std::vector<statistics::spc_rule_violation> violations)
-        { std::ranges::move(violations, std::back_inserter(m_ruleViolations)); };
-
-        if (m_ruleSet == SpcRuleSet::Anhoej)
+        const auto ranges = GetStageRanges();
+        m_stageSummaries.reserve(ranges.size());
+        for (size_t stage = 0; stage < ranges.size(); ++stage)
             {
-            if (center.has_value())
-                {
-                m_anhoejSummary = statistics::spc_rules::anhoej_analysis(values, center.value());
-                // the points of any run longer than the limit are shown as a shift
-                if (m_anhoejSummary.has_value())
+            const size_t first{ ranges[stage].first };
+            const size_t last{ ranges[stage].second };
+            // the rules are checked within a stage, so a streak cannot span a stage break
+            const std::vector<double> stageValues(
+                std::next(values.cbegin(), static_cast<ptrdiff_t>(first)),
+                std::next(values.cbegin(), static_cast<ptrdiff_t>(last)));
+            const std::optional<double> center{ (stage < m_stageCenterLines.size()) ?
+                                                    m_stageCenterLines[stage] :
+                                                    std::nullopt };
+            StageSummary summary;
+            summary.label = (stage < m_stageLabels.size()) ? m_stageLabels[stage] : wxString{};
+            summary.firstPoint = first;
+            summary.pointCount = last - first;
+            summary.center = center;
+
+            // the points of a violation are shifted from the stage to the whole sequence
+            const auto addViolations =
+                [this, first](std::vector<statistics::spc_rule_violation> violations)
+            {
+                for (auto& violation : violations)
                     {
-                    addViolations(statistics::spc_rules::find_shifts(
-                        values, center.value(), m_anhoejSummary->longest_run_limit + 1));
+                    for (auto& point : violation.points)
+                        {
+                        point += first;
+                        }
+                    }
+                std::ranges::move(violations, std::back_inserter(m_ruleViolations));
+            };
+
+            if (m_ruleSet == SpcRuleSet::Anhoej)
+                {
+                if (center.has_value())
+                    {
+                    summary.anhoej =
+                        statistics::spc_rules::anhoej_analysis(stageValues, center.value());
+                    // the points of any run longer than the limit are shown as a shift
+                    if (summary.anhoej.has_value())
+                        {
+                        addViolations(statistics::spc_rules::find_shifts(
+                            stageValues, center.value(), summary.anhoej->longest_run_limit + 1));
+                        }
                     }
                 }
-            return;
+            else
+                {
+                if (center.has_value() && IsRuleEnabled(statistics::spc_rule::shift))
+                    {
+                    addViolations(statistics::spc_rules::find_shifts(stageValues, center.value(),
+                                                                     m_shiftLength));
+                    }
+                if (IsRuleEnabled(statistics::spc_rule::trend))
+                    {
+                    addViolations(statistics::spc_rules::find_trends(stageValues, m_trendLength));
+                    }
+                if (IsRuleEnabled(statistics::spc_rule::alternating))
+                    {
+                    addViolations(
+                        statistics::spc_rules::find_alternating(stageValues, m_alternatingLength));
+                    }
+                if (center.has_value() && IsRuleEnabled(statistics::spc_rule::runs))
+                    {
+                    summary.runs = statistics::spc_rules::count_runs(stageValues, center.value());
+                    }
+                }
+            m_stageSummaries.push_back(std::move(summary));
             }
 
-        if (center.has_value() && IsRuleEnabled(statistics::spc_rule::shift))
+        if (!m_stageSummaries.empty())
             {
-            addViolations(
-                statistics::spc_rules::find_shifts(values, center.value(), m_shiftLength));
-            }
-        if (IsRuleEnabled(statistics::spc_rule::trend))
-            {
-            addViolations(statistics::spc_rules::find_trends(values, m_trendLength));
-            }
-        if (IsRuleEnabled(statistics::spc_rule::alternating))
-            {
-            addViolations(statistics::spc_rules::find_alternating(values, m_alternatingLength));
-            }
-        if (center.has_value() && IsRuleEnabled(statistics::spc_rule::runs))
-            {
-            m_runsSummary = statistics::spc_rules::count_runs(values, center.value());
+            m_runsSummary = m_stageSummaries.front().runs;
+            m_anhoejSummary = m_stageSummaries.front().anhoej;
             }
         }
 
@@ -521,11 +744,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
         }
 
     //----------------------------------------------------------------
-    wxString SpcChart::GetRunsNote() const
+    wxString SpcChart::RunsNoteForStage(const StageSummary& stage) const
         {
         if (m_ruleSet == SpcRuleSet::Anhoej)
             {
-            if (!m_anhoejSummary.has_value())
+            if (!stage.anhoej.has_value())
                 {
                 return {};
                 }
@@ -533,24 +756,24 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
                 // TRANSLATORS: %s is a heading such as "Runs about the median"
                 _(L"%s (Anhøj rules)\nLongest run: %zu (signal if more than %zu)\n"
                   "Crossings: %zu (signal if fewer than %zu)"),
-                GetRunsLabel(), m_anhoejSummary->longest_run, m_anhoejSummary->longest_run_limit,
-                m_anhoejSummary->crossings, m_anhoejSummary->crossings_limit) };
-            if (m_anhoejSummary->has_long_run())
+                GetRunsLabel(), stage.anhoej->longest_run, stage.anhoej->longest_run_limit,
+                stage.anhoej->crossings, stage.anhoej->crossings_limit) };
+            if (stage.anhoej->has_long_run())
                 {
                 note += L"\n" + _(L"Unusually long run, which suggests a shift in the process.");
                 }
-            if (m_anhoejSummary->has_too_few_crossings())
+            if (stage.anhoej->has_too_few_crossings())
                 {
                 note += L"\n" + _(L"Too few crossings, which suggests a shift in the process.");
                 }
             return note;
             }
 
-        if (!IsRuleEnabled(statistics::spc_rule::runs) || !GetCenterLine().has_value())
+        if (!IsRuleEnabled(statistics::spc_rule::runs) || !stage.center.has_value())
             {
             return {};
             }
-        if (!m_runsSummary.has_value())
+        if (!stage.runs.has_value())
             {
             // TRANSLATORS: %s is a heading such as "Runs about the median"
             return wxString::Format(_(L"%s: too few points to test (at least %zu are needed)."),
@@ -561,18 +784,45 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
             // TRANSLATORS: the first %s is a heading such as "Runs about the median"
             _(L"%s: %zu (expected %s), longest run: %zu\n"
               "P-value for clustering: %s, for mixtures: %s"),
-            GetRunsLabel(), m_runsSummary->runs,
-            wxNumberFormatter::ToString(m_runsSummary->expected_runs, 1,
+            GetRunsLabel(), stage.runs->runs,
+            wxNumberFormatter::ToString(stage.runs->expected_runs, 1,
                                         wxNumberFormatter::Style::Style_NoTrailingZeroes),
-            m_runsSummary->longest_run, FormatPValue(m_runsSummary->clustering_p_value),
-            FormatPValue(m_runsSummary->mixtures_p_value)) };
-        if (m_runsSummary->has_too_few_runs())
+            stage.runs->longest_run, FormatPValue(stage.runs->clustering_p_value),
+            FormatPValue(stage.runs->mixtures_p_value)) };
+        if (stage.runs->has_too_few_runs())
             {
             note += L"\n" + _(L"Too few runs, which suggests a shift in the process.");
             }
-        else if (m_runsSummary->has_too_many_runs())
+        else if (stage.runs->has_too_many_runs())
             {
             note += L"\n" + _(L"Too many runs, which suggests the process is oscillating.");
+            }
+        return note;
+        }
+
+    //----------------------------------------------------------------
+    wxString SpcChart::GetRunsNote() const
+        {
+        if (!HasStages())
+            {
+            return m_stageSummaries.empty() ? wxString{} :
+                                              RunsNoteForStage(m_stageSummaries.front());
+            }
+
+        wxString note;
+        for (const auto& stage : m_stageSummaries)
+            {
+            const wxString stageNote{ RunsNoteForStage(stage) };
+            if (stageNote.empty())
+                {
+                continue;
+                }
+            if (!note.empty())
+                {
+                note += L"\n";
+                }
+            // the stage's label prefixes its results
+            note += wxString::Format(L"%s: %s", stage.label, stageNote);
             }
         return note;
         }
@@ -591,9 +841,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
                 { return refLine.GetLabelPlacement() == ReferenceLabelPlacement::Legend; })
         };
         const bool hasBaseline{ HasBaseline() };
-        const auto centerLineEntry = GetCenterLineLegendEntry();
-        if (!centerLineEntry.has_value() && !hasCircles && !hasBaseline && runsNote.empty() &&
-            !hasLegendReferences)
+        const auto centerLineEntries = GetCenterLineLegendEntries();
+        // the dividers between stages are only drawn at the breaks
+        const bool hasStageBreaks{ m_stageStarts.size() > 1 };
+        if (centerLineEntries.empty() && !hasCircles && !hasBaseline && !hasStageBreaks &&
+            runsNote.empty() && !hasLegendReferences)
             {
             return nullptr;
             }
@@ -629,11 +881,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
         };
 
         // the Anhøj rules find runs longer than a limit based on the number of points
-        const bool isAnhoej{ m_ruleSet == SpcRuleSet::Anhoej && m_anhoejSummary.has_value() };
+        const bool isAnhoej{ m_ruleSet == SpcRuleSet::Anhoej &&
+                             std::ranges::any_of(m_stageSummaries, [](const StageSummary& stage)
+                                                 { return stage.anhoej.has_value(); }) };
         const wxString shiftDescription{
-            isAnhoej ? wxString::Format(_(L"Long run (%zu or more points on one side)"),
-                                        m_anhoejSummary->longest_run_limit + 1) :
-                       wxString::Format(_(L"Shift (%zu or more points on one side)"), m_shiftLength)
+            isAnhoej ?
+                (HasStages() ? _(L"Long run (longer than the limit for its stage)") :
+                               wxString::Format(_(L"Long run (%zu or more points on one side)"),
+                                                m_anhoejSummary->longest_run_limit + 1)) :
+                wxString::Format(_(L"Shift (%zu or more points on one side)"), m_shiftLength)
         };
         // one entry for each rule that found a pattern, in a fixed order
         for (const auto& [rule, description] :
@@ -656,15 +912,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
                 }
             }
 
-        // the center line and the end of the baseline
-        if (centerLineEntry.has_value() || hasBaseline)
+        // the center line, the end of the baseline, and the stage breaks
+        if (!centerLineEntries.empty() || hasBaseline || hasStageBreaks)
             {
             startSection();
-            if (centerLineEntry.has_value())
+            for (const auto& [text, pen] : centerLineEntries)
                 {
-                addEntry(centerLineEntry->first,
-                         Icons::LegendIcon{ Icons::IconShape::HorizontalLine,
-                                            centerLineEntry->second, *wxTRANSPARENT_BRUSH });
+                addEntry(text, Icons::LegendIcon{ Icons::IconShape::HorizontalLine, pen,
+                                                  *wxTRANSPARENT_BRUSH });
                 }
             if (hasBaseline)
                 {
@@ -689,13 +944,54 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
                                                 *wxTRANSPARENT_BRUSH });
                     }
                 }
+            // the dashed dividers between the stages
+            if (hasStageBreaks)
+                {
+                addEntry(wxString::Format(_(L"Stage breaks (%zu stages)"), m_stageStarts.size()),
+                         Icons::LegendIcon{ Icons::IconShape::VerticalLine, BaselineDividerPen(),
+                                            *wxTRANSPARENT_BRUSH });
+                }
             }
 
-        // the runs note has no icon
+        // the runs results have no icons, other than the dividers between the stages
         if (!runsNote.empty())
             {
             startSection();
-            legendText += runsNote;
+            if (!HasStages())
+                {
+                legendText += runsNote;
+                }
+            else
+                {
+                // each line of text gets a blank icon, so that the dividers line up with their rows
+                const auto addStageNote = [&legendText, &legend](const wxString& note)
+                {
+                    legendText += note;
+                    const size_t lineCount{ static_cast<size_t>(note.Freq(L'\n')) + 1 };
+                    for (size_t line = 0; line < lineCount; ++line)
+                        {
+                        legend->GetLegendIcons().emplace_back(
+                            Icons::IconShape::Blank, *wxTRANSPARENT_PEN, *wxTRANSPARENT_BRUSH);
+                        }
+                };
+                bool isFirstStage{ true };
+                for (const auto& stage : m_stageSummaries)
+                    {
+                    const wxString stageNote{ RunsNoteForStage(stage) };
+                    if (stageNote.empty())
+                        {
+                        continue;
+                        }
+                    // each stage's results are divided from the next stage's
+                    if (!isFirstStage)
+                        {
+                        startSection();
+                        }
+                    isFirstStage = false;
+                    // the stage's label prefixes its results
+                    addStageNote(wxString::Format(L"%s: %s", stage.label, stageNote));
+                    }
+                }
             }
         legend->SetText(legendText);
 
@@ -734,72 +1030,127 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
         LinePlot::RecalcSizes(dc);
 
         AddIndividualPoints(dc);
-        AddBaselineDivider();
+        AddDividers();
         AddRuleViolationMarkers(dc);
         }
 
     //----------------------------------------------------------------
     void SpcChart::AddUnderlayObjects()
         {
-        const auto center = GetCenterLine();
-        const auto centerLineEntry = GetCenterLineLegendEntry();
-        wxCoord centerY{ 0 };
-        if (!center.has_value() || !centerLineEntry.has_value() ||
-            !GetLeftYAxis().GetPhysicalCoordinate(center.value(), centerY))
+        const auto centerLineEntries = GetCenterLineLegendEntries();
+        if (centerLineEntries.empty() || m_stageCenterLines.empty())
             {
             return;
             }
+        const wxPen& centerPen{ centerLineEntries.front().second };
 
         const wxCoord leftX{ GetPlotAreaBoundingBox().GetLeft() };
         const wxCoord rightX{ GetPlotAreaBoundingBox().GetRight() };
-        // the center line is frozen past the last baseline point
-        wxCoord baselineEndX{ rightX };
-        wxPoint pt;
-        if (HasBaseline() &&
-            GetPhysicalCoordinates(static_cast<double>(m_baselineLength), center.value(), pt))
-            {
-            baselineEndX = std::clamp(pt.x, leftX, rightX);
-            }
-
         const auto addSegment =
-            [this, centerY](const wxPen& pen, const wxCoord startX, const wxCoord endX)
+            [this](const wxPen& pen, const wxCoord startX, const wxCoord endX, const wxCoord y)
         {
             auto segment = std::make_unique<GraphItems::Lines>(pen, GetScaling());
             segment->SetDPIScaleFactor(GetDPIScaleFactor());
-            segment->AddLine(wxPoint{ startX, centerY }, wxPoint{ endX, centerY });
+            segment->AddLine(wxPoint{ startX, y }, wxPoint{ endX, y });
             AddObject(std::move(segment));
         };
 
-        const wxPen& centerPen{ centerLineEntry->second };
-        addSegment(centerPen, leftX, baselineEndX);
-        if (baselineEndX < rightX)
+        // the center line is frozen past the last baseline point
+        if (HasBaseline())
             {
-            wxPen extendedPen{ centerPen };
-            extendedPen.SetStyle(wxPenStyle::wxPENSTYLE_LONG_DASH);
-            addSegment(extendedPen, baselineEndX, rightX);
+            const auto center = GetCenterLine();
+            wxCoord centerY{ 0 };
+            if (!center.has_value() ||
+                !GetLeftYAxis().GetPhysicalCoordinate(center.value(), centerY))
+                {
+                return;
+                }
+            wxCoord baselineEndX{ rightX };
+            wxPoint pt;
+            if (GetPhysicalCoordinates(static_cast<double>(m_baselineLength), center.value(), pt))
+                {
+                baselineEndX = std::clamp(pt.x, leftX, rightX);
+                }
+            addSegment(centerPen, leftX, baselineEndX, centerY);
+            if (baselineEndX < rightX)
+                {
+                wxPen extendedPen{ centerPen };
+                extendedPen.SetStyle(wxPenStyle::wxPENSTYLE_LONG_DASH);
+                addSegment(extendedPen, baselineEndX, rightX, centerY);
+                }
+            return;
+            }
+
+        // each stage is drawn from its own center line, from one stage break to the next
+        const auto ranges = GetStageRanges();
+        for (size_t stage = 0; stage < ranges.size(); ++stage)
+            {
+            if (stage >= m_stageCenterLines.size() || !m_stageCenterLines[stage].has_value())
+                {
+                continue;
+                }
+            const double center{ m_stageCenterLines[stage].value() };
+            wxCoord centerY{ 0 };
+            if (!GetLeftYAxis().GetPhysicalCoordinate(center, centerY))
+                {
+                continue;
+                }
+
+            // stages span the plot, with each break halfway between two points
+            wxPoint pt;
+            wxCoord startX{ leftX };
+            if (stage != 0 &&
+                GetPhysicalCoordinates(
+                    static_cast<double>(ranges[stage].first) + math_constants::half, center, pt))
+                {
+                startX = std::clamp(pt.x, leftX, rightX);
+                }
+            wxCoord endX{ rightX };
+            if (stage + 1 < ranges.size() &&
+                GetPhysicalCoordinates(
+                    static_cast<double>(ranges[stage].second) + math_constants::half, center, pt))
+                {
+                endX = std::clamp(pt.x, leftX, rightX);
+                }
+            addSegment(centerPen, startX, std::max(startX, endX), centerY);
             }
         }
 
     //----------------------------------------------------------------
-    void SpcChart::AddBaselineDivider()
+    void SpcChart::AddDividers()
         {
-        if (!HasBaseline())
+        const auto addDivider = [this](const wxCoord x)
+        {
+            auto divider = std::make_unique<GraphItems::Lines>(BaselineDividerPen(), GetScaling());
+            divider->SetDPIScaleFactor(GetDPIScaleFactor());
+            divider->AddLine(wxPoint{ x, GetPlotAreaBoundingBox().GetTop() },
+                             wxPoint{ x, GetPlotAreaBoundingBox().GetBottom() });
+            AddObject(std::move(divider));
+        };
+
+        if (HasBaseline())
             {
+            // drawn through the last baseline point
+            wxPoint pt;
+            if (GetPhysicalCoordinates(static_cast<double>(m_baselineLength),
+                                       GetLeftYAxis().GetRange().first, pt))
+                {
+                addDivider(pt.x);
+                }
             return;
             }
 
-        // drawn through the last baseline point
-        wxPoint pt;
-        if (!GetPhysicalCoordinates(static_cast<double>(m_baselineLength),
-                                    GetLeftYAxis().GetRange().first, pt))
+        // one divider halfway between the last point of a stage and the first of the next
+        for (size_t stage = 1; stage < m_stageStarts.size(); ++stage)
             {
-            return;
+            wxPoint pt;
+            if (GetPhysicalCoordinates(static_cast<double>(m_stageStarts[stage]) +
+                                           math_constants::half,
+                                       GetLeftYAxis().GetRange().first, pt))
+                {
+                addDivider(pt.x);
+                }
             }
-        auto divider = std::make_unique<GraphItems::Lines>(BaselineDividerPen(), GetScaling());
-        divider->SetDPIScaleFactor(GetDPIScaleFactor());
-        divider->AddLine(wxPoint{ pt.x, GetPlotAreaBoundingBox().GetTop() },
-                         wxPoint{ pt.x, GetPlotAreaBoundingBox().GetBottom() });
-        AddObject(std::move(divider));
         }
 
     //----------------------------------------------------------------
@@ -895,6 +1246,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
                                const wxString& sequenceName, const bool hasLabels)
         {
         m_plottedValues = values;
+        // a chart that is not divided into stages still has one center line for all points
+        m_stageCenterLines.assign(m_stageStarts.empty() ? 1 : m_stageStarts.size(), std::nullopt);
+        m_stageSummaries.clear();
 
         // each point is placed at its position in the sequence (1, 2, 3, ...)
         m_sequenceData = std::make_shared<Data::Dataset>();
@@ -963,6 +1317,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SpcChart, Wisteria::Graphs::LinePlot
                 }
             }
 
+        UpdateStageBrackets();
         OnDataSet();
         EvaluateRules();
         }
