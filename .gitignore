@@ -23,6 +23,7 @@
 /docs/syntax-manual/.gitignore
 /docs/syntax-manual/site_libs
 /src/app/sbom.h
+/src/xrc_menu_strings.cpp
 
 # Compiler helper files
 CMakeSettings.json

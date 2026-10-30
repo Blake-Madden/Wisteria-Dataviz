@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resource xmlns="http://www.wxwidgets.org/wxxrc" version="2.5.3.0">
+    <object class="wxMenuBar" name="project_menubar">
+        <object class="wxMenu" name="project_file_menu">
+            <label>File</label>
+            <object class="wxMenuItem" name="wxID_NEW">
+                <label>New Project</label>
+            </object>
+            <object class="wxMenuItem" name="wxID_OPEN">
+                <label>Open...</label>
+                <accel>Ctrl+O</accel>
+            </object>
+            <object class="separator"/>
+            <object class="wxMenuItem" name="ID_SAVE_PROJECT">
+                <label>Save</label>
+                <accel>Ctrl+S</accel>
+            </object>
+            <object class="wxMenuItem" name="ID_SAVE_PROJECT_AS">
+                <label>Save As...</label>
+                <accel>Shift+Ctrl+S</accel>
+            </object>
+            <object class="wxMenu" name="project_export_menu">
+                <label>Export</label>
+                <object class="wxMenuItem" name="ID_HTML_EXPORT">
+                    <label>HTML Dashboard...</label>
+                </object>
+                <object class="wxMenuItem" name="ID_SVG_EXPORT">
+                    <label>SVG...</label>
+                </object>
+                <object class="separator"/>
+                <object class="wxMenuItem" name="ID_PDF_EXPORT">
+                    <label>PDF...</label>
+                </object>
+                <object class="wxMenuItem" name="ID_PPTX_EXPORT">
+                    <label>PowerPoint...</label>
+                </object>
+                <object class="wxMenuItem" name="ID_ODP_EXPORT">
+                    <label>OpenDocument Presentation...</label>
+                </object>
+            </object>
+            <object class="separator"/>
+            <object class="wxMenuItem" name="wxID_PRINT">
+                <label>Print...</label>
+                <accel>Ctrl+P</accel>
+            </object>
+            <object class="separator"/>
+            <object class="wxMenuItem" name="ID_PROJECT_SETTINGS">
+                <label>Project Settings...</label>
+            </object>
+            <object class="separator"/>
+            <object class="wxMenuItem" name="wxID_CLOSE">
+                <label>Close</label>
+                <accel>Ctrl+W</accel>
+            </object>
+        </object>
+        <object class="wxMenu" name="project_pages_menu">
+            <label>Pages</label>
+            <object class="wxMenuItem" name="ID_INSERT_PAGE">
+                <label>Add...</label>
+            </object>
+            <object class="wxMenuItem" name="ID_EDIT_PAGE">
+                <label>Edit...</label>
+            </object>
+            <object class="wxMenuItem" name="ID_DELETE_PAGE">
+                <label>Delete</label>
+            </object>
+            <object class="separator"/>
+            <object class="wxMenuItem" name="ID_REARRANGE_PAGES">
+                <label>Reorder...</label>
+            </object>
+            <object class="separator"/>
+            <object class="wxMenuItem" name="ID_REFRESH_ALL">
+                <label>Refresh All</label>
+                <accel>F5</accel>
+            </object>
+            <object class="wxMenuItem" name="ID_AUTO_REFRESH">
+                <label>Auto Refresh</label>
+                <checkable>1</checkable>
+            </object>
+        </object>
+        <object class="wxMenu" name="project_data_menu">
+            <label>Data</label>
+            <object class="wxMenu" name="project_datasets_menu">
+                <label>Datasets</label>
+                <object class="wxMenuItem" name="ID_INSERT_DATASET">
+                    <label>Add...</label>
+                </object>
+                <object class="wxMenuItem" name="ID_EDIT_DATASET">
+                    <label>Edit...</label>
+                </object>
+                <object class="wxMenuItem" name="ID_DELETE_DATASET">
+                    <label>Delete</label>
+                </object>
+            </object>
+            <object class="wxMenu" name="project_transformations_menu">
+                <label>Transformations</label>
+                <object class="wxMenuItem" name="ID_SUBSET_DATASET">
+                    <label>Subset...</label>
+                </object>
+                <object class="wxMenuItem" name="ID_JOIN_DATASET">
+                    <label>Join...</label>
+                </object>
+                <object class="separator"/>
+                <object class="wxMenuItem" name="ID_PIVOT_WIDER">
+                    <label>Pivot Wider...</label>
+                </object>
+                <object class="wxMenuItem" name="ID_PIVOT_LONGER">
+                    <label>Pivot Longer...</label>
+                </object>
+            </object>
+            <object class="wxMenu" name="project_constants_menu">
+                <label>Constants</label>
+                <object class="wxMenuItem" name="ID_ADD_CONSTANT">
+                    <label>Add...</label>
+                </object>
+                <object class="wxMenuItem" name="ID_DELETE_CONSTANT">
+                    <label>Delete</label>
+                </object>
+            </object>
+            <object class="wxMenu" name="project_sources_menu">
+                <label>Sources</label>
+                <object class="wxMenuItem" name="ID_GOTO_DATASOURCE">
+                    <label>Datasource</label>
+                </object>
+                <object class="wxMenu" name="ID_FILTER_CHOICES">
+                    <label>Filter</label>
+                </object>
+            </object>
+        </object>
+        <object class="wxMenu" name="project_analyses_menu">
+            <label>Analyses</label>
+            <object class="wxMenu" name="project_graphs_menu">
+                <label>Graphs</label>
+                <object class="wxMenu" name="project_basic_graphs_menu">
+                    <label>Basic</label>
+                    <object class="wxMenuItem" name="ID_NEW_BARCHART">
+                        <label>Bar Chart...</label>
+                    </object>
+                    <object class="separator"/>
+                    <object class="wxMenuItem" name="ID_NEW_PIECHART">
+                        <label>Pie Chart...</label>
+                    </object>
+                    <object class="separator"/>
+                    <object class="wxMenuItem" name="ID_NEW_LINEPLOT">
+                        <label>Line Plot...</label>
+                    </object>
+                    <object class="wxMenuItem" name="ID_NEW_MULTI_SERIES_LINEPLOT">
+                        <label>Multi-Series Line Plot...</label>
+                    </object>
+                    <object class="separator"/>
+                    <object class="wxMenuItem" name="ID_NEW_TABLE">
+                        <label>Table...</label>
+                    </object>
+                    <object class="wxMenuItem" name="ID_NEW_SANKEY_DIAGRAM">
+                        <label>Sankey Diagram...</label>
+                    </object>
+                    <object class="wxMenuItem" name="ID_NEW_WAFFLE_CHART">
+                        <label>Waffle Chart...</label>
+                    </object>
+                    <object class="wxMenuItem" name="ID_NEW_RACETRACK_CHART">
+                        <label>Race Track Chart...</label>
+                    </object>
+                    <object class="wxMenuItem" name="ID_NEW_NIGHTINGALE_ROSE_CHART">
+                        <label>Nightingale Rose Chart...</label>
+                    </object>
+                    <object class="wxMenuItem" name="ID_NEW_DUBOIS_SPIRAL_CHART">
+                        <label>Du Bois Spiral Chart...</label>
+                    </object>
+                    <object class="wxMenuItem" name="ID_NEW_DUELING_PIE_CHART">
+                        <label>Dueling Pie Chart...</label>
+                    </object>
+                    <object class="wxMenuItem" name="ID_NEW_PICTOGRAPH">
+                        <label>Pictograph...</label>
+                    </object>
+                    <object class="separator"/>
+                    <object class="wxMenuItem" name="ID_NEW_CHOROPLETH_MAP">
+                        <label>Choropleth Map...</label>
+                    </object>
+                </object>
+                <object class="wxMenu" name="project_business_graphs_menu">
+                    <label>Business</label>
+                    <object class="wxMenuItem" name="ID_NEW_GANTT">
+                        <label>Gantt Chart...</label>
+                    </object>
+                    <object class="wxMenuItem" name="ID_NEW_CANDLESTICK">
+                        <label>Candlestick Plot...</label>
+                    </object>
+                    <object class="wxMenuItem" name="ID_NEW_BULLET_CHART">
+                        <label>Bullet Chart...</label>
+                    </object>
+                    <object class="wxMenuItem" name="ID_NEW_WATERFALL_CHART">
+                        <label>Waterfall Chart...</label>
+                    </object>
+                    <object class="wxMenuItem" name="ID_NEW_FUNNEL_CHART">
+                        <label>Funnel Chart...</label>
+                    </object>
+                </object>
+                <object class="wxMenu" name="project_statistical_graphs_menu">
+                    <label>Statistical</label>
+                    <object class="wxMenuItem" name="ID_NEW_HISTOGRAM">
+                        <label>Histogram...</label>
+                    </object>
+                    <object class="separator"/>
+                    <object class="wxMenuItem" name="ID_NEW_BOXPLOT">
+                        <label>Box Plot...</label>
+                    </object>
+                    <object class="wxMenuItem" name="ID_NEW_STEMANDLEAF">
+                        <label>Stem-and-Leaf Plot...</label>
+                    </object>
+                    <object class="separator"/>
+                    <object class="wxMenuItem" name="ID_NEW_HEATMAP">
+                        <label>Heat Map...</label>
+                    </object>
+                    <object class="separator"/>
+                    <object class="wxMenuItem" name="ID_NEW_SCATTERPLOT">
+                        <label>Scatter Plot...</label>
+                    </object>
+                    <object class="wxMenuItem" name="ID_NEW_BUBBLEPLOT">
+                        <label>Bubble Plot...</label>
+                    </object>
+                    <object class="wxMenuItem" name="ID_NEW_CHERNOFFPLOT">
+                        <label>Chernoff Faces Plot...</label>
+                    </object>
+                    <object class="separator"/>
+                    <object class="wxMenuItem" name="ID_NEW_WILMARTH_BRIDGE_PLOT">
+                        <label>Wilmarth Bridge Plot...</label>
+                    </object>
+                </object>
+                <object class="wxMenu" name="project_spc_graphs_menu">
+                    <label>SPC</label>
+                    <object class="wxMenuItem" name="ID_NEW_ISHIKAWA_DIAGRAM">
+                        <label>Ishikawa Diagram...</label>
+                    </object>
+                    <object class="wxMenuItem" name="ID_NEW_RUN_CHART">
+                        <label>Run Chart...</label>
+                    </object>
+                </object>
+                <object class="wxMenu" name="project_survey_graphs_menu">
+                    <label>Survey</label>
+                    <object class="wxMenuItem" name="ID_NEW_LIKERT">
+                        <label>Likert Chart...</label>
+                    </object>
+                    <object class="separator"/>
+                    <object class="wxMenuItem" name="ID_NEW_WORD_CLOUD">
+                        <label>Word Cloud...</label>
+                    </object>
+                    <object class="separator"/>
+                    <object class="wxMenuItem" name="ID_NEW_PROCON_ROADMAP">
+                        <label>Pro &amp;&amp; Con Roadmap...</label>
+                    </object>
+                </object>
+                <object class="wxMenu" name="project_education_graphs_menu">
+                    <label>Education</label>
+                    <object class="wxMenuItem" name="ID_NEW_SCALE_CHART">
+                        <label>Scale Chart...</label>
+                    </object>
+                </object>
+                <object class="wxMenu" name="project_social_graphs_menu">
+                    <label>Social Sciences</label>
+                    <object class="wxMenuItem" name="ID_NEW_WCURVE">
+                        <label>W-Curve Plot...</label>
+                    </object>
+                    <object class="wxMenuItem" name="ID_NEW_LR_ROADMAP">
+                        <label>Linear Regression Roadmap...</label>
+                    </object>
+                </object>
+                <object class="wxMenu" name="project_sports_graphs_menu">
+                    <label>Sports</label>
+                    <object class="wxMenuItem" name="ID_NEW_WIN_LOSS_SPARKLINE">
+                        <label>Win/Loss Sparkline...</label>
+                    </object>
+                </object>
+            </object>
+            <object class="separator"/>
+            <object class="wxMenuItem" name="ID_NEW_FILTERED_GRAPH">
+                <label>Filtered...</label>
+            </object>
+        </object>
+        <object class="wxMenu" name="project_objects_menu">
+            <label>Objects</label>
+            <object class="wxMenuItem" name="ID_NEW_LABEL">
+                <label>Label...</label>
+            </object>
+            <object class="wxMenuItem" name="ID_NEW_KPI_CARD">
+                <label>KPI Card...</label>
+            </object>
+            <object class="wxMenuItem" name="ID_NEW_IMAGE">
+                <label>Image...</label>
+            </object>
+            <object class="wxMenuItem" name="ID_NEW_SHAPE">
+                <label>Shape...</label>
+            </object>
+            <object class="wxMenuItem" name="ID_NEW_COMMON_AXIS">
+                <label>Axis...</label>
+            </object>
+            <object class="wxMenuItem" name="ID_NEW_SPACER">
+                <label>Spacer</label>
+            </object>
+            <object class="wxMenu" name="project_divider_menu">
+                <label>Divider</label>
+                <object class="wxMenuItem" name="ID_NEW_DIVIDER_HORIZONTAL_SINGLE">
+                    <label>Horizontal (Single Line)</label>
+                </object>
+                <object class="wxMenuItem" name="ID_NEW_DIVIDER_HORIZONTAL_DOUBLE">
+                    <label>Horizontal (Double Line)</label>
+                </object>
+                <object class="separator"/>
+                <object class="wxMenuItem" name="ID_NEW_DIVIDER_VERTICAL_SINGLE">
+                    <label>Vertical (Single Line)</label>
+                </object>
+                <object class="wxMenuItem" name="ID_NEW_DIVIDER_VERTICAL_DOUBLE">
+                    <label>Vertical (Double Line)</label>
+                </object>
+            </object>
+            <object class="separator"/>
+            <object class="wxMenuItem" name="wxID_COPY">
+                <label>Copy</label>
+                <accel>Ctrl+C</accel>
+            </object>
+            <object class="wxMenuItem" name="wxID_PASTE">
+                <label>Paste</label>
+                <accel>Ctrl+V</accel>
+            </object>
+            <object class="wxMenuItem" name="ID_EDIT_ITEM">
+                <label>Edit...</label>
+            </object>
+            <object class="wxMenuItem" name="ID_DELETE_ITEM">
+                <label>Delete</label>
+            </object>
+        </object>
+        <object class="wxMenu" name="project_tools_menu">
+            <label>Tools</label>
+            <object class="wxMenuItem" name="ID_OPTIONS">
+                <label>Options...</label>
+            </object>
+            <object class="wxMenuItem" name="ID_VIEW_LOG_REPORT">
+                <label>Log</label>
+            </object>
+        </object>
+        <object class="wxMenu" name="project_help_menu">
+            <label>Help</label>
+            <object class="wxMenuItem" name="wxID_ABOUT">
+                <label>About Wisteria Dataviz</label>
+            </object>
+        </object>
+    </object>
+</resource>

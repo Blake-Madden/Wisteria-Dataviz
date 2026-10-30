@@ -523,4 +523,14 @@ if(APPLE)
         MACOSX_BUNDLE_ICON_FILE wisteria-dv.icns
         MACOSX_BUNDLE_COPYRIGHT "Copyright Blake Madden"
         MACOSX_BUNDLE_GUI_IDENTIFIER "org.wisteria.app")
+
+    add_custom_command(TARGET ${WISTERIA_APP}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E make_directory
+                       "$<TARGET_BUNDLE_CONTENT_DIR:${WISTERIA_APP}>/Resources/menus"
+                       COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                       "${CMAKE_SOURCE_DIR}/res/menus/main-menubar.xrc"
+                       "${CMAKE_SOURCE_DIR}/res/menus/project-menubar.xrc"
+                       "$<TARGET_BUNDLE_CONTENT_DIR:${WISTERIA_APP}>/Resources/menus"
+                       COMMENT "Copying menu bar resources...")
 endif()

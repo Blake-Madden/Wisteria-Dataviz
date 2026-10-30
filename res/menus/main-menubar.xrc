@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resource xmlns="http://www.wxwidgets.org/wxxrc" version="2.5.3.0">
+    <object class="wxMenuBar" name="main_menubar">
+        <object class="wxMenu" name="main_file_menu">
+            <label>File</label>
+            <object class="wxMenuItem" name="wxID_NEW">
+                <label>New Project</label>
+            </object>
+            <object class="wxMenuItem" name="wxID_OPEN">
+                <label>Open...</label>
+                <accel>Ctrl+O</accel>
+            </object>
+        </object>
+        <object class="wxMenu" name="main_tools_menu">
+            <label>Tools</label>
+            <object class="wxMenuItem" name="ID_OPTIONS">
+                <label>Options...</label>
+            </object>
+        </object>
+        <object class="wxMenu" name="main_log_menu">
+            <label>Log</label>
+            <object class="wxMenuItem" name="ID_LOG_TAB_SAVE">
+                <label>Save...</label>
+            </object>
+            <object class="wxMenuItem" name="ID_LOG_TAB_PRINT">
+                <label>Print...</label>
+            </object>
+            <object class="separator"/>
+            <object class="wxMenuItem" name="ID_LOG_TAB_COPY">
+                <label>Copy Selection</label>
+            </object>
+            <object class="wxMenuItem" name="ID_LOG_TAB_SELECT_ALL">
+                <label>Select All</label>
+            </object>
+            <object class="wxMenuItem" name="ID_LOG_TAB_SORT">
+                <label>Sort</label>
+            </object>
+            <object class="wxMenuItem" name="ID_LOG_TAB_CLEAR">
+                <label>Clear</label>
+            </object>
+            <object class="wxMenuItem" name="ID_LOG_TAB_REFRESH">
+                <label>Refresh</label>
+            </object>
+            <object class="separator"/>
+            <object class="wxMenuItem" name="ID_LOG_TAB_REALTIME_UPDATE">
+                <label>Auto Refresh</label>
+                <checkable>1</checkable>
+            </object>
+            <object class="wxMenuItem" name="ID_LOG_TAB_VERBOSE">
+                <label>Verbose</label>
+                <checkable>1</checkable>
+            </object>
+        </object>
+        <object class="wxMenu" name="main_help_menu">
+            <label>Help</label>
+            <object class="wxMenuItem" name="wxID_ABOUT">
+                <label>About Wisteria Dataviz</label>
+            </object>
+        </object>
+    </object>
+</resource>

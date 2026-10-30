@@ -45,6 +45,7 @@
 #include <wx/valgen.h>
 #include <wx/webview.h>
 #include <wx/xml/xml.h>
+#include <wx/xrc/xmlres.h>
 #include <wx/zstream.h>
 #ifdef __WXMSW__
     #include <wx/msw/wrapwin.h>
@@ -88,6 +89,146 @@ wxBitmapBundle WisteriaArtProvider::CreateBitmapBundle(const wxArtID& id, const 
                wxArtProvider::CreateBitmapBundle(id, client, size);
     }
 
+#if defined(__WXOSX__)
+//-------------------------------------------
+void WisteriaApp::RegisterMenuBarItemIds()
+    {
+    const auto seedId = [](const char* name, const wxWindowID id)
+    { wxXmlResource::GetXRCID(wxString::FromAscii(name), id); };
+
+    // main frame
+    seedId("ID_OPTIONS", ID_OPTIONS);
+    seedId("ID_LOG_TAB_SAVE", ID_LOG_TAB_SAVE);
+    seedId("ID_LOG_TAB_PRINT", ID_LOG_TAB_PRINT);
+    seedId("ID_LOG_TAB_COPY", ID_LOG_TAB_COPY);
+    seedId("ID_LOG_TAB_SELECT_ALL", ID_LOG_TAB_SELECT_ALL);
+    seedId("ID_LOG_TAB_SORT", ID_LOG_TAB_SORT);
+    seedId("ID_LOG_TAB_CLEAR", ID_LOG_TAB_CLEAR);
+    seedId("ID_LOG_TAB_REFRESH", ID_LOG_TAB_REFRESH);
+    seedId("ID_LOG_TAB_REALTIME_UPDATE", ID_LOG_TAB_REALTIME_UPDATE);
+    seedId("ID_LOG_TAB_VERBOSE", ID_LOG_TAB_VERBOSE);
+
+    // project frames
+    seedId("ID_SAVE_PROJECT", ID_SAVE_PROJECT);
+    seedId("ID_SAVE_PROJECT_AS", ID_SAVE_PROJECT_AS);
+    seedId("ID_REFRESH_ALL", ID_REFRESH_ALL);
+    seedId("ID_AUTO_REFRESH", ID_AUTO_REFRESH);
+    seedId("ID_INSERT_PAGE", ID_INSERT_PAGE);
+    seedId("ID_EDIT_PAGE", ID_EDIT_PAGE);
+    seedId("ID_DELETE_PAGE", ID_DELETE_PAGE);
+    seedId("ID_REARRANGE_PAGES", ID_REARRANGE_PAGES);
+    seedId("ID_INSERT_DATASET", ID_INSERT_DATASET);
+    seedId("ID_EDIT_DATASET", ID_EDIT_DATASET);
+    seedId("ID_DELETE_DATASET", ID_DELETE_DATASET);
+    seedId("ID_SUBSET_DATASET", ID_SUBSET_DATASET);
+    seedId("ID_JOIN_DATASET", ID_JOIN_DATASET);
+    seedId("ID_PIVOT_WIDER", ID_PIVOT_WIDER);
+    seedId("ID_PIVOT_LONGER", ID_PIVOT_LONGER);
+    seedId("ID_ADD_CONSTANT", ID_ADD_CONSTANT);
+    seedId("ID_DELETE_CONSTANT", ID_DELETE_CONSTANT);
+    seedId("ID_GOTO_DATASOURCE", ID_GOTO_DATASOURCE);
+    seedId("ID_FILTER_CHOICES", ID_FILTER_CHOICES);
+    seedId("ID_NEW_FILTERED_GRAPH", ID_NEW_FILTERED_GRAPH);
+    seedId("ID_NEW_LABEL", ID_NEW_LABEL);
+    seedId("ID_NEW_KPI_CARD", ID_NEW_KPI_CARD);
+    seedId("ID_NEW_IMAGE", ID_NEW_IMAGE);
+    seedId("ID_NEW_SHAPE", ID_NEW_SHAPE);
+    seedId("ID_NEW_COMMON_AXIS", ID_NEW_COMMON_AXIS);
+    seedId("ID_NEW_SPACER", ID_NEW_SPACER);
+    seedId("ID_NEW_DIVIDER_HORIZONTAL_SINGLE", ID_NEW_DIVIDER_HORIZONTAL_SINGLE);
+    seedId("ID_NEW_DIVIDER_HORIZONTAL_DOUBLE", ID_NEW_DIVIDER_HORIZONTAL_DOUBLE);
+    seedId("ID_NEW_DIVIDER_VERTICAL_SINGLE", ID_NEW_DIVIDER_VERTICAL_SINGLE);
+    seedId("ID_NEW_DIVIDER_VERTICAL_DOUBLE", ID_NEW_DIVIDER_VERTICAL_DOUBLE);
+    seedId("ID_EDIT_ITEM", ID_EDIT_ITEM);
+    seedId("ID_DELETE_ITEM", ID_DELETE_ITEM);
+    seedId("ID_VIEW_LOG_REPORT", ID_VIEW_LOG_REPORT);
+    seedId("ID_PROJECT_SETTINGS", ID_PROJECT_SETTINGS);
+    seedId("ID_HTML_EXPORT", ID_HTML_EXPORT);
+    seedId("ID_SVG_EXPORT", ID_SVG_EXPORT);
+    seedId("ID_PDF_EXPORT", ID_PDF_EXPORT);
+    seedId("ID_PPTX_EXPORT", ID_PPTX_EXPORT);
+    seedId("ID_ODP_EXPORT", ID_ODP_EXPORT);
+
+    // graphs
+    seedId("ID_NEW_BARCHART", ID_NEW_BARCHART);
+    seedId("ID_NEW_PIECHART", ID_NEW_PIECHART);
+    seedId("ID_NEW_LINEPLOT", ID_NEW_LINEPLOT);
+    seedId("ID_NEW_MULTI_SERIES_LINEPLOT", ID_NEW_MULTI_SERIES_LINEPLOT);
+    seedId("ID_NEW_TABLE", ID_NEW_TABLE);
+    seedId("ID_NEW_SANKEY_DIAGRAM", ID_NEW_SANKEY_DIAGRAM);
+    seedId("ID_NEW_WAFFLE_CHART", ID_NEW_WAFFLE_CHART);
+    seedId("ID_NEW_RACETRACK_CHART", ID_NEW_RACETRACK_CHART);
+    seedId("ID_NEW_NIGHTINGALE_ROSE_CHART", ID_NEW_NIGHTINGALE_ROSE_CHART);
+    seedId("ID_NEW_DUBOIS_SPIRAL_CHART", ID_NEW_DUBOIS_SPIRAL_CHART);
+    seedId("ID_NEW_DUELING_PIE_CHART", ID_NEW_DUELING_PIE_CHART);
+    seedId("ID_NEW_PICTOGRAPH", ID_NEW_PICTOGRAPH);
+    seedId("ID_NEW_CHOROPLETH_MAP", ID_NEW_CHOROPLETH_MAP);
+    seedId("ID_NEW_GANTT", ID_NEW_GANTT);
+    seedId("ID_NEW_CANDLESTICK", ID_NEW_CANDLESTICK);
+    seedId("ID_NEW_BULLET_CHART", ID_NEW_BULLET_CHART);
+    seedId("ID_NEW_WATERFALL_CHART", ID_NEW_WATERFALL_CHART);
+    seedId("ID_NEW_FUNNEL_CHART", ID_NEW_FUNNEL_CHART);
+    seedId("ID_NEW_HISTOGRAM", ID_NEW_HISTOGRAM);
+    seedId("ID_NEW_BOXPLOT", ID_NEW_BOXPLOT);
+    seedId("ID_NEW_STEMANDLEAF", ID_NEW_STEMANDLEAF);
+    seedId("ID_NEW_HEATMAP", ID_NEW_HEATMAP);
+    seedId("ID_NEW_SCATTERPLOT", ID_NEW_SCATTERPLOT);
+    seedId("ID_NEW_BUBBLEPLOT", ID_NEW_BUBBLEPLOT);
+    seedId("ID_NEW_CHERNOFFPLOT", ID_NEW_CHERNOFFPLOT);
+    seedId("ID_NEW_WILMARTH_BRIDGE_PLOT", ID_NEW_WILMARTH_BRIDGE_PLOT);
+    seedId("ID_NEW_ISHIKAWA_DIAGRAM", ID_NEW_ISHIKAWA_DIAGRAM);
+    seedId("ID_NEW_RUN_CHART", ID_NEW_RUN_CHART);
+    seedId("ID_NEW_LIKERT", ID_NEW_LIKERT);
+    seedId("ID_NEW_WORD_CLOUD", ID_NEW_WORD_CLOUD);
+    seedId("ID_NEW_PROCON_ROADMAP", ID_NEW_PROCON_ROADMAP);
+    seedId("ID_NEW_SCALE_CHART", ID_NEW_SCALE_CHART);
+    seedId("ID_NEW_WCURVE", ID_NEW_WCURVE);
+    seedId("ID_NEW_LR_ROADMAP", ID_NEW_LR_ROADMAP);
+    seedId("ID_NEW_WIN_LOSS_SPARKLINE", ID_NEW_WIN_LOSS_SPARKLINE);
+    }
+
+//-------------------------------------------
+wxMenuBar* WisteriaApp::CreateMenuBar(const wxString& name)
+    {
+    auto* menuBar = wxXmlResource::Get()->LoadMenuBar(name);
+    if (menuBar == nullptr)
+        {
+        wxLogError(_(L"The menu bar resource '%s' could not be created."), name);
+        return nullptr;
+        }
+
+    // macOS puts "Quit" in the application menu, which wxWidgets builds itself;
+    // its default action stops the main loop without closing the open projects,
+    // so handle it before that: close the projects (prompting to save), then quit
+    if (wxMenu* const appleMenu = menuBar->OSXGetAppleMenu(); appleMenu != nullptr)
+        {
+        appleMenu->Bind(wxEVT_MENU, &WisteriaApp::OnQuitMenu, this, wxApp::s_macExitMenuItemId);
+        }
+
+    return menuBar;
+    }
+
+//-------------------------------------------
+void WisteriaApp::OnQuitMenu([[maybe_unused]] wxCommandEvent& event)
+    {
+    // close the open projects first so that the user can save their changes,
+    // and cancel the quit if they change their mind
+    if (GetDocManager() != nullptr && !GetDocManager()->CloseDocuments(false))
+        {
+        return;
+        }
+
+    if (GetMainFrame() != nullptr)
+        {
+        GetMainFrame()->Close(true);
+        }
+    else
+        {
+        ExitMainLoop();
+        }
+    }
+#endif
+
 //-------------------------------------------
 bool WisteriaApp::OnInit()
     {
@@ -117,6 +258,21 @@ bool WisteriaApp::OnInit()
     Wisteria::Settings::SetReportEditingEnabled(true);
     GetResourceManager().LoadArchive(FindResourceFile(L"res.wad"));
     wxArtProvider::Push(new WisteriaArtProvider{});
+
+#if defined(__WXOSX__)
+    // macOS always shows a native menu bar, so the ribbon's commands are mirrored
+    // there (see CreateMenuBar()).
+    RegisterMenuBarItemIds();
+    for (const wxString& menuFile :
+         std::array<wxString, 2>{ L"menus/main-menubar.xrc", L"menus/project-menubar.xrc" })
+        {
+        const wxString menuFilePath = FindResourceFile(menuFile);
+        if (menuFilePath.empty() || !wxXmlResource::Get()->Load(menuFilePath))
+            {
+            wxLogError(_(L"The menu bar resource '%s' could not be loaded."), menuFile);
+            }
+        }
+#endif
 
     // create the document template
     // NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
@@ -436,6 +592,13 @@ void WisteriaApp::LoadInterface()
 
     GetMainFrame()->InitControls(CreateRibbon(GetMainFrame()->GetPanel()));
 
+#if defined(__WXOSX__)
+    if (auto* menuBar = CreateMenuBar(L"main_menubar"); menuBar != nullptr)
+        {
+        GetMainFrame()->SetMenuBar(menuBar);
+        }
+#endif
+
     // create the embedded log panel (hidden until Log tab is activated)
     GetMainFrameEx()->m_logDataProvider = std::make_shared<Wisteria::UI::ListCtrlExDataProvider>();
     GetMainFrameEx()->m_logPanel = new wxPanel(GetMainFrame()->GetPanel());
@@ -452,6 +615,10 @@ void WisteriaApp::LoadInterface()
 
     GetMainFrameEx()->SetLogAutoRefresh(GetAppSettings()->IsLogAutoRefresh());
     wxLog::SetVerbose(GetAppSettings()->IsLogVerbose());
+    if (GetMainFrame()->GetMenuBar() != nullptr)
+        {
+        GetMainFrame()->GetMenuBar()->Check(ID_LOG_TAB_VERBOSE, wxLog::GetVerbose());
+        }
 
     const std::array<wxAcceleratorEntry, 1> entries = { wxAcceleratorEntry(wxACCEL_CTRL, L'O',
                                                                            wxID_OPEN) };
@@ -539,12 +706,28 @@ void WisteriaApp::LoadInterface()
         [this]([[maybe_unused]]
                wxCommandEvent& event) { ShowAboutDialog(GetMainFrame()); },
         wxID_ABOUT);
+    GetMainFrame()->Bind(
+        wxEVT_MENU,
+        [this]([[maybe_unused]]
+               wxCommandEvent& event) { ShowAboutDialog(GetMainFrame()); },
+        wxID_ABOUT);
 
     GetMainFrame()->Bind(
         wxEVT_RIBBONBUTTONBAR_CLICKED,
         [this]([[maybe_unused]]
                wxCommandEvent& event) { ShowOptionsDialog(GetMainFrame()); },
         ID_OPTIONS);
+    GetMainFrame()->Bind(
+        wxEVT_MENU,
+        [this]([[maybe_unused]]
+               wxCommandEvent& event) { ShowOptionsDialog(GetMainFrame()); },
+        ID_OPTIONS);
+    // the application menu's Preferences item
+    GetMainFrame()->Bind(
+        wxEVT_MENU,
+        [this]([[maybe_unused]]
+               wxCommandEvent& event) { ShowOptionsDialog(GetMainFrame()); },
+        wxID_PREFERENCES);
 
     // capture window state before the frame is destroyed
     GetMainFrame()->Bind(
@@ -605,10 +788,15 @@ void WisteriaApp::LoadInterface()
                              evt.Skip();
                          });
 
-    // log tab ribbon button handlers
+    // log tab commands, which are handled from both the ribbon and the menu bar
+    const auto bindLogCommand = [this](const auto& handler, const wxWindowID id)
+    {
+        GetMainFrame()->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, handler, id);
+        GetMainFrame()->Bind(wxEVT_MENU, handler, id);
+    };
     const auto withLogList = [this](auto fn)
     {
-        return [this, fn](wxRibbonButtonBarEvent& event)
+        return [this, fn](wxCommandEvent& event)
         {
             if (GetMainFrameEx()->m_logListCtrl != nullptr && GetMainFrameEx()->IsLogTabActive())
                 {
@@ -617,29 +805,24 @@ void WisteriaApp::LoadInterface()
         };
     };
 
-    GetMainFrame()->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,
-                         withLogList([](Wisteria::UI::ListCtrlEx* list, wxRibbonButtonBarEvent& evt)
-                                     { list->OnSave(evt); }),
-                         ID_LOG_TAB_SAVE);
-    GetMainFrame()->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,
-                         withLogList([](Wisteria::UI::ListCtrlEx* list, wxRibbonButtonBarEvent& evt)
-                                     { list->OnPrint(evt); }),
-                         ID_LOG_TAB_PRINT);
-    GetMainFrame()->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,
-                         withLogList([](Wisteria::UI::ListCtrlEx* list, wxRibbonButtonBarEvent& evt)
-                                     { list->OnCopy(evt); }),
-                         ID_LOG_TAB_COPY);
-    GetMainFrame()->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,
-                         withLogList([](Wisteria::UI::ListCtrlEx* list, wxRibbonButtonBarEvent& evt)
-                                     { list->OnSelectAll(evt); }),
-                         ID_LOG_TAB_SELECT_ALL);
-    GetMainFrame()->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED,
-                         withLogList([](Wisteria::UI::ListCtrlEx* list, wxRibbonButtonBarEvent& evt)
-                                     { list->OnMultiColumnSort(evt); }),
-                         ID_LOG_TAB_SORT);
-    GetMainFrame()->Bind(
-        wxEVT_RIBBONBUTTONBAR_CLICKED,
-        [this]([[maybe_unused]] wxRibbonButtonBarEvent&)
+    bindLogCommand(
+        withLogList([](Wisteria::UI::ListCtrlEx* list, wxCommandEvent& evt) { list->OnSave(evt); }),
+        ID_LOG_TAB_SAVE);
+    bindLogCommand(withLogList([](Wisteria::UI::ListCtrlEx* list, wxCommandEvent& evt)
+                               { list->OnPrint(evt); }),
+                   ID_LOG_TAB_PRINT);
+    bindLogCommand(
+        withLogList([](Wisteria::UI::ListCtrlEx* list, wxCommandEvent& evt) { list->OnCopy(evt); }),
+        ID_LOG_TAB_COPY);
+    bindLogCommand(withLogList([](Wisteria::UI::ListCtrlEx* list, wxCommandEvent& evt)
+                               { list->OnSelectAll(evt); }),
+                   ID_LOG_TAB_SELECT_ALL);
+    bindLogCommand(withLogList([](Wisteria::UI::ListCtrlEx* list, wxCommandEvent& evt)
+                               { list->OnMultiColumnSort(evt); }),
+                   ID_LOG_TAB_SORT);
+    bindLogCommand(
+        [this]([[maybe_unused]]
+               wxCommandEvent& event)
         {
             if (GetMainFrameEx()->m_logListCtrl != nullptr && GetMainFrameEx()->IsLogTabActive())
                 {
@@ -651,9 +834,9 @@ void WisteriaApp::LoadInterface()
                 }
         },
         ID_LOG_TAB_CLEAR);
-    GetMainFrame()->Bind(
-        wxEVT_RIBBONBUTTONBAR_CLICKED,
-        [this]([[maybe_unused]] wxRibbonButtonBarEvent&)
+    bindLogCommand(
+        [this]([[maybe_unused]]
+               wxCommandEvent& event)
         {
             if (GetMainFrameEx()->m_logListCtrl != nullptr && GetMainFrameEx()->IsLogTabActive())
                 {
@@ -661,24 +844,39 @@ void WisteriaApp::LoadInterface()
                 }
         },
         ID_LOG_TAB_REFRESH);
-    GetMainFrame()->Bind(
-        wxEVT_RIBBONBUTTONBAR_CLICKED,
-        [this]([[maybe_unused]] wxRibbonButtonBarEvent&)
+    bindLogCommand(
+        [this]([[maybe_unused]]
+               wxCommandEvent& event)
         {
             GetMainFrameEx()->SetLogAutoRefresh(!GetMainFrameEx()->m_logAutoRefresh);
             GetAppSettings()->SetLogAutoRefresh(GetMainFrameEx()->m_logAutoRefresh);
             GetAppSettings()->SaveSettingsFile();
         },
         ID_LOG_TAB_REALTIME_UPDATE);
-    GetMainFrame()->Bind(
-        wxEVT_RIBBONBUTTONBAR_CLICKED,
-        [this]([[maybe_unused]] wxRibbonButtonBarEvent&)
+    bindLogCommand(
+        [this]([[maybe_unused]]
+               wxCommandEvent& event)
         {
             wxLog::SetVerbose(!wxLog::GetVerbose());
             GetAppSettings()->SetLogVerbose(wxLog::GetVerbose());
             GetAppSettings()->SaveSettingsFile();
+            if (GetMainFrameEx()->m_logEditButtonBar != nullptr)
+                {
+                GetMainFrameEx()->m_logEditButtonBar->ToggleButton(ID_LOG_TAB_VERBOSE,
+                                                                   wxLog::GetVerbose());
+                }
+            if (GetMainFrame()->GetMenuBar() != nullptr)
+                {
+                GetMainFrame()->GetMenuBar()->Check(ID_LOG_TAB_VERBOSE, wxLog::GetVerbose());
+                }
         },
         ID_LOG_TAB_VERBOSE);
+#if defined(__WXOSX__)
+    // the commands that act on the log list are only available from the Log tab
+    GetMainFrame()->Bind(
+        wxEVT_UPDATE_UI, [this](wxUpdateUIEvent& event)
+        { event.Enable(GetMainFrameEx()->IsLogTabActive()); }, ID_LOG_TAB_SAVE, ID_LOG_TAB_REFRESH);
+#endif
     GetMainFrame()->Bind(
         wxEVT_TIMER,
         [this]([[maybe_unused]] wxTimerEvent&)
@@ -947,6 +1145,11 @@ void MainFrame::ActivateLogTab()
         m_logEditButtonBar->ToggleButton(ID_LOG_TAB_REALTIME_UPDATE, m_logAutoRefresh);
         m_logEditButtonBar->ToggleButton(ID_LOG_TAB_VERBOSE, wxLog::GetVerbose());
         }
+    if (GetMenuBar() != nullptr)
+        {
+        GetMenuBar()->Check(ID_LOG_TAB_REALTIME_UPDATE, m_logAutoRefresh);
+        GetMenuBar()->Check(ID_LOG_TAB_VERBOSE, wxLog::GetVerbose());
+        }
     Layout();
     wxGetApp().ReadLogIntoListCtrl(m_logListCtrl);
     m_logListCtrl->SetFocus();
@@ -959,6 +1162,10 @@ void MainFrame::SetLogAutoRefresh(const bool enable)
     if (m_logEditButtonBar != nullptr)
         {
         m_logEditButtonBar->ToggleButton(ID_LOG_TAB_REALTIME_UPDATE, enable);
+        }
+    if (GetMenuBar() != nullptr)
+        {
+        GetMenuBar()->Check(ID_LOG_TAB_REALTIME_UPDATE, enable);
         }
     if (enable && IsLogTabActive())
         {
@@ -1055,47 +1262,6 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
             ID_AUTO_REFRESH, _(L"Auto Refresh"), ReadSvgIcon(L"images/realtime.svg"),
             _(L"Reload the project when its local dataset files change"));
         pagesButtonBar->SetKeyTip(ID_AUTO_REFRESH, _DT(L"RE"));
-
-        // Objects panel (labels, images, shapes)
-        auto* objectsPanel = new wxRibbonPanel(homePage, wxID_ANY, _(L"Objects"));
-        objectsPanel->SetKeyTip(_DT(L"OB"));
-        auto* objectsButtonBar = new wxRibbonButtonBar(objectsPanel, ID_OBJECTS_BUTTONBAR);
-
-        objectsButtonBar->AddButton(ID_NEW_LABEL, _(L"Label"), ReadSvgIcon(L"images/label.svg"),
-                                    _(L"Insert a text label"));
-        objectsButtonBar->SetKeyTip(ID_NEW_LABEL, _DT(L"B"));
-        objectsButtonBar->AddButton(ID_NEW_KPI_CARD, _(L"KPI Card"),
-                                    ReadSvgIcon(L"images/kpi-card.svg"),
-                                    _(L"Insert a KPI card (a big number with a caption)"));
-        objectsButtonBar->SetKeyTip(ID_NEW_KPI_CARD, _DT(L"C"));
-        objectsButtonBar->AddButton(ID_NEW_IMAGE, _(L"Image"), ReadSvgIcon(L"images/image.svg"),
-                                    _(L"Insert an image"));
-        objectsButtonBar->SetKeyTip(ID_NEW_IMAGE, _DT(L"F"));
-        objectsButtonBar->AddButton(ID_NEW_SHAPE, _(L"Shape"), ReadSvgIcon(L"images/shape.svg"),
-                                    _(L"Insert a shape"));
-        objectsButtonBar->SetKeyTip(ID_NEW_SHAPE, _DT(L"J"));
-        objectsButtonBar->AddButton(ID_NEW_COMMON_AXIS, _(L"Axis"), ReadSvgIcon(L"images/axis.svg"),
-                                    _(L"Insert an axis"));
-        objectsButtonBar->SetKeyTip(ID_NEW_COMMON_AXIS, _DT(L"X"));
-        objectsButtonBar->AddButton(ID_NEW_SPACER, _(L"Spacer"), ReadSvgIcon(L"images/spacer.svg"),
-                                    _(L"Insert a spacer"));
-        objectsButtonBar->SetKeyTip(ID_NEW_SPACER, _DT(L"V"));
-        objectsButtonBar->AddDropdownButton(ID_NEW_DIVIDER, _(L"Divider"),
-                                            ReadSvgIcon(L"images/divider-horizontal-double.svg"),
-                                            _(L"Insert a divider line"));
-        objectsButtonBar->SetKeyTip(ID_NEW_DIVIDER, _DT(L"Q"));
-        objectsButtonBar->AddButton(wxID_COPY, _(L"Copy"), ReadSvgIcon(L"images/copy.svg"),
-                                    _(L"Copy the selected item"));
-        objectsButtonBar->SetKeyTip(wxID_COPY, _DT(L"Y"));
-        objectsButtonBar->AddButton(wxID_PASTE, _(L"Paste"), ReadSvgIcon(L"images/paste.svg"),
-                                    _(L"Paste the copied item"));
-        objectsButtonBar->SetKeyTip(wxID_PASTE, _DT(L"U"));
-        objectsButtonBar->AddButton(ID_EDIT_ITEM, _(L"Edit"), ReadSvgIcon(L"images/edit.svg"),
-                                    _(L"Edit the selected item"));
-        objectsButtonBar->SetKeyTip(ID_EDIT_ITEM, _DT(L"W"));
-        objectsButtonBar->AddButton(ID_DELETE_ITEM, _(L"Delete"), ReadSvgIcon(L"images/delete.svg"),
-                                    _(L"Delete the selected item"));
-        objectsButtonBar->SetKeyTip(ID_DELETE_ITEM, _DT(L"OD"));
 
         // Data tab
         auto* dataPage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Data"));
@@ -1220,6 +1386,51 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                   ReadSvgIcon(L"images/filtered-graph.svg"),
                                   _(L"Insert a graph that can be filtered by a column's values"));
         graphButtonBar->SetKeyTip(ID_NEW_FILTERED_GRAPH, _DT(L"F"));
+
+        // Objects tab
+        auto* objectsPage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Objects"));
+        ribbon->SetPageKeyTip(objectsPage, _DT(L"O"));
+
+        // Objects panel (labels, images, shapes, and item editing)
+        auto* objectsPanel = new wxRibbonPanel(objectsPage, wxID_ANY, _(L"Objects"));
+        objectsPanel->SetKeyTip(_DT(L"OB"));
+        auto* objectsButtonBar = new wxRibbonButtonBar(objectsPanel, ID_OBJECTS_BUTTONBAR);
+
+        objectsButtonBar->AddButton(ID_NEW_LABEL, _(L"Label"), ReadSvgIcon(L"images/label.svg"),
+                                    _(L"Insert a text label"));
+        objectsButtonBar->SetKeyTip(ID_NEW_LABEL, _DT(L"B"));
+        objectsButtonBar->AddButton(ID_NEW_KPI_CARD, _(L"KPI Card"),
+                                    ReadSvgIcon(L"images/kpi-card.svg"),
+                                    _(L"Insert a KPI card (a big number with a caption)"));
+        objectsButtonBar->SetKeyTip(ID_NEW_KPI_CARD, _DT(L"C"));
+        objectsButtonBar->AddButton(ID_NEW_IMAGE, _(L"Image"), ReadSvgIcon(L"images/image.svg"),
+                                    _(L"Insert an image"));
+        objectsButtonBar->SetKeyTip(ID_NEW_IMAGE, _DT(L"F"));
+        objectsButtonBar->AddButton(ID_NEW_SHAPE, _(L"Shape"), ReadSvgIcon(L"images/shape.svg"),
+                                    _(L"Insert a shape"));
+        objectsButtonBar->SetKeyTip(ID_NEW_SHAPE, _DT(L"J"));
+        objectsButtonBar->AddButton(ID_NEW_COMMON_AXIS, _(L"Axis"), ReadSvgIcon(L"images/axis.svg"),
+                                    _(L"Insert an axis"));
+        objectsButtonBar->SetKeyTip(ID_NEW_COMMON_AXIS, _DT(L"X"));
+        objectsButtonBar->AddButton(ID_NEW_SPACER, _(L"Spacer"), ReadSvgIcon(L"images/spacer.svg"),
+                                    _(L"Insert a spacer"));
+        objectsButtonBar->SetKeyTip(ID_NEW_SPACER, _DT(L"V"));
+        objectsButtonBar->AddDropdownButton(ID_NEW_DIVIDER, _(L"Divider"),
+                                            ReadSvgIcon(L"images/divider-horizontal-double.svg"),
+                                            _(L"Insert a divider line"));
+        objectsButtonBar->SetKeyTip(ID_NEW_DIVIDER, _DT(L"Q"));
+        objectsButtonBar->AddButton(wxID_COPY, _(L"Copy"), ReadSvgIcon(L"images/copy.svg"),
+                                    _(L"Copy the selected item"));
+        objectsButtonBar->SetKeyTip(wxID_COPY, _DT(L"Y"));
+        objectsButtonBar->AddButton(wxID_PASTE, _(L"Paste"), ReadSvgIcon(L"images/paste.svg"),
+                                    _(L"Paste the copied item"));
+        objectsButtonBar->SetKeyTip(wxID_PASTE, _DT(L"U"));
+        objectsButtonBar->AddButton(ID_EDIT_ITEM, _(L"Edit"), ReadSvgIcon(L"images/edit.svg"),
+                                    _(L"Edit the selected item"));
+        objectsButtonBar->SetKeyTip(ID_EDIT_ITEM, _DT(L"W"));
+        objectsButtonBar->AddButton(ID_DELETE_ITEM, _(L"Delete"), ReadSvgIcon(L"images/delete.svg"),
+                                    _(L"Delete the selected item"));
+        objectsButtonBar->SetKeyTip(ID_DELETE_ITEM, _DT(L"OD"));
         }
     else
         {

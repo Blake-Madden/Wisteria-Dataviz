@@ -298,6 +298,7 @@ class WisteriaView final : public wxView
     void OnDeleteItem(wxCommandEvent& event);
     void OnGoToDatasource(wxCommandEvent& event);
     void OnFilterDropdown(wxCommandEvent& event);
+    void PopulateFilterMenu(wxMenu& menu);
     void OnFilterChoice(wxCommandEvent& event);
     /// @returns The selected filterable graph, or null if one isn't the only item selected.
     [[nodiscard]]
@@ -443,6 +444,7 @@ class WisteriaView final : public wxView
 
   private:
     void UpdateGraphButtonStates() const;
+    void UpdateMenuBarStates() const;
     void UpdateDatasetButtonStates() const;
     void AddDatasetToProject(const std::shared_ptr<Wisteria::Data::Dataset>& dataset,
                              const wxString& name,

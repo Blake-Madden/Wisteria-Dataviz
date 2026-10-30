@@ -216,6 +216,30 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     };
     m_frame->SetAcceleratorTable(wxAcceleratorTable(entries.size(), entries.data()));
 
+#if defined(__WXOSX__)
+    // macOS always shows a native menu bar, which mirrors the project's ribbon
+    if (auto* menuBar = wxGetApp().CreateMenuBar(L"project_menubar"); menuBar != nullptr)
+        {
+        m_frame->SetMenuBar(menuBar);
+        // the filter menu's choices depend on the selected graph, so build them
+        // when the menu is opened
+        if (const auto* filterItem = menuBar->FindItem(ID_FILTER_CHOICES);
+            filterItem != nullptr && filterItem->GetSubMenu() != nullptr)
+            {
+            wxMenu* const filterMenu = filterItem->GetSubMenu();
+            m_frame->Bind(wxEVT_MENU_OPEN,
+                          [this, filterMenu](wxMenuEvent& event)
+                          {
+                              if (event.GetMenu() == filterMenu)
+                                  {
+                                  PopulateFilterMenu(*filterMenu);
+                                  }
+                              event.Skip();
+                          });
+            }
+        }
+#endif
+
     // set the icon
     const auto appSvg = wxGetApp().GetResourceManager().GetSVG(L"images/wisteria.svg");
     if (appSvg.IsOk())
@@ -387,17 +411,17 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
                   ID_ADD_CONSTANT);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnRibbonAddConstant, this, ID_ADD_CONSTANT);
     const auto deleteConstant = [this]([[maybe_unused]]
-               wxCommandEvent& event)
-        {
-            // select the Constants folder (index 1) in the sidebar
-            m_sideBar->SelectFolder(1, true);
-            // trigger the sidebar click so the constants grid is shown
-            wxCommandEvent sidebarEvt(Wisteria::UI::wxEVT_SIDEBAR_CLICK);
-            sidebarEvt.SetInt(m_constantsGrid->GetId());
-            OnSidebarClick(sidebarEvt);
-            // delete selected constant
-            wxCommandEvent delEvt(wxEVT_MENU, wxID_DELETE);
-            OnDeleteConstant(delEvt);
+                                       wxCommandEvent& event)
+    {
+        // select the Constants folder (index 1) in the sidebar
+        m_sideBar->SelectFolder(1, true);
+        // trigger the sidebar click so the constants grid is shown
+        wxCommandEvent sidebarEvt(Wisteria::UI::wxEVT_SIDEBAR_CLICK);
+        sidebarEvt.SetInt(m_constantsGrid->GetId());
+        OnSidebarClick(sidebarEvt);
+        // delete selected constant
+        wxCommandEvent delEvt(wxEVT_MENU, wxID_DELETE);
+        OnDeleteConstant(delEvt);
     };
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, deleteConstant, ID_DELETE_CONSTANT);
     m_frame->Bind(wxEVT_MENU, deleteConstant, ID_DELETE_CONSTANT);
@@ -504,6 +528,35 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
                   ID_FILTER_CHOICES);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnFilterChoice, this, ID_FILTER_CHOICE_FIRST,
                   ID_FILTER_CHOICE_LAST);
+
+    // commands that the ribbon handles as ribbon events but the menu bar sends
+    // as menu events
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertDataset, this, ID_INSERT_DATASET);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnEditDataset, this, ID_EDIT_DATASET);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnDeleteDataset, this, ID_DELETE_DATASET);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPivotWider, this, ID_PIVOT_WIDER);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPivotLonger, this, ID_PIVOT_LONGER);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnSubsetDataset, this, ID_SUBSET_DATASET);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnJoinDataset, this, ID_JOIN_DATASET);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertPage, this, ID_INSERT_PAGE);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnEditPage, this, ID_EDIT_PAGE);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnDeletePage, this, ID_DELETE_PAGE);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnRearrangePages, this, ID_REARRANGE_PAGES);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertFilteredGraph, this, ID_NEW_FILTERED_GRAPH);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertLabel, this, ID_NEW_LABEL);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertKpiCard, this, ID_NEW_KPI_CARD);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertImage, this, ID_NEW_IMAGE);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertShape, this, ID_NEW_SHAPE);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertCommonAxis, this, ID_NEW_COMMON_AXIS);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertSpacer, this, ID_NEW_SPACER);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnEditItem, this, ID_EDIT_ITEM);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnDeleteItem, this, ID_DELETE_ITEM);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnGoToDatasource, this, ID_GOTO_DATASOURCE);
+    m_frame->Bind(
+        wxEVT_MENU,
+        [this]([[maybe_unused]]
+               wxCommandEvent& event) { wxGetApp().ShowAboutDialog(m_frame); },
+        wxID_ABOUT);
 
     // bind DELETE key to delete selected item
     m_frame->Bind(wxEVT_CHAR_HOOK,
@@ -2674,6 +2727,30 @@ void WisteriaView::UpdateGraphButtonStates() const
         m_sourcesButtonBar->EnableButton(ID_FILTER_CHOICES,
                                          GetSelectedFilterableGraph() != nullptr);
         }
+
+    UpdateMenuBarStates();
+    }
+
+//-------------------------------------------
+void WisteriaView::UpdateMenuBarStates() const
+    {
+    wxMenuBar* const menuBar = (m_frame != nullptr) ? m_frame->GetMenuBar() : nullptr;
+    if (menuBar == nullptr)
+        {
+        return;
+        }
+
+    // mirror the ribbon buttons' enabled states
+    menuBar->Enable(ID_EDIT_PAGE, IsPageSelected());
+    menuBar->Enable(ID_DELETE_PAGE, IsPageSelected());
+    menuBar->Enable(ID_REARRANGE_PAGES, m_pages.size() >= 2);
+    menuBar->Enable(wxID_COPY, IsCanvasItemSelected());
+    menuBar->Enable(wxID_PASTE, IsPageSelected());
+    menuBar->Enable(ID_EDIT_ITEM, IsCanvasItemSelected());
+    menuBar->Enable(ID_DELETE_ITEM, IsCanvasItemSelected());
+    menuBar->Enable(ID_GOTO_DATASOURCE, IsGraphSelected());
+    menuBar->Enable(ID_FILTER_CHOICES, GetSelectedFilterableGraph() != nullptr);
+    menuBar->Check(ID_AUTO_REFRESH, m_autoRefresh);
     }
 
 //-------------------------------------------
@@ -4200,28 +4277,39 @@ std::shared_ptr<Wisteria::Graphs::FilterableGraph> WisteriaView::GetSelectedFilt
 //-------------------------------------------
 void WisteriaView::OnFilterDropdown(wxCommandEvent& event)
     {
+    if (GetSelectedFilterableGraph() == nullptr)
+        {
+        return;
+        }
+
+    PopulateFilterMenu(m_filterMenu);
+
+    dynamic_cast<wxRibbonButtonBarEvent&>(event).PopupMenu(&m_filterMenu);
+    }
+
+//-------------------------------------------
+void WisteriaView::PopulateFilterMenu(wxMenu& menu)
+    {
     const auto filterableGraph = GetSelectedFilterableGraph();
     if (filterableGraph == nullptr)
         {
         return;
         }
 
-    while (m_filterMenu.GetMenuItemCount() > 0)
+    while (menu.GetMenuItemCount() > 0)
         {
-        m_filterMenu.Destroy(m_filterMenu.FindItemByPosition(0));
+        menu.Destroy(menu.FindItemByPosition(0));
         }
 
     const auto& variants = filterableGraph->GetVariants();
     const auto maxChoices = static_cast<size_t>(ID_FILTER_CHOICE_LAST - ID_FILTER_CHOICE_FIRST + 1);
     for (size_t i = 0; i < variants.size() && i < maxChoices; ++i)
         {
-        m_filterMenu.AppendCheckItem(ID_FILTER_CHOICE_FIRST + static_cast<wxWindowID>(i),
-                                     wxControl::EscapeMnemonics(variants[i].m_label));
-        m_filterMenu.Check(ID_FILTER_CHOICE_FIRST + static_cast<wxWindowID>(i),
-                           i == filterableGraph->GetActiveIndex());
+        menu.AppendCheckItem(ID_FILTER_CHOICE_FIRST + static_cast<wxWindowID>(i),
+                             wxControl::EscapeMnemonics(variants[i].m_label));
+        menu.Check(ID_FILTER_CHOICE_FIRST + static_cast<wxWindowID>(i),
+                   i == filterableGraph->GetActiveIndex());
         }
-
-    dynamic_cast<wxRibbonButtonBarEvent&>(event).PopupMenu(&m_filterMenu);
     }
 
 //-------------------------------------------

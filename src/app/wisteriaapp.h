@@ -131,6 +131,20 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     wxBackstage* CreateBackstage(wxWindow* parent, wxRibbonBar* ribbon, wxWindow* content,
                                  wxDocument* doc);
 
+#if defined(__WXOSX__)
+    /// @brief Creates a menu bar from the application's menu bar resources.
+    /// @details macOS always shows a native menu bar, so the ribbon's commands are
+    ///     mirrored there. The resources are only loaded (and used) on that platform.
+    /// @param name The name of the menu bar resource to create.
+    /// @returns The menu bar, or @c nullptr if the resource is missing.
+    ///     The caller must destroy it (e.g., by passing it to wxFrame::SetMenuBar()).
+    wxMenuBar* CreateMenuBar(const wxString& name);
+
+    /// @brief Closes the open projects, then quits the application.
+    /// @param event The menu event (unused).
+    void OnQuitMenu([[maybe_unused]] wxCommandEvent& event);
+#endif
+
     /// @returns The orientation to print with when printing from the backstage.
     ///     This is the page layout's orientation unless the backstage's Print page changed it.
     [[nodiscard]]
@@ -262,6 +276,12 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     void LoadInterface();
     void InitProjectSidebar();
     void LoadRibbonLogPage(wxRibbonBar* ribbon);
+
+#if defined(__WXOSX__)
+    /// @brief Seeds XRC's string-to-ID table with the application's command IDs,
+    ///     so that the menu bar resources can refer to them by name.
+    static void RegisterMenuBarItemIds();
+#endif
 
     /// @brief Handler for @c wxID_OPEN. Accepts a project file or a dataset file.
     ///     Choosing a dataset starts a new project seeded with it.

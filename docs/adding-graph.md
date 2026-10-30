@@ -193,6 +193,13 @@ In `src/app/wisteriaview.cpp`:
   The edit function opens the dialog in `EditMode::Edit` (or `EditMode::Insert` when pasting as new), calls `LoadFromGraph()`, and builds a new graph (the old one is not mutated in place).
   Both functions place the graph with `PlaceGraphWithLegend()`.
 
+macOS shows the ribbon's commands in a native menu bar, so also:
+
+- In `src/app/wisteriaapp.cpp`, add the ID to `RegisterMenuBarItemIds()`.
+  An ID that is missing here gets a different value when the menu bar loads, and its menu item will do nothing.
+- In `res/menus/project-menubar.xrc`, add a `wxMenuItem` named after the ID to the graph's category menu.
+  Its label should match the one passed to `appendItem()`.
+
 If adding a new ribbon category, also:
 
 - In `src/app/wisteriaapp.cpp`, add the dropdown button to the graph button bar with `AddDropdownButton()`, and give it a key tip.
@@ -200,6 +207,9 @@ If adding a new ribbon category, also:
   - Bind `wxEVT_RIBBONBUTTONBAR_DROPDOWN_CLICKED` for the button to `OnGraphDropdown()`.
   - Add the button to the list of enabled buttons.
   - Add a branch in `OnGraphDropdown()` that pops up the category's menu.
+- In `res/menus/project-menubar.xrc`, add a `wxMenu` for the category under `project_graphs_menu`.
+
+The menu bar's labels are extracted for translation into `src/xrc_menu_strings.cpp` by `cmake/XrcStrings.cmake`, so re-run *CMake* after changing them.
 
 Tests
 =============================
@@ -231,9 +241,10 @@ Summary of Files to Modify
 8. `src/ui/dialogs/editors/insert_ishikawa_diagram_dlg.h/.cpp` - Insert and edit dialog, including the Data Guide
 9. `src/ui/dialogs/editors/insertpagedlg.h/.cpp` - Gallery drop handler
 10. `src/app/wisteriaapp.h` - Menu ID (and ribbon button ID if needed)
-11. `src/app/wisteriaapp.cpp` - Type string, icon lookup, gallery table (and ribbon button if needed)
+11. `src/app/wisteriaapp.cpp` - Type string, icon lookup, gallery table, menu bar ID (and ribbon button if needed)
 12. `src/app/wisteriaview.h/.cpp` - Insert and edit handlers, menu, routing (and ribbon dropdown if needed)
 13. `src/app/wisteriadoc.cpp` - Saving
-14. `res/images/` - Icons
-15. `tests/gui-tests/ishikawadiagramrendertests.cpp` - Tests
-16. `docs/syntax-manual/graphs.qmd`, `release.md`, `README.md`, `docs/gallery.md` - Documentation
+14. `res/menus/project-menubar.xrc` - macOS menu bar item (and category menu if needed)
+15. `res/images/` - Icons
+16. `tests/gui-tests/ishikawadiagramrendertests.cpp` - Tests
+17. `docs/syntax-manual/graphs.qmd`, `release.md`, `README.md`, `docs/gallery.md` - Documentation

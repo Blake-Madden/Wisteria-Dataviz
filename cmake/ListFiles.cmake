@@ -11,14 +11,16 @@ htmltablepanel[.]cpp|htmltablewinprintout[.]cpp|listctrlitemviewdlg[.]cpp|listdl
 listctrlsortdlg[.]cpp|filelistdlg[.]cpp|functionbrowserdlg[.]cpp|getdirdlg[.]cpp|projectsettingsdlg[.]cpp|optionsdlg[.]cpp|\
 gridexportdlg[.]cpp|datasetimportdlg[.]cpp|archivedlg[.]cpp|edittextdlg[.]cpp|excelpreviewdlg[.]cpp|sidebar[.]cpp|\
 sidebarbook[.]cpp|downloadfile[.]cpp|formattedtextctrl[.]cpp|gtktextview-helper[.]cpp|\
-demo[.]cpp|main[.]cpp|src/app/|utfcpp/tests/|utfcpp/samples/|utfcpp/extern|wxpdfdoc/)")
+demo[.]cpp|main[.]cpp|src/app/|utfcpp/tests/|utfcpp/samples/|utfcpp/extern|wxpdfdoc/|\
+xrc_menu_strings[.]cpp)")
 
 # Exclusion filter for GUI testing library (less restrictive, includes more UI components)
 set(WISTERIA_GUI_LIB_EXCLUDE_FILTER "(testmainc|formattedtextctrl[.]cpp|gtktextview-helper[.]cpp|\
 codeeditor[.]cpp|functionbrowserdlg[.]cpp|dialogs/editors/insert[^/]*[.]cpp|objectgallery[.]cpp|\
 axisoptionspanel[.]cpp|accessibilityoptionspanel[.]cpp|dataguidectrl[.]cpp|benchmark[.]cpp|\
 dialogs/insert[^/]*[.]cpp|demo[.]cpp|main[.]cpp|src/app/|\
-utfcpp/tests/|utfcpp/samples/|utfcpp/extern|pdfreportprintout[.]cpp|projectsettingsdlg[.]cpp|optionsdlg[.]cpp|wxpdfdoc/)")
+utfcpp/tests/|utfcpp/samples/|utfcpp/extern|pdfreportprintout[.]cpp|projectsettingsdlg[.]cpp|optionsdlg[.]cpp|wxpdfdoc/|\
+xrc_menu_strings[.]cpp)")
 
 # Exclusion filter for main application (in addition to other filters)
 set(WISTERIA_APP_EXCLUDE_FILTER "(testmainc|formattedtextctrl[.]cpp|gtktextview-helper[.]cpp|\
@@ -27,7 +29,7 @@ htmltablewinprintout[.]cpp|htmltablewin[.]cpp|archivedlg[.]cpp|htmltablepanel[.]
 screenshot[.]cpp|idhelpers[.]cpp|filelistdlg[.]cpp|functionbrowserdlg[.]cpp|getdirdlg[.]cpp|\
 (cpp|doc|docx|html|markdown|ods|odt|postscript|rtf|odt_odp)_extract_text[.]cpp|\
 pdfreader[.]cpp|pdf_|benchmark[.]cpp|\
-utfcpp/tests/|utfcpp/samples/|utfcpp/extern|wxpdfdoc/)")
+utfcpp/tests/|utfcpp/samples/|utfcpp/extern|wxpdfdoc/|xrc_menu_strings[.]cpp)")
 
 # Use the directory containing this file to find the project root
 # (works correctly whether included from main CMakeLists.txt or test CMakeLists.txt)
@@ -35,21 +37,7 @@ get_filename_component(FILE_SRC_PATH "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
 
 message(STATUS "Generating file lists for build system.")
 
-# Don't touch the file unless it is out of date or missing.
-# CMake generators may break if build files get updated but their content didn't actually change.
-function(update_file_if_needed FILE_MANIFEST_PATH FILE_CONTENT)
-    if(NOT EXISTS "${FILE_MANIFEST_PATH}")
-        message(STATUS "${FILE_MANIFEST_PATH}: creating list.")
-        file(WRITE "${FILE_MANIFEST_PATH}" "${FILE_CONTENT}")
-    else()
-        file(READ "${FILE_MANIFEST_PATH}" ORIGINAL_FILE_CONTENT)
-        string(COMPARE NOTEQUAL "${FILE_CONTENT}" "${ORIGINAL_FILE_CONTENT}" FILES_DIFFERENT)
-        if(FILES_DIFFERENT)
-            message(STATUS "${FILE_MANIFEST_PATH}: updating list.")
-            file(WRITE "${FILE_MANIFEST_PATH}" "${FILE_CONTENT}")
-        endif()
-    endif()
-endfunction()
+include("${CMAKE_CURRENT_LIST_DIR}/XrcStrings.cmake")
 
 # Generate main library source file list
 block()
@@ -193,3 +181,6 @@ block()
     set(FILE_MANIFEST_PATH "${FILE_SRC_PATH}/cmake/includes/resfiles.cmake")
     update_file_if_needed("${FILE_MANIFEST_PATH}" "${FILE_CONTENT}")
 endblock()
+
+# Extract translatable strings from XRC files for gettext
+generate_xrc_strings("${FILE_SRC_PATH}/res/menus" "${FILE_SRC_PATH}/src/xrc_menu_strings.cpp")
