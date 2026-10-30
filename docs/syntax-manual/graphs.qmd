@@ -116,8 +116,6 @@ Properties for `"ishikawa-diagram"` nodes:
   Default is `false`.
 - `"show-branch-labels"`: `false` to hide the branch labels.
   Default is `true`.
-- `"tapered"`: `false` to draw the spine and ribs with a constant width, instead of widening them toward the effect.
-  Default is `true`.
 - `"show-cause-counts"`: `true` to show the number of causes in each branch label (e.g., "Manpower (3)").
   Default is `false`.
 - `"fish-style"`: A string specifying the style of the fish (its head, tail, eye, and mouth). \
@@ -127,6 +125,32 @@ Properties for `"ishikawa-diagram"` nodes:
   - `"fish"`: A fish with a simple line for the mouth (the default).
   - `"shark"`: A notched mouth with teeth.
   - `"skeleton"`: The bones of a fish: an outlined skull and tail, with vertebrae along the spine.
+- `"card-style"`: How each cause is drawn (a CEDAC-style board of cards). \
+  Available options are:
+  - `"none"`: The cause is plain text above its twig, which reads as an underline (the default).
+    A `|` in the text is drawn as it is.
+  - `"sticky-note"`: Every cause is drawn on a note of the same size, bordered in its branch's color.
+    (A problem's note is pink and an idea's note is green.)
+    The notes are offset slightly from their neighbors, so that the diagram looks assembled by hand.
+  - `"index-card"`: Every cause is drawn on a ruled index card of the same size.
+  In the card styles, a cause is split at its first `|` into a problem (the text before it) and an idea (everything after it).
+  The problem is drawn on the left of the rib and the idea on the right, across from it, bordered in the same color and at the same height.
+  Each additional `|` adds another idea for the same problem.
+  These ideas are stacked below the first one, with each card slightly overlapping the previous one and offset to its right.
+  The causes below a stack are pushed further down the branch, so that the stack has room.
+  A `|` with nothing on one side of it does not split the text.
+  An idea can start with a status marker, from the 3-Dot method used on CEDAC boards:
+
+  - `*` (or no marker): An idea of interest.
+  - `**`: An idea in preparation.
+  - `***`: An idea under test.
+  - `!`: An idea that was selected.
+  - `-`: An idea that was tested and rejected.
+
+  The marker is drawn on the idea's card rather than in its text: a dot for each level, a green checkmark for a selected idea, and a red X for a rejected one.
+  The marker is read at the very start of the idea, so it can be written with or without a space after it (`**Buy mops` and `** Buy mops` both work).
+  Because of that, an idea that begins with a literal `*`, `!`, or `-` is read as a status.
+  A diagram with sub-causes always uses `"none"`, because a card shares its cause's slot with the cause's sub-causes.
 
 ```json
 {

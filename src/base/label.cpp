@@ -2733,7 +2733,7 @@ namespace Wisteria::GraphItems
                 segments.push_back(std::move(styledSeg));
 
                 // continue with remaining text after the span
-                remaining = remaining.Mid(matchStart + matchLen);
+                remaining = remaining.substr(matchStart + matchLen);
                 }
             else
                 {

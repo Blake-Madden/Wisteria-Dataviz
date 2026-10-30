@@ -8,6 +8,8 @@
 
 #include "ishikawadiagram.h"
 #include <algorithm>
+#include <array>
+#include <optional>
 #include <ranges>
 
 wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::Graph2D)
@@ -322,8 +324,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
                                       const FishStyle fishStyle, const double scaling)
         : m_outline(std::move(outline)), m_color(color), m_fishStyle(fishStyle)
         {
-        GetGraphItemInfo().Selectable(false);
-        SetScaling(scaling);
+        GraphItemBase::GetGraphItemInfo().Selectable(false);
+        GraphItemBase::SetScaling(scaling);
         }
 
     //----------------------------------------------------------------
@@ -380,11 +382,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
         gc->SetBrush(*wxTRANSPARENT_BRUSH);
         gc->StrokePath(path);
 
-        gc->SetPen(wxPen{
-            m_color, static_cast<int>(std::lround(std::max(1.0, ScaleToScreenAndCanvas(1)))) });
+        gc->SetPen(wxPen{ m_color, GetScaledPenWidth() });
         const wxPoint& rayStart{ m_outline.front() };
         // rays stop short of the outline
-        constexpr double RAY_REACH{ 0.85 };
         for (size_t i = 1; i + 1 < m_outline.size(); i += 2)
             {
             const wxPoint& curveStart{ m_outline[i - 1] };
@@ -392,6 +392,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
             const wxPoint& curveEnd{ m_outline[i + 1] };
             for (const double tVal : { 0.25, 0.5, 0.75 })
                 {
+                constexpr double RAY_REACH{ 0.85 };
                 const double startWeight{ (1.0 - tVal) * (1.0 - tVal) };
                 const double controlWeight{ 2.0 * tVal * (1.0 - tVal) };
                 const double endWeight{ tVal * tVal };
@@ -438,7 +439,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
         : m_frontPoint(frontPoint), m_frontControl(frontControl), m_tipPoint(tipPoint),
           m_rearControl(rearControl), m_rearPoint(rearPoint), m_color(color)
         {
-        GetGraphItemInfo().Selectable(false);
+        GraphItemBase::GetGraphItemInfo().Selectable(false);
         }
 
     //----------------------------------------------------------------
@@ -517,8 +518,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
         : m_topLeft(topLeft), m_bottomLeft(bottomLeft), m_apex(apex), m_color(color),
           m_featureColor(featureColor), m_fishStyle(fishStyle)
         {
-        GetGraphItemInfo().Selectable(false);
-        SetScaling(scaling);
+        GraphItemBase::GetGraphItemInfo().Selectable(false);
+        GraphItemBase::SetScaling(scaling);
         }
 
     //----------------------------------------------------------------
@@ -537,12 +538,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
     wxRect IshikawaDiagram::Head::Draw(wxDC & dc) const
         {
         const auto boundingBox = GetBoundingBox(dc);
-        const GraphItems::GraphicsContextFallback gcf{ &dc, boundingBox };
-        auto* gc = gcf.GetGraphicsContext();
-        if (gc == nullptr)
-            {
-            return boundingBox;
-            }
 
         const wxPoint topVertex{ m_topLeft };
         const wxPoint bottomVertex{ m_bottomLeft };
@@ -636,75 +631,92 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
         // their bases are hidden in the gums
         if (m_fishStyle == FishStyle::Shark)
             {
-            const double toothHeight{ static_cast<double>(biteHalfHeight) * 0.45 };
-            // how far each tooth's base reaches into the gums
-            const double rootDepth{ std::max(2.0, ScaleToScreenAndCanvas(2)) };
+            // a tooth stays white with a dark outline, even in dark mode
+            std::optional<wxSVGAccessibleGroup> teethGroup;
+            if (auto* svgDc = dynamic_cast<wxSVGFileDC*>(&dc); svgDc != nullptr)
+                {
+                teethGroup.emplace(*svgDc, wxSVGAttributes{}.Class(_DT(L"ink-keep")));
+                }
+            const GraphItems::GraphicsContextFallback teethGcf{ &dc, boundingBox };
+            auto* gc = teethGcf.GetGraphicsContext();
+            if (gc != nullptr)
+                {
+                const double toothHeight{ static_cast<double>(biteHalfHeight) * 0.45 };
+                // how far each tooth's base reaches into the gums
+                const double rootDepth{ std::max(2.0, ScaleToScreenAndCanvas(2)) };
 
-            const auto drawTeeth = [&](const double startX, const double startY, const double endX,
-                                       const double endY, const int count, const int verticalSign,
-                                       const double startFrac, const double endFrac)
+                const auto drawTeeth = [&](const double startX, const double startY,
+                                           const double endX, const double endY, const int count,
+                                           const int verticalSign, const double startFrac,
+                                           const double endFrac)
+                {
+                    const double deltaX{ endX - startX };
+                    const double deltaY{ endY - startY };
+                    const double len{ std::hypot(deltaX, deltaY) };
+                    if (len <= 0 || count <= 0)
+                        {
+                        return;
+                        }
+                    const double unitX{ safe_divide<double>(deltaX, len) };
+                    const double unitY{ safe_divide<double>(deltaY, len) };
+                    const double span{ len * (endFrac - startFrac) };
+                    const double toothWidth{ safe_divide<double>(span, 2.0 * count) };
+                    for (int i = 0; i < count; ++i)
+                        {
+                        const double offset{ (len * startFrac) + ((2.0 * i + 1.0) * toothWidth) };
+                        const double baseX{ startX + (unitX * offset) };
+                        const double baseY{ startY + (unitY * offset) };
+                        const double baseEndX{ baseX + (unitX * toothWidth) };
+                        const double baseEndY{ baseY + (unitY * toothWidth) };
+                        // top row points down-left like the outer teeth; bottom row
+                        // points at the upper lip
+                        double normalX{ 0.0 };
+                        double normalY{ 0.0 };
+                        if (verticalSign == 1)
+                            {
+                            normalX = static_cast<double>(lowerLipX) - upperLipX;
+                            normalY = static_cast<double>(lowerLipY) - upperLipY;
+                            }
+                        else
+                            {
+                            normalX = static_cast<double>(upperLipX) - baseX;
+                            normalY = static_cast<double>(upperLipY) - baseY;
+                            }
+                        const double normalLength{ std::hypot(normalX, normalY) };
+                        if (normalLength > 0)
+                            {
+                            normalX = safe_divide<double>(normalX, normalLength);
+                            normalY = safe_divide<double>(normalY, normalLength);
+                            }
+                        const double toothLen{ (verticalSign == 1) ? (toothHeight * 1.6) :
+                                                                     toothHeight };
+                        const double apexX{ baseX + (normalX * toothLen) };
+                        const double apexY{ baseY + (normalY * toothLen) };
+                        // the base is pushed back into the jaw, which the head covers
+                        const double rootX{ normalX * rootDepth };
+                        const double rootY{ normalY * rootDepth };
+                        wxGraphicsPath tooth = gc->CreatePath();
+                        tooth.MoveToPoint(baseX - rootX, baseY - rootY);
+                        tooth.AddLineToPoint(apexX, apexY);
+                        tooth.AddLineToPoint(baseEndX - rootX, baseEndY - rootY);
+                        tooth.CloseSubpath();
+                        gc->SetPen(wxPen{ wxColour{ 80, 80, 80 }, GetScaledPenWidth() });
+                        gc->SetBrush(wxBrush{ *wxWHITE });
+                        gc->FillPath(tooth);
+                        gc->StrokePath(tooth);
+                        }
+                };
+
+                drawTeeth(upperLipX, upperLipY, innerX, mouthY, 4, 1, 0.25, 0.8);
+                drawTeeth(lowerLipX, lowerLipY, innerX, mouthY, 4, 0, 0.0, 0.7);
+                }
+            }
+
+        const GraphItems::GraphicsContextFallback gcf{ &dc, boundingBox };
+        auto* gc = gcf.GetGraphicsContext();
+        if (gc == nullptr)
             {
-                const double deltaX{ endX - startX };
-                const double deltaY{ endY - startY };
-                const double len{ std::hypot(deltaX, deltaY) };
-                if (len <= 0 || count <= 0)
-                    {
-                    return;
-                    }
-                const double unitX{ safe_divide<double>(deltaX, len) };
-                const double unitY{ safe_divide<double>(deltaY, len) };
-                const double span{ len * (endFrac - startFrac) };
-                const double toothWidth{ safe_divide<double>(span, 2.0 * count) };
-                for (int i = 0; i < count; ++i)
-                    {
-                    const double offset{ (len * startFrac) + ((2.0 * i + 1.0) * toothWidth) };
-                    const double baseX{ startX + (unitX * offset) };
-                    const double baseY{ startY + (unitY * offset) };
-                    const double baseEndX{ baseX + (unitX * toothWidth) };
-                    const double baseEndY{ baseY + (unitY * toothWidth) };
-                    // top row points down-left like the outer teeth; bottom row
-                    // points at the upper lip
-                    double normalX{ 0.0 };
-                    double normalY{ 0.0 };
-                    if (verticalSign == 1)
-                        {
-                        normalX = static_cast<double>(lowerLipX) - upperLipX;
-                        normalY = static_cast<double>(lowerLipY) - upperLipY;
-                        }
-                    else
-                        {
-                        normalX = static_cast<double>(upperLipX) - baseX;
-                        normalY = static_cast<double>(upperLipY) - baseY;
-                        }
-                    const double normalLength{ std::hypot(normalX, normalY) };
-                    if (normalLength > 0)
-                        {
-                        normalX = safe_divide<double>(normalX, normalLength);
-                        normalY = safe_divide<double>(normalY, normalLength);
-                        }
-                    const double toothLen{ (verticalSign == 1) ? (toothHeight * 1.6) :
-                                                                 toothHeight };
-                    const double apexX{ baseX + (normalX * toothLen) };
-                    const double apexY{ baseY + (normalY * toothLen) };
-                    // the base is pushed back into the jaw, which the head covers
-                    const double rootX{ normalX * rootDepth };
-                    const double rootY{ normalY * rootDepth };
-                    wxGraphicsPath tooth = gc->CreatePath();
-                    tooth.MoveToPoint(baseX - rootX, baseY - rootY);
-                    tooth.AddLineToPoint(apexX, apexY);
-                    tooth.AddLineToPoint(baseEndX - rootX, baseEndY - rootY);
-                    tooth.CloseSubpath();
-                    gc->SetPen(wxPen{
-                        wxColour{ 80, 80, 80 },
-                        static_cast<int>(std::lround(std::max(1.0, ScaleToScreenAndCanvas(1)))) });
-                    gc->SetBrush(wxBrush{ *wxWHITE });
-                    gc->FillPath(tooth);
-                    gc->StrokePath(tooth);
-                    }
-            };
-
-            drawTeeth(upperLipX, upperLipY, innerX, mouthY, 4, 1, 0.25, 0.8);
-            drawTeeth(lowerLipX, lowerLipY, innerX, mouthY, 4, 0, 0.0, 0.7);
+            return boundingBox;
             }
 
         wxGraphicsPath path = gc->CreatePath();
@@ -800,6 +812,260 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
         }
 
     //----------------------------------------------------------------
+    IshikawaDiagram::CauseParts IshikawaDiagram::SplitCauseText(const wxString& text)
+        {
+        // split at every '|', which makes the first piece the problem
+        std::vector<wxString> pieces;
+        size_t start{ 0 };
+        while (true)
+            {
+            const size_t barPos{ text.find(L'|', start) };
+            const size_t pieceEnd{ (barPos == wxString::npos) ? text.length() : barPos };
+            wxString piece{ text.substr(start, pieceEnd - start) };
+            piece.Trim(true).Trim(false);
+            pieces.push_back(piece);
+            if (barPos == wxString::npos)
+                {
+                break;
+                }
+            start = barPos + 1;
+            }
+
+        CauseParts parts;
+        // a leading '|' doesn't separate a problem from an idea, so the text isn't split
+        if (pieces.size() < 2 || pieces.front().empty())
+            {
+            parts.m_problem = text;
+            return parts;
+            }
+
+        for (size_t i = 1; i < pieces.size(); ++i)
+            {
+            // a '|' with nothing after it adds no idea, and a stray '||' is skipped
+            if (!pieces[i].empty())
+                {
+                parts.m_ideas.push_back(pieces[i]);
+                }
+            }
+        // nothing after any of the '|'s means that there was nothing to separate
+        if (parts.m_ideas.empty())
+            {
+            parts.m_problem = text;
+            return parts;
+            }
+        parts.m_problem = pieces.front();
+        return parts;
+        }
+
+    //----------------------------------------------------------------
+    IshikawaDiagram::IdeaMarker IshikawaDiagram::ParseIdeaMarker(const wxString& ideaText)
+        {
+        IdeaMarker marker;
+        marker.m_text = ideaText;
+        if (ideaText.empty())
+            {
+            return marker;
+            }
+
+        size_t markerLength{ 0 };
+        IdeaStatus status{ IdeaStatus::OfInterest };
+        if (ideaText[0] == L'*')
+            {
+            // one star per level of the 3-Dot method, so that '*', '**', and '***'
+            // count as one, two, and three dots
+            while (markerLength < ideaText.length() && ideaText[markerLength] == L'*')
+                {
+                ++markerLength;
+                }
+            status = (markerLength >= 3) ? IdeaStatus::UnderTest :
+                     (markerLength == 2) ? IdeaStatus::InPrep :
+                                           IdeaStatus::OfInterest;
+            }
+        else if (ideaText[0] == L'!')
+            {
+            markerLength = 1;
+            status = IdeaStatus::Selected;
+            }
+        else if (ideaText[0] == L'-')
+            {
+            markerLength = 1;
+            status = IdeaStatus::Rejected;
+            }
+
+        // the marker starts the idea, with or without a space after it
+        marker.m_status = status;
+        marker.m_text = ideaText.substr(markerLength);
+        marker.m_text.Trim(true).Trim(false);
+        return marker;
+        }
+
+    //----------------------------------------------------------------
+    bool IshikawaDiagram::IsDrawingCards() const noexcept
+        {
+        return m_cedacCardStyle != CedacCardStyle::None &&
+               std::ranges::none_of(m_branches,
+                                    [](const BranchItem& branch)
+                                    {
+                                        return std::ranges::any_of(
+                                            branch.m_causes, [](const CauseItem& cause)
+                                            { return !cause.m_subCauses.empty(); });
+                                    });
+        }
+
+    //----------------------------------------------------------------
+    std::unique_ptr<GraphItems::Label> IshikawaDiagram::CreateLegend(const LegendOptions& options)
+        {
+        // the status markers are drawn on idea cards, so there is nothing to explain
+        // without them
+        const auto isDrawnIdea = [](const wxString& ideaText)
+        { return !ParseIdeaMarker(ideaText).m_text.empty(); };
+        const bool hasIdeas{ std::ranges::any_of(
+            m_branches,
+            [&isDrawnIdea](const BranchItem& branch)
+            {
+                return std::ranges::any_of(branch.m_causes,
+                                           [&isDrawnIdea](const CauseItem& cause)
+                                           {
+                                               return std::ranges::any_of(
+                                                   SplitCauseText(cause.m_text).m_ideas,
+                                                   isDrawnIdea);
+                                           });
+            }) };
+        if (!IsDrawingCards() || !hasIdeas)
+            {
+            return nullptr;
+            }
+
+        SetLegendInfo(options);
+
+        auto legend = std::make_unique<GraphItems::Label>(
+            GraphItems::GraphItemInfo{}
+                .Padding(0, 0, 0, GraphItems::Label::GetMinLegendWidthDIPs())
+                .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()))
+                .DPIScaling(GetDPIScaleFactor()));
+
+        // the marker drawn for each status, in the order that IdeaStatus lists them
+        const std::map<wxString, wxString> markers{ { L"•", _(L"Of interest") },
+                                                    { L"••", _(L"In preparation") },
+                                                    { L"•••", _(L"Under test") },
+                                                    { L"✓", _(L"Selected") },
+                                                    { L"✗", _(L"Rejected") } };
+
+        wxString legendText;
+        for (const auto& marker : markers)
+            {
+            if (!legendText.empty())
+                {
+                legendText += L'\n';
+                }
+            legendText += marker.first + L"  " + marker.second;
+            }
+
+        if (options.IsIncludingHeader())
+            {
+            const wxString headerText{ options.GetTitle().empty() ? _(L"Status") :
+                                                                    options.GetTitle() };
+            legendText.Prepend(headerText + L'\n');
+            legend->GetHeaderInfo()
+                .Enable(true)
+                .LabelAlignment(TextAlignment::Centered)
+                .FontColor(Colors::ColorContrast::BlackOrWhiteContrast(GetPlotOrCanvasColor()))
+                .GetFont()
+                .MakeBold()
+                .MakeLarger();
+            }
+        legend->SetText(legendText);
+
+        AddReferenceLinesAndAreasToLegend(*legend);
+        AdjustLegendSettings(*legend, options.GetPlacementHint());
+        return legend;
+        }
+
+    //----------------------------------------------------------------
+    std::unique_ptr<GraphItems::Label> IshikawaDiagram::MakeCauseLabel(
+        wxDC & dc, const wxString& text, const wxPoint& pt, const int maxWidth,
+        const int labelBoxHeight, const wxColour& branchColor, const CauseLabelLayout& layout,
+        const CedacCardKind kind, const bool strikeThroughText) const
+        {
+        auto label = std::make_unique<GraphItems::Label>(
+            GraphItems::GraphItemInfo{ text }
+                .Pen(wxNullPen)
+                .FontColor(layout.m_textColor)
+                // a straight-cornered box draws each side separately, and all four are
+                // off by default
+                .Outline(true, true, true, true)
+                .Scaling(layout.m_scaling * layout.m_labelScale)
+                .DPIScaling(layout.m_dpiScaling)
+                // the problem grows leftward from the rib and the idea rightward,
+                // so that the two sit across from each other
+                .Anchoring((kind == CedacCardKind::Idea) ? Anchoring::BottomLeftCorner :
+                                                           Anchoring::BottomRightCorner)
+                .AnchorPoint(pt)
+                .Selectable(false));
+        if (strikeThroughText)
+            {
+            // CEDAC strikes through a rejected idea, so that it reads as discarded
+            label->GetFont().SetStrikethrough(true);
+            }
+        if (!layout.IsDrawingCards())
+            {
+            if (label->GetBoundingBox(dc).GetWidth() > maxWidth)
+                {
+                label->SplitTextToFitBoundingBox(dc, wxSize{ maxWidth, labelBoxHeight });
+                }
+            return label;
+            }
+
+        // the text starts past the marker's column, whose size doesn't scale with the text
+        const bool hasMarker{ kind == CedacCardKind::Idea };
+        const int markerIndent{ hasMarker ?
+                                    static_cast<int>(CARD_MARKER_WIDTH_DIPS * layout.m_scaling *
+                                                     layout.m_dpiScaling) :
+                                    0 };
+        const int markerIndentDIPs{ hasMarker ? static_cast<int>(std::lround(
+                                                    CARD_MARKER_WIDTH_DIPS / layout.m_labelScale)) :
+                                                0 };
+        // the text is wrapped (and then truncated) to fit inside the card
+        const wxSize innerSize{ std::max(1, layout.m_cardWidth - (2 * layout.m_cardPadding) -
+                                                markerIndent),
+                                std::max(1, layout.m_cardHeight - (2 * layout.m_cardPadding)) };
+        if (const wxRect textBox{ label->GetBoundingBox(dc) };
+            textBox.GetWidth() > innerSize.GetWidth() ||
+            textBox.GetHeight() > innerSize.GetHeight())
+            {
+            label->SplitTextToFitBoundingBox(dc, innerSize);
+            }
+        // every card is the same size, so the text sits in its top-left corner
+        label->SetMinimumUserSizeDIPs(layout.m_cardWidthDIPs, layout.m_cardHeightDIPs);
+        label->SetPadding(CARD_PADDING_DIPS, CARD_PADDING_DIPS, CARD_PADDING_DIPS,
+                          CARD_PADDING_DIPS + markerIndentDIPs);
+        label->SetShadowType(ShadowType::RightSideAndBottomShadow);
+        label->SetTextAlignment(TextAlignment::FlushLeft);
+        label->SetPageVerticalAlignment(PageVerticalAlignment::TopAligned);
+        label->SetPageHorizontalAlignment(PageHorizontalAlignment::LeftAligned);
+        if (layout.m_cedacCardStyle == CedacCardStyle::StickyNote)
+            {
+            const wxColour noteColor{ m_monochrome ? *wxWHITE :
+                                                     ((kind == CedacCardKind::Idea) ?
+                                                          wxColour{ 200, 230, 201 } :
+                                                          wxColour{ 255, 205, 210 }) };
+            label->SetFontBackgroundColor(noteColor);
+            label->GetGraphItemInfo().Pen(wxPen{ branchColor, 1 });
+            label->SetFontColor(*wxBLACK);
+            }
+        else
+            {
+            // an index card is ruled in translucent ink, so it needs a light surface
+            label->SetFontBackgroundColor(*wxWHITE);
+            label->GetGraphItemInfo().Pen(wxPen{ wxColour{ 190, 190, 190 }, 1 });
+            label->SetFontColor(*wxBLACK);
+            label->SetLabelStyle(LabelStyle::IndexCard);
+            }
+        label->GetAccessibilityAttributes().Class(_DT(L"ink-keep"));
+        return label;
+        }
+
+    //----------------------------------------------------------------
     void IshikawaDiagram::RecalcSizes(wxDC & dc)
         {
         Graph2D::RecalcSizes(dc);
@@ -867,42 +1133,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
             auto line = std::make_unique<GraphItems::Lines>(wxPen{ color, width }, GetScaling());
             line->AddLine(start, end);
             return line;
-        };
-
-        // a spine or rib that is thin at its start and thick at its end if tapering is on,
-        // or a plain line of the flat width if it is off
-        const auto makeStroke =
-            [this, &makeLine](const wxPoint& start, const wxPoint& end, const wxColour& color,
-                              const int thinWidth, const int thickWidth,
-                              const int flatWidth) -> std::unique_ptr<GraphItems::GraphItemBase>
-        {
-            if (!m_taperedLines)
-                {
-                return makeLine(start, end, color, flatWidth);
-                }
-            const double deltaX{ static_cast<double>(end.x - start.x) };
-            const double deltaY{ static_cast<double>(end.y - start.y) };
-            const double length{ std::hypot(deltaX, deltaY) };
-            const double startHalf{ ScaleToScreenAndCanvas(thinWidth) / 2 };
-            const double endHalf{ ScaleToScreenAndCanvas(thickWidth) / 2 };
-            // the unit normal of the stroke
-            const double normalX{ safe_divide<double>(-deltaY, length) };
-            const double normalY{ safe_divide<double>(deltaX, length) };
-            const auto offsetPoint = [&](const wxPoint& pt, const double half, const double side)
-            {
-                return wxPoint{ pt.x + static_cast<int>(std::lround(normalX * half * side)),
-                                pt.y + static_cast<int>(std::lround(normalY * half * side)) };
-            };
-            const std::array<wxPoint, 4> points{ offsetPoint(start, startHalf, 1),
-                                                 offsetPoint(end, endHalf, 1),
-                                                 offsetPoint(end, endHalf, -1),
-                                                 offsetPoint(start, startHalf, -1) };
-            return std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo{}
-                                                             .Pen(wxPen{ color })
-                                                             .Brush(wxBrush{ color })
-                                                             .Scaling(GetScaling())
-                                                             .Selectable(false),
-                                                         points);
         };
 
         // boxed label, used for the effect and the branch labels
@@ -1018,11 +1248,46 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
         // branch labels are pushed left of their rib's outer end (away from the rib)
         const int branchLabelOffset{ static_cast<int>(ScaleToScreenAndCanvas(12)) };
 
+        // a card shares its slot with sub-causes, so a diagram with them uses plain labels
+        const CedacCardStyle cardStyle{ IsDrawingCards() ? m_cedacCardStyle :
+                                                           CedacCardStyle::None };
+        // the card styles draw every cause as a card of the same size
+        const bool drawCards{ cardStyle != CedacCardStyle::None };
+        // only cards split a cause at each '|', so a plain label keeps the whole text
+        const auto splitCause = [drawCards](const wxString& text)
+        { return drawCards ? SplitCauseText(text) : CauseParts{ text, {} }; };
+        // a cause's ideas, skipping any that are only a status marker
+        const auto getIdeas = [&splitCause](const wxString& causeText)
+        {
+            std::vector<IdeaMarker> ideas;
+            for (const auto& ideaText : splitCause(causeText).m_ideas)
+                {
+                if (auto idea{ ParseIdeaMarker(ideaText) }; !idea.m_text.empty())
+                    {
+                    ideas.push_back(std::move(idea));
+                    }
+                }
+            return ideas;
+        };
+        // a problem and its first idea share a rib slot, and each later idea takes another
+        const auto getSlotWeight = [&getIdeas](const CauseItem& cause)
+        { return std::max<size_t>(1, getIdeas(cause.m_text).size()) + cause.m_subCauses.size(); };
+        // an idea is drawn on the far side of its rib, which needs room past the last rib
+        const bool hasIdeas{ std::ranges::any_of(
+            shownBranches,
+            [&getIdeas](const auto* branch)
+            {
+                return std::ranges::any_of(branch->m_causes, [&getIdeas](const auto& cause)
+                                           { return !getIdeas(cause.m_text).empty(); });
+            }) };
         const int pairCount{ static_cast<int>((shownBranches.size() + 1) / 2) };
+        // half a slot past the last rib holds the ideas of the branches nearest the head
+        const double slotDivisor{ static_cast<double>(pairCount) + (hasIdeas ? 0.5 : 0.0) };
         // a small plot area must not produce negative sizes, which would flip the ribs
-        const int slotWidth{ std::max(0, safe_divide<int>(spineEndX - spineStartX, pairCount)) };
-        // the tallest a rib can be; ribs toward the head grow to this, ribs toward
-        // the tail are a little shorter, matching the spine's taper
+        const int slotWidth{ std::max(
+            0, static_cast<int>(safe_divide<double>(static_cast<double>(spineEndX - spineStartX),
+                                                    slotDivisor))) };
+        // the tallest a rib can be, with a fish's ribs shortening toward the tail
         const int baseHalfHeight{ std::max(0, (drawArea.GetHeight() / 2) - branchLabelHeight -
                                                   edgeMargin) };
         const int ribShift{ std::max(0, std::min(static_cast<int>(baseHalfHeight * 0.4),
@@ -1031,11 +1296,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
         // how much taller a rib gets as it approaches the head (at the tail's pair index,
         // the rib is this fraction of the tallest rib)
         constexpr double shortestRibRatio{ 0.62 };
-        // the rib height for a pair; pairCount-1 is the pair nearest the head
-        const auto ribHalfHeight = [pairCount, baseHalfHeight](const int pairIndex)
+        // the rib height for a pair (pairCount-1 is nearest the head), constant without a fish
+        const auto ribHalfHeight = [pairCount, baseHalfHeight, hasFish](const int pairIndex)
         {
             // with one pair there is nothing to grow from, so it's already at full height
-            if (pairCount <= 1)
+            if (!hasFish || pairCount <= 1)
                 {
                 return baseHalfHeight;
                 }
@@ -1053,7 +1318,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
             size_t slots{ 0 };
             for (const auto& cause : branch->m_causes)
                 {
-                slots += 1 + cause.m_subCauses.size();
+                slots += getSlotWeight(cause);
                 }
             mostSlots = std::max(mostSlots, slots);
             }
@@ -1090,29 +1355,89 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
                             static_cast<int>(causeLabelHeight * scale) + 1);
         };
 
+        constexpr double MIN_LABEL_SCALE{ 0.5 };
+        const int cardPadding{ static_cast<int>(ScaleToScreenAndCanvas(CARD_PADDING_DIPS)) };
+        // an idea card holds its status marker in a column at the start of its text
+        const int cardMarkerWidth{ static_cast<int>(
+            ScaleToScreenAndCanvas(CARD_MARKER_WIDTH_DIPS)) };
+        int cardWidth{ 0 };
+        int cardHeight{ 0 };
+        if (drawCards)
+            {
+            // a note has room for a couple of lines of text
+            const int preferredHeight{ (2 * causeLabelHeight) + (2 * cardPadding) };
+            // the shortest rib has the least room per slot, and sets the height
+            // for every card on the diagram
+            const int slotSpacing{ static_cast<int>(std::lround(getSlotSpacing(0))) };
+            // a dense rib still keeps room for one line, with the text shrunk to fit
+            const int smallestHeight{ static_cast<int>((causeLabelHeight * MIN_LABEL_SCALE) +
+                                                       (2 * cardPadding)) };
+            cardHeight = std::max(smallestHeight, std::min(preferredHeight, slotSpacing));
+
+            // the longest cause sets the width for every card, so that a short cause
+            // sits in a card with room to spare
+            const auto measureText = [&dc, &makeLabel](const wxString& text)
+            {
+                return makeLabel(text, wxPoint{ 0, 0 }, Anchoring::Center)
+                    ->GetBoundingBox(dc)
+                    .GetWidth();
+            };
+            int widestCause{ 0 };
+            for (const auto* branch : shownBranches)
+                {
+                for (const auto& cause : branch->m_causes)
+                    {
+                    // a problem and its ideas sit in separate cards, so each is measured alone
+                    widestCause =
+                        std::max(widestCause, measureText(splitCause(cause.m_text).m_problem));
+                    for (const auto& idea : getIdeas(cause.m_text))
+                        {
+                        // the marker's column is part of what the card has to hold
+                        widestCause =
+                            std::max(widestCause, measureText(idea.m_text) + cardMarkerWidth);
+                        }
+                    }
+                }
+            // cards on neighboring ribs share the gap, so each gets half of it, down to a minimum
+            const int halfGap{ safe_divide<int>(slotWidth - (2 * labelGap), 2) };
+            const int minCardWidth{ static_cast<int>(ScaleToScreenAndCanvas(44)) };
+            const int cardMaxWidth{ hasIdeas ? std::max(halfGap, minCardWidth) : maxCauseWidth };
+            cardWidth = std::min(cardMaxWidth, widestCause + (2 * cardPadding));
+            }
+
         // all cause labels share one scale, starting with what fits the shortest rib's spacing
-        constexpr double minLabelScale{ 0.5 };
-        double fitScale{ std::clamp(
-            safe_divide<double>(getSlotSpacing(0),
-                                static_cast<double>(causeLabelHeight + (2 * labelGap))),
-            minLabelScale, 1.0) };
-        // causes too long for the lines that fit on their rib shrink every label
+        double fitScale{ drawCards ?
+                             1.0 :
+                             std::clamp(safe_divide<double>(
+                                            getSlotSpacing(0),
+                                            static_cast<double>(causeLabelHeight + (2 * labelGap))),
+                                        MIN_LABEL_SCALE, 1.0) };
+        if (drawCards)
+            {
+            // a card's height is fixed, so a line of text has to fit inside it
+            fitScale =
+                std::min(fitScale, safe_divide<double>(cardHeight - (2 * cardPadding),
+                                                       static_cast<double>(causeLabelHeight)));
+            }
+        // causes too long for the lines that fit shrink every label
         // (down to a point), rather than being truncated
         const double spacingScale{ fitScale };
         for (size_t i = 0; i < shownBranches.size(); ++i)
             {
             const int pairIndex{ getPairIndex(i) };
+            // a card holds a fixed number of lines; a plain label holds as many as its rib allows
             const int linesThatFit{ std::max(
-                1, safe_divide<int>(getLabelBoxHeight(pairIndex, spacingScale),
+                1, safe_divide<int>(drawCards ? (cardHeight - (2 * cardPadding)) :
+                                                getLabelBoxHeight(pairIndex, spacingScale),
                                     static_cast<int>(causeLabelHeight * spacingScale))) };
+            const int causeWidth{ drawCards ? (cardWidth - (2 * cardPadding)) : maxCauseWidth };
             const auto fitText = [&](const wxString& text, const int maxWidth)
             {
                 const int textWidth{ makeLabel(text, wxPoint{ 0, 0 }, Anchoring::Center,
                                                spacingScale)
                                          ->GetBoundingBox(dc)
                                          .GetWidth() };
-                const int availableWidth{ maxWidth * linesThatFit };
-                if (textWidth > availableWidth)
+                if (const int availableWidth{ maxWidth * linesThatFit }; textWidth > availableWidth)
                     {
                     fitScale = std::min(
                         fitScale, spacingScale * safe_divide<double>(availableWidth, textWidth));
@@ -1120,24 +1445,118 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
             };
             for (const auto& cause : shownBranches[i]->m_causes)
                 {
-                fitText(cause.m_text, maxCauseWidth);
+                // a problem and its ideas each get their own card, so each is fitted alone
+                fitText(splitCause(cause.m_text).m_problem, causeWidth);
+                for (const auto& idea : getIdeas(cause.m_text))
+                    {
+                    // the marker's column is not available to the text
+                    fitText(idea.m_text, std::max(1, causeWidth - cardMarkerWidth));
+                    }
                 for (const auto& subCause : cause.m_subCauses)
                     {
                     fitText(subCause, maxSubCauseWidth);
                     }
                 }
             }
-        const double labelScale{ std::max(minLabelScale, fitScale) };
+        const double labelScale{ std::max(MIN_LABEL_SCALE, fitScale) };
+        // stacked idea cards overlap by their scaled bottom padding, keeping the text visible
+        const int ideaStackStep{ std::max(
+            1, cardHeight - static_cast<int>(std::lround(cardPadding * labelScale))) };
+        // how far a card may be nudged off of its slot without covering a neighbor's text
+        const int jitterAmplitude{ std::clamp((cardPadding - 1) / 2, 1, 3) };
+        // each card in a stack is also nudged right, so that it reads as a separate card
+        const int ideaStackNudge{ jitterAmplitude };
         // recomputed per branch, as each rib's height varies
         int labelBoxHeight{ causeLabelHeight + 1 };
-        const auto makeCauseLabel = [&](const wxString& text, const wxPoint& pt, const int maxWidth)
+        const CauseLabelLayout causeLabelLayout{
+            .m_cedacCardStyle = cardStyle,
+            .m_labelScale = labelScale,
+            .m_cardWidth = cardWidth,
+            .m_cardHeight = cardHeight,
+            .m_cardPadding = cardPadding,
+            .m_cardWidthDIPs = static_cast<wxCoord>(std::lround(
+                DownscaleFromScreenAndCanvas(safe_divide<double>(cardWidth, labelScale)))),
+            .m_cardHeightDIPs = static_cast<wxCoord>(std::lround(
+                DownscaleFromScreenAndCanvas(safe_divide<double>(cardHeight, labelScale)))),
+            .m_scaling = GetScaling(),
+            .m_dpiScaling = GetDPIScaleFactor(),
+            .m_textColor = contrastedText
+        };
+        // fixed nudges look hand-assembled, while keeping the screen and exports identical
+        const auto getCardOffset = [&](const size_t slotIndex)
         {
-            auto label = makeLabel(text, pt, Anchoring::BottomRightCorner, labelScale);
-            if (label->GetBoundingBox(dc).GetWidth() > maxWidth)
+            if (!drawCards)
                 {
-                label->SplitTextToFitBoundingBox(dc, wxSize{ maxWidth, labelBoxHeight });
+                return wxPoint{ 0, 0 };
                 }
-            return label;
+            // alternating, with a two-step magnitude so that no two seams line up
+            const int verticalOffset{ (((slotIndex % 2) == 0) ? -1 : 1) *
+                                      (jitterAmplitude + static_cast<int>(slotIndex % 2)) };
+            // the cards are also shifted sideways, so that their right edges don't line up
+            const int horizontalOffset{ (((slotIndex % 4) < 2) ? -1 : 1) * jitterAmplitude };
+            return wxPoint{ horizontalOffset, verticalOffset };
+        };
+        // an idea's status is shown at the start of its card as dots, a checkmark, or an X
+        const auto addIdeaMarker = [this, cardHeight, cardPadding, causeLabelHeight,
+                                    labelScale](const wxPoint& cardAnchor, const IdeaMarker& idea)
+        {
+            // the marker sits on the card's first line and doesn't scale with the text
+            const int lineHeight{ static_cast<int>(causeLabelHeight * labelScale) };
+            const int topPadding{ static_cast<int>(cardPadding * labelScale) };
+            const int lineCenterY{ cardAnchor.y - cardHeight + topPadding + (lineHeight / 2) };
+            const int markerLeft{ cardAnchor.x + topPadding };
+            if (idea.IsSelected() || idea.IsRejected())
+                {
+                // a checkmark or an X, drawn in black if the diagram is monochrome
+                const wxColour markerColor{ m_monochrome ?
+                                                *wxBLACK :
+                                                (idea.IsSelected() ? wxColour{ 46, 125, 50 } :
+                                                                     wxColour{ 200, 45, 45 }) };
+                const int glyphSize{ static_cast<int>(ScaleToScreenAndCanvas(8)) };
+                const int left{ markerLeft };
+                const int right{ markerLeft + glyphSize };
+                const int top{ lineCenterY - (glyphSize / 2) };
+                const int bottom{ lineCenterY + (glyphSize / 2) };
+                auto strokes =
+                    std::make_unique<GraphItems::Lines>(wxPen{ markerColor, 2 }, GetScaling());
+                // a marker is ink on the card, so it keeps its color in dark mode
+                strokes->GetAccessibilityAttributes().Class(_DT(L"ink-keep"));
+                if (idea.IsRejected())
+                    {
+                    strokes->AddLine(wxPoint{ left, top }, wxPoint{ right, bottom });
+                    strokes->AddLine(wxPoint{ left, bottom }, wxPoint{ right, top });
+                    }
+                else
+                    {
+                    // a short stroke down to the bottom, then a long one up to the right
+                    const int elbowX{ left + ((glyphSize * 2) / 5) };
+                    strokes->AddLine(wxPoint{ left, lineCenterY }, wxPoint{ elbowX, bottom });
+                    strokes->AddLine(wxPoint{ elbowX, bottom }, wxPoint{ right, top });
+                    }
+                AddObject(std::move(strokes));
+                return;
+                }
+
+            // one dot per level, filled in like the stickers on a CEDAC board
+            const int dotRadius{ static_cast<int>(ScaleToScreenAndCanvas(2)) };
+            const int dotGap{ static_cast<int>(ScaleToScreenAndCanvas(1)) };
+            for (int dot = 0; dot < idea.GetDotCount(); ++dot)
+                {
+                AddObject(std::make_unique<GraphItems::Point2D>(
+                    GraphItems::GraphItemInfo{}
+                        .Brush(wxBrush{ *wxBLACK })
+                        .Pen(wxPen{ *wxBLACK })
+                        // ink on the card, so it keeps its color in dark mode
+                        .Accessibility(wxSVGAttributes{}.Class(_DT(L"ink-keep")))
+                        .Scaling(GetScaling())
+                        .DPIScaling(GetDPIScaleFactor())
+                        .Anchoring(Anchoring::Center)
+                        .AnchorPoint(
+                            wxPoint{ markerLeft + dotRadius + (dot * ((2 * dotRadius) + dotGap)),
+                                     lineCenterY })
+                        .Selectable(false),
+                    2));
+                }
         };
 
         if (hasFish)
@@ -1278,7 +1697,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
             const bool isTop{ i % 2 == 0 };
             const int direction{ isTop ? -1 : 1 };
             const int pairIndex{ getPairIndex(i) };
-            // ribs grow taller as they approach the head
+            // ribs grow taller as they approach the head, unless there is no fish to
+            // make a rib cage of
             const int halfHeight{ ribHalfHeight(pairIndex) };
             labelBoxHeight = getLabelBoxHeight(pairIndex, labelScale);
 
@@ -1288,8 +1708,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
             // sub-causes are a lighter shade of their branch's color
             const wxColour subColor{ ensureVisible(
                 Colors::ColorContrast::Tint(branchColor, 0.65)) };
-            // the ribs widen toward the spine (more pronounced taper toward head)
-            AddObject(makeStroke(outerPt, attachPt, branchColor, 1, 5, 2));
+            // the ribs are drawn with a constant width
+            AddObject(makeLine(outerPt, attachPt, branchColor, 2));
 
             if (m_showBranchLabels)
                 {
@@ -1300,32 +1720,56 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
                                     branchColor));
                 }
 
-            // each cause and sub-cause gets one evenly spaced slot along the rib,
-            // in the order that they are listed when reading from top to bottom
+            // each cause and sub-cause gets an evenly spaced slot, in top-to-bottom order
             size_t slotCount{ 0 };
             for (const auto& cause : branch.m_causes)
                 {
-                slotCount += 1 + cause.m_subCauses.size();
+                slotCount += getSlotWeight(cause);
                 }
             size_t slot{ 0 };
-            const auto getRibPoint = [&]()
+            // a cause takes a slot per card, which leaves room for its stack of ideas
+            const auto getRibPoint = [&](const size_t weight)
             {
                 const double fromTop{ safe_divide<double>(static_cast<double>(slot + 1),
                                                           static_cast<double>(slotCount + 1)) };
                 // the rib is measured from its outer end, which is at the bottom for lower branches
                 const double ratio{ isTop ? fromTop : 1.0 - fromTop };
-                ++slot;
+                slot += weight;
                 return wxPoint{ outerPt.x + static_cast<int>((attachPt.x - outerPt.x) * ratio),
                                 outerPt.y + static_cast<int>((attachPt.y - outerPt.y) * ratio) };
             };
             for (const auto& cause : branch.m_causes)
                 {
-                const wxPoint causePt{ getRibPoint() };
-                AddObject(makeLine(causePt, wxPoint{ causePt.x - twigLength, causePt.y },
-                                   branchColor, 1));
-                AddObject(makeCauseLabel(cause.m_text, wxPoint{ causePt.x - labelGap, causePt.y },
-                                         maxCauseWidth));
-                // a dot where the twig meets the rib
+                const size_t slotIndex{ slot };
+                const wxPoint causePt{ getRibPoint(getSlotWeight(cause)) };
+                // a card covers its twig, so there is nothing to draw under it
+                if (!drawCards)
+                    {
+                    AddObject(makeLine(causePt, wxPoint{ causePt.x - twigLength, causePt.y },
+                                       branchColor, 1));
+                    }
+                const wxPoint cardOffset{ getCardOffset(slotIndex) };
+                AddObject(MakeCauseLabel(dc, splitCause(cause.m_text).m_problem,
+                                         wxPoint{ causePt.x - labelGap, causePt.y } + cardOffset,
+                                         maxCauseWidth, labelBoxHeight, branchColor,
+                                         causeLabelLayout, CedacCardKind::Problem));
+                // the ideas are stacked across the rib from their problem
+                const auto ideas{ getIdeas(cause.m_text) };
+                for (size_t ideaIndex = 0; ideaIndex < ideas.size(); ++ideaIndex)
+                    {
+                    const wxPoint ideaAnchor{
+                        wxPoint{ causePt.x + labelGap +
+                                     (static_cast<int>(ideaIndex) * ideaStackNudge),
+                                 causePt.y + (static_cast<int>(ideaIndex) * ideaStackStep) } +
+                        cardOffset
+                    };
+                    AddObject(MakeCauseLabel(dc, ideas[ideaIndex].m_text, ideaAnchor, maxCauseWidth,
+                                             labelBoxHeight, branchColor, causeLabelLayout,
+                                             CedacCardKind::Idea, ideas[ideaIndex].IsRejected()));
+                    // the marker is drawn on top of the card that was just added
+                    addIdeaMarker(ideaAnchor, ideas[ideaIndex]);
+                    }
+                // a dot where the cause meets the rib
                 AddObject(std::make_unique<GraphItems::Point2D>(GraphItems::GraphItemInfo{}
                                                                     .Brush(wxBrush{ branchColor })
                                                                     .Pen(wxPen{ branchColor })
@@ -1346,11 +1790,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
                 int lastY{ causePt.y };
                 for (const auto& subCause : cause.m_subCauses)
                     {
-                    const wxPoint subPt{ getRibPoint() };
+                    const wxPoint subPt{ getRibPoint(1) };
                     AddObject(makeLine(wxPoint{ connectorX, subPt.y },
                                        wxPoint{ connectorX - subLength, subPt.y }, subColor, 1));
-                    AddObject(makeCauseLabel(subCause, wxPoint{ connectorX - labelGap, subPt.y },
-                                             maxSubCauseWidth));
+                    AddObject(MakeCauseLabel(
+                        dc, subCause, wxPoint{ connectorX - labelGap, subPt.y }, maxSubCauseWidth,
+                        labelBoxHeight, subColor, causeLabelLayout, CedacCardKind::Problem));
                     lastY = subPt.y;
                     }
                 AddObject(makeLine(wxPoint{ connectorX, causePt.y }, wxPoint{ connectorX, lastY },
@@ -1386,16 +1831,27 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
                 }
             }
 
-        // draw the spine on top of the ribs
-        if (m_taperedLines)
+        // the spine is drawn over the ribs, in red if there is no fish and it isn't monochrome
+        const wxColour spineLineColor{ (hasFish || m_monochrome) ? spineColor :
+                                                                   wxColour{ 220, 40, 45 } };
+        // without a fish, the spine ends at the base of an arrow head to hide its round cap
+        const int arrowLength{ hasFish ? 0 : static_cast<int>(ScaleToScreenAndCanvas(14)) };
+        const int arrowHalfHeight{ static_cast<int>(ScaleToScreenAndCanvas(6)) };
+        AddObject(makeLine(wxPoint{ spineStartX, spineY },
+                           wxPoint{ spineEndX - arrowLength, spineY }, spineLineColor, 3));
+        if (!hasFish)
             {
-            AddObject(makeStroke(wxPoint{ spineStartX, spineY }, wxPoint{ spineEndX, spineY },
-                                 spineColor, 2, 6, 3));
-            }
-        else
-            {
-            AddObject(makeLine(wxPoint{ spineStartX, spineY }, wxPoint{ spineEndX, spineY },
-                               spineColor, 3));
+            const std::array<wxPoint, 3> arrowPoints{
+                wxPoint{ spineEndX, spineY },
+                wxPoint{ spineEndX - arrowLength, spineY - arrowHalfHeight },
+                wxPoint{ spineEndX - arrowLength, spineY + arrowHalfHeight }
+            };
+            AddObject(std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo{}
+                                                                .Pen(wxNullPen)
+                                                                .Brush(spineLineColor)
+                                                                .Scaling(GetScaling())
+                                                                .DPIScaling(GetDPIScaleFactor()),
+                                                            arrowPoints));
             }
         }
     } // namespace Wisteria::Graphs

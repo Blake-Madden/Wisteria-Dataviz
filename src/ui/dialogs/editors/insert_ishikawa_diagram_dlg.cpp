@@ -333,6 +333,16 @@ namespace Wisteria::UI
         guide.m_examples = { std::move(causes) };
 
         guide.m_missingData = { _(L"Blank cells are skipped.") };
+        guide.m_notes = {
+            _(L"A CEDAC card style reads a cause as a problem and its ideas, split at each '|', "
+              "such as \"Frequent stops | Replace worn bearings | ** Schedule service\". Without "
+              "a card style, the '|' is part of the text."),
+            _(L"An idea can start with a status marker, as on a CEDAC board: '*' is of interest, "
+              "'**' is in preparation, '***' is under test, '!' is selected, and '-' is "
+              "rejected."),
+            _(L"Typed causes and sub-causes are separated by spaces; put quotes around a value "
+              "that contains a space, such as \"Worn belts\".")
+        };
         return guide;
         }
 
@@ -410,10 +420,6 @@ namespace Wisteria::UI
                                          wxDefaultPosition, wxDefaultSize, 0,
                                          wxGenericValidator{ &m_showCauseCounts }),
                           wxSizerFlags{}.Border());
-        optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Tapered lines"),
-                                         wxDefaultPosition, wxDefaultSize, 0,
-                                         wxGenericValidator{ &m_taperedLines }),
-                          wxSizerFlags{}.Border());
         optionsSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Monochrome"), wxDefaultPosition,
                                          wxDefaultSize, 0, wxGenericValidator{ &m_monochrome }),
                           wxSizerFlags{}.Border());
@@ -432,6 +438,21 @@ namespace Wisteria::UI
         fishStyleSizer->Add(fishStyleChoice);
         optionsSizer->Add(fishStyleSizer, wxSizerFlags{}.Border());
 
+        auto* cardStyleSizer = new wxBoxSizer(wxHORIZONTAL);
+        cardStyleSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"CEDAC card style:")),
+                            wxSizerFlags{}.CenterVertical().Border(wxRIGHT));
+        // in the same order as IshikawaDiagram::CedacCardStyle
+        m_cedacCardStyleChoice =
+            new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, FromDIP(wxSize{ 120, -1 }),
+                         wxArrayString{ _(L"None"), _(L"Sticky Note"), _(L"Index Card") }, 0,
+                         wxGenericValidator{ &m_cedacCardStyle });
+        m_cedacCardStyleChoice->SetSelection(m_cedacCardStyle);
+        m_cedacCardStyleChoice->Bind(
+            wxEVT_CHOICE, [this]([[maybe_unused]] wxCommandEvent&)
+            { m_cedacCardStyle = m_cedacCardStyleChoice->GetSelection(); });
+        cardStyleSizer->Add(m_cedacCardStyleChoice);
+        optionsSizer->Add(cardStyleSizer, wxSizerFlags{}.Border());
+
         datasetChoice->Bind(wxEVT_CHOICE,
                             [this]([[maybe_unused]] wxCommandEvent&) { OnDatasetChanged(); });
         addBranchBtn->Bind(wxEVT_BUTTON,
@@ -443,6 +464,7 @@ namespace Wisteria::UI
         // LoadFromGraph() will overwrite these for edit mode
         FillBranchesFromCategories();
 
+        CreateLegendOptionsPage();
         CreateGraphOptionsPage();
         CreatePageOptionsPage();
         }
@@ -621,6 +643,15 @@ namespace Wisteria::UI
 
         m_branchPanel->FitInside();
         m_branchPanel->Layout();
+
+        // a card shares its cause's slot with the cause's sub-causes, so the card styles
+        // can't be used while any sub-causes are assigned
+        if (m_cedacCardStyleChoice != nullptr)
+            {
+            const bool hasSubCauses{ std::ranges::any_of(m_branches, [](const auto& branch)
+                                                         { return !branch.m_subCauses.empty(); }) };
+            m_cedacCardStyleChoice->Enable(!hasSubCauses);
+            }
         }
 
     //-------------------------------------------
@@ -862,9 +893,9 @@ namespace Wisteria::UI
         m_showEmptyBranches = diagram->IsShowingEmptyBranches();
         m_showBranchLabels = diagram->IsShowingBranchLabels();
         m_showCauseCounts = diagram->IsShowingCauseCounts();
-        m_taperedLines = diagram->IsTaperedLines();
         m_monochrome = diagram->IsMonochrome();
         m_fishStyle = static_cast<int>(diagram->GetFishStyle());
+        m_cedacCardStyle = static_cast<int>(diagram->GetCedacCardStyle());
         m_branches = diagram->GetBranches();
         // select the set of categories that the branches are labeled with, if any
         for (const auto categories : { Graphs::IshikawaDiagram::CauseCategories::Manufacturing,
@@ -899,9 +930,10 @@ namespace Wisteria::UI
         plot->ShowEmptyBranches(m_showEmptyBranches);
         plot->ShowBranchLabels(m_showBranchLabels);
         plot->ShowCauseCounts(m_showCauseCounts);
-        plot->SetTaperedLines(m_taperedLines);
         plot->SetMonochrome(m_monochrome);
         plot->SetFishStyle(static_cast<Graphs::IshikawaDiagram::FishStyle>(m_fishStyle));
+        plot->SetCedacCardStyle(
+            static_cast<Graphs::IshikawaDiagram::CedacCardStyle>(m_cedacCardStyle));
         plot->SetData(GetSelectedDataset(), GetEffect(), GetBranches());
 
         if (oldGraph != nullptr)

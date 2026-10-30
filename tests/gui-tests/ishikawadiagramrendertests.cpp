@@ -92,6 +92,20 @@ namespace
         LayOutOffscreen(canvas, chart);
         return chart->GetObjectCount();
         }
+
+    [[nodiscard]]
+    size_t CardObjectCount(
+        const std::vector<wxString>& causes,
+        const IshikawaDiagram::CedacCardStyle style = IshikawaDiagram::CedacCardStyle::StickyNote)
+        {
+        auto* canvas = MakeCanvas();
+        auto chart = std::make_shared<IshikawaDiagram>(canvas);
+        chart->SetCedacCardStyle(style);
+        const IshikawaDiagram::Branch branch{ L"Personnel", wxString{}, {}, causes };
+        chart->SetData(BuildDataset(), L"Surface flaws", { branch });
+        LayOutOffscreen(canvas, chart);
+        return chart->GetObjectCount();
+        }
     } // namespace
 
 TEST_CASE("IshikawaDiagram draws a twig and label per cause", "[ishikawadiagram][render]")
@@ -322,24 +336,6 @@ TEST_CASE("IshikawaDiagram can show cause counts in the branch labels", "[ishika
     CHECK(draw(true) == draw(false));
     }
 
-TEST_CASE("IshikawaDiagram tapers its lines by default", "[ishikawadiagram][render]")
-    {
-    const auto draw = [](const bool tapered)
-    {
-        auto* canvas = MakeCanvas();
-        auto chart = std::make_shared<IshikawaDiagram>(canvas);
-        CHECK(chart->IsTaperedLines());
-        chart->SetTaperedLines(tapered);
-        CHECK(chart->IsTaperedLines() == tapered);
-        chart->SetData(BuildDataset(), L"Effect",
-                       { { L"Personnel", L"Man", {} }, { L"Machines", L"Machine", {} } });
-        LayOutOffscreen(canvas, chart);
-        return chart->GetObjectCount();
-    };
-    // the spine and ribs are polygons instead of lines, but there are the same number of them
-    CHECK(draw(true) == draw(false));
-    }
-
 TEST_CASE("IshikawaDiagram can change its fish style", "[ishikawadiagram][render]")
     {
     const auto draw = [](const IshikawaDiagram::FishStyle style)
@@ -380,4 +376,111 @@ TEST_CASE("IshikawaDiagram skips sub-causes of a cause that doesn't exist",
     const size_t withOrphan{ ObjectCount(
         { { L"Man", L"Man", { { L"Missing", L"TrainingDetails" } } } }, true, true) };
     CHECK(withOrphan == withoutSubs);
+    }
+
+TEST_CASE("IshikawaDiagram draws a card for each problem and idea", "[ishikawadiagram][render]")
+    {
+    const size_t problemOnly{ CardObjectCount({ L"Problem" }) };
+    // each idea adds a card and its status marker, which is one dot without a marker
+    CHECK(CardObjectCount({ L"Problem | Idea" }) == problemOnly + 2);
+    CHECK(CardObjectCount({ L"Problem | One | Two" }) == problemOnly + 4);
+    CHECK(CardObjectCount({ L"Problem | Idea" }, IshikawaDiagram::CedacCardStyle::IndexCard) ==
+          problemOnly + 2);
+    }
+
+TEST_CASE("IshikawaDiagram only splits a cause around a real idea", "[ishikawadiagram][render]")
+    {
+    const size_t problemOnly{ CardObjectCount({ L"Problem" }) };
+    // nothing in front of the first '|', or nothing after any of them
+    CHECK(CardObjectCount({ L"| Idea" }) == problemOnly);
+    CHECK(CardObjectCount({ L"Problem |" }) == problemOnly);
+    CHECK(CardObjectCount({ L"Problem | |" }) == problemOnly);
+    // an empty piece between two '|'s is skipped
+    CHECK(CardObjectCount({ L"Problem || Idea" }) == problemOnly + 2);
+    CHECK(CardObjectCount({ L"Problem | | Idea" }) == problemOnly + 2);
+    }
+
+TEST_CASE("IshikawaDiagram draws an idea's status marker", "[ishikawadiagram][render]")
+    {
+    const size_t problemOnly{ CardObjectCount({ L"Problem" }) };
+    // a card plus a dot per level
+    CHECK(CardObjectCount({ L"Problem | *Idea" }) == problemOnly + 2);
+    CHECK(CardObjectCount({ L"Problem | **Idea" }) == problemOnly + 3);
+    CHECK(CardObjectCount({ L"Problem | ***Idea" }) == problemOnly + 4);
+    // the 3-Dot method stops at three levels
+    CHECK(CardObjectCount({ L"Problem | ****Idea" }) == problemOnly + 4);
+    // a space after the marker is optional
+    CHECK(CardObjectCount({ L"Problem | ** Idea" }) == problemOnly + 3);
+    // a card plus a single checkmark or X
+    CHECK(CardObjectCount({ L"Problem | !Idea" }) == problemOnly + 2);
+    CHECK(CardObjectCount({ L"Problem | -Idea" }) == problemOnly + 2);
+    // any leading '-' is a marker
+    CHECK(CardObjectCount({ L"Problem | -5% scrap" }) == problemOnly + 2);
+    // a marker without any text is not an idea
+    CHECK(CardObjectCount({ L"Problem | **" }) == problemOnly);
+    CHECK(CardObjectCount({ L"Problem | !" }) == problemOnly);
+    }
+
+TEST_CASE("IshikawaDiagram keeps a '|' in a plain label", "[ishikawadiagram][render]")
+    {
+    constexpr auto NO_CARDS{ IshikawaDiagram::CedacCardStyle::None };
+    CHECK(CardObjectCount({ L"Problem | One | Two" }, NO_CARDS) ==
+          CardObjectCount({ L"Problem" }, NO_CARDS));
+    }
+
+TEST_CASE("IshikawaDiagram falls back to plain labels with sub-causes", "[ishikawadiagram][render]")
+    {
+    const auto draw = [](const IshikawaDiagram::CedacCardStyle style)
+    {
+        auto* canvas = MakeCanvas();
+        auto chart = std::make_shared<IshikawaDiagram>(canvas);
+        chart->SetCedacCardStyle(style);
+        IshikawaDiagram::Branch branch{ L"Personnel", wxString{}, {}, { L"Speed", L"Age" } };
+        branch.m_subCauses.push_back({ L"Speed", wxString{}, { L"Gear" } });
+        chart->SetData(BuildDataset(), L"Effect", { branch });
+        LayOutOffscreen(canvas, chart);
+        CHECK_FALSE(chart->IsDrawingCards());
+        // the style is remembered for when the sub-causes are removed
+        CHECK(chart->GetCedacCardStyle() == style);
+        return chart->GetObjectCount();
+    };
+    CHECK(draw(IshikawaDiagram::CedacCardStyle::StickyNote) ==
+          draw(IshikawaDiagram::CedacCardStyle::None));
+    }
+
+TEST_CASE("IshikawaDiagram legend explains the status markers", "[ishikawadiagram][render]")
+    {
+    const auto makeChart =
+        [](const IshikawaDiagram::CedacCardStyle style, const IshikawaDiagram::Branch& branch)
+    {
+        auto chart = std::make_shared<IshikawaDiagram>(MakeCanvas());
+        chart->SetCedacCardStyle(style);
+        chart->SetData(BuildDataset(), L"Effect", { branch });
+        return chart;
+    };
+    const auto legendOptions{ LegendOptions{}.IncludeHeader(true).PlacementHint(
+        LegendCanvasPlacementHint::RightOfGraph) };
+    const IshikawaDiagram::Branch ideas{ L"Personnel", wxString{}, {}, { L"Problem | Idea" } };
+
+    const auto legend =
+        makeChart(IshikawaDiagram::CedacCardStyle::StickyNote, ideas)->CreateLegend(legendOptions);
+    REQUIRE(legend != nullptr);
+    CHECK(legend->GetText().find(_(L"Status")) != wxString::npos);
+    CHECK(legend->GetText().find(_(L"Of interest")) != wxString::npos);
+    CHECK(legend->GetText().find(_(L"Rejected")) != wxString::npos);
+
+    // plain labels have no markers to explain
+    CHECK(makeChart(IshikawaDiagram::CedacCardStyle::None, ideas)->CreateLegend(legendOptions) ==
+          nullptr);
+    // neither do cards without an idea, or with a marker that has no text
+    const IshikawaDiagram::Branch noIdeas{ L"Personnel", wxString{}, {}, { L"Problem" } };
+    CHECK(makeChart(IshikawaDiagram::CedacCardStyle::StickyNote, noIdeas)
+              ->CreateLegend(legendOptions) == nullptr);
+    const IshikawaDiagram::Branch markerOnly{ L"Personnel", wxString{}, {}, { L"Problem | **" } };
+    CHECK(makeChart(IshikawaDiagram::CedacCardStyle::StickyNote, markerOnly)
+              ->CreateLegend(legendOptions) == nullptr);
+    IshikawaDiagram::Branch withSubCauses{ L"Personnel", wxString{}, {}, { L"Speed" } };
+    withSubCauses.m_subCauses.push_back({ L"Speed", wxString{}, { L"Gear" } });
+    CHECK(makeChart(IshikawaDiagram::CedacCardStyle::StickyNote, withSubCauses)
+              ->CreateLegend(legendOptions) == nullptr);
     }

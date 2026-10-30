@@ -247,5 +247,5 @@ void Wisteria::ReportSlideExportBase::RenderCanvas(Canvas* canvas, const wxSize 
 //------------------------------------------------------
 wxString Wisteria::ReportSlideExportBase::ColorToHex(const wxColour& color)
     {
-    return color.GetAsString(wxC2S_HTML_SYNTAX).Mid(1).Upper();
+    return color.GetAsString(wxC2S_HTML_SYNTAX).AfterFirst(L'#').Upper();
     }

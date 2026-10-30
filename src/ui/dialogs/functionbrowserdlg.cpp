@@ -36,7 +36,7 @@ namespace Wisteria::UI
             {
             return;
             }
-        const wxString target = url.Mid(GetUrlScheme().length());
+        const wxString target = url.substr(GetUrlScheme().length());
 
         const auto [parentPos, childPos] = m_categoryList->FindSubItem(target);
         if (parentPos.has_value())

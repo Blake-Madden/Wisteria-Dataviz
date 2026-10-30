@@ -4975,10 +4975,6 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             {
             node->Add(L"show-branch-labels", false);
             }
-        if (!ishikawa->IsTaperedLines())
-            {
-            node->Add(L"tapered", false);
-            }
         if (ishikawa->IsShowingCauseCounts())
             {
             node->Add(L"show-cause-counts", true);
@@ -4994,6 +4990,17 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             if (fishStyleStr.has_value())
                 {
                 node->Add(L"fish-style", fishStyleStr.value());
+                }
+            }
+        if (ishikawa->GetCedacCardStyle() !=
+            Wisteria::Graphs::IshikawaDiagram::CedacCardStyle::None)
+            {
+            const auto cardStyleStr =
+                Wisteria::ReportEnumConvert::ConvertIshikawaCedacCardStyleToString(
+                    ishikawa->GetCedacCardStyle());
+            if (cardStyleStr.has_value())
+                {
+                node->Add(L"card-style", cardStyleStr.value());
                 }
             }
         // typed causes are written as an array of strings

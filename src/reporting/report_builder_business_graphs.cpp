@@ -248,10 +248,6 @@ namespace Wisteria
             {
             ishikawa->ShowBranchLabels(graphNode->GetProperty(L"show-branch-labels")->AsBool());
             }
-        if (graphNode->HasProperty(L"tapered"))
-            {
-            ishikawa->SetTaperedLines(graphNode->GetProperty(L"tapered")->AsBool());
-            }
         if (graphNode->HasProperty(L"show-cause-counts"))
             {
             ishikawa->ShowCauseCounts(graphNode->GetProperty(L"show-cause-counts")->AsBool());
@@ -263,6 +259,15 @@ namespace Wisteria
                 fishStyle.has_value())
                 {
                 ishikawa->SetFishStyle(fishStyle.value());
+                }
+            }
+        if (graphNode->HasProperty(L"card-style"))
+            {
+            if (const auto cardStyle = ReportEnumConvert::ConvertIshikawaCedacCardStyle(
+                    graphNode->GetProperty(L"card-style")->AsString());
+                cardStyle.has_value())
+                {
+                ishikawa->SetCedacCardStyle(cardStyle.value());
                 }
             }
 

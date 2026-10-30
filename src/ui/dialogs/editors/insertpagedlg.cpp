@@ -1906,7 +1906,12 @@ namespace Wisteria::UI
         try
             {
             auto plot = dlg.BuildIshikawaDiagram();
-            PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
+            auto legend = WisteriaView::BuildLegend(dlg, *plot, dlg.GetLegendPlacement());
+            // a diagram without idea cards has no legend, so no cell is reserved for one
+            const auto legendPlacement =
+                (legend != nullptr) ? dlg.GetLegendPlacement() : LegendPlacement::None;
+            PlaceGraphInGrid(stagingCanvas, plot, std::move(legend), dlg.GetSelectedRow(),
+                             dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1929,7 +1934,12 @@ namespace Wisteria::UI
         try
             {
             auto plot = dlg.BuildRunChart();
-            PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
+            auto legend = WisteriaView::BuildLegend(dlg, *plot, dlg.GetLegendPlacement());
+            // no cell is reserved if the chart has nothing for a legend to show
+            const auto legendPlacement =
+                (legend != nullptr) ? dlg.GetLegendPlacement() : LegendPlacement::None;
+            PlaceGraphInGrid(stagingCanvas, plot, std::move(legend), dlg.GetSelectedRow(),
+                             dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)

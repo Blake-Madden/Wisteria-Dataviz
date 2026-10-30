@@ -2296,7 +2296,7 @@ std::optional<size_t> WisteriaView::ParseDefaultPageNumber(const wxString& name)
         }
 
     const wxString prefix = templateStr.Left(static_cast<size_t>(placeholderPos));
-    const wxString suffix = templateStr.Mid(static_cast<size_t>(placeholderPos) + 3);
+    const wxString suffix = templateStr.substr(static_cast<size_t>(placeholderPos) + 3);
 
     if (!name.StartsWith(prefix) || !name.EndsWith(suffix) ||
         name.length() < prefix.length() + suffix.length())
@@ -2305,7 +2305,7 @@ std::optional<size_t> WisteriaView::ParseDefaultPageNumber(const wxString& name)
         }
 
     const wxString middle =
-        name.Mid(prefix.length(), name.length() - prefix.length() - suffix.length());
+        name.substr(prefix.length(), name.length() - prefix.length() - suffix.length());
     if (middle.empty() ||
         !std::ranges::all_of(middle, [](const auto chr)
                              { return std::iswdigit(static_cast<wchar_t>(chr)) != 0; }))
@@ -6155,9 +6155,9 @@ void WisteriaView::OnInsertIshikawaDiagram([[maybe_unused]] wxCommandEvent& even
     try
         {
         auto plot = dlg.BuildIshikawaDiagram();
-        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
-                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
-                             Wisteria::UI::LegendPlacement::None);
+        const auto legendPlacement = dlg.GetLegendPlacement();
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
         }
     catch (const std::exception& exc)
         {
@@ -6192,10 +6192,16 @@ void WisteriaView::EditIshikawaDiagram(const Wisteria::Graphs::Graph2D& graph,
     try
         {
         auto plot = dlg.BuildIshikawaDiagram(&graph);
-        PlaceGraphWithLegend(canvas, plot, std::unique_ptr<Wisteria::GraphItems::GraphItemBase>{},
+        const auto legendPlacement = dlg.GetLegendPlacement();
+
+        if (!pasteAsNew)
+            {
+            ClearGraphAndLegend(canvas, graph, graphRow, graphCol);
+            }
+
+        PlaceGraphWithLegend(canvas, plot, BuildLegend(dlg, *plot, legendPlacement),
                              pasteAsNew ? dlg.GetSelectedRow() : graphRow,
-                             pasteAsNew ? dlg.GetSelectedColumn() : graphCol,
-                             Wisteria::UI::LegendPlacement::None);
+                             pasteAsNew ? dlg.GetSelectedColumn() : graphCol, legendPlacement);
         }
     catch (const std::exception& exc)
         {

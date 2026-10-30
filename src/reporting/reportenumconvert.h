@@ -813,6 +813,24 @@ namespace Wisteria
 
         //---------------------------------------------------
         [[nodiscard]]
+        static std::optional<Graphs::IshikawaDiagram::CedacCardStyle>
+        ConvertIshikawaCedacCardStyle(const wxString& value)
+            {
+            using CedacCardStyle = Graphs::IshikawaDiagram::CedacCardStyle;
+            static const std::map<std::wstring_view, CedacCardStyle> cardStyles = {
+                { L"none", CedacCardStyle::None },
+                { L"sticky-note", CedacCardStyle::StickyNote },
+                { L"index-card", CedacCardStyle::IndexCard }
+            };
+
+            const auto foundValue = cardStyles.find(value.Lower().ToStdWstring());
+            return ((foundValue != cardStyles.cend()) ?
+                        std::optional<CedacCardStyle>(foundValue->second) :
+                        std::nullopt);
+            }
+
+        //---------------------------------------------------
+        [[nodiscard]]
         static std::optional<Graphs::WilmarthBridgePlot::SurvivalDisplay>
         ConvertWilmarthBridgeSurvivalDisplay(const wxString& value)
             {
@@ -1997,6 +2015,26 @@ namespace Wisteria
                                                                   { FishStyle::Shark, L"shark" },
                                                                   { FishStyle::Skeleton,
                                                                     L"skeleton" } };
+
+            const auto foundValue = values.find(value);
+            return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :
+                                                   std::nullopt;
+            }
+
+        /// @brief Converts an IshikawaDiagram::CedacCardStyle enum to its JSON string
+        ///     representation.
+        /// @param value The CEDAC card style enum value.
+        /// @returns The string if found, or std::nullopt.
+        [[nodiscard]]
+        static std::optional<wxString>
+        ConvertIshikawaCedacCardStyleToString(Graphs::IshikawaDiagram::CedacCardStyle value)
+            {
+            using CedacCardStyle = Graphs::IshikawaDiagram::CedacCardStyle;
+            static const std::map<CedacCardStyle, wxString> values = {
+                { CedacCardStyle::None, L"none" },
+                { CedacCardStyle::StickyNote, L"sticky-note" },
+                { CedacCardStyle::IndexCard, L"index-card" }
+            };
 
             const auto foundValue = values.find(value);
             return (foundValue != values.cend()) ? std::optional<wxString>{ foundValue->second } :

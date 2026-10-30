@@ -13,6 +13,7 @@
 #define ISHIKAWA_DIAGRAM_H
 
 #include "graph2d.h"
+#include <utility>
 
 namespace Wisteria::Graphs
     {
@@ -22,14 +23,24 @@ namespace Wisteria::Graphs
          (categories of causes) angled off of it, alternating above and below.
          Each branch lists its causes, and each cause can have sub-causes.
 
-        @par Citation:
+        @par Citations:
          Ishikawa, Kaoru. <i>Guide to Quality Control</i>. Tokyo: Asian Productivity
          Organization, 1976.
+
+         Fukuda, Ryuji. <i>CEDAC: A Tool for Continuous Systematic Improvement</i>.
+         Productivity Press, 1990.
 
         @par %Data:
          This plot accepts a Data::Dataset with one categorical column per branch.
          Each cell is a cause, and blank cells are ignored. A cause can also have
          its own column of sub-causes.
+         With the CEDAC card styles, a cause can hold a '|' to give it an idea: the
+         text before the '|' is the problem and the text after it is the idea.
+         Every '|' after that adds another idea for the same problem, and those ideas
+         are stacked below the first one.
+         An idea can also start with a status marker: '*' (or none) for an idea of
+         interest, '**' for one in preparation, '***' for one under test, '!' for one
+         that was selected, and '-' for one that was tested and rejected.
 
          | Manpower | Machine | Material | Method    |
          | :--      | :--     | :--      | :--       |
@@ -82,6 +93,25 @@ namespace Wisteria::Graphs
             /// @brief The bones of a fish: an outlined skull and tail,
             ///     with vertebrae along the spine.
             Skeleton
+            };
+
+        /// @brief How each cause is drawn on a CEDAC (Cause and Effect Diagram with the
+        ///     Addition of Cards) board.
+        /// @details The card styles draw every cause as a card of the same size, offset
+        ///     slightly from its neighbors so that the cards look placed by hand. A cause
+        ///     is split at its first '|' into a problem and an idea, which are drawn on
+        ///     either side of the rib.
+        /// @note Cards share one slot with a cause's sub-causes, so the card styles
+        ///     require that the diagram has no sub-causes.
+        enum class CedacCardStyle
+            {
+            /// @brief The cause is plain text above its twig, which reads as an underline.
+            None,
+            /// @brief The cause is drawn on a sticky note: pink for a problem, green for an
+            ///     idea.
+            StickyNote,
+            /// @brief The cause is drawn on a ruled index card.
+            IndexCard
             };
 
         /// @brief Standard sets of branch categories.
@@ -202,18 +232,6 @@ namespace Wisteria::Graphs
             return m_showCauseCounts;
             }
 
-        /// @brief Sets whether the spine and ribs widen toward the effect, instead of being
-        ///     drawn with a constant width.
-        /// @param tapered @c true to taper the spine and ribs.
-        void SetTaperedLines(const bool tapered) noexcept { m_taperedLines = tapered; }
-
-        /// @returns @c true if the spine and ribs are tapered.
-        [[nodiscard]]
-        bool IsTaperedLines() const noexcept
-            {
-            return m_taperedLines;
-            }
-
         /// @brief Sets whether the diagram is drawn in the text color (and shades of it),
         ///     rather than in a color for each branch.
         /// @param monochrome @c true to draw the diagram without branch colors.
@@ -236,6 +254,28 @@ namespace Wisteria::Graphs
             {
             return m_fishStyle;
             }
+
+        /** @brief Sets the CEDAC card style: how each cause is drawn.
+            @param style The card style.
+            @note Cards share their cause's slot with the cause's sub-causes, so a
+                diagram with sub-causes falls back to @c CedacCardStyle::None. The style is
+                remembered, though, and is drawn again if the sub-causes are removed.*/
+        void SetCedacCardStyle(const CedacCardStyle style) noexcept { m_cedacCardStyle = style; }
+
+        /// @returns The CEDAC card style: how each cause is drawn.
+        [[nodiscard]]
+        CedacCardStyle GetCedacCardStyle() const noexcept
+            {
+            return m_cedacCardStyle;
+            }
+
+        /** @brief Whether the causes are drawn as CEDAC cards.
+            @returns @c true if a card style is set and the diagram has no sub-causes.
+            @note A diagram with sub-causes falls back to @c CedacCardStyle::None, because
+                a card shares its cause's slot with the cause's sub-causes. The style is
+                still remembered, though, and is drawn again if the sub-causes are removed.*/
+        [[nodiscard]]
+        bool IsDrawingCards() const noexcept;
 
         /** @brief Splits typed causes into a list.
             @details Causes are separated by spaces, and a cause with several words is enclosed
@@ -278,14 +318,14 @@ namespace Wisteria::Graphs
 
         /// @}
 
-        /// @private
-        [[deprecated("Ishikawa diagram does not support legends.")]] [[nodiscard]]
-        std::unique_ptr<GraphItems::Label>
-        CreateLegend([[maybe_unused]] const LegendOptions& options) final
-            {
-            wxFAIL_MSG(L"Ishikawa diagram does not support legends.");
-            return nullptr;
-            }
+        /** @brief Creates a legend explaining the status markers drawn on idea cards.
+            @param options The legend's options.
+            @returns The legend, or @c nullptr if the diagram isn't drawing cards (because
+                no card style is set, or because the diagram has sub-causes) or has no ideas.
+            @note The markers only appear on idea cards, so a diagram without them has
+                nothing for a legend to explain.*/
+        [[nodiscard]]
+        std::unique_ptr<GraphItems::Label> CreateLegend(const LegendOptions& options) final;
 
       private:
         struct CauseItem
@@ -298,6 +338,136 @@ namespace Wisteria::Graphs
             {
             wxString m_label;
             std::vector<CauseItem> m_causes;
+            };
+
+        /// the padding between a cause card's border and its text, in DIPs
+        constexpr static int CARD_PADDING_DIPS{ 6 };
+        /// the width reserved at the start of an idea card for its status marker, in DIPs
+        constexpr static int CARD_MARKER_WIDTH_DIPS{ 16 };
+
+        /// @brief Which half of a cause a card holds.
+        /// @details A cause's text is split at each '|' into a problem (the text before
+        ///     the first '|') and its ideas (the text after it). The problem is drawn to
+        ///     the left of the rib and the ideas to the right, so that they are read
+        ///     against each other.
+        enum class CedacCardKind
+            {
+            /// @brief The text before the first '|', or the whole text if there is no '|'.
+            Problem,
+            /// @brief The text after a '|'.
+            Idea
+            };
+
+        /// @brief A cause's text, split into the problem that it names and the ideas
+        ///     that answer it.
+        struct CauseParts
+            {
+            /// the text before the first '|' (or the whole text if there is no '|')
+            wxString m_problem;
+            /// the text after each '|', in the order that they are written
+            std::vector<wxString> m_ideas;
+            };
+
+        /** @brief Splits a cause's text into its problem and its ideas.
+            @param text The cause's text, which may hold a '|' between the problem and
+                each of its ideas.
+            @returns The problem's text, and the text of each idea (none if the cause
+                has no idea).
+            @note Every '|' after the first separates another idea, so that one problem
+                can be answered by several of them. Empty pieces are ignored. If the
+                text has nothing in front of its first '|', or nothing after any of
+                them, then it is not split at all and the whole text stays the
+                problem.*/
+        [[nodiscard]]
+        static CauseParts SplitCauseText(const wxString& text);
+
+        /// @brief Where an idea stands, using the 3-Dot method of a CEDAC board.
+        /// @details The status is written at the start of the idea's text, before the
+        ///     countermeasure itself. No marker means that the idea is of interest.
+        enum class IdeaStatus
+            {
+            /// @brief `*` or no marker: worth doing, but maybe not practical yet.
+            OfInterest,
+            /// @brief `**`: needs some planning before it can be tested.
+            InPrep,
+            /// @brief `***`: actively being tested.
+            UnderTest,
+            /// @brief `!`: tested and selected, so it will become the new standard.
+            Selected,
+            /// @brief `-`: tested and found not to work.
+            Rejected
+            };
+
+        /// @brief An idea's status marker, read from the start of its text.
+        struct IdeaMarker
+            {
+            IdeaStatus m_status{ IdeaStatus::OfInterest };
+            /// the idea's text, without the marker
+            wxString m_text;
+
+            /// @returns How many dots to draw for the status. A selected or rejected
+            ///     idea has none, because it gets a checkmark or an X instead.
+            [[nodiscard]]
+            int GetDotCount() const noexcept
+                {
+                switch (m_status)
+                    {
+                case IdeaStatus::OfInterest:
+                    return 1;
+                case IdeaStatus::InPrep:
+                    return 2;
+                case IdeaStatus::UnderTest:
+                    return 3;
+                default:
+                    return 0;
+                    };
+                }
+
+            /// @returns @c true if the idea was tested and selected.
+            [[nodiscard]]
+            bool IsSelected() const noexcept
+                {
+                return m_status == IdeaStatus::Selected;
+                }
+
+            /// @returns @c true if the idea was tested and rejected.
+            [[nodiscard]]
+            bool IsRejected() const noexcept
+                {
+                return m_status == IdeaStatus::Rejected;
+                }
+            };
+
+        /** @brief Reads the status marker from the start of an idea's text.
+            @param ideaText The idea's text, which may start with `*`, `**`, `***`, `!`, or `-`.
+            @returns The idea's status, and its text with the marker removed.
+            @note The marker is read at the very start of the text, with or without a
+                space after it. Text that starts with anything else is an idea of
+                interest with no marker.*/
+        [[nodiscard]]
+        static IdeaMarker ParseIdeaMarker(const wxString& ideaText);
+
+        // the size, scale, and colors that every cause label in a diagram shares
+        struct CauseLabelLayout
+            {
+            CedacCardStyle m_cedacCardStyle{ CedacCardStyle::None };
+            // how much the text is shrunk to fit its slot
+            double m_labelScale{ 1.0 };
+            int m_cardWidth{ 0 };
+            int m_cardHeight{ 0 };
+            int m_cardPadding{ 0 };
+            wxCoord m_cardWidthDIPs{ 0 };
+            wxCoord m_cardHeightDIPs{ 0 };
+            double m_scaling{ 1.0 };
+            double m_dpiScaling{ 1.0 };
+            wxColour m_textColor{ *wxBLACK };
+
+            /// @returns @c true if the causes are drawn as cards.
+            [[nodiscard]]
+            bool IsDrawingCards() const noexcept
+                {
+                return m_cedacCardStyle != CedacCardStyle::None;
+                }
             };
 
         // the forked tail fin at the left end of the spine, drawn with quad bezier curves
@@ -411,15 +581,37 @@ namespace Wisteria::Graphs
         void SetAutoAccessibilityAttributes() override;
         void RecalcSizes(wxDC& dc) final;
 
+        /** @brief Creates a label for a cause, drawn as plain text or as a card.
+            @param dc The device context.
+            @param text The cause's text: its problem, its idea, or the whole text.
+            @param pt The point that the label is anchored to. A problem card is anchored
+                by its bottom-right corner and an idea card by its bottom-left, so that
+                the two straddle the rib.
+            @param maxWidth The width that a plain label's text is wrapped to.
+            @param labelBoxHeight The height of a plain label's box, which may let its
+                text wrap.
+            @param branchColor The color of the branch that the cause belongs to.
+            @param layout The size, scale, and colors shared by every cause label.
+            @param kind Which half of the cause the label holds. Only matters for cards.
+            @param strikeThroughText Whether to strike through the label's text, the way
+                CEDAC marks a rejected idea.
+            @returns The label.*/
+        [[nodiscard]]
+        std::unique_ptr<GraphItems::Label>
+        MakeCauseLabel(wxDC& dc, const wxString& text, const wxPoint& pt, int maxWidth,
+                       int labelBoxHeight, const wxColour& branchColor,
+                       const CauseLabelLayout& layout, CedacCardKind kind,
+                       bool strikeThroughText = false) const;
+
         wxString m_effect;
         std::vector<Branch> m_branchSpecs;
         std::vector<BranchItem> m_branches;
         bool m_showEmptyBranches{ false };
         bool m_showBranchLabels{ true };
         bool m_showCauseCounts{ false };
-        bool m_taperedLines{ true };
         bool m_monochrome{ false };
         FishStyle m_fishStyle{ FishStyle::Fish };
+        CedacCardStyle m_cedacCardStyle{ CedacCardStyle::None };
         };
     } // namespace Wisteria::Graphs
 

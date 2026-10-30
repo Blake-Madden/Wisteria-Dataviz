@@ -117,15 +117,16 @@ namespace Wisteria::UI
 
         wxScrolledWindow* m_branchPanel{ nullptr };
         wxFlexGridSizer* m_branchSizer{ nullptr };
+        wxChoice* m_cedacCardStyleChoice{ nullptr };
 
         // DDX data members
         wxString m_effect;
         bool m_showEmptyBranches{ false };
         bool m_showBranchLabels{ true };
         bool m_showCauseCounts{ false };
-        bool m_taperedLines{ true };
         bool m_monochrome{ false };
         int m_fishStyle{ 1 };
+        int m_cedacCardStyle{ 0 };
         int m_causeCategories{ static_cast<int>(
             Graphs::IshikawaDiagram::CauseCategories::Manufacturing) };
 
