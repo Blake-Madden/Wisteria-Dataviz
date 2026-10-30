@@ -3016,9 +3016,10 @@ void WisteriaView::PlaceGraphWithLegend(
     std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend, const size_t graphRow,
     const size_t graphCol, const Wisteria::UI::LegendPlacement legendPlacement) const
     {
+    m_lastPlacedLegendPlacement =
+        (legend != nullptr) ? legendPlacement : Wisteria::UI::LegendPlacement::None;
     PlaceGraphAndLegendInGrid(canvas, plot, std::move(legend), graphRow, graphCol, legendPlacement);
     m_lastPlacedGraph = plot;
-    m_lastPlacedLegendPlacement = legendPlacement;
 
     UpdateCanvas(canvas);
 
@@ -3031,6 +3032,14 @@ void WisteriaView::PlaceGraphAndLegendInGrid(
     std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend, const size_t graphRow,
     const size_t graphCol, const Wisteria::UI::LegendPlacement legendPlacement)
     {
+    // a graph with nothing for a legend to show doesn't need a cell reserved for one
+    if (legend == nullptr)
+        {
+        canvas->SetFixedObject(graphRow, graphCol, plot);
+        canvas->RemoveEmptyOuterCells();
+        return;
+        }
+
     auto [gridRows, gridCols] = canvas->GetFixedObjectsGridSize();
 
     // The legend occupies its own cell in the canvas grid, adjacent to the graph.

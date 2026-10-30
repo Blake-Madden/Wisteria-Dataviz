@@ -965,10 +965,10 @@ namespace Wisteria::UI
         std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend, const size_t graphRow,
         const size_t graphCol, const LegendPlacement legendPlacement)
         {
+        m_lastPlacedLegendPlacement = (legend != nullptr) ? legendPlacement : LegendPlacement::None;
         WisteriaView::PlaceGraphAndLegendInGrid(stagingCanvas, plot, std::move(legend), graphRow,
                                                 graphCol, legendPlacement);
         m_lastPlacedGraph = plot;
-        m_lastPlacedLegendPlacement = legendPlacement;
         }
 
     //-------------------------------------------
@@ -1906,12 +1906,10 @@ namespace Wisteria::UI
         try
             {
             auto plot = dlg.BuildIshikawaDiagram();
-            auto legend = WisteriaView::BuildLegend(dlg, *plot, dlg.GetLegendPlacement());
-            // a diagram without idea cards has no legend, so no cell is reserved for one
-            const auto legendPlacement =
-                (legend != nullptr) ? dlg.GetLegendPlacement() : LegendPlacement::None;
-            PlaceGraphInGrid(stagingCanvas, plot, std::move(legend), dlg.GetSelectedRow(),
-                             dlg.GetSelectedColumn(), legendPlacement);
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
@@ -1934,12 +1932,10 @@ namespace Wisteria::UI
         try
             {
             auto plot = dlg.BuildRunChart();
-            auto legend = WisteriaView::BuildLegend(dlg, *plot, dlg.GetLegendPlacement());
-            // no cell is reserved if the chart has nothing for a legend to show
-            const auto legendPlacement =
-                (legend != nullptr) ? dlg.GetLegendPlacement() : LegendPlacement::None;
-            PlaceGraphInGrid(stagingCanvas, plot, std::move(legend), dlg.GetSelectedRow(),
-                             dlg.GetSelectedColumn(), legendPlacement);
+            const auto legendPlacement = dlg.GetLegendPlacement();
+            PlaceGraphInGrid(stagingCanvas, plot,
+                             WisteriaView::BuildLegend(dlg, *plot, legendPlacement),
+                             dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
         catch (const std::exception&)
