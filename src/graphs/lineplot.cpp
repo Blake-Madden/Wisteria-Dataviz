@@ -221,16 +221,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LinePlot, Wisteria::Graphs::GroupGra
             {
             return;
             }
-        auto yColumn = GetContinuousColumn(m_yColumnName);
 
         GetLines().push_back(line);
 
-        const auto [fullYDataMin, fullYDataMax] =
-            std::minmax_element(yColumn->GetValues().cbegin(), yColumn->GetValues().cend());
-        const auto [minYValue, maxYValue] =
-            IsUsingGrouping() ? GetDataset()->GetContinuousMinMax(
-                                    m_yColumnName, line.GetGroupColumnName(), line.GetGroupId()) :
-                                std::make_pair(*fullYDataMin, *fullYDataMax);
+        const auto [minYValue, maxYValue] = GetDataset()->GetContinuousMinMax(
+            m_yColumnName, line.GetGroupColumnName(), line.GetGroupId());
 
         const auto [yStartCurrent, yEndCurrent] = GetLeftYAxis().GetRange();
         const auto [yStart, yEnd] = adjust_intervals(minYValue, maxYValue);
