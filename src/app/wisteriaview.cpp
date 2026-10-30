@@ -286,9 +286,11 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_sideBar->Bind(Wisteria::UI::wxEVT_SIDEBAR_CLICK, &WisteriaView::OnSidebarClick, this);
 
     // log button: show main frame and activate its embedded log tab
-    m_frame->Bind(
-        wxEVT_RIBBONBUTTONBAR_CLICKED, []([[maybe_unused]] wxRibbonButtonBarEvent&)
-        { wxGetApp().GetMainFrameEx()->ActivateLogTab(); }, ID_VIEW_LOG_REPORT);
+    const auto viewLog = []([[maybe_unused]]
+                            wxCommandEvent& event)
+    { wxGetApp().GetMainFrameEx()->ActivateLogTab(); };
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, viewLog, ID_VIEW_LOG_REPORT);
+    m_frame->Bind(wxEVT_MENU, viewLog, ID_VIEW_LOG_REPORT);
 
     // bind copy/paste (route accelerator events to the active canvas)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnCopyItem, this, wxID_COPY);
@@ -302,6 +304,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnBackstagePrint, this, ID_BACKSTAGE_PRINT_NOW);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnOptions, this, ID_OPTIONS);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnOptions, this, ID_OPTIONS);
+    // the application menu's Preferences item
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnOptions, this, wxID_PREFERENCES);
 
     // bind SVG export button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnSvgExport, this, ID_SVG_EXPORT);
@@ -355,11 +359,11 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     // bind the auto-refresh toggle and its polling timer
     m_autoRefreshTimer.SetOwner(this);
     Bind(wxEVT_TIMER, &WisteriaView::OnAutoRefreshTimer, this, m_autoRefreshTimer.GetId());
-    m_frame->Bind(
-        wxEVT_RIBBONBUTTONBAR_CLICKED,
-        [this]([[maybe_unused]]
-               wxCommandEvent& event) { SetAutoRefresh(!m_autoRefresh); },
-        ID_AUTO_REFRESH);
+    const auto toggleAutoRefresh = [this]([[maybe_unused]]
+                                          wxCommandEvent& event)
+    { SetAutoRefresh(!m_autoRefresh); };
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, toggleAutoRefresh, ID_AUTO_REFRESH);
+    m_frame->Bind(wxEVT_MENU, toggleAutoRefresh, ID_AUTO_REFRESH);
 
     // bind insert and edit dataset buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertDataset, this,
@@ -381,9 +385,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     // bind add constant button
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnRibbonAddConstant, this,
                   ID_ADD_CONSTANT);
-    m_frame->Bind(
-        wxEVT_RIBBONBUTTONBAR_CLICKED,
-        [this]([[maybe_unused]]
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnRibbonAddConstant, this, ID_ADD_CONSTANT);
+    const auto deleteConstant = [this]([[maybe_unused]]
                wxCommandEvent& event)
         {
             // select the Constants folder (index 1) in the sidebar
@@ -395,8 +398,9 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
             // delete selected constant
             wxCommandEvent delEvt(wxEVT_MENU, wxID_DELETE);
             OnDeleteConstant(delEvt);
-        },
-        ID_DELETE_CONSTANT);
+    };
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, deleteConstant, ID_DELETE_CONSTANT);
+    m_frame->Bind(wxEVT_MENU, deleteConstant, ID_DELETE_CONSTANT);
 
     // bind page buttons
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnInsertPage, this, ID_INSERT_PAGE);
@@ -612,6 +616,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         // adding the page selects it in the sidebar; re-select the dataset instead
         // so the user lands on their imported data rather than the empty page
         m_sideBar->SelectSubItem(0, 0);
+
+        SetAutoRefresh(wxGetApp().GetAppSettings()->IsProjectAutoRefresh(), false);
         }
 
     UpdateDatasetButtonStates();
@@ -982,6 +988,9 @@ void WisteriaView::ReloadProject()
     const wxString selectedLabel = m_sideBar->GetSelectedLabel();
     const auto selectedFolder = m_sideBar->GetSelectedFolder();
     const int sashPos = (m_splitter != nullptr) ? m_splitter->GetSashPosition() : 0;
+    // SaveProject() names an unnamed project after the file it writes, which here is
+    // the temporary copy, so the project would come back named "wisteria_reload..."
+    const wxString projectName = m_reportBuilder.GetName();
 
     bool reloadedClean{ false };
         {
@@ -989,6 +998,9 @@ void WisteriaView::ReloadProject()
 
         TearDownProject();
         reloadedClean = LoadProject(tempPath);
+
+        // the temporary copy's name is not the project's name
+        m_reportBuilder.SetName(projectName);
 
         wxRemoveFile(tempPath);
 
@@ -1118,6 +1130,11 @@ void WisteriaView::SetAutoRefresh(bool enable, const bool userInitiated)
     if (m_pagesButtonBar != nullptr)
         {
         m_pagesButtonBar->ToggleButton(ID_AUTO_REFRESH, m_autoRefresh);
+        }
+    if (wxMenuBar* const menuBar = (m_frame != nullptr) ? m_frame->GetMenuBar() : nullptr;
+        menuBar != nullptr)
+        {
+        menuBar->Check(ID_AUTO_REFRESH, m_autoRefresh);
         }
     }
 
@@ -2021,6 +2038,9 @@ void WisteriaView::OnProjectSettings([[maybe_unused]] wxCommandEvent& event)
     GetReportBuilder().SetPrinterFooters(dlg.GetLeftPrinterFooter(), dlg.GetCenterPrinterFooter(),
                                          dlg.GetRightPrinterFooter());
 
+    // this also starts/stops the polling timer and syncs the toolbar button
+    SetAutoRefresh(dlg.IsAutoRefresh(), true);
+
     // apply the new watermark to all pages
     const Wisteria::Canvas::Watermark newWatermark{ dlg.GetWatermarkLabel(),
                                                     dlg.GetWatermarkColor() };
@@ -2589,6 +2609,13 @@ void WisteriaView::UpdateDatasetButtonStates() const
         m_datasetButtonBar->EnableButton(ID_EDIT_DATASET, enabled);
         m_datasetButtonBar->EnableButton(ID_DELETE_DATASET, enabled);
         }
+
+    if (wxMenuBar* const menuBar = (m_frame != nullptr) ? m_frame->GetMenuBar() : nullptr;
+        menuBar != nullptr)
+        {
+        menuBar->Enable(ID_EDIT_DATASET, enabled);
+        menuBar->Enable(ID_DELETE_DATASET, enabled);
+        }
     }
 
 //-------------------------------------------
@@ -2630,7 +2657,7 @@ void WisteriaView::UpdateGraphButtonStates() const
         m_objectsButtonBar->EnableButton(ID_NEW_SPACER, true);
         m_objectsButtonBar->EnableButton(ID_NEW_DIVIDER, true);
         m_objectsButtonBar->EnableButton(wxID_COPY, IsCanvasItemSelected());
-        m_objectsButtonBar->EnableButton(wxID_PASTE, true);
+        m_objectsButtonBar->EnableButton(wxID_PASTE, IsPageSelected());
         m_objectsButtonBar->EnableButton(ID_EDIT_ITEM, IsCanvasItemSelected());
         m_objectsButtonBar->EnableButton(ID_DELETE_ITEM, IsCanvasItemSelected());
         }
