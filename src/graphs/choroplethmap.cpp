@@ -256,7 +256,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
         if (draw)
             {
             wxPen ringPen{ m_outlineColor, 1 };
-            ringPen.SetWidth(std::max<int>(1, static_cast<int>(ScaleToScreenAndCanvas(1))));
+            ringPen.SetWidth(GetScaledPenWidth());
             const wxDCPenChanger penChanger{ dc, ringPen };
             const wxDCBrushChanger brushChanger{ dc, *wxTRANSPARENT_BRUSH };
             for (size_t ring = 0; ring < m_entries.size(); ++ring)

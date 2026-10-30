@@ -513,10 +513,10 @@ namespace Wisteria::GraphItems
             {
             const wxPen bodyPen(
                 ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Ice)),
-                ScaleToScreenAndCanvas(1));
+                GetScaledPenWidth());
             const wxPen crystalPen(
                 ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Ice)),
-                ScaleToScreenAndCanvas(1));
+                GetScaledPenWidth());
 
             const auto centerPt =
                 rect.GetTopLeft() + wxSize(rect.GetWidth() / 2, rect.GetHeight() / 2);

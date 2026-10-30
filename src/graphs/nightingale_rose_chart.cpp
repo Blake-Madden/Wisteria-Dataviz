@@ -343,8 +343,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::NightingaleRoseChart, Wisteria::Grap
             std::min(plotArea.GetWidth(), plotArea.GetHeight()) *
             (m_showLabels ? m_labeledRadiusProportion : m_plainRadiusProportion);
 
-        const double anglePerSlice =
-            safe_divide<double>(360.0, static_cast<double>(m_slices.size()));
+        const auto anglePerSlice = safe_divide<double>(360.0, static_cast<double>(m_slices.size()));
 
         double maxScaleValue{ 0 };
         for (const auto& slice : m_slices)

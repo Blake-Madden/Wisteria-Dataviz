@@ -774,7 +774,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
         if (GetShadowType() != ShadowType::NoDisplay && !IsSelected() &&
             boundRect.GetHeight() > ScaleToScreenAndCanvas(GetShadowOffset()))
             {
-            const wxDCPenChanger pc{ dc, wxPen(GetShadowColor(), ScaleToScreenAndCanvas(1)) };
+            const wxDCPenChanger pc{ dc, wxPen(GetShadowColor(), GetScaledPenWidth()) };
             const wxDCBrushChanger bc{ dc, wxBrush(GetShadowColor()) };
             const wxCoord scaledShadowOffset = ScaleToScreenAndCanvas(GetShadowOffset());
             if (GetShadowType() == ShadowType::RightSideAndBottomShadow)
@@ -866,7 +866,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
         if (GetPen().IsOk() && !IsSelected())
             {
             wxPen scaledPen{ GetPen() };
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth()));
+            scaledPen.SetWidth(GetScaledPenWidth(GetPen().GetWidth()));
             const wxDCPenChanger pc{ dc,
                                      IsSelected() ?
                                          wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),

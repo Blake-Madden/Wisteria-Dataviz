@@ -465,7 +465,7 @@ namespace Wisteria::GraphItems
 
             gc->SetPen(
                 wxPen{ ApplyColorOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Black)),
-                       static_cast<int>(ScaleToScreenAndCanvas(1)) });
+                       GetScaledPenWidth() });
             gc->SetBrush(gc->CreateLinearGradientBrush(
                 GetXPosFromLeft(chimneyRect, -math_constants::quarter),
                 GetYPosFromTop(chimneyRect, math_constants::half),
@@ -532,7 +532,8 @@ namespace Wisteria::GraphItems
                 {
                 const wxDCPenChanger pc{
                     dc, wxPen(wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray),
-                                        signPostWidth + ScaleToScreenAndCanvas(1))
+                                        std::max(1, static_cast<int>(signPostWidth +
+                                                                     ScaleToScreenAndCanvas(1))))
                                   .Cap(wxPenCap::wxCAP_BUTT))
                 };
                 dc.DrawLine(pt[0], pt[1]);
@@ -599,7 +600,8 @@ namespace Wisteria::GraphItems
                 {
                 const wxDCPenChanger pc(
                     dc, wxPen(wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray),
-                                        signPostWidth + ScaleToScreenAndCanvas(1))
+                                        std::max(1, static_cast<int>(signPostWidth +
+                                                                     ScaleToScreenAndCanvas(1))))
                                   .Cap(wxPenCap::wxCAP_BUTT)));
                 dc.DrawLine(pt[0], pt[1]);
                 }
@@ -641,7 +643,8 @@ namespace Wisteria::GraphItems
                 {
                 const wxDCPenChanger pc{
                     dc, wxPen(wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::White),
-                                        signPostWidth + ScaleToScreenAndCanvas(1))
+                                        std::max(1, static_cast<int>(signPostWidth +
+                                                                     ScaleToScreenAndCanvas(1))))
                                   .Cap(wxPenCap::wxCAP_BUTT))
                 };
                 dc.DrawLine(pt[0], pt[1]);
@@ -702,7 +705,7 @@ namespace Wisteria::GraphItems
             wxPen scaledPen = GetGraphItemInfo().GetPen();
             if (scaledPen.IsOk())
                 {
-                scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+                scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
                 }
 
             gc->SetPen(scaledPen);

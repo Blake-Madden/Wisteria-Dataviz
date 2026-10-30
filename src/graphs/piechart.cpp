@@ -304,7 +304,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
         wxPen scaledPen(GetPen().IsOk()   ? GetPen() :
                         GetBrush().IsOk() ? GetBrush().GetColour() :
                                             *wxTRANSPARENT_PEN);
-        scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+        scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
 
         const wxPoint centerPoint{ m_pieArea.GetWidth() / 2 + m_pieArea.GetLeft(),
                                    m_pieArea.GetHeight() / 2 + m_pieArea.GetTop() };
@@ -318,7 +318,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::PieChart, Wisteria::Graphs::Graph2D)
             wxPen scaledArcPen((GetArcPen().has_value() && GetArcPen().value().IsOk()) ?
                                    GetArcPen().value() :
                                    scaledPen);
-            scaledArcPen.SetWidth(ScaleToScreenAndCanvas(scaledArcPen.GetWidth()));
+            scaledArcPen.SetWidth(GetScaledPenWidth(scaledArcPen.GetWidth()));
 
             const wxDCPenChanger pc{ dc, scaledArcPen };
 
@@ -1681,8 +1681,7 @@ namespace Wisteria::Graphs
         ringPolygonPoints.insert(ringPolygonPoints.end(), innerRingPoints.rbegin(),
                                  innerRingPoints.rend());
 
-        const wxPen ringPen(ringColor.ChangeLightness(85), ScaleToScreenAndCanvas(1),
-                            wxPENSTYLE_SOLID);
+        const wxPen ringPen(ringColor.ChangeLightness(85), GetScaledPenWidth(), wxPENSTYLE_SOLID);
 
         auto ringPolygon =
             std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo{}
@@ -1738,8 +1737,7 @@ namespace Wisteria::Graphs
             { wxRound(centerX - stemWidth / 2), wxRound(crossY - stemWidth / 2) }
         };
 
-        const wxPen stemPen(symbolColor.ChangeLightness(85), ScaleToScreenAndCanvas(1),
-                            wxPENSTYLE_SOLID);
+        const wxPen stemPen(symbolColor.ChangeLightness(85), GetScaledPenWidth(), wxPENSTYLE_SOLID);
 
         auto crossPolygon =
             std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo{}
@@ -1786,7 +1784,7 @@ namespace Wisteria::Graphs
         const double tipX = shaftEndX + pointerLength * std::cos(ARROW_ANGLE_RAD);
         const double tipY = shaftEndY + pointerLength * std::sin(ARROW_ANGLE_RAD);
 
-        const wxPen symbolPen(symbolColor.ChangeLightness(85), ScaleToScreenAndCanvas(1),
+        const wxPen symbolPen(symbolColor.ChangeLightness(85), GetScaledPenWidth(),
                               wxPENSTYLE_SOLID);
 
         // perpendicular angle for width calculations
@@ -2438,7 +2436,7 @@ namespace Wisteria::Graphs
         AddObject(std::make_unique<GraphItems::Polygon>(
             GraphItems::GraphItemInfo{}
                 .Brush(wxBrush{ glazeColor })
-                .Pen(wxPen(glazeRimColor, ScaleToScreenAndCanvas(1)))
+                .Pen(wxPen(glazeRimColor, GetScaledPenWidth()))
                 .Scaling(GetScaling())
                 .DPIScaling(GetDPIScaleFactor())
                 .Selectable(false),
@@ -2837,7 +2835,7 @@ namespace Wisteria::Graphs
             auto pepperoni = std::make_unique<GraphItems::Polygon>(
                 GraphItems::GraphItemInfo{}
                     .Brush(wxBrush(fillColor))
-                    .Pen(wxPen(edgeColor, ScaleToScreenAndCanvas(1)))
+                    .Pen(wxPen(edgeColor, GetScaledPenWidth()))
                     .Scaling(GetScaling())
                     .DPIScaling(GetDPIScaleFactor())
                     .Selectable(false),
@@ -3035,7 +3033,7 @@ namespace Wisteria::Graphs
             AddObject(std::make_unique<GraphItems::Polygon>(
                 GraphItems::GraphItemInfo{}
                     .Brush(wxBrush{ pineappleFillColor })
-                    .Pen(wxPen(pineappleEdgeColor, ScaleToScreenAndCanvas(1)))
+                    .Pen(wxPen(pineappleEdgeColor, GetScaledPenWidth()))
                     .Scaling(GetScaling())
                     .DPIScaling(GetDPIScaleFactor())
                     .Selectable(false),
@@ -3330,7 +3328,7 @@ namespace Wisteria::Graphs
             const wxBrush crustBrush =
                 isToastedLayer ? wxBrush{ toastedColor } : wxBrush{ doughColor };
             const wxPen crustPen(wxColour(150, 110, 70, isToastedLayer ? 40 : 90),
-                                 ScaleToScreenAndCanvas(1), wxPENSTYLE_SOLID);
+                                 GetScaledPenWidth(), wxPENSTYLE_SOLID);
 
             auto crustPolygon =
                 std::make_unique<GraphItems::Polygon>(GraphItems::GraphItemInfo{}
@@ -3538,7 +3536,7 @@ namespace Wisteria::Graphs
 
         // the dough itself
         addBand(0.0, crustThickness, 0.0, wxBrush{ doughColor },
-                wxPen(wxColour(165, 115, 60, 120), ScaleToScreenAndCanvas(1), wxPENSTYLE_SOLID));
+                wxPen(wxColour(165, 115, 60, 120), GetScaledPenWidth(), wxPENSTYLE_SOLID));
         // browned along the outer edge
         addBand(0.0, crustThickness * 0.4, 0.0, wxBrush{ toastedColor }, wxNullPen);
         // lighter ridge, offset half a flute so that it follows the crimps
@@ -5156,7 +5154,7 @@ namespace Wisteria::Graphs
     std::unique_ptr<GraphItems::Label>
     PieChart::CreateOuterPieLegend(const LegendCanvasPlacementHint hint)
         {
-        wxASSERT_MSG(GetOuterPie().size() >= 1,
+        wxASSERT_MSG(!GetOuterPie().empty(),
                      L"Outer ring of pie chart empty, cannot create legend!");
         auto legend = std::make_unique<GraphItems::Label>(
             GraphItems::GraphItemInfo{}

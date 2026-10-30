@@ -206,7 +206,7 @@ namespace Wisteria::GraphItems
                               wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black) };
         if (scaledPen.IsOk())
             {
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+            scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
             }
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
 

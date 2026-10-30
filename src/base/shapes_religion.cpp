@@ -135,7 +135,7 @@ namespace Wisteria::GraphItems
             gc->SetBrush(TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::AshGrey)));
             // only show outline if larger icon
             gc->SetPen({ TintIfUsingOpacity(Colors::ColorBrewer::GetColor(Colors::Color::Black)),
-                         static_cast<int>(ScaleToScreenAndCanvas(1)) });
+                         GetScaledPenWidth() });
 
             gc->Rotate(geometry::degrees_to_radians(-60));
 

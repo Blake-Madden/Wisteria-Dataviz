@@ -41,7 +41,7 @@ namespace Wisteria::GraphItems
             if (GetGraphItemInfo().GetPen().IsOk())
                 {
                 wxPen scaledPen(GetGraphItemInfo().GetPen());
-                scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+                scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
                 gc->SetPen(scaledPen);
                 }
 
@@ -225,7 +225,7 @@ namespace Wisteria::GraphItems
             if (GetGraphItemInfo().GetPen().IsOk())
                 {
                 wxPen scaledPen(GetGraphItemInfo().GetPen());
-                scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+                scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
                 gc->SetPen(scaledPen);
                 }
 
@@ -391,7 +391,7 @@ namespace Wisteria::GraphItems
             if (GetGraphItemInfo().GetPen().IsOk())
                 {
                 wxPen scaledPen(GetGraphItemInfo().GetPen());
-                scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+                scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
                 gc->SetPen(scaledPen);
                 }
 

@@ -650,7 +650,7 @@ namespace Wisteria::GraphItems
                 wxPen scaledIconPen(iconPos->m_pen.IsOk() ? iconPos->m_pen : GetPen());
                 if (scaledIconPen.IsOk())
                     {
-                    scaledIconPen.SetWidth(ScaleToScreenAndCanvas(
+                    scaledIconPen.SetWidth(GetScaledPenWidth(
                         // if a line icon, make it a minimum of 2 pixels wide
                         (iconPos->m_shape == Icons::IconShape::HorizontalLine ?
                              std::max(scaledIconPen.GetWidth(), 2) :
@@ -831,7 +831,7 @@ namespace Wisteria::GraphItems
                     const DCPenChangerIfDifferent pc2(
                         dc, wxPen((i == 0) ? wxColour(255, 0, 0, Settings::GetTranslucencyValue()) :
                                              wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                                  ScaleToScreenAndCanvas(1)));
+                                  GetScaledPenWidth()));
                     dc.DrawLine(
                         wxPoint(boundingBox.GetLeftTop().x,
                                 boundingBox.GetLeftTop().y + rulePositions[i] + textOffset.y),
@@ -843,7 +843,7 @@ namespace Wisteria::GraphItems
                 {
                 const DCPenChangerIfDifferent pc2(
                     dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                              ScaleToScreenAndCanvas(1)));
+                              GetScaledPenWidth()));
                 for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
                     dc.DrawLine(
@@ -857,7 +857,7 @@ namespace Wisteria::GraphItems
                 {
                 const DCPenChangerIfDifferent pc2(
                     dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                              ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
+                              GetScaledPenWidth(), wxPENSTYLE_DOT));
                 for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
                     dc.DrawLine(
@@ -884,7 +884,7 @@ namespace Wisteria::GraphItems
                 {
                 const DCPenChangerIfDifferent pc2(
                     dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                              ScaleToScreenAndCanvas(1)));
+                              GetScaledPenWidth()));
                 for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
                     dc.DrawLine(
@@ -900,7 +900,7 @@ namespace Wisteria::GraphItems
                 {
                 const DCPenChangerIfDifferent pc2{
                     dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                              ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT)
+                              GetScaledPenWidth(), wxPENSTYLE_DOT)
                 };
                 for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
@@ -917,7 +917,7 @@ namespace Wisteria::GraphItems
                 {
                 const DCPenChangerIfDifferent pc2(
                     dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                              ScaleToScreenAndCanvas(1)));
+                              GetScaledPenWidth()));
                 for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
                     GraphItems::Polygon::DrawArrow(
@@ -946,7 +946,7 @@ namespace Wisteria::GraphItems
                     const DCPenChangerIfDifferent pc2(
                         dc, wxPen((i == 0) ? wxColour(255, 0, 0, Settings::GetTranslucencyValue()) :
                                              wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                                  ScaleToScreenAndCanvas(1)));
+                                  GetScaledPenWidth()));
                     dc.DrawLine(
                         wxPoint(boundingBox.GetLeftTop().x + rulePositions[i] + textOffset.x,
                                 boundingBox.GetLeftTop().y),
@@ -958,7 +958,7 @@ namespace Wisteria::GraphItems
                 {
                 const DCPenChangerIfDifferent pc2(
                     dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                              ScaleToScreenAndCanvas(1)));
+                              GetScaledPenWidth()));
                 for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
                     dc.DrawLine(
@@ -972,7 +972,7 @@ namespace Wisteria::GraphItems
                 {
                 const DCPenChangerIfDifferent pc2(
                     dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                              ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
+                              GetScaledPenWidth(), wxPENSTYLE_DOT));
                 for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
                     dc.DrawLine(
@@ -999,7 +999,7 @@ namespace Wisteria::GraphItems
                 {
                 const DCPenChangerIfDifferent pc2(
                     dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                              ScaleToScreenAndCanvas(1)));
+                              GetScaledPenWidth()));
                 for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
                     dc.DrawLine(
@@ -1013,7 +1013,7 @@ namespace Wisteria::GraphItems
                 {
                 const DCPenChangerIfDifferent pc2(
                     dc, wxPen(wxColour(0, 0, 255, Settings::GetTranslucencyValue()),
-                              ScaleToScreenAndCanvas(1), wxPENSTYLE_DOT));
+                              GetScaledPenWidth(), wxPENSTYLE_DOT));
                 for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
                     dc.DrawLine(
@@ -1027,7 +1027,7 @@ namespace Wisteria::GraphItems
                 {
                 const DCPenChangerIfDifferent pc2(
                     dc, wxPen(Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                              ScaleToScreenAndCanvas(1)));
+                              GetScaledPenWidth()));
                 for (size_t i = 0; i < rulePositions.size(); ++i)
                     {
                     GraphItems::Polygon::DrawArrow(
@@ -1406,11 +1406,16 @@ namespace Wisteria::GraphItems
         // draw the outline
         if (GetPen().IsOk() && !IsSelected())
             {
+            // scaling a thin pen down can truncate it to zero width, which is a hairline
+            // on screen but nothing at all in SVG, so keep it at least one pixel
             const wxPen scaledPen(wxPenInfo(GetPen().GetColour(),
-                                            ScaleToScreenAndCanvas(GetPen().GetWidth()),
+                                            GetScaledPenWidth(GetPen().GetWidth()),
                                             GetPen().GetStyle())
                                       .Cap(wxPenCap::wxCAP_BUTT));
             const DCPenChangerIfDifferent pc2{ dc, scaledPen };
+            // extend one pixel so the outline covers the background's right and bottom edges
+            const wxRect outlineBox{ boundingBox.GetLeft(), boundingBox.GetTop(),
+                                     boundingBox.GetWidth() + 1, boundingBox.GetHeight() + 1 };
             if (IsWordBalloon())
                 {
                 DrawWordBalloon(dc, balloonBody, balloonTailHeight, *wxTRANSPARENT_BRUSH,
@@ -1425,40 +1430,40 @@ namespace Wisteria::GraphItems
                 {
                 if (GetGraphItemInfo().IsShowingTopOutline())
                     {
-                    dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetTopRight());
+                    dc.DrawLine(outlineBox.GetTopLeft(), outlineBox.GetTopRight());
                     }
                 if (GetGraphItemInfo().IsShowingBottomOutline())
                     {
-                    dc.DrawLine(boundingBox.GetBottomLeft(), boundingBox.GetBottomRight());
+                    dc.DrawLine(outlineBox.GetBottomLeft(), outlineBox.GetBottomRight());
                     }
 
                 if (GetGraphItemInfo().IsShowingRightOutline())
                     {
-                    dc.DrawLine(boundingBox.GetTopRight(), boundingBox.GetBottomRight());
+                    dc.DrawLine(outlineBox.GetTopRight(), outlineBox.GetBottomRight());
                     }
                 if (GetGraphItemInfo().IsShowingLeftOutline())
                     {
-                    dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetBottomLeft());
+                    dc.DrawLine(outlineBox.GetTopLeft(), outlineBox.GetBottomLeft());
                     }
                 }
             else // vertical text
                 {
                 if (GetGraphItemInfo().IsShowingRightOutline())
                     {
-                    dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetTopRight());
+                    dc.DrawLine(outlineBox.GetTopLeft(), outlineBox.GetTopRight());
                     }
                 if (GetGraphItemInfo().IsShowingLeftOutline())
                     {
-                    dc.DrawLine(boundingBox.GetBottomLeft(), boundingBox.GetBottomRight());
+                    dc.DrawLine(outlineBox.GetBottomLeft(), outlineBox.GetBottomRight());
                     }
 
                 if (GetGraphItemInfo().IsShowingBottomOutline())
                     {
-                    dc.DrawLine(boundingBox.GetTopRight(), boundingBox.GetBottomRight());
+                    dc.DrawLine(outlineBox.GetTopRight(), outlineBox.GetBottomRight());
                     }
                 if (GetGraphItemInfo().IsShowingTopOutline())
                     {
-                    dc.DrawLine(boundingBox.GetTopLeft(), boundingBox.GetBottomLeft());
+                    dc.DrawLine(outlineBox.GetTopLeft(), outlineBox.GetBottomLeft());
                     }
                 }
             }

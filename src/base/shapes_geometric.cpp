@@ -21,7 +21,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             {
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+            scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
             }
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
 
@@ -111,8 +111,7 @@ namespace Wisteria::GraphItems
             // shine
             wxGraphicsPath shinePath = gc->CreatePath();
 
-            gc->SetPen(wxPen{ wxColour{ 255, 255, 255, 150 },
-                              static_cast<int>(ScaleToScreenAndCanvas(1)) });
+            gc->SetPen(wxPen{ wxColour{ 255, 255, 255, 150 }, GetScaledPenWidth() });
 
             shinePath.MoveToPoint(GetXPosFromLeft(localDrawRect, 0.35),
                                   GetYPosFromTop(localDrawRect, 0.35));
@@ -151,7 +150,7 @@ namespace Wisteria::GraphItems
                                                                    wxPen{ *wxBLACK };
             if (scaledPen.IsOk() && gc != nullptr)
                 {
-                scaledPen.SetWidth(ScaleToScreenAndCanvas(std::max(
+                scaledPen.SetWidth(GetScaledPenWidth(std::max(
                     1.0, rect.GetWidth() <= ScaleToScreenAndCanvas(16) ? math_constants::half :
                                                                          math_constants::full)));
                 gc->SetPen(scaledPen);
@@ -242,7 +241,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             {
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(std::max(scaledPen.GetWidth(), 2)));
+            scaledPen.SetWidth(GetScaledPenWidth(std::max(scaledPen.GetWidth(), 2)));
             }
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
 
@@ -262,7 +261,7 @@ namespace Wisteria::GraphItems
         if (scaledPen.IsOk())
             {
             // for a line icon, make it a minimum of 2 pixels wide
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(std::max(scaledPen.GetWidth(), 2)));
+            scaledPen.SetWidth(GetScaledPenWidth(std::max(scaledPen.GetWidth(), 2)));
             }
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
         const DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
@@ -277,7 +276,7 @@ namespace Wisteria::GraphItems
         if (scaledPen.IsOk())
             {
             // for a line icon, make it a minimum of 2 pixels wide
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(std::max(scaledPen.GetWidth(), 2)));
+            scaledPen.SetWidth(GetScaledPenWidth(std::max(scaledPen.GetWidth(), 2)));
             }
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
         const DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
@@ -292,7 +291,7 @@ namespace Wisteria::GraphItems
         if (scaledPen.IsOk())
             {
             // for a line icon, make it a minimum of 2 pixels wide
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(std::max(scaledPen.GetWidth(), 2)));
+            scaledPen.SetWidth(GetScaledPenWidth(std::max(scaledPen.GetWidth(), 2)));
             }
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
         const DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
@@ -354,7 +353,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             {
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+            scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
             }
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
         const DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
@@ -375,7 +374,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             {
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+            scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
             }
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
         const DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
@@ -396,7 +395,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             {
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+            scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
             }
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
         const DCBrushChangerIfDifferent bc(dc, GetGraphItemInfo().GetBrush());
@@ -516,7 +515,7 @@ namespace Wisteria::GraphItems
             // double outline: outer (base), inner (lighter tint)
             {
             const int outerW = std::max<int>(2, ScaleToScreenAndCanvas(2));
-            const int innerW = std::max<int>(1, ScaleToScreenAndCanvas(1));
+            const int innerW = GetScaledPenWidth();
 
             wxPen outerPen(baseColor, outerW);
             outerPen.SetJoin(wxJOIN_ROUND);
@@ -541,7 +540,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             {
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+            scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
             }
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
 
@@ -564,7 +563,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             {
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+            scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
             }
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
 
@@ -584,7 +583,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             {
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth() * 2));
+            scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth() * 2));
             }
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
 
@@ -609,7 +608,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             {
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth() * 2));
+            scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth() * 2));
             }
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
 
@@ -634,7 +633,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             {
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+            scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
             }
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
 
@@ -655,7 +654,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             {
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+            scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
             }
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
         DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawRectangle(rect); });
@@ -667,7 +666,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetGraphItemInfo().GetPen();
         if (scaledPen.IsOk())
             {
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+            scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
             }
         const DCPenChangerIfDifferent pc{ dc, scaledPen };
         DrawWithBaseColorAndBrush(dc, [&]() { dc.DrawCircle(GetMidPoint(rect), GetRadius(rect)); });
@@ -691,8 +690,7 @@ namespace Wisteria::GraphItems
         wxASSERT_MSG(gc, L"Failed to get graphics context for crescent!");
         if (gc != nullptr)
             {
-            gc->SetPen(wxPen{ GetGraphItemInfo().GetBrush().GetColour(),
-                              static_cast<int>(ScaleToScreenAndCanvas(1)) });
+            gc->SetPen(wxPen{ GetGraphItemInfo().GetBrush().GetColour(), GetScaledPenWidth() });
             gc->SetBrush(GetGraphItemInfo().GetBrush().GetColour());
 
             wxGraphicsPath crescentPath = gc->CreatePath();
@@ -739,8 +737,7 @@ namespace Wisteria::GraphItems
         wxASSERT_MSG(gc, L"Failed to get graphics context for crescent!");
         if (gc != nullptr)
             {
-            gc->SetPen(wxPen{ GetGraphItemInfo().GetBrush().GetColour(),
-                              static_cast<int>(ScaleToScreenAndCanvas(1)) });
+            gc->SetPen(wxPen{ GetGraphItemInfo().GetBrush().GetColour(), GetScaledPenWidth() });
             gc->SetBrush(GetGraphItemInfo().GetBrush().GetColour());
 
             wxGraphicsPath crescentPath = gc->CreatePath();
@@ -785,8 +782,7 @@ namespace Wisteria::GraphItems
         wxASSERT_MSG(gc, L"Failed to get graphics context for crescent!");
         if (gc != nullptr)
             {
-            gc->SetPen(wxPen{ GetGraphItemInfo().GetBrush().GetColour(),
-                              static_cast<int>(ScaleToScreenAndCanvas(1)) });
+            gc->SetPen(wxPen{ GetGraphItemInfo().GetBrush().GetColour(), GetScaledPenWidth() });
             gc->SetBrush(GetGraphItemInfo().GetBrush().GetColour());
 
             wxGraphicsPath crescentPath = gc->CreatePath();
@@ -830,7 +826,7 @@ namespace Wisteria::GraphItems
             if (GetGraphItemInfo().GetPen().IsOk())
                 {
                 wxPen scaledPen(GetGraphItemInfo().GetPen());
-                scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+                scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
                 gc->SetPen(scaledPen);
 
                 // shrink drawing area for wider pens so that they don't
@@ -883,7 +879,7 @@ namespace Wisteria::GraphItems
             if (GetGraphItemInfo().GetPen().IsOk())
                 {
                 wxPen scaledPen(GetGraphItemInfo().GetPen());
-                scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+                scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
                 gc->SetPen(scaledPen);
 
                 // shrink drawing area for wider pens so that they don't

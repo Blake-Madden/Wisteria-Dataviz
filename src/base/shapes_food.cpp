@@ -51,8 +51,8 @@ namespace Wisteria::GraphItems
             const wxRect2DDouble localDrawRect(drawRect.x - rect.x, drawRect.y - rect.y,
                                                drawRect.width, drawRect.height);
 
-            gc->SetPen(wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                              static_cast<int>(ScaleToScreenAndCanvas(1)) });
+            gc->SetPen(
+                wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black), GetScaledPenWidth() });
 
             gc->SetBrush(gc->CreateLinearGradientBrush(
                 GetXPosFromLeft(localRect, 0), GetYPosFromTop(localRect, math_constants::half),
@@ -87,8 +87,7 @@ namespace Wisteria::GraphItems
             // shine
             wxGraphicsPath shinePath = gc->CreatePath();
 
-            gc->SetPen(wxPen{ wxColour{ 255, 255, 255, 150 },
-                              static_cast<int>(ScaleToScreenAndCanvas(1)) });
+            gc->SetPen(wxPen{ wxColour{ 255, 255, 255, 150 }, GetScaledPenWidth() });
 
             shinePath.MoveToPoint(GetXPosFromLeft(localDrawRect, 0.35),
                                   GetYPosFromTop(localDrawRect, 0.35));

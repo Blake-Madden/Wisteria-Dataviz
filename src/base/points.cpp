@@ -185,7 +185,7 @@ namespace Wisteria::GraphItems
         if (GetPen().IsOk() && !m_points.empty())
             {
             wxPen scaledPen{ GetPen() };
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth()));
+            scaledPen.SetWidth(GetScaledPenWidth(GetPen().GetWidth()));
             scaledPen.SetColour(GetMaybeGhostedColor(scaledPen.GetColour()));
             const wxDCPenChanger pc{ dc, scaledPen };
 
@@ -281,7 +281,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen{ GetPoints().front().GetPen() };
         if (scaledPen.IsOk())
             {
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+            scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
             }
         scaledPen.SetColour(GetMaybeGhostedColor(scaledPen.GetColour()));
         const wxDCPenChanger pc{ dc, scaledPen };

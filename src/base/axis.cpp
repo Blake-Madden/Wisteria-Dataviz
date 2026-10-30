@@ -1011,11 +1011,11 @@ namespace Wisteria::GraphItems
             // it a little thicker to match the arrowhead
             if (GetCapStyle() == AxisCapStyle::Arrow && GetAxisLinePen().GetWidth() == 1)
                 {
-                axisPen.SetWidth(ScaleToScreenAndCanvas(2));
+                axisPen.SetWidth(GetScaledPenWidth(2));
                 }
             else
                 {
-                axisPen.SetWidth(ScaleToScreenAndCanvas(GetAxisLinePen().GetWidth()));
+                axisPen.SetWidth(GetScaledPenWidth(GetAxisLinePen().GetWidth()));
                 }
             }
         if (IsGhosted())
@@ -1536,7 +1536,7 @@ namespace Wisteria::GraphItems
             const wxDCPenChanger pc(
                 dc, wxPen(penIsLight ? Colors::ColorBrewer::GetColor(Colors::Color::White) :
                                        Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                          ScaleToScreenAndCanvas(1), wxPenStyle::wxPENSTYLE_SOLID));
+                          GetScaledPenWidth(), wxPenStyle::wxPENSTYLE_SOLID));
             std::array<wxPoint, 5> pts;
             // area rect was already inflated from GetBoundingBox()
             GraphItems::Polygon::GetRectPoints(axisRect, pts);
@@ -2196,7 +2196,7 @@ namespace Wisteria::GraphItems
             wxPen scaledPen = bracket.GetLinePen();
             if (scaledPen.IsOk())
                 {
-                scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+                scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
                 }
             const wxDCPenChanger penCh(dc, scaledPen);
 
@@ -4681,7 +4681,7 @@ namespace Wisteria::GraphItems
         wxPen scaledPen = GetLinePen();
         if (scaledPen.IsOk())
             {
-            scaledPen.SetWidth(scaledPen.GetWidth() * scaling);
+            scaledPen.SetWidth(std::max(1, static_cast<int>(scaledPen.GetWidth() * scaling)));
             }
         const wxDCPenChanger penCh(dc, scaledPen);
 

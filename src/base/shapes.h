@@ -624,6 +624,18 @@ namespace Wisteria::GraphItems
             return value * GetScaling() * GetDPIScaleFactor();
             }
 
+        /** @brief Applies the screen DPI and scaling to a pen width.
+            @param widthDIPs The pen's width in DIPs.
+            @returns The scaled pen width, which is never less than one pixel.
+            @details A width that scales down to less than a pixel would truncate to
+                a zero-width pen, which draws a hairline on screen but nothing at all
+                in SVG.*/
+        [[nodiscard]]
+        int GetScaledPenWidth(const double widthDIPs = 1.0) const noexcept
+            {
+            return std::max(1, static_cast<int>(ScaleToScreenAndCanvas(widthDIPs)));
+            }
+
         [[nodiscard]]
         double DownscaleFromScreenAndCanvas(const double value) const noexcept
             {

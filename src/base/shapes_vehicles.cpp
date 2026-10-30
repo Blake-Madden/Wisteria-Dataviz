@@ -108,7 +108,7 @@ namespace Wisteria::GraphItems
             gc->DrawPath(windshieldAreaPath);
 
             gc->SetPen(wxPenInfo(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray),
-                                 ScaleToScreenAndCanvas(1))
+                                 GetScaledPenWidth())
                            .Cap(wxCAP_BUTT));
             auto windshieldPath = gc->CreatePath();
             windshieldPath.MoveToPoint(windshield[0]);
@@ -144,7 +144,7 @@ namespace Wisteria::GraphItems
             // divider between windows
             gc->SetPen(wxPenInfo(Colors::ColorContrast::Shade(bodyColor),
                                  dcRect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
-                                     ScaleToScreenAndCanvas(1) :
+                                     GetScaledPenWidth() :
                                      ScaleToScreenAndCanvas(2))
                            .Cap(wxCAP_BUTT));
             gc->SetBrush(wxColour{ 0, 0, 0, 0 });
@@ -222,7 +222,7 @@ namespace Wisteria::GraphItems
             {
             const wxPen scaledPen(Colors::ColorBrewer::GetColor(Colors::Color::DarkGray),
                                   rect.GetWidth() <= ScaleToScreenAndCanvas(32) ?
-                                      ScaleToScreenAndCanvas(1) :
+                                      GetScaledPenWidth() :
                                       ScaleToScreenAndCanvas(2));
             gc->SetPen(scaledPen);
             // the tire
@@ -291,7 +291,7 @@ namespace Wisteria::GraphItems
         const int numGrooves = isRear ? 36 : 24;
         constexpr double GROOVE_OUTER = 0.98;
         constexpr double GROOVE_INNER = 0.82;
-        gc->SetPen(wxPen{ rubberBlack, std::max<int>(1, ScaleToScreenAndCanvas(1)) });
+        gc->SetPen(wxPen{ rubberBlack, GetScaledPenWidth() });
         for (int i = 0; i < numGrooves; ++i)
             {
             const auto a = safe_divide<double>(2.0 * std::numbers::pi * i, numGrooves);

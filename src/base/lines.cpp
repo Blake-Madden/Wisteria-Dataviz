@@ -34,9 +34,9 @@ namespace Wisteria::GraphItems
         wxPen scaledPen{ GetPen() };
         if (GetPen().IsOk())
             {
-            scaledPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth()));
+            scaledPen.SetWidth(GetScaledPenWidth(GetPen().GetWidth()));
             }
-        const int penW = scaledPen.IsOk() ? scaledPen.GetWidth() : ScaleToScreenAndCanvas(1);
+        const int penW = scaledPen.IsOk() ? scaledPen.GetWidth() : GetScaledPenWidth();
         const wxDCPenChanger pc(dc, IsSelected() ?
                                         wxPen{ Colors::ColorBrewer::GetColor(Colors::Color::Black),
                                                2 * penW, wxPENSTYLE_DOT } :
@@ -113,9 +113,9 @@ namespace Wisteria::GraphItems
         wxPen pencilPen{ GetPen() };
         if (GetPen().IsOk())
             {
-            pencilPen.SetWidth(ScaleToScreenAndCanvas(GetPen().GetWidth()));
+            pencilPen.SetWidth(GetScaledPenWidth(GetPen().GetWidth()));
             }
-        const int penW = pencilPen.IsOk() ? pencilPen.GetWidth() : ScaleToScreenAndCanvas(1);
+        const int penW = pencilPen.IsOk() ? pencilPen.GetWidth() : GetScaledPenWidth();
         const wxDCPenChanger pc{ dc, IsSelected() ? wxPen{ wxColour{ 80, 80, 80, 200 }, 2 * penW,
                                                            wxPENSTYLE_DOT } :
                                                     pencilPen };

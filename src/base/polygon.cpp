@@ -163,7 +163,7 @@ namespace Wisteria::GraphItems
         const wxRect boundingBox = GetBoundingBox(dc);
 
         wxPen scaledPen(GetPen().IsOk() ? GetPen() : *wxTRANSPARENT_PEN);
-        scaledPen.SetWidth(ScaleToScreenAndCanvas(scaledPen.GetWidth()));
+        scaledPen.SetWidth(GetScaledPenWidth(scaledPen.GetWidth()));
         const bool penIsLight{ (scaledPen.GetColour().IsOk() &&
                                 Wisteria::Colors::ColorContrast::IsLight(scaledPen.GetColour())) };
         const wxDCPenChanger pc(

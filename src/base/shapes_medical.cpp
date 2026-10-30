@@ -194,8 +194,8 @@ namespace Wisteria::GraphItems
         gc->FillPath(redHalfPath);
 
         // stroke the outline
-        const auto outlinePenWidth = std::max<double>(1.0, ScaleToScreenAndCanvas(1));
-        gc->SetPen(wxPen{ outlineColor, static_cast<int>(outlinePenWidth) });
+        const int outlinePenWidth{ GetScaledPenWidth() };
+        gc->SetPen(wxPen{ outlineColor, outlinePenWidth });
         gc->SetBrush(*wxTRANSPARENT_BRUSH);
         gc->StrokePath(capsulePath);
 

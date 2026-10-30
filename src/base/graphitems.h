@@ -726,14 +726,13 @@ namespace Wisteria
             /// @param right @c true to show the right outline.
             /// @param bottom @c true to show the bottom outline.
             /// @param left @c true to show the left outline.
-            /// @note This is only relevant for object which are meant to draw an outline
-            ///     (e.g., Labels and Graphs). This only returns the object's flag for this
-            ///     option, which may be irrelevant for some objects.\n
-            ///     Also, if the object is using a box corner style that is set to
-            ///     @c BoxCorners::Rounded, then these flags will be ignored and the entire
-            ///     outline is drawn. (This is the case for Labels.)
-            ///     Finally, note that this is turned off for all objects by default
-            ///     *except* for Labels.
+            /// @note This is only relevant for objects which are meant to draw an outline
+            ///     (e.g., Labels and Graphs), and only has an effect on objects that have a pen.\n
+            ///     If the object's box corners are set to @c BoxCorners::Rounded, then
+            ///     these flags are ignored and the entire outline is drawn (as is the case
+            ///     for Labels).\n
+            ///     Every side is off by default, so a straight-cornered object that needs
+            ///     a border has to turn on each side that it wants.
             /// @returns A self reference.
             GraphItemInfo& Outline(const bool top, const bool right, const bool bottom,
                                    const bool left)
@@ -2110,6 +2109,18 @@ namespace Wisteria
             double ScaleToScreenAndCanvas(const double value) const
                 {
                 return std::max(0.0, value * GetScaling() * GetDPIScaleFactor());
+                }
+
+            /** @brief Applies the screen DPI and parent canvas scaling to a pen width.
+                @param widthDIPs The pen's width in DIPs.
+                @returns The scaled pen width, which is never less than one pixel.
+                @details A width that scales down to less than a pixel would truncate to
+                    a zero-width pen, which draws a hairline on screen but nothing at all
+                    in SVG exports.*/
+            [[nodiscard]]
+            int GetScaledPenWidth(const double widthDIPs = 1.0) const
+                {
+                return std::max(1, static_cast<int>(ScaleToScreenAndCanvas(widthDIPs)));
                 }
 
             /// @brief Apply screen DPI and parent canvas scaling to a value.

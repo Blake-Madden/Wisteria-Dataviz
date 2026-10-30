@@ -15,6 +15,7 @@
 #include "fillableshape.h"
 #include "graphitems.h"
 #include "shapes.h"
+#include <algorithm>
 #include <vector>
 #include <wx/wx.h>
 
@@ -259,7 +260,11 @@ namespace Wisteria::GraphItems
         /** @brief Sets how the corners are drawn.
             @details Only relevant if drawing an outline.
             @param boxCorners The corner display to use.
-            @note This may be overridden by SetShape(), depending on the shape.*/
+            @note A @c BoxCorners::Rounded box draws its entire outline, ignoring which
+                sides are turned on via `GetGraphItemInfo().Outline()`. A
+                @c BoxCorners::Straight box draws only the sides that are turned on, and
+                they are all off by default.\n
+                This may be overridden by SetShape(), depending on the shape.*/
         void SetBoxCorners(const BoxCorners boxCorners) noexcept { m_boxCorners = boxCorners; }
 
         /// @returns The shape that the label's box is drawn as.

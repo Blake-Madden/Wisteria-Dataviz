@@ -161,7 +161,7 @@ namespace Wisteria::Graphs
         // the road pavement
         wxASSERT_MSG(m_roadPen.IsOk(), L"Valid road pen needed to draw road!");
         wxPen scaledRoadPen = m_roadPen;
-        scaledRoadPen.SetWidth(ScaleToScreenAndCanvas(scaledRoadPen.GetWidth()));
+        scaledRoadPen.SetWidth(GetScaledPenWidth(scaledRoadPen.GetWidth()));
         // road will usually be black, but if background is dark ("driving at night"),
         // then make it gray so that you can see it
         scaledRoadPen.SetColour(Colors::ColorContrast::ShadeOrTintIfClose(scaledRoadPen.GetColour(),
