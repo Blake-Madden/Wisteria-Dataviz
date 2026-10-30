@@ -13,6 +13,7 @@
 #define PROJECT_SETTINGS_DIALOG_H
 
 #include "../../reporting/reportbuilder.h"
+#include "../controls/sidebarbook.h"
 #include "dialogwithhelp.h"
 #include <wx/clrpicker.h>
 #include <wx/wx.h>
@@ -138,10 +139,26 @@ namespace Wisteria::UI
             return m_rightPrinterFooter;
             }
 
+        /// @returns @c true if the project should refresh itself when its data files change.
+        [[nodiscard]]
+        bool IsAutoRefresh()
+            {
+            TransferDataFromWindow();
+            return m_autoRefresh;
+            }
+
       private:
+        constexpr static wxWindowID ID_GENERAL_SECTION{ wxID_HIGHEST + 1 };
+        constexpr static wxWindowID ID_PRINTING_SECTION{ wxID_HIGHEST + 3 };
+
         void CreateControls();
+        [[nodiscard]]
+        wxPanel* CreateGeneralPage(wxWindow* parent);
+        [[nodiscard]]
+        wxPanel* CreatePrintingPage(wxWindow* parent);
         void OnEditHeadersFooters(wxCommandEvent& event);
 
+        SideBarBook* m_sideBarBook{ nullptr };
         wxColourPickerCtrl* m_watermarkColorPicker{ nullptr };
 
         wxString m_leftPrinterHeader;
@@ -157,6 +174,7 @@ namespace Wisteria::UI
         wxString m_keywords;
         wxString m_watermarkLabel;
         wxColour m_watermarkColor{ wxColour(255, 0, 0) };
+        bool m_autoRefresh{ false };
         };
     } // namespace Wisteria::UI
 

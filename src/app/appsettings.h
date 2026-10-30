@@ -183,6 +183,19 @@ class AppSettings
     /// @param verbose @c true to enable verbose logging.
     void SetLogVerbose(const bool verbose) noexcept { m_logVerbose = verbose; }
 
+    /// @returns @c true if newly created projects should auto-refresh when their
+    ///     local dataset files change.
+    [[nodiscard]]
+    bool IsProjectAutoRefresh() const noexcept
+        {
+        return m_projectAutoRefresh;
+        }
+
+    /// @brief Sets whether newly created projects should auto-refresh when their
+    ///     local dataset files change.
+    /// @param refresh @c true to enable auto-refresh for new projects.
+    void SetProjectAutoRefresh(const bool refresh) noexcept { m_projectAutoRefresh = refresh; }
+
     // SVG export options
     //-------------------
 
@@ -280,6 +293,7 @@ class AppSettings
     bool m_printColor{ true };
     bool m_logAutoRefresh{ false };
     bool m_logVerbose{ false };
+    bool m_projectAutoRefresh{ false };
 
     Wisteria::SVGReportOptions m_svgExportOptions{ wxString{} };
     Wisteria::HtmlDashboardOptions m_htmlExportOptions{ wxString{} };

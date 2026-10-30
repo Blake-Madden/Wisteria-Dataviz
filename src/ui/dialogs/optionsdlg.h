@@ -74,6 +74,7 @@ namespace Wisteria::UI
         bool m_color{ true };
         bool m_logAutoRefresh{ false };
         bool m_logVerbose{ false };
+        bool m_projectAutoRefresh{ false };
         };
     } // namespace Wisteria::UI
 

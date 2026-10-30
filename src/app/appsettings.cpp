@@ -90,6 +90,14 @@ bool AppSettings::LoadSettingsFile(const wxString& filePath)
                 m_logVerbose = (val != 0);
                 }
             }
+        else if (child->GetName() == L"project")
+            {
+            long val{ 0 };
+            if (child->GetAttribute(L"autoRefresh", L"0").ToLong(&val))
+                {
+                m_projectAutoRefresh = (val != 0);
+                }
+            }
         else if (child->GetName() == L"svg-export")
             {
             const auto boolAttr = [&child](const wxString& name, const bool fallback)
@@ -400,6 +408,10 @@ bool AppSettings::SaveSettingsFile(const wxString& filePath)
     logNode->AddAttribute(L"autoRefresh", m_logAutoRefresh ? L"1" : L"0");
     logNode->AddAttribute(L"verbose", m_logVerbose ? L"1" : L"0");
     root->AddChild(logNode);
+
+    auto* projectNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"project");
+    projectNode->AddAttribute(L"autoRefresh", m_projectAutoRefresh ? L"1" : L"0");
+    root->AddChild(projectNode);
 
     auto* svgNode = new wxXmlNode(wxXML_ELEMENT_NODE, L"svg-export");
     svgNode->AddAttribute(L"page-width",

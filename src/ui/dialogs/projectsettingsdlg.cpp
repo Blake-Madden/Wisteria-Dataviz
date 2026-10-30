@@ -31,6 +31,7 @@ namespace Wisteria::UI
         m_subject = reportBuilder.GetSubject();
         m_author = reportBuilder.GetAuthor();
         m_keywords = reportBuilder.GetKeywords();
+        m_autoRefresh = reportBuilder.IsAutoRefresh();
         m_watermarkLabel = reportBuilder.GetWatermarkLabel();
         m_leftPrinterHeader = reportBuilder.GetLeftPrinterHeader();
         m_centerPrinterHeader = reportBuilder.GetCenterPrinterHeader();
@@ -50,82 +51,128 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void ProjectSettingsDlg::CreateControls()
+    wxPanel* ProjectSettingsDlg::CreateGeneralPage(wxWindow* parent)
         {
-        auto* mainSizer = new wxBoxSizer(wxVERTICAL);
+        auto* page = new wxPanel(parent);
+        auto* pageSizer = new wxBoxSizer(wxVERTICAL);
 
-        auto* gridSizer = new wxFlexGridSizer(
+        auto* projectBox = new wxStaticBoxSizer(wxVERTICAL, page, _(L"Project"));
+        auto* projectGrid = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        gridSizer->AddGrowableCol(1, 1);
+        projectGrid->AddGrowableCol(1, 1);
 
         // project name
-        gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Project name:")),
-                       wxSizerFlags{}.CenterVertical());
-        gridSizer->Add(new wxTextCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition,
-                                      FromDIP(wxSize{ 300, -1 }), 0,
-                                      wxGenericValidator{ &m_projectName }),
-                       wxSizerFlags{}.Expand());
+        projectGrid->Add(
+            new wxStaticText(projectBox->GetStaticBox(), wxID_STATIC, _(L"Project name:")),
+            wxSizerFlags{}.CenterVertical());
+        projectGrid->Add(new wxTextCtrl(projectBox->GetStaticBox(), wxID_ANY, wxString{},
+                                        wxDefaultPosition, FromDIP(wxSize{ 300, -1 }), 0,
+                                        wxGenericValidator{ &m_projectName }),
+                         wxSizerFlags{}.Expand());
 
         // subject
-        gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Subject:")),
-                       wxSizerFlags{}.CenterVertical());
-        gridSizer->Add(new wxTextCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition,
-                                      FromDIP(wxSize{ 300, -1 }), 0,
-                                      wxGenericValidator{ &m_subject }),
-                       wxSizerFlags{}.Expand());
+        projectGrid->Add(new wxStaticText(projectBox->GetStaticBox(), wxID_STATIC, _(L"Subject:")),
+                         wxSizerFlags{}.CenterVertical());
+        projectGrid->Add(new wxTextCtrl(projectBox->GetStaticBox(), wxID_ANY, wxString{},
+                                        wxDefaultPosition, FromDIP(wxSize{ 300, -1 }), 0,
+                                        wxGenericValidator{ &m_subject }),
+                         wxSizerFlags{}.Expand());
 
         // author
-        gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Author:")),
-                       wxSizerFlags{}.CenterVertical());
-        gridSizer->Add(new wxTextCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition,
-                                      FromDIP(wxSize{ 300, -1 }), 0,
-                                      wxGenericValidator{ &m_author }),
-                       wxSizerFlags{}.Expand());
+        projectGrid->Add(new wxStaticText(projectBox->GetStaticBox(), wxID_STATIC, _(L"Author:")),
+                         wxSizerFlags{}.CenterVertical());
+        projectGrid->Add(new wxTextCtrl(projectBox->GetStaticBox(), wxID_ANY, wxString{},
+                                        wxDefaultPosition, FromDIP(wxSize{ 300, -1 }), 0,
+                                        wxGenericValidator{ &m_author }),
+                         wxSizerFlags{}.Expand());
 
         // keywords
-        gridSizer->Add(new wxStaticText(this, wxID_STATIC, _(L"Keywords:")),
-                       wxSizerFlags{}.CenterVertical());
-        gridSizer->Add(new wxTextCtrl(this, wxID_ANY, wxString{}, wxDefaultPosition,
-                                      FromDIP(wxSize{ 300, -1 }), 0,
-                                      wxGenericValidator{ &m_keywords }),
-                       wxSizerFlags{}.Expand());
+        projectGrid->Add(new wxStaticText(projectBox->GetStaticBox(), wxID_STATIC, _(L"Keywords:")),
+                         wxSizerFlags{}.CenterVertical());
+        projectGrid->Add(new wxTextCtrl(projectBox->GetStaticBox(), wxID_ANY, wxString{},
+                                        wxDefaultPosition, FromDIP(wxSize{ 300, -1 }), 0,
+                                        wxGenericValidator{ &m_keywords }),
+                         wxSizerFlags{}.Expand());
 
-        mainSizer->Add(gridSizer, wxSizerFlags{}.Expand().Border());
+        projectBox->Add(projectGrid, wxSizerFlags{}.Expand().Border());
 
-        // watermark section
-        auto* wmBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Watermark"));
-        auto* wmGrid = new wxFlexGridSizer(
-            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        wmGrid->AddGrowableCol(1, 1);
+        auto* autoRefreshCheckBox = new wxCheckBox(
+            projectBox->GetStaticBox(), wxID_ANY, _(L"Auto-refresh when data files change"),
+            wxDefaultPosition, wxDefaultSize, 0, wxGenericValidator{ &m_autoRefresh });
+        projectBox->Add(autoRefreshCheckBox, wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM));
 
-        wmGrid->Add(new wxStaticText(wmBox->GetStaticBox(), wxID_STATIC, _(L"Text:")),
-                    wxSizerFlags{}.CenterVertical());
-        auto* wmTextCtrl =
-            new wxTextCtrl(wmBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
-                           wxDefaultSize, 0, wxGenericValidator{ &m_watermarkLabel });
-        wmGrid->Add(wmTextCtrl, wxSizerFlags{}.Expand());
+        pageSizer->Add(projectBox, wxSizerFlags{}.Expand().Border());
+        pageSizer->AddStretchSpacer();
+        page->SetSizer(pageSizer);
+        return page;
+        }
 
-        wmGrid->Add(new wxStaticText(wmBox->GetStaticBox(), wxID_STATIC, _(L"Color:")),
-                    wxSizerFlags{}.CenterVertical());
-        m_watermarkColorPicker =
-            new wxColourPickerCtrl(wmBox->GetStaticBox(), wxID_ANY, m_watermarkColor);
-        wmGrid->Add(m_watermarkColorPicker, wxSizerFlags{}.Expand());
+    //-------------------------------------------
+    wxPanel* ProjectSettingsDlg::CreatePrintingPage(wxWindow* parent)
+        {
+        auto* page = new wxPanel(parent);
+        auto* pageSizer = new wxBoxSizer(wxVERTICAL);
 
-        wmBox->Add(wmGrid, wxSizerFlags{}.Expand().Border());
-        mainSizer->Add(wmBox, wxSizerFlags{}.Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM));
-
-        // printer headers & footers
-        auto* headerFooterBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Printing && PDF"));
+        auto* headerFooterBox = new wxStaticBoxSizer(wxVERTICAL, page, _(L"Headers && Footers"));
         auto* headerFooterButton =
             new wxButton(headerFooterBox->GetStaticBox(), wxID_ANY, _(L"Headers && Footers..."));
         headerFooterButton->Bind(wxEVT_BUTTON, &ProjectSettingsDlg::OnEditHeadersFooters, this);
         headerFooterBox->Add(headerFooterButton, wxSizerFlags{}.Border());
-        mainSizer->Add(headerFooterBox,
-                       wxSizerFlags{}.Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM));
 
+        pageSizer->Add(headerFooterBox, wxSizerFlags{}.Expand().Border());
+
+        // the watermark is drawn when exporting or printing, not on the canvas itself
+        auto* watermarkHeaderSizer = new wxBoxSizer(wxHORIZONTAL);
+        watermarkHeaderSizer->Add(new wxStaticText(page, wxID_ANY, _(L"Watermark")),
+                                  wxSizerFlags{}.CenterVertical());
+        watermarkHeaderSizer->Add(new wxStaticLine(page),
+                                  wxSizerFlags{ 1 }.CenterVertical().Border(wxLEFT));
+        pageSizer->Add(watermarkHeaderSizer,
+                       wxSizerFlags{}.Expand().Border(wxLEFT | wxRIGHT | wxTOP));
+
+        auto* watermarkGrid = new wxFlexGridSizer(
+            2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
+        watermarkGrid->AddGrowableCol(1, 1);
+
+        watermarkGrid->Add(new wxStaticText(page, wxID_STATIC, _(L"Text:")),
+                           wxSizerFlags{}.CenterVertical());
+        watermarkGrid->Add(new wxTextCtrl(page, wxID_ANY, wxString{}, wxDefaultPosition,
+                                          FromDIP(wxSize{ 300, -1 }), 0,
+                                          wxGenericValidator{ &m_watermarkLabel }),
+                           wxSizerFlags{}.Expand());
+
+        watermarkGrid->Add(new wxStaticText(page, wxID_STATIC, _(L"Color:")),
+                           wxSizerFlags{}.CenterVertical());
+        m_watermarkColorPicker = new wxColourPickerCtrl(page, wxID_ANY, m_watermarkColor);
+        watermarkGrid->Add(m_watermarkColorPicker, wxSizerFlags{}.Expand());
+
+        pageSizer->Add(watermarkGrid, wxSizerFlags{}.Expand().Border(wxLEFT | wxRIGHT | wxBOTTOM));
+
+        pageSizer->AddStretchSpacer();
+        page->SetSizer(pageSizer);
+        return page;
+        }
+
+    //-------------------------------------------
+    void ProjectSettingsDlg::CreateControls()
+        {
+        auto* mainSizer = new wxBoxSizer(wxVERTICAL);
+
+        m_sideBarBook = new SideBarBook(this, wxID_ANY);
+        m_sideBarBook->SetIconSize(wxSize{ 16, 16 });
+        m_sideBarBook->GetImageList().push_back(
+            wxGetApp().GetResourceManager().GetSVG(L"images/project-settings.svg"));
+        m_sideBarBook->GetImageList().push_back(
+            wxGetApp().GetResourceManager().GetSVG(L"images/print-setup.svg"));
+
+        m_sideBarBook->AddPage(CreateGeneralPage(m_sideBarBook), _(L"General"), ID_GENERAL_SECTION,
+                               true, 0);
+        m_sideBarBook->AddPage(CreatePrintingPage(m_sideBarBook), _(L"Export & Printing"),
+                               ID_PRINTING_SECTION, false, 1);
+
+        mainSizer->Add(m_sideBarBook, wxSizerFlags{ 1 }.Expand().Border());
         mainSizer->Add(CreateSeparatedButtonSizer(wxOK | wxCANCEL),
                        wxSizerFlags{}.Expand().Border());
-
         SetSizer(mainSizer);
         }
 

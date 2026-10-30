@@ -35,11 +35,12 @@ namespace Wisteria::UI
         m_color = settings.IsPrintColor();
         m_logAutoRefresh = settings.IsLogAutoRefresh();
         m_logVerbose = settings.IsLogVerbose();
+        m_projectAutoRefresh = settings.IsProjectAutoRefresh();
 
         if (m_paperChoice != nullptr)
             {
             if (const auto paperPos =
-                    std::find(m_paperIds.cbegin(), m_paperIds.cend(), settings.GetPaperId());
+                    std::ranges::find(std::as_const(m_paperIds), settings.GetPaperId());
                 paperPos != m_paperIds.cend())
                 {
                 m_paperChoice->SetSelection(
@@ -62,6 +63,7 @@ namespace Wisteria::UI
         settings.SetPrintColor(m_color);
         settings.SetLogAutoRefresh(m_logAutoRefresh);
         settings.SetLogVerbose(m_logVerbose);
+        settings.SetProjectAutoRefresh(m_projectAutoRefresh);
 
         if (m_paperChoice != nullptr && m_paperChoice->GetSelection() != wxNOT_FOUND &&
             std::cmp_less(m_paperChoice->GetSelection(), m_paperIds.size()))
@@ -148,6 +150,13 @@ namespace Wisteria::UI
         auto* page = new wxPanel(parent);
         auto* pageSizer = new wxBoxSizer(wxVERTICAL);
 
+        auto* projectBox = new wxStaticBoxSizer(wxVERTICAL, page, _(L"Projects"));
+        projectBox->Add(new wxCheckBox(projectBox->GetStaticBox(), wxID_ANY,
+                                       _(L"Auto-refresh new projects when their data files change"),
+                                       wxDefaultPosition, wxDefaultSize, 0,
+                                       wxGenericValidator{ &m_projectAutoRefresh }),
+                        wxSizerFlags{}.Border());
+
         auto* logBox = new wxStaticBoxSizer(wxVERTICAL, page, _(L"Log"));
         logBox->Add(new wxCheckBox(logBox->GetStaticBox(), wxID_ANY, _(L"Auto-refresh log"),
                                    wxDefaultPosition, wxDefaultSize, 0,
@@ -158,6 +167,7 @@ namespace Wisteria::UI
                                    wxGenericValidator{ &m_logVerbose }),
                     wxSizerFlags{}.Border(wxLEFT | wxRIGHT | wxBOTTOM));
 
+        pageSizer->Add(projectBox, wxSizerFlags{}.Expand().Border(wxLEFT | wxRIGHT | wxTOP));
         pageSizer->Add(logBox, wxSizerFlags{}.Expand().Border());
         page->SetSizer(pageSizer);
         return page;
@@ -169,7 +179,7 @@ namespace Wisteria::UI
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
         m_sideBarBook = new SideBarBook(this, wxID_ANY);
-        m_sideBarBook->SetIconSize(wxSize{ 32, 32 });
+        m_sideBarBook->SetIconSize(wxSize{ 16, 16 });
         m_sideBarBook->GetImageList().push_back(
             wxGetApp().GetResourceManager().GetSVG(L"images/print-setup.svg"));
         m_sideBarBook->GetImageList().push_back(
