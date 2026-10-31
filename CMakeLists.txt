@@ -216,6 +216,7 @@ include(cmake/GetGitInfo.cmake)
 set(SUBMODULES
     src/easyexif
     src/wxSimpleJSON
+    src/wxSimpleJSON/src/cJSON
     src/CRCpp
     src/lua
     src/utfcpp

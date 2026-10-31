@@ -17,6 +17,7 @@
 #include "../util/logfile.h"
 #include "../util/resource_manager.h"
 #include "mainframe.h"
+#include <memory>
 #include <wx/cmdline.h>
 #include <wx/config.h>
 #include <wx/debugrpt.h>
@@ -41,6 +42,9 @@
 
 namespace Wisteria::UI
     {
+    class LuaInterpreter;
+    class SideBar;
+
     /// @brief Application class with file history, file logger,
     ///     exception handling, document manager, and ribbon-based main frame built-in.
     class BaseApp : public wxApp
@@ -52,6 +56,16 @@ namespace Wisteria::UI
         BaseApp(const BaseApp&) = delete;
         /// @private
         BaseApp& operator=(const BaseApp&) = delete;
+        /// @private
+        ~BaseApp() override;
+
+        /// @returns The running application.
+        /// @note This is for shared code that can't use an application's own @c wxGetApp().
+        [[nodiscard]]
+        static BaseApp& GetApp()
+            {
+            return dynamic_cast<BaseApp&>(*wxTheApp);
+            }
 
         /// @private
         bool OnInit() override;
@@ -135,6 +149,23 @@ namespace Wisteria::UI
         /// @brief Sets the document manager.
         /// @param docManager The document manager to use.
         void SetDocManager(wxDocManager* docManager) noexcept { m_docManager = docManager; }
+
+        /// @returns The Lua script runner, or null if the application doesn't use one.
+        [[nodiscard]]
+        LuaInterpreter* GetLuaRunner() noexcept
+            {
+            return m_luaRunner.get();
+            }
+
+        /// @brief Sets the Lua script runner.
+        /// @param luaRunner The script runner, which the application will own.
+        /// @note The application should call @c Initialize() on the runner
+        ///     after anything that it depends on has been loaded.
+        void SetLuaRunner(std::unique_ptr<LuaInterpreter> luaRunner);
+
+        /// @brief Applies the application's theme to a sidebar.
+        /// @param sideBar The sidebar to customize.
+        virtual void ApplyThemeToSideBar([[maybe_unused]] SideBar* sideBar) {}
 
         /// @brief Gets a window that is suitable for parenting a dialog.
         /// @details Will use the mainframe if visible; otherwise,
@@ -294,6 +325,7 @@ namespace Wisteria::UI
         bool m_appendDailyLog{ false };
         ResourceManager m_resManager;
         wxLocale* m_locale{ nullptr };
+        std::unique_ptr<LuaInterpreter> m_luaRunner;
 
         wxString m_appSubName;
         wxString m_fileExtension;

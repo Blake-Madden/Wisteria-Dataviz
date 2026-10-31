@@ -24,6 +24,7 @@
 - Added styling options to pie charts to make them look like:
     - Bagels
     - Pumpkin pies
+- Added basic Lua interpreter.
 
 ## 1.2.1
 

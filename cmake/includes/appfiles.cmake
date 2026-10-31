@@ -103,7 +103,10 @@ SET(APP_WISTERIA_SRC
     src/graphs/wordcloud.cpp
     src/import/spreadsheet_extract_text.cpp
     src/import/xlsx_extract_text.cpp
+    src/lua-scripting/lua_debug.cpp
+    src/lua-scripting/lua_interface.cpp
     src/lua-scripting/onelua_no_warnings.c
+    src/lua-scripting/script_workbench_panel.cpp
     src/reporting/htmldashboardprintout.cpp
     src/reporting/odpreportprintout.cpp
     src/reporting/pdfreportprintout.cpp
@@ -122,6 +125,7 @@ SET(APP_WISTERIA_SRC
     src/reporting/reporttableloader.cpp
     src/reporting/svgreportprintout.cpp
     src/ui/app.cpp
+    src/ui/controls/codeeditor.cpp
     src/ui/controls/dataguidectrl.cpp
     src/ui/controls/listctrlex.cpp
     src/ui/controls/listctrlexcelexporter.cpp
@@ -184,6 +188,7 @@ SET(APP_WISTERIA_SRC
     src/ui/dialogs/editors/pivotwiderrdlg.cpp
     src/ui/dialogs/editors/subsetdlg.cpp
     src/ui/dialogs/excelpreviewdlg.cpp
+    src/ui/dialogs/functionbrowserdlg.cpp
     src/ui/dialogs/gridexportdlg.cpp
     src/ui/dialogs/htmldashboarddlg.cpp
     src/ui/dialogs/imageeffectdlg.cpp

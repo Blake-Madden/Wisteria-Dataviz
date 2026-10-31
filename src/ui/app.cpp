@@ -8,6 +8,7 @@
 
 #include "app.h"
 #include "../base/label.h"
+#include "../lua-scripting/lua_interface.h"
 #include "../util/hardwareinfo.h"
 #include "wx/xrc/xh_bmp.h"
 #include "wx/xrc/xh_menu.h"
@@ -40,6 +41,15 @@ namespace Wisteria::UI
         // call this to tell the library to call our OnFatalException()
         wxHandleFatalExceptions();
 #endif
+        }
+
+    //----------------------------------------------------------
+    BaseApp::~BaseApp() = default;
+
+    //----------------------------------------------------------
+    void BaseApp::SetLuaRunner(std::unique_ptr<LuaInterpreter> luaRunner)
+        {
+        m_luaRunner = std::move(luaRunner);
         }
 
     //----------------------------------------------------------
@@ -99,6 +109,8 @@ namespace Wisteria::UI
     int BaseApp::OnExit()
         {
         wxLogDebug(__func__);
+        // script objects may refer to documents, so close Lua while they still exist
+        m_luaRunner.reset();
         SaveFileHistoryMenu();
         wxDELETE(m_docManager);
         wxDELETE(m_locale);

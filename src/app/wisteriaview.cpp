@@ -316,6 +316,13 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, viewLog, ID_VIEW_LOG_REPORT);
     m_frame->Bind(wxEVT_MENU, viewLog, ID_VIEW_LOG_REPORT);
 
+    // developer button: show main frame and activate its script workbench
+    const auto viewScriptWorkbench = []([[maybe_unused]]
+                                        wxCommandEvent& event)
+    { wxGetApp().GetMainFrameEx()->ActivateScriptWorkbench(); };
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, viewScriptWorkbench, ID_SCRIPT_WINDOW);
+    m_frame->Bind(wxEVT_MENU, viewScriptWorkbench, ID_SCRIPT_WINDOW);
+
     // bind copy/paste (route accelerator events to the active canvas)
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnCopyItem, this, wxID_COPY);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPasteItem, this, wxID_PASTE);

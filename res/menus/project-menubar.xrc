@@ -336,6 +336,9 @@
             <object class="wxMenuItem" name="ID_VIEW_LOG_REPORT">
                 <label>Log</label>
             </object>
+            <object class="wxMenuItem" name="ID_SCRIPT_WINDOW">
+                <label>Developer Tools</label>
+            </object>
         </object>
         <object class="wxMenu" name="project_help_menu">
             <label>Help</label>

@@ -59,9 +59,14 @@ namespace Wisteria
         };
     } // namespace Wisteria
 
+namespace Wisteria::UI
+    {
+    class ScriptWorkbenchPanel;
+    }
+
 class WisteriaApp;
 
-/// @brief Main frame with an embedded log tab.
+/// @brief Main frame with an embedded log tab and script workbench.
 class MainFrame final : public Wisteria::UI::BaseMainFrame
     {
   public:
@@ -85,6 +90,31 @@ class MainFrame final : public Wisteria::UI::BaseMainFrame
     /// @brief Show main frame, switch to the Log tab, and refresh the log list.
     void ActivateLogTab();
 
+    /// @returns The Developer ribbon tab page.
+    [[nodiscard]]
+    wxRibbonPage* GetDeveloperRibbonPage() const noexcept
+        {
+        return m_developerRibbonPage;
+        }
+
+    /// @returns @c true if the Developer ribbon tab is currently the active page.
+    [[nodiscard]]
+    bool IsDeveloperTabActive() const noexcept
+        {
+        return (GetRibbon() != nullptr && m_developerRibbonPage != nullptr &&
+                GetRibbon()->GetActivePage() == GetRibbon()->GetPageNumber(m_developerRibbonPage));
+        }
+
+    /// @returns The script workbench.
+    [[nodiscard]]
+    Wisteria::UI::ScriptWorkbenchPanel* GetScriptWorkbench() noexcept
+        {
+        return m_scriptWorkbench;
+        }
+
+    /// @brief Shows the main frame and switches to the Developer tab.
+    void ActivateScriptWorkbench() override;
+
     /// @brief Enables or disables log auto-refresh, syncing the ribbon button and timer.
     /// @param enable @c true to enable auto-refresh.
     void SetLogAutoRefresh(bool enable);
@@ -104,6 +134,8 @@ class MainFrame final : public Wisteria::UI::BaseMainFrame
     bool m_logAutoRefresh{ false };
     wxRibbonButtonBar* m_logEditButtonBar{ nullptr };
     wxRibbonPage* m_logRibbonPage{ nullptr };
+    wxRibbonPage* m_developerRibbonPage{ nullptr };
+    Wisteria::UI::ScriptWorkbenchPanel* m_scriptWorkbench{ nullptr };
 
     wxDECLARE_CLASS(MainFrame);
     };
@@ -276,6 +308,9 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     void LoadInterface();
     void InitProjectSidebar();
     void LoadRibbonLogPage(wxRibbonBar* ribbon);
+    void LoadRibbonDeveloperPage(wxRibbonBar* ribbon);
+    // binds the Developer tab's commands to the main frame
+    void BindScriptCommands();
 
 #if defined(__WXOSX__)
     /// @brief Seeds XRC's string-to-ID table with the application's command IDs,
@@ -506,6 +541,30 @@ constexpr wxWindowID ID_LOG_TAB_CLEAR{ wxID_HIGHEST + 65 };
 constexpr wxWindowID ID_LOG_TAB_REFRESH{ wxID_HIGHEST + 66 };
 constexpr wxWindowID ID_LOG_TAB_REALTIME_UPDATE{ wxID_HIGHEST + 67 };
 constexpr wxWindowID ID_LOG_TAB_VERBOSE{ wxID_HIGHEST + 68 };
+
+// Developer tab ribbon buttons
+constexpr wxWindowID ID_SCRIPT_NEW{ wxID_HIGHEST + 255 };
+constexpr wxWindowID ID_SCRIPT_OPEN{ wxID_HIGHEST + 256 };
+constexpr wxWindowID ID_SCRIPT_SAVE{ wxID_HIGHEST + 257 };
+constexpr wxWindowID ID_SCRIPT_RUN{ wxID_HIGHEST + 258 };
+constexpr wxWindowID ID_SCRIPT_CONTINUE{ wxID_HIGHEST + 259 };
+constexpr wxWindowID ID_SCRIPT_STOP{ wxID_HIGHEST + 260 };
+constexpr wxWindowID ID_SCRIPT_CLEAR_GLOBALS{ wxID_HIGHEST + 261 };
+constexpr wxWindowID ID_SCRIPT_PASTE{ wxID_HIGHEST + 262 };
+constexpr wxWindowID ID_SCRIPT_CUT{ wxID_HIGHEST + 263 };
+constexpr wxWindowID ID_SCRIPT_COPY{ wxID_HIGHEST + 264 };
+constexpr wxWindowID ID_SCRIPT_UNDO{ wxID_HIGHEST + 265 };
+constexpr wxWindowID ID_SCRIPT_REDO{ wxID_HIGHEST + 266 };
+constexpr wxWindowID ID_SCRIPT_DUPLICATE_LINE{ wxID_HIGHEST + 267 };
+constexpr wxWindowID ID_SCRIPT_SELECT_ALL{ wxID_HIGHEST + 268 };
+constexpr wxWindowID ID_SCRIPT_COMMENT{ wxID_HIGHEST + 269 };
+constexpr wxWindowID ID_SCRIPT_UNCOMMENT{ wxID_HIGHEST + 270 };
+constexpr wxWindowID ID_SCRIPT_FIND{ wxID_HIGHEST + 271 };
+constexpr wxWindowID ID_SCRIPT_REPLACE{ wxID_HIGHEST + 272 };
+constexpr wxWindowID ID_SCRIPT_GOTO_LINE{ wxID_HIGHEST + 273 };
+constexpr wxWindowID ID_SCRIPT_TOGGLE_DEBUG{ wxID_HIGHEST + 274 };
+constexpr wxWindowID ID_SCRIPT_CLEAR_DEBUG{ wxID_HIGHEST + 275 };
+constexpr wxWindowID ID_SCRIPT_WINDOW{ wxID_HIGHEST + 276 };
 
 wxDECLARE_APP(WisteriaApp);
 

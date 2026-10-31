@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- normal code lines (gray) -->
+  <rect x="28" y="26" width="168" height="20" rx="5" fill="#6b7280"/>
+  <rect x="28" y="54" width="140" height="20" rx="5" fill="#6b7280"/>
+  <!-- /* delimiter (short green bar) -->
+  <rect x="28" y="82" width="52" height="20" rx="5" fill="#22c55e"/>
+  <!-- comment content lines (green, indented) -->
+  <rect x="48" y="110" width="148" height="20" rx="5" fill="#22c55e"/>
+  <rect x="48" y="138" width="120" height="20" rx="5" fill="#22c55e"/>
+  <!-- */ delimiter (very short green bar) -->
+  <rect x="28" y="166" width="44" height="20" rx="5" fill="#22c55e"/>
+  <!-- normal code lines (gray) -->
+  <rect x="28" y="194" width="152" height="20" rx="5" fill="#6b7280"/>
+  <rect x="28" y="222" width="116" height="20" rx="5" fill="#6b7280"/>
+</svg>

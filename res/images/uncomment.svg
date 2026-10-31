@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- undo swoosh: arc from right, counter-clockwise over the top, down on the left (↩ shape) -->
+  <path d="M 200,72 A 72,50 0 0 0 56,72 L 56,100"
+        stroke="#3b82f6" stroke-width="11" fill="none"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- arrowhead pointing down at left arm end -->
+  <polygon points="40,96 56,116 72,96" fill="#3b82f6"/>
+  <!-- text lines (gray) -->
+  <rect x="28" y="128" width="196" height="20" rx="5" fill="#6b7280"/>
+  <rect x="28" y="156" width="168" height="20" rx="5" fill="#6b7280"/>
+  <rect x="28" y="184" width="184" height="20" rx="5" fill="#6b7280"/>
+  <rect x="28" y="212" width="140" height="20" rx="5" fill="#6b7280"/>
+</svg>

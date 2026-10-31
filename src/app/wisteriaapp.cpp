@@ -12,9 +12,12 @@
 #include "../data/dataset.h"
 #include "../easyexif/exif.h"
 #include "../import/text_matrix.h"
+#include "../lua-scripting/lua_interface.h"
+#include "../lua-scripting/script_workbench_panel.h"
 #include "../lua/lua.h"
 #include "../ui/dialogs/aboutdlg.h"
 #include "../ui/dialogs/optionsdlg.h"
+#include "../wxSimpleJSON/src/cJSON/cJSON.h"
 #include "../wxpdfdoc/include/wx/pdfdoc_version.h"
 #include "sbom.h"
 #include "wisteriadoc.h"
@@ -143,6 +146,7 @@ void WisteriaApp::RegisterMenuBarItemIds()
     seedId("ID_EDIT_ITEM", ID_EDIT_ITEM);
     seedId("ID_DELETE_ITEM", ID_DELETE_ITEM);
     seedId("ID_VIEW_LOG_REPORT", ID_VIEW_LOG_REPORT);
+    seedId("ID_SCRIPT_WINDOW", ID_SCRIPT_WINDOW);
     seedId("ID_PROJECT_SETTINGS", ID_PROJECT_SETTINGS);
     seedId("ID_HTML_EXPORT", ID_HTML_EXPORT);
     seedId("ID_SVG_EXPORT", ID_SVG_EXPORT);
@@ -256,6 +260,9 @@ bool WisteriaApp::OnInit()
         }
     GetAppSettings()->LoadSettingsFile(appSettingFolderPath + L"Settings.xml");
 
+    SetLuaRunner(std::make_unique<Wisteria::UI::LuaInterpreter>());
+    GetLuaRunner()->Initialize();
+
     Wisteria::Settings::SetReportEditingEnabled(true);
     GetResourceManager().LoadArchive(FindResourceFile(L"res.wad"));
     wxArtProvider::Push(new WisteriaArtProvider{});
@@ -334,7 +341,7 @@ void WisteriaApp::ShowAboutDialog(wxWindow* parent)
         .AddLibrary(wxStyledTextCtrl::GetLibraryVersionInfo(), SCINTILLA_HASH, SCINTILLA_ORIGIN)
         .AddLibrary(wxStyledTextCtrl::GetLexerVersionInfo(), LEXILLA_HASH, LEXILLA_ORIGIN)
         .AddLibrary(wxGetZlibVersionInfo(), ZLIB_HASH, ZLIB_ORIGIN)
-        .AddLibrary(wxVersionInfo{ L"wxPDFDocument", PDFDOC_MAJOR_VERSION, PDFDOC_MINOR_VERSION,
+        .AddLibrary(wxVersionInfo{ L"wxPdfDocument", PDFDOC_MAJOR_VERSION, PDFDOC_MINOR_VERSION,
                                    PDFDOC_RELEASE_NUMBER, PDFDOC_SUBRELEASE_NUMBER, wxString{},
                                    wxString{} },
                     WXPDFDOC_HASH, WXPDFDOC_ORIGIN)
@@ -349,6 +356,10 @@ void WisteriaApp::ShowAboutDialog(wxWindow* parent)
                     LUA_HASH, LUA_ORIGIN)
         .AddLibrary(wxVersionInfo{ L"wxStartPage", -1 }, WXSTARTPAGE_HASH, WXSTARTPAGE_ORIGIN)
         .AddLibrary(wxVersionInfo{ L"wxSimpleJSON", -1 }, WXSIMPLEJSON_HASH, WXSIMPLEJSON_ORIGIN)
+        .AddLibrary(wxVersionInfo{ L"cJSON", CJSON_VERSION_MAJOR, CJSON_VERSION_MINOR,
+                                   CJSON_VERSION_PATCH, 0, wxString{},
+                                   L"Copyright (c) 2009-2017 Dave Gamble and cJSON contributors" },
+                    CJSON_HASH, CJSON_ORIGIN)
         .AddLibrary(
             wxVersionInfo{ L"easyexif", -1, 0, 0, 0, wxString{}, easyexif::EASYEXIF_COPYRIGHT },
             EASYEXIF_HASH, EASYEXIF_ORIGIN)
@@ -617,6 +628,13 @@ void WisteriaApp::LoadInterface()
     GetMainFrame()->GetPanel()->GetSizer()->Add(GetMainFrameEx()->m_logPanel,
                                                 wxSizerFlags{ 1 }.Expand());
 
+    // create the embedded script workbench (hidden until the Developer tab is activated)
+    GetMainFrameEx()->m_scriptWorkbench =
+        new Wisteria::UI::ScriptWorkbenchPanel(GetMainFrame()->GetPanel());
+    GetMainFrameEx()->GetScriptWorkbench()->Hide();
+    GetMainFrame()->GetPanel()->GetSizer()->Add(GetMainFrameEx()->GetScriptWorkbench(),
+                                                wxSizerFlags{ 1 }.Expand());
+
     GetMainFrameEx()->SetLogAutoRefresh(GetAppSettings()->IsLogAutoRefresh());
     wxLog::SetVerbose(GetAppSettings()->IsLogVerbose());
     if (GetMainFrame()->GetMenuBar() != nullptr)
@@ -624,8 +642,16 @@ void WisteriaApp::LoadInterface()
         GetMainFrame()->GetMenuBar()->Check(ID_LOG_TAB_VERBOSE, wxLog::GetVerbose());
         }
 
-    const std::array<wxAcceleratorEntry, 1> entries = { wxAcceleratorEntry(wxACCEL_CTRL, L'O',
-                                                                           wxID_OPEN) };
+    const std::array<wxAcceleratorEntry, 8> entries = {
+        wxAcceleratorEntry(wxACCEL_CTRL, L'O', wxID_OPEN),
+        wxAcceleratorEntry(wxACCEL_CTRL, L'F', ID_SCRIPT_FIND),
+        wxAcceleratorEntry(wxACCEL_CTRL, L'H', ID_SCRIPT_REPLACE),
+        wxAcceleratorEntry(wxACCEL_CTRL | wxACCEL_SHIFT, L'N', ID_SCRIPT_NEW),
+        wxAcceleratorEntry(wxACCEL_CTRL | wxACCEL_SHIFT, L'O', ID_SCRIPT_OPEN),
+        wxAcceleratorEntry(wxACCEL_CTRL | wxACCEL_SHIFT, L'S', ID_SCRIPT_SAVE),
+        wxAcceleratorEntry(wxACCEL_NORMAL, WXK_F5, ID_SCRIPT_RUN),
+        wxAcceleratorEntry(wxACCEL_SHIFT, WXK_F5, ID_SCRIPT_STOP)
+    };
     GetMainFrame()->SetAcceleratorTable(wxAcceleratorTable(entries.size(), entries.data()));
 
     // add start page
@@ -689,21 +715,38 @@ void WisteriaApp::LoadInterface()
         GetMainFrame()->SetLogo(appSvg);
         }
 
-    GetMainFrame()->Bind(wxEVT_CLOSE_WINDOW,
-                         [this](wxCloseEvent& event)
-                         {
-                             // If project windows are still open, then the user is just dismissing
-                             // this frame (e.g., the log or script workbench embedded here),
-                             // not the whole app.
-                             if (event.CanVeto() && wxGetApp().GetDocumentCount() > 0)
-                                 {
-                                 GetMainFrame()->Hide();
-                                 event.Veto();
-                                 return;
-                                 }
+    GetMainFrame()->Bind(
+        wxEVT_CLOSE_WINDOW,
+        [this](wxCloseEvent& event)
+        {
+            if (event.CanVeto() && Wisteria::UI::LuaInterpreter::IsRunning())
+                {
+                GetMainFrame()->ActivateScriptWorkbench();
+                wxMessageBox(_(L"A script is still running. Please stop it before closing."),
+                             _(L"Script Running"), wxOK | wxICON_EXCLAMATION);
+                event.Veto();
+                return;
+                }
 
-                             event.Skip();
-                         });
+            // If project windows are still open, then the user is just dismissing
+            // this frame (e.g., the log or script workbench embedded here),
+            // not the whole app.
+            if (event.CanVeto() && wxGetApp().GetDocumentCount() > 0)
+                {
+                GetMainFrame()->Hide();
+                event.Veto();
+                return;
+                }
+
+            if (event.CanVeto() && GetMainFrameEx()->GetScriptWorkbench() != nullptr &&
+                !GetMainFrameEx()->GetScriptWorkbench()->PromptToSaveUnsavedScripts())
+                {
+                event.Veto();
+                return;
+                }
+
+            event.Skip();
+        });
 
     GetMainFrame()->Bind(
         wxEVT_RIBBONBUTTONBAR_CLICKED,
@@ -744,7 +787,8 @@ void WisteriaApp::LoadInterface()
             event.Skip();
         });
 
-    // ribbon page-changed: show/hide log panel and manage auto-refresh timer
+    // ribbon page-changed: swap the start page, log panel, and script workbench,
+    // and manage the log's auto-refresh timer
     GetMainFrame()->Bind(wxEVT_RIBBONBAR_PAGE_CHANGED,
                          [this](wxRibbonBarEvent& evt)
                          {
@@ -759,13 +803,18 @@ void WisteriaApp::LoadInterface()
                                  return;
                                  }
                              const bool showLog = GetMainFrameEx()->IsLogTabActive();
+                             const bool showWorkbench = GetMainFrameEx()->IsDeveloperTabActive();
                              if (m_startPage != nullptr)
                                  {
-                                 m_startPage->Show(!showLog);
+                                 m_startPage->Show(!showLog && !showWorkbench);
                                  }
                              if (GetMainFrameEx()->m_logPanel != nullptr)
                                  {
                                  GetMainFrameEx()->m_logPanel->Show(showLog);
+                                 }
+                             if (GetMainFrameEx()->GetScriptWorkbench() != nullptr)
+                                 {
+                                 GetMainFrameEx()->GetScriptWorkbench()->Show(showWorkbench);
                                  }
                              if (showLog)
                                  {
@@ -789,8 +838,14 @@ void WisteriaApp::LoadInterface()
                                  GetMainFrameEx()->m_logAutoRefreshTimer.Stop();
                                  }
                              GetMainFrame()->GetPanel()->Layout();
+                             if (showWorkbench && GetMainFrameEx()->GetScriptWorkbench() != nullptr)
+                                 {
+                                 GetMainFrameEx()->GetScriptWorkbench()->SetFocus();
+                                 }
                              evt.Skip();
                          });
+
+    BindScriptCommands();
 
     // log tab commands, which are handled from both the ribbon and the menu bar
     const auto bindLogCommand = [this](const auto& handler, const wxWindowID id)
@@ -1046,6 +1101,217 @@ void WisteriaApp::LoadRibbonLogPage(wxRibbonBar* ribbon)
     }
 
 //-------------------------------------------
+void WisteriaApp::LoadRibbonDeveloperPage(wxRibbonBar* ribbon)
+    {
+    GetMainFrameEx()->m_developerRibbonPage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Developer"));
+
+    const auto addButtonBar = [this](const wxString& label)
+    {
+        return new wxRibbonButtonBar(new wxRibbonPanel(
+            GetMainFrameEx()->GetDeveloperRibbonPage(), wxID_ANY, label, wxNullBitmap,
+            wxDefaultPosition, wxDefaultSize, wxRIBBON_PANEL_NO_AUTO_MINIMISE));
+    };
+
+    auto* scriptBar = addButtonBar(_(L"Script"));
+    scriptBar->AddButton(ID_SCRIPT_NEW, _(L"New"), ReadSvgIcon(L"images/document.svg"),
+                         _(L"Create a new script."));
+    scriptBar->AddButton(ID_SCRIPT_OPEN, _(L"Open"), ReadSvgIcon(L"images/file-open.svg"),
+                         _(L"Open a script."));
+    scriptBar->AddButton(ID_SCRIPT_SAVE, _(L"Save"), ReadSvgIcon(L"images/file-save.svg"),
+                         _(L"Save the script."));
+
+    scriptBar->SetKeyTip(ID_SCRIPT_NEW, _DT(L"N"));
+    scriptBar->SetKeyTip(ID_SCRIPT_OPEN, _DT(L"O"));
+    scriptBar->SetKeyTip(ID_SCRIPT_SAVE, _DT(L"S"));
+
+    auto* runBar = addButtonBar(_(L"Run"));
+    runBar->AddButton(ID_SCRIPT_RUN, _(L"Run"), ReadSvgIcon(L"images/run.svg"),
+                      _(L"Execute the script (or selection)."));
+    runBar->AddButton(ID_SCRIPT_CONTINUE, _(L"Continue"), ReadSvgIcon(L"images/continue.svg"),
+                      _(L"Continue running the script from the current breakpoint."));
+    runBar->AddButton(ID_SCRIPT_STOP, _(L"Stop"), ReadSvgIcon(L"images/stop.svg"),
+                      _(L"Stop the currently running script."));
+    runBar->AddButton(
+        ID_SCRIPT_CLEAR_GLOBALS, _(L"Clear Globals"), ReadSvgIcon(L"images/reload.svg"),
+        _(L"Restart the Lua interpreter, clearing all global variables from previous runs."));
+
+    runBar->SetKeyTip(ID_SCRIPT_RUN, _DT(L"U"));
+    runBar->SetKeyTip(ID_SCRIPT_CONTINUE, _DT(L"C"));
+    runBar->SetKeyTip(ID_SCRIPT_STOP, _DT(L"ES"));
+    runBar->SetKeyTip(ID_SCRIPT_CLEAR_GLOBALS, _DT(L"G"));
+
+    auto* clipboardBar = addButtonBar(_(L"Clipboard"));
+    clipboardBar->AddButton(ID_SCRIPT_PASTE, _(L"Paste"), ReadSvgIcon(L"images/paste.svg"),
+                            _(L"Paste."));
+    clipboardBar->AddButton(ID_SCRIPT_CUT, _(L"Cut"), ReadSvgIcon(L"images/cut.svg"), _(L"Cut."));
+    clipboardBar->AddButton(ID_SCRIPT_COPY, _(L"Copy"), ReadSvgIcon(L"images/copy.svg"),
+                            _(L"Copy."));
+
+    clipboardBar->SetKeyTip(ID_SCRIPT_PASTE, _DT(L"A"));
+    clipboardBar->SetKeyTip(ID_SCRIPT_CUT, _DT(L"K"));
+    clipboardBar->SetKeyTip(ID_SCRIPT_COPY, _DT(L"Y"));
+
+    auto* editBar = addButtonBar(_(L"Edit"));
+    editBar->AddButton(ID_SCRIPT_UNDO, _(L"Undo"), ReadSvgIcon(L"images/undo.svg"), _(L"Undo."));
+    editBar->AddButton(ID_SCRIPT_REDO, _(L"Redo"), ReadSvgIcon(L"images/redo.svg"), _(L"Redo."));
+    editBar->AddButton(ID_SCRIPT_DUPLICATE_LINE, _(L"Duplicate Line"),
+                       ReadSvgIcon(L"images/duplicate-files.svg"),
+                       _(L"Duplicate the current line."));
+    editBar->AddButton(ID_SCRIPT_SELECT_ALL, _(L"Select All"),
+                       ReadSvgIcon(L"images/select-all.svg"), _(L"Select all text."));
+    editBar->AddButton(ID_SCRIPT_COMMENT, _(L"Comment"), ReadSvgIcon(L"images/comment.svg"),
+                       _(L"Comment the selected lines."));
+    editBar->AddButton(ID_SCRIPT_UNCOMMENT, _(L"Uncomment"), ReadSvgIcon(L"images/uncomment.svg"),
+                       _(L"Uncomment the selected lines."));
+
+    editBar->SetKeyTip(ID_SCRIPT_UNDO, _DT(L"Z"));
+    editBar->SetKeyTip(ID_SCRIPT_REDO, _DT(L"I"));
+    editBar->SetKeyTip(ID_SCRIPT_DUPLICATE_LINE, _DT(L"ED"));
+    editBar->SetKeyTip(ID_SCRIPT_SELECT_ALL, _DT(L"FA"));
+    editBar->SetKeyTip(ID_SCRIPT_COMMENT, _DT(L"M"));
+    editBar->SetKeyTip(ID_SCRIPT_UNCOMMENT, _DT(L"FU"));
+
+    auto* findBar = addButtonBar(_(L"Find"));
+    findBar->AddButton(ID_SCRIPT_FIND, _(L"Find"), ReadSvgIcon(L"images/find.svg"),
+                       _(L"Find text."));
+    findBar->AddButton(ID_SCRIPT_REPLACE, _(L"Replace"), ReadSvgIcon(L"images/find-replace.svg"),
+                       _(L"Replace text."));
+    findBar->AddButton(ID_SCRIPT_GOTO_LINE, _(L"Go To Line"), ReadSvgIcon(L"images/go-to-line.svg"),
+                       _(L"Go to a specific line."));
+
+    findBar->SetKeyTip(ID_SCRIPT_FIND, _DT(L"JF"));
+    findBar->SetKeyTip(ID_SCRIPT_REPLACE, _DT(L"W"));
+    findBar->SetKeyTip(ID_SCRIPT_GOTO_LINE, _DT(L"B"));
+
+    auto* debugBar = addButtonBar(_(L"Debug"));
+    debugBar->AddToggleButton(ID_SCRIPT_TOGGLE_DEBUG, _(L"Debug Pane"),
+                              ReadSvgIcon(L"images/ladybug.svg"), _(L"Toggle the debug windows."));
+    debugBar->AddButton(ID_SCRIPT_CLEAR_DEBUG, _(L"Clear"), ReadSvgIcon(L"images/clear.svg"),
+                        _(L"Clear the log window."));
+
+    debugBar->SetKeyTip(ID_SCRIPT_TOGGLE_DEBUG, _DT(L"JD"));
+    debugBar->SetKeyTip(ID_SCRIPT_CLEAR_DEBUG, _DT(L"QC"));
+    }
+
+//-------------------------------------------
+void WisteriaApp::BindScriptCommands()
+    {
+    using Wisteria::UI::LuaInterpreter;
+    using Wisteria::UI::ScriptWorkbenchPanel;
+
+    auto* frame = GetMainFrameEx();
+
+    // commands come from the ribbon and from accelerators, and only apply to the Developer tab
+    const auto bindCommand = [frame](const wxWindowID id, auto handler)
+    {
+        const auto onCommand = [frame, handler]([[maybe_unused]]
+                                                wxCommandEvent&)
+        {
+            if (frame->GetScriptWorkbench() != nullptr && frame->IsDeveloperTabActive())
+                {
+                handler(frame->GetScriptWorkbench());
+                }
+        };
+        frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, onCommand, id);
+        frame->Bind(wxEVT_MENU, onCommand, id);
+    };
+    const auto bindEnabled = [frame](const wxWindowID id, auto isEnabled)
+    {
+        frame->Bind(
+            wxEVT_UPDATE_UI, [frame, isEnabled](wxUpdateUIEvent& evt)
+            { evt.Enable(frame->GetScriptWorkbench() != nullptr && isEnabled(frame)); }, id);
+    };
+
+    bindCommand(ID_SCRIPT_NEW, [](ScriptWorkbenchPanel* panel) { panel->NewScript(); });
+    bindCommand(ID_SCRIPT_OPEN,
+                [frame](ScriptWorkbenchPanel* panel)
+                {
+                    wxFileDialog dlg(frame, _(L"Select Script to Open"), wxString{}, wxString{},
+                                     _(L"Lua Scripts (*.lua)|*.lua"),
+                                     wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_PREVIEW);
+                    if (dlg.ShowModal() == wxID_OK)
+                        {
+                        panel->OpenScriptFromFile(dlg.GetPath());
+                        }
+                });
+    bindCommand(ID_SCRIPT_SAVE, [](ScriptWorkbenchPanel* panel) { panel->SaveCurrentScript(); });
+    bindCommand(ID_SCRIPT_RUN, [](ScriptWorkbenchPanel* panel) { panel->RunCurrentScript(); });
+    bindCommand(ID_SCRIPT_CONTINUE, [](ScriptWorkbenchPanel* panel) { panel->ContinueScript(); });
+    bindCommand(ID_SCRIPT_STOP, [](ScriptWorkbenchPanel* panel) { panel->StopScript(); });
+    bindCommand(ID_SCRIPT_CLEAR_GLOBALS,
+                [](ScriptWorkbenchPanel* panel) { panel->RestartInterpreter(); });
+    bindCommand(ID_SCRIPT_UNDO, [](ScriptWorkbenchPanel* panel) { panel->Undo(); });
+    bindCommand(ID_SCRIPT_REDO, [](ScriptWorkbenchPanel* panel) { panel->Redo(); });
+    bindCommand(ID_SCRIPT_DUPLICATE_LINE,
+                [](ScriptWorkbenchPanel* panel) { panel->DuplicateLine(); });
+    bindCommand(ID_SCRIPT_CUT, [](ScriptWorkbenchPanel* panel) { panel->Cut(); });
+    bindCommand(ID_SCRIPT_COPY, [](ScriptWorkbenchPanel* panel) { panel->Copy(); });
+    bindCommand(ID_SCRIPT_PASTE, [](ScriptWorkbenchPanel* panel) { panel->Paste(); });
+    bindCommand(ID_SCRIPT_SELECT_ALL, [](ScriptWorkbenchPanel* panel) { panel->SelectAll(); });
+    bindCommand(ID_SCRIPT_COMMENT, [](ScriptWorkbenchPanel* panel) { panel->Comment(); });
+    bindCommand(ID_SCRIPT_UNCOMMENT, [](ScriptWorkbenchPanel* panel) { panel->Uncomment(); });
+    bindCommand(ID_SCRIPT_FIND, [](ScriptWorkbenchPanel* panel) { panel->ShowFindDialog(); });
+    bindCommand(ID_SCRIPT_REPLACE, [](ScriptWorkbenchPanel* panel) { panel->ShowReplaceDialog(); });
+    bindCommand(ID_SCRIPT_GOTO_LINE, [](ScriptWorkbenchPanel* panel) { panel->GotoLineDialog(); });
+    bindCommand(ID_SCRIPT_CLEAR_DEBUG, [](ScriptWorkbenchPanel* panel) { panel->DebugClear(); });
+    bindCommand(ID_SCRIPT_TOGGLE_DEBUG,
+                [](ScriptWorkbenchPanel* panel) { panel->ToggleDebugWindow(); });
+
+    // disabled for the whole duration of a run, including while paused
+    bindEnabled(ID_SCRIPT_RUN, [](MainFrame*) { return !LuaInterpreter::IsRunning(); });
+    bindEnabled(ID_SCRIPT_CLEAR_GLOBALS, [](MainFrame*) { return !LuaInterpreter::IsRunning(); });
+    bindEnabled(ID_SCRIPT_CONTINUE, [](MainFrame*) { return LuaInterpreter::IsPaused(); });
+    bindEnabled(ID_SCRIPT_STOP, [](MainFrame*) { return LuaInterpreter::IsRunning(); });
+    bindEnabled(ID_SCRIPT_UNDO,
+                [](MainFrame* mainFrame) { return mainFrame->GetScriptWorkbench()->CanUndo(); });
+    bindEnabled(ID_SCRIPT_REDO,
+                [](MainFrame* mainFrame) { return mainFrame->GetScriptWorkbench()->CanRedo(); });
+    bindEnabled(ID_SCRIPT_CUT,
+                [](MainFrame* mainFrame) { return mainFrame->GetScriptWorkbench()->CanCut(); });
+    bindEnabled(ID_SCRIPT_COPY,
+                [](MainFrame* mainFrame) { return mainFrame->GetScriptWorkbench()->CanCopy(); });
+    bindEnabled(ID_SCRIPT_PASTE,
+                [](MainFrame* mainFrame) { return mainFrame->GetScriptWorkbench()->CanPaste(); });
+    frame->Bind(
+        wxEVT_UPDATE_UI,
+        [frame](wxUpdateUIEvent& evt)
+        {
+            evt.Enable(frame->GetScriptWorkbench() != nullptr);
+            evt.Check(frame->GetScriptWorkbench() != nullptr &&
+                      frame->GetScriptWorkbench()->IsDebugWindowVisible());
+        },
+        ID_SCRIPT_TOGGLE_DEBUG);
+    }
+
+//-------------------------------------------
+void MainFrame::ActivateScriptWorkbench()
+    {
+    if (m_scriptWorkbench == nullptr || m_developerRibbonPage == nullptr)
+        {
+        return;
+        }
+    if (!IsShown())
+        {
+        Show();
+        }
+    Raise();
+    GetRibbon()->SetActivePage(m_developerRibbonPage);
+    // SetActivePage() doesn't send a change event, so swap the panels here
+    if (wxGetApp().GetStartPage() != nullptr)
+        {
+        wxGetApp().GetStartPage()->Hide();
+        }
+    if (m_logPanel != nullptr)
+        {
+        m_logPanel->Hide();
+        }
+    m_logAutoRefreshTimer.Stop();
+    m_scriptWorkbench->Show();
+    GetPanel()->Layout();
+    m_scriptWorkbench->SetFocus();
+    }
+
+//-------------------------------------------
 void WisteriaApp::ReadLogIntoListCtrl(Wisteria::UI::ListCtrlEx* listCtrl)
     {
     if (listCtrl == nullptr || GetLogFile() == nullptr)
@@ -1142,6 +1408,10 @@ void MainFrame::ActivateLogTab()
             {
             app->GetStartPage()->Hide();
             }
+        }
+    if (m_scriptWorkbench != nullptr)
+        {
+        m_scriptWorkbench->Hide();
         }
     m_logPanel->Show();
     if (m_logEditButtonBar != nullptr)
@@ -1438,6 +1708,10 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         }
     else
         {
+        // Developer tab
+        LoadRibbonDeveloperPage(ribbon);
+        ribbon->SetPageKeyTip(GetMainFrameEx()->GetDeveloperRibbonPage(), _DT(L"V"));
+
         // Log tab
         LoadRibbonLogPage(ribbon);
         ribbon->SetPageKeyTip(GetMainFrameEx()->GetLogRibbonPage(), _DT(L"L"));
@@ -1451,6 +1725,17 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                               ReadSvgIcon(L"images/project-settings.svg"),
                               _(L"Edit the application's settings"));
     toolsButtonBar->SetKeyTip(ID_OPTIONS, _DT(L"P"));
+    if (isProjectRibbon)
+        {
+        // these navigate to the tabs on the main frame
+        toolsButtonBar->AddButton(ID_VIEW_LOG_REPORT, _(L"Log"),
+                                  ReadSvgIcon(L"images/log-book.svg"), _(L"View the log report"));
+        toolsButtonBar->SetKeyTip(ID_VIEW_LOG_REPORT, _DT(L"G"));
+        toolsButtonBar->AddButton(ID_SCRIPT_WINDOW, _(L"Developer Tools"),
+                                  ReadSvgIcon(L"images/dev-tools.svg"),
+                                  _(L"Open the script workbench"));
+        toolsButtonBar->SetKeyTip(ID_SCRIPT_WINDOW, _DT(L"DE"));
+        }
 
     // Help tab
     auto* helpPage = new wxRibbonPage(ribbon, wxID_ANY, _(L"Help"));
@@ -1458,17 +1743,6 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
 
     ribbon->SetToggleButtonKeyTip(_DT(L"M"));
     ribbon->SetHelpButtonKeyTip(_DT(L"K"));
-
-    if (isProjectRibbon)
-        {
-        // Tools panel (project frames only, navigates to main frame log tab)
-        auto* logPanel = new wxRibbonPanel(helpPage, wxID_ANY, _(L"Tools"));
-        logPanel->SetKeyTip(_DT(L"C"));
-        auto* logButtonBar = new wxRibbonButtonBar(logPanel, wxID_ANY);
-        logButtonBar->AddButton(ID_VIEW_LOG_REPORT, _(L"Log"), ReadSvgIcon(L"images/log-book.svg"),
-                                _(L"View the log report"));
-        logButtonBar->SetKeyTip(ID_VIEW_LOG_REPORT, _DT(L"B"));
-        }
 
     auto* aboutPanel = new wxRibbonPanel(helpPage, wxID_ANY, _(L"About"));
     aboutPanel->SetKeyTip(_DT(L"O"));

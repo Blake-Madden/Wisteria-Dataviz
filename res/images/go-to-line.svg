@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- gutter "go to" indicator (right-pointing triangle) -->
+  <polygon points="16,72 16,126 62,99" fill="#3b82f6"/>
+  <!-- context text lines above -->
+  <rect x="70" y="30" width="164" height="20" rx="5" fill="#6b7280"/>
+  <rect x="70" y="58" width="138" height="20" rx="5" fill="#6b7280"/>
+  <!-- target line (where cursor lands) -->
+  <rect x="70" y="86" width="164" height="26" rx="6" fill="#3b82f6"/>
+  <!-- text cursor on target line -->
+  <rect x="78" y="89" width="4" height="20" rx="1" fill="white" opacity="0.85"/>
+  <!-- context text lines below -->
+  <rect x="70" y="120" width="148" height="20" rx="5" fill="#6b7280"/>
+  <rect x="70" y="148" width="116" height="20" rx="5" fill="#6b7280"/>
+  <rect x="70" y="176" width="134" height="20" rx="5" fill="#6b7280"/>
+</svg>

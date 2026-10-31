@@ -99,6 +99,9 @@ namespace Wisteria::UI
         /// @param path The file to open.
         virtual void OpenFileNew(const wxString& path);
 
+        /// @brief Shows the script workbench, if the application has one.
+        virtual void ActivateScriptWorkbench() {}
+
         /// @brief Holds printer settings for use globally.
         /// @param printData The printer settings to point to.
         /// @note Does not own this, it just receives it from the application framework
