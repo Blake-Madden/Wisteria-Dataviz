@@ -228,7 +228,7 @@ public:
             if (_index & METHOD_FLAG) // A func
             {
                 lua_pushnumber(L, _index ^ METHOD_FLAG); // Push the right func index
-                lua_pushlightuserdata(L, obj);
+                lua_pushvalue(L, 1); // The closure holding the userdata keeps the object alive
                 lua_pushcclosure(L, &Luna < T >::function_dispatch, 2);
                 return 1; // Return a func
             }
