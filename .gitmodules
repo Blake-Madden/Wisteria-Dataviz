@@ -21,3 +21,6 @@
 [submodule "wxpdfdoc"]
 	path = src/wxpdfdoc
 	url = https://github.com/utelle/wxpdfdoc.git
+[submodule "src/lua"]
+	path = src/lua
+	url = https://github.com/lua/lua.git
