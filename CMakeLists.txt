@@ -217,6 +217,7 @@ set(SUBMODULES
     src/easyexif
     src/wxSimpleJSON
     src/CRCpp
+    src/lua
     src/utfcpp
     src/wxStartPage
     src/wxpdfdoc

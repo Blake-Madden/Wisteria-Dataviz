@@ -117,9 +117,9 @@ endblock()
 block()
     file(GLOB_RECURSE LISTED_SRC_FILES LIST_DIRECTORIES false RELATIVE ${FILE_SRC_PATH}
          "${FILE_SRC_PATH}/src/*.cpp")
-    # Include cJSON.c file
+    # Include cJSON.c and Lua (Lua is only used by the application, not the library)
     file(GLOB_RECURSE C_SRC_FILES LIST_DIRECTORIES false RELATIVE ${FILE_SRC_PATH}
-         "${FILE_SRC_PATH}/src/*cJSON[.]c")
+         "${FILE_SRC_PATH}/src/*cJSON[.]c" "${FILE_SRC_PATH}/src/onelua_no_warnings[.]c")
     list(APPEND LISTED_SRC_FILES ${C_SRC_FILES})
     list(SORT LISTED_SRC_FILES CASE INSENSITIVE)
     # Filter out unwanted files

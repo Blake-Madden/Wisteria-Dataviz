@@ -103,6 +103,7 @@ SET(APP_WISTERIA_SRC
     src/graphs/wordcloud.cpp
     src/import/spreadsheet_extract_text.cpp
     src/import/xlsx_extract_text.cpp
+    src/lua-scripting/onelua_no_warnings.c
     src/reporting/htmldashboardprintout.cpp
     src/reporting/odpreportprintout.cpp
     src/reporting/pdfreportprintout.cpp

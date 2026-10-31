@@ -16,6 +16,7 @@ jobs:
           FILES=$(find src \( -name '*.h' -o -name '*.cpp' \) \
             ! -path 'src/CRCpp/*' \
             ! -path 'src/easyexif/*' \
+            ! -path 'src/lua/*' \
             ! -path 'src/utfcpp/*' \
             ! -path 'src/wxSimpleJSON/*' \
             ! -path 'src/tinyexpr-plusplus/*' \

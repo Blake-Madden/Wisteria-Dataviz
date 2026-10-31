@@ -12,6 +12,7 @@
 #include "../data/dataset.h"
 #include "../easyexif/exif.h"
 #include "../import/text_matrix.h"
+#include "../lua/lua.h"
 #include "../ui/dialogs/aboutdlg.h"
 #include "../ui/dialogs/optionsdlg.h"
 #include "../wxpdfdoc/include/wx/pdfdoc_version.h"
@@ -343,6 +344,9 @@ void WisteriaApp::ShowAboutDialog(wxWindow* parent)
                                    CRCPP_PATCH_VERSION, CRCPP_REVISION_VERSION, wxString{},
                                    CRCPP_COPYRIGHT },
                     CRCPP_HASH, CRCPP_ORIGIN)
+        .AddLibrary(wxVersionInfo{ L"Lua", LUA_VERSION_MAJOR_N, LUA_VERSION_MINOR_N,
+                                   LUA_VERSION_RELEASE_N, 0, wxString{}, LUA_COPYRIGHT },
+                    LUA_HASH, LUA_ORIGIN)
         .AddLibrary(wxVersionInfo{ L"wxStartPage", -1 }, WXSTARTPAGE_HASH, WXSTARTPAGE_ORIGIN)
         .AddLibrary(wxVersionInfo{ L"wxSimpleJSON", -1 }, WXSIMPLEJSON_HASH, WXSIMPLEJSON_ORIGIN)
         .AddLibrary(
