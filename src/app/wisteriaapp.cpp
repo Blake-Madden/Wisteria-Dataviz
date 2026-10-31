@@ -1749,7 +1749,7 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
     auto* aboutButtonBar = new wxRibbonButtonBar(aboutPanel, wxID_ANY);
 
     aboutButtonBar->AddButton(wxID_ABOUT, _(L"About"), ReadSvgIcon(L"images/wisteria.svg"),
-                              _(L"About Wisteria Dataviz"));
+                              wxString::Format(_(L"About %s"), wxGetApp().GetAppDisplayName()));
     aboutButtonBar->SetKeyTip(wxID_ABOUT, _DT(L"B"));
 
     ribbon->SetArtProvider(new wxRibbonMSWFlatArtProvider);
