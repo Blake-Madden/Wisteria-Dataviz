@@ -139,7 +139,7 @@ class Screenshot
             The page is scrolled to it if necessary.
         @note The backstage remains open after the screenshot.
         @returns @c true if image is saved successfully. Fails if @p sectionId has no page
-            or @p controlToHighlight isn't visible on it.*/
+            or is disabled, or if @p controlToHighlight can't be shown on the page.*/
     static bool SaveScreenshotOfBackstage(const wxString& filePath, const wxWindowID sectionId,
                                           const wxWindowID controlToHighlight = wxID_ANY);
 

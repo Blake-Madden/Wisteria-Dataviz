@@ -171,6 +171,9 @@ bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath, const int page
         return false;
         }
 
+    // an open backstage keeps the ribbon minimized, and selecting a page won't close it
+    ribbonBar->ShowBackstage(false);
+
     if (!ribbonBar->SetActivePage(pageToSelect))
         {
         return false;
@@ -304,7 +307,7 @@ bool Screenshot::SaveScreenshotOfBackstage(const wxString& filePath, const wxWin
 
     // action buttons don't have pages, and clicking them below would perform their action
     wxWindow* page = backstage->GetPage(sectionId);
-    if (page == nullptr)
+    if (page == nullptr || !backstage->IsButtonEnabled(sectionId))
         {
         return false;
         }
@@ -347,23 +350,48 @@ bool Screenshot::SaveScreenshotOfBackstage(const wxString& filePath, const wxWin
     };
 
     // pages scroll vertically, so bring the control into view if it is off the page
-    if (auto* scrolledPage = dynamic_cast<wxScrolledWindow*>(page);
-        scrolledPage != nullptr && highlightWindow != nullptr)
+    // (or show the top of the page if nothing is being highlighted)
+    if (auto* scrolledPage = dynamic_cast<wxScrolledWindow*>(page); scrolledPage != nullptr)
         {
-        int xUnit{ 0 }, yUnit{ 0 };
-        scrolledPage->GetScrollPixelsPerUnit(&xUnit, &yUnit);
-        const int controlTop{ getOffsetFrom(page).y };
-        if (yUnit > 0 && (controlTop < 0 || controlTop + highlightWindow->GetSize().GetHeight() >
-                                                page->GetClientSize().GetHeight()))
+        if (highlightWindow == nullptr)
             {
-            scrolledPage->Scroll(
-                wxDefaultCoord,
-                scrolledPage->GetViewStart().y +
-                    safe_divide(controlTop - wxSizerFlags::GetDefaultBorder(), yUnit));
+            scrolledPage->Scroll(wxDefaultCoord, 0);
+            }
+        else
+            {
+            int xUnit{ 0 }, yUnit{ 0 };
+            scrolledPage->GetScrollPixelsPerUnit(&xUnit, &yUnit);
+            const int controlTop{ getOffsetFrom(page).y };
+            if (yUnit > 0 &&
+                (controlTop < 0 || controlTop + highlightWindow->GetSize().GetHeight() >
+                                       page->GetClientSize().GetHeight()))
+                {
+                scrolledPage->Scroll(
+                    wxDefaultCoord,
+                    scrolledPage->GetViewStart().y +
+                        safe_divide(controlTop - wxSizerFlags::GetDefaultBorder(), yUnit));
+                }
             }
         }
 
     PrepareWindowForScreenshot(backstage);
+
+    // the control may still be clipped by the page, or by a scrolled window nested within it
+    if (highlightWindow != nullptr)
+        {
+        wxRect visibleArea{ highlightWindow->GetRect() };
+        const wxWindow* current{ highlightWindow };
+        while (!visibleArea.IsEmpty() && current != page)
+            {
+            current = current->GetParent();
+            visibleArea.Intersect(current->GetClientRect());
+            visibleArea.Offset(current->GetPosition());
+            }
+        if (visibleArea.IsEmpty())
+            {
+            return false;
+            }
+        }
 
     wxClientDC dc(backstage);
     wxMemoryDC memDC;
