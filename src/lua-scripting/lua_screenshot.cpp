@@ -351,6 +351,38 @@ namespace LuaScripting
         }
 
     //-------------------------------------------------------------
+    int SnapScreenshotOfBackstage(lua_State* L)
+        {
+        ::wxSleep(2);
+        if (!VerifyParameterCount(L, 2, __func__))
+            {
+            return 0;
+            }
+
+        wxWindowID sectionId = lua_tonumber(L, 2);
+        if (const auto idPos = Wisteria::UI::BaseApp::GetDynamicIdMap().find(sectionId);
+            idPos != Wisteria::UI::BaseApp::GetDynamicIdMap().cend())
+            {
+            sectionId = idPos->second;
+            }
+        wxWindowID controlToHighlight{ wxID_ANY };
+        if (lua_gettop(L) >= 3)
+            {
+            controlToHighlight = lua_tonumber(L, 3);
+            if (const auto idPos =
+                    Wisteria::UI::BaseApp::GetDynamicIdMap().find(controlToHighlight);
+                idPos != Wisteria::UI::BaseApp::GetDynamicIdMap().cend())
+                {
+                controlToHighlight = idPos->second;
+                }
+            }
+        lua_pushboolean(
+            L, static_cast<int>(Screenshot::SaveScreenshotOfBackstage(
+                   wxString{ luaL_checkstring(L, 1), wxConvUTF8 }, sectionId, controlToHighlight)));
+        return 1;
+        }
+
+    //-------------------------------------------------------------
     int SnapScreenshotOfListControl(lua_State* L)
         {
         ::wxSleep(2);

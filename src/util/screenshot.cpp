@@ -15,6 +15,7 @@
 #include <wx/ribbon/backstage.h>
 #include <wx/ribbon/bar.h>
 #include <wx/ribbon/buttonbar.h>
+#include <wx/scopeguard.h>
 #include <wx/tokenzr.h>
 #include <wx/webview.h>
 #if defined(__WXMSW__) && wxUSE_WEBVIEW_EDGE
@@ -317,6 +318,7 @@ bool Screenshot::SaveScreenshotOfBackstage(const wxString& filePath, const wxWin
         {
         return false;
         }
+    wxON_BLOCK_EXIT_OBJ1(*ribbonBar, wxRibbonBar::ShowBackstage, false);
 
     // ShowPage() doesn't send the click event, which is what pages refresh their content from
     wxNotifyEvent clickEvent{ wxEVT_BACKSTAGE_CLICKED, sectionId };

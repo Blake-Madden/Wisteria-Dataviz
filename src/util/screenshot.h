@@ -137,7 +137,7 @@ class Screenshot
             This must be a button with a page, not an action button.
         @param controlToHighlight The (optional) control on the page to draw a red line around.
             The page is scrolled to it if necessary.
-        @note The backstage remains open after the screenshot.
+        @note The backstage is closed afterward.
         @returns @c true if image is saved successfully. Fails if @p sectionId has no page
             or is disabled, or if @p controlToHighlight can't be shown on the page.*/
     static bool SaveScreenshotOfBackstage(const wxString& filePath, const wxWindowID sectionId,

@@ -29,6 +29,7 @@ namespace LuaScripting
     int CropScreenshot(lua_State* L);
     int SnapScreenshotOfTextWindow(lua_State* L);
     int SnapScreenshotOfRibbon(lua_State* L);
+    int SnapScreenshotOfBackstage(lua_State* L);
     int SnapScreenshotOfListControl(lua_State* L);
     int SnapScreenshotOfDialogWithPropertyGrid(lua_State* L);
     int HighlightScreenshot(lua_State* L);
@@ -47,6 +48,7 @@ namespace LuaScripting
         { "CropScreenshot", CropScreenshot },
         { "SnapScreenshotOfTextWindow", SnapScreenshotOfTextWindow },
         { "SnapScreenshotOfRibbon", SnapScreenshotOfRibbon },
+        { "SnapScreenshotOfBackstage", SnapScreenshotOfBackstage },
         { "SnapScreenshotOfListControl", SnapScreenshotOfListControl },
         { "SnapScreenshotOfDialogWithPropertyGrid", SnapScreenshotOfDialogWithPropertyGrid },
         { "HighlightScreenshot", HighlightScreenshot },
