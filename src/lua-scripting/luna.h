@@ -2,6 +2,8 @@
  * SPDX-License-Identifier: MIT
  * Available from http://lua-users.org/wiki/LuaLunaFive
  * Anonymous author
+ *
+ * NOTE: This is a modified version of the original (refer to README.md).
  ********************************************************************************/
 
 #ifndef LUA_LUNA_H
