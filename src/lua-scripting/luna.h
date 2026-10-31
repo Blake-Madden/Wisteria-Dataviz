@@ -199,6 +199,7 @@ public:
 
     Description:
     Loads an instance of the class into the Lua stack, and provides you a pointer so you can modify it.
+    Lua takes ownership of the instance and will delete it. Use pushBorrowed() for anything else.
     */
     static void push(lua_State * L, T* instance)
     {
@@ -208,6 +209,24 @@ public:
         luaL_getmetatable(L, T::className);
 
         lua_setmetatable(L, -2);
+    }
+
+    /*
+    @ pushBorrowed
+    Arguments:
+    * L - Lua State
+    T*    - Instance to push
+
+    Description:
+    Loads an instance of the class into the Lua stack, without giving Lua ownership of it.
+    Lua will not delete the instance, and the instance must outlive its use from Lua.
+    */
+    static void pushBorrowed(lua_State * L, T* instance)
+    {
+        push(L, instance);
+
+        lua_pushboolean(L, 1); // The userdata's user value marks it as borrowed
+        lua_setuservalue(L, -2);
     }
 
     /*
@@ -327,7 +346,12 @@ public:
 
         if (obj && *obj)
         {
-            delete(*obj);
+            lua_getuservalue(L, -1);
+            const bool borrowed = lua_toboolean(L, -1);
+            lua_pop(L, 1);
+
+            if (!borrowed)
+                delete(*obj);
             *obj = nullptr;
         }
 
