@@ -17,6 +17,7 @@ jobs:
             ! -path 'src/CRCpp/*' \
             ! -path 'src/easyexif/*' \
             ! -path 'src/lua/*' \
+            ! -path 'src/lua-scripting/luna.h' \
             ! -path 'src/utfcpp/*' \
             ! -path 'src/wxSimpleJSON/*' \
             ! -path 'src/tinyexpr-plusplus/*' \
