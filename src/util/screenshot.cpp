@@ -12,6 +12,8 @@
 #include <wx/buffer.h>
 #include <wx/listctrl.h>
 #include <wx/mstream.h>
+#include <wx/ribbon/backstage.h>
+#include <wx/ribbon/bar.h>
 #include <wx/ribbon/buttonbar.h>
 #include <wx/tokenzr.h>
 #include <wx/webview.h>
@@ -36,7 +38,7 @@ bool Screenshot::ConvertImageToPng(const wxString& filePath, const wxSize scaled
     const wxBitmap bmp(filePath, wxBITMAP_TYPE_ANY);
     if (bmp.IsOk())
         {
-        wxFileName fn(filePath);
+        wxFileName fn{ filePath };
         fn.SetExt(L"png");
         wxImage img(bmp.ConvertToImage());
         const auto [newWidth, newHeight] = geometry::downscaled_size(
@@ -163,26 +165,11 @@ bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath, const int page
         return false;
         }
 
-    wxWindow* foundWindow{ nullptr };
-    if (!windowToCapture->IsKindOf(CLASSINFO(wxRibbonBar)))
-        {
-        auto& children = windowToCapture->GetChildren();
-        for (const auto& child : children)
-            {
-            if ((child != nullptr) && child->IsKindOf(CLASSINFO(wxRibbonBar)))
-                {
-                foundWindow = child;
-                break;
-                }
-            }
-        }
-    if (foundWindow == nullptr)
+    auto* ribbonBar = FindDescendantOfType<wxRibbonBar>(windowToCapture);
+    if (ribbonBar == nullptr)
         {
         return false;
         }
-
-    auto* ribbonBar = dynamic_cast<wxRibbonBar*>(foundWindow);
-    wxASSERT(ribbonBar);
 
     if (!ribbonBar->SetActivePage(pageToSelect))
         {
@@ -283,7 +270,138 @@ bool Screenshot::SaveScreenshotOfRibbon(const wxString& filePath, const int page
     // draw a gray border around the image since we are saving the client area
     AddBorderToImage(bitmap);
 
-    wxFileName fn(filePath);
+    wxFileName fn{ filePath };
+    fn.SetExt(L"bmp");
+    wxFileName::Mkdir(fn.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+    return bitmap.SaveFile(fn.GetFullPath(), wxBITMAP_TYPE_BMP);
+    }
+
+//---------------------------------------------------
+bool Screenshot::SaveScreenshotOfBackstage(const wxString& filePath, const wxWindowID sectionId,
+                                           const wxWindowID controlToHighlight /*= wxID_ANY*/)
+    {
+    wxWindow* windowToCapture = GetActiveDialogOrFrame();
+    if (windowToCapture == nullptr && wxTopLevelWindows.GetCount() > 0)
+        {
+        windowToCapture = wxTopLevelWindows.GetLast()->GetData();
+        }
+    if (windowToCapture == nullptr)
+        {
+        return false;
+        }
+
+    auto* ribbonBar = FindDescendantOfType<wxRibbonBar>(windowToCapture);
+    if (ribbonBar == nullptr)
+        {
+        return false;
+        }
+    // the ribbon doesn't expose its backstage, but the two are always siblings
+    auto* backstage = FindDescendantOfType<wxBackstage>(ribbonBar->GetParent());
+    if (backstage == nullptr)
+        {
+        return false;
+        }
+
+    // action buttons don't have pages, and clicking them below would perform their action
+    wxWindow* page = backstage->GetPage(sectionId);
+    if (page == nullptr)
+        {
+        return false;
+        }
+
+    ribbonBar->ShowBackstage();
+    if (!ribbonBar->IsBackstageShown())
+        {
+        return false;
+        }
+
+    // ShowPage() doesn't send the click event, which is what pages refresh their content from
+    wxNotifyEvent clickEvent{ wxEVT_BACKSTAGE_CLICKED, sectionId };
+    clickEvent.SetEventObject(backstage);
+    backstage->ProcessWindowEvent(clickEvent);
+    if (!clickEvent.IsAllowed() || !backstage->ShowPage(sectionId))
+        {
+        return false;
+        }
+
+    const wxWindow* highlightWindow =
+        (controlToHighlight != wxID_ANY) ? page->FindWindow(controlToHighlight) : nullptr;
+    if (controlToHighlight != wxID_ANY &&
+        (highlightWindow == nullptr || !highlightWindow->IsShownOnScreen()))
+        {
+        return false;
+        }
+
+    /* Step back all the way from the child window to the parent and tally the offset
+       of the children relative to its parent.*/
+    const auto getOffsetFrom = [highlightWindow](const wxWindow* ancestor)
+    {
+        wxPoint offset{ 0, 0 };
+        const auto* current = highlightWindow;
+        while (current != nullptr && current != ancestor)
+            {
+            offset += current->GetPosition();
+            current = current->GetParent();
+            }
+        return offset;
+    };
+
+    // pages scroll vertically, so bring the control into view if it is off the page
+    if (auto* scrolledPage = dynamic_cast<wxScrolledWindow*>(page);
+        scrolledPage != nullptr && highlightWindow != nullptr)
+        {
+        int xUnit{ 0 }, yUnit{ 0 };
+        scrolledPage->GetScrollPixelsPerUnit(&xUnit, &yUnit);
+        const int controlTop{ getOffsetFrom(page).y };
+        if (yUnit > 0 && (controlTop < 0 || controlTop + highlightWindow->GetSize().GetHeight() >
+                                                page->GetClientSize().GetHeight()))
+            {
+            scrolledPage->Scroll(
+                wxDefaultCoord,
+                scrolledPage->GetViewStart().y +
+                    safe_divide(controlTop - wxSizerFlags::GetDefaultBorder(), yUnit));
+            }
+        }
+
+    PrepareWindowForScreenshot(backstage);
+
+    wxClientDC dc(backstage);
+    wxMemoryDC memDC;
+
+    wxBitmap bitmap(dc.GetSize(), RGB_CHANNEL_SIZE);
+    memDC.SelectObject(bitmap);
+    memDC.Clear();
+    memDC.Blit(0, 0, dc.GetSize().GetWidth(), dc.GetSize().GetHeight(), &dc, 0, 0);
+
+    if (highlightWindow != nullptr)
+        {
+        const int highlightPenWidth{ std::max(1,
+                                              static_cast<int>(backstage->GetDPIScaleFactor())) };
+        const int edgeMargin{ highlightPenWidth * 2 };
+        // add a little padding around the control being highlighted,
+        // but keep it inside of the render area
+        const wxPoint padding{ wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder() };
+        const wxPoint controlPosition{ getOffsetFrom(backstage) };
+        const wxPoint startPoint{ std::max(controlPosition.x - padding.x, edgeMargin),
+                                  std::max(controlPosition.y - padding.y, edgeMargin) };
+        const wxPoint endPoint{
+            std::min(controlPosition.x + highlightWindow->GetSize().GetWidth() + padding.x,
+                     memDC.GetSize().GetWidth() - edgeMargin),
+            std::min(controlPosition.y + highlightWindow->GetSize().GetHeight() + padding.y,
+                     memDC.GetSize().GetHeight() - edgeMargin)
+        };
+
+        const wxDCPenChanger pc(memDC, GetScreenshotHighlightPen(highlightPenWidth));
+        const wxDCBrushChanger bc(memDC, *wxTRANSPARENT_BRUSH);
+        memDC.DrawRectangle(wxRect{ startPoint, endPoint });
+        }
+
+    memDC.SelectObject(wxNullBitmap);
+
+    // draw a gray border around the image since we are saving the client area
+    AddBorderToImage(bitmap);
+
+    wxFileName fn{ filePath };
     fn.SetExt(L"bmp");
     wxFileName::Mkdir(fn.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
     return bitmap.SaveFile(fn.GetFullPath(), wxBITMAP_TYPE_BMP);
@@ -410,7 +528,7 @@ bool Screenshot::SaveScreenshotOfListControl(const wxString& filePath, const wxW
     // draw a gray border around the image since we are saving the client area
     AddBorderToImage(bitmap);
 
-    wxFileName fn(filePath);
+    wxFileName fn{ filePath };
     fn.SetExt(L"bmp");
     wxFileName::Mkdir(fn.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
     return bitmap.SaveFile(fn.GetFullPath(), wxBITMAP_TYPE_BMP);
@@ -560,7 +678,7 @@ bool Screenshot::SaveScreenshotOfTextWindow(
     // draw a gray border around the image since we are saving the client area
     AddBorderToImage(bitmap);
 
-    wxFileName fn(filePath);
+    wxFileName fn{ filePath };
     fn.SetExt(L"bmp");
     wxFileName::Mkdir(fn.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
     return bitmap.SaveFile(fn.GetFullPath(), wxBITMAP_TYPE_BMP);
@@ -806,7 +924,7 @@ bool Screenshot::SaveScreenshotOfWebView(const wxString& filePath, const wxWindo
     // draw a gray border around the image since we are saving the client area
     AddBorderToImage(bitmap);
 
-    wxFileName fn(filePath);
+    wxFileName fn{ filePath };
     fn.SetExt(L"bmp");
     wxFileName::Mkdir(fn.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
     return bitmap.SaveFile(fn.GetFullPath(), wxBITMAP_TYPE_BMP);
@@ -1089,7 +1207,7 @@ bool Screenshot::SaveScreenshotOfDialogWithPropertyGrid(const wxString& filePath
     // draw a gray border around the image since we are saving the client area
     AddBorderToImage(bitmap);
 
-    wxFileName fn(filePath);
+    wxFileName fn{ filePath };
     fn.SetExt(L"bmp");
     wxFileName::Mkdir(fn.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
     return bitmap.SaveFile(fn.GetFullPath(), wxBITMAP_TYPE_BMP);
@@ -1226,7 +1344,7 @@ bool Screenshot::SaveScreenshot(const wxString& filePath,
     // draw a gray border around the image since we are saving the client area
     AddBorderToImage(bitmap);
 
-    wxFileName fn(filePath);
+    wxFileName fn{ filePath };
     fn.SetExt(L"bmp");
     wxFileName::Mkdir(fn.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
     return bitmap.SaveFile(fn.GetFullPath(), wxBITMAP_TYPE_BMP);
@@ -1311,7 +1429,7 @@ bool Screenshot::SaveScreenshot(const wxString& filePath, const wxString& annota
     // draw a gray border around the image since we are saving the client area
     AddBorderToImage(bitmap);
 
-    wxFileName fn(filePath);
+    wxFileName fn{ filePath };
     fn.SetExt(L"bmp");
     wxFileName::Mkdir(fn.GetPath(), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
     return bitmap.SaveFile(fn.GetFullPath(), wxBITMAP_TYPE_BMP);

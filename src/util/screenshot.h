@@ -131,6 +131,18 @@ class Screenshot
                                        const wxWindowID firstButtonBarToHighlight = wxID_ANY,
                                        const wxWindowID lastButtonBarToHighlight = wxID_ANY);
 
+    /** @brief Saves a screenshot of the active window's ribbon backstage.
+        @param filePath The path to save the screenshot to.
+        @param sectionId The ID of the backstage button whose page should be shown.
+            This must be a button with a page, not an action button.
+        @param controlToHighlight The (optional) control on the page to draw a red line around.
+            The page is scrolled to it if necessary.
+        @note The backstage remains open after the screenshot.
+        @returns @c true if image is saved successfully. Fails if @p sectionId has no page
+            or @p controlToHighlight isn't visible on it.*/
+    static bool SaveScreenshotOfBackstage(const wxString& filePath, const wxWindowID sectionId,
+                                          const wxWindowID controlToHighlight = wxID_ANY);
+
     /** @brief Opens a screenshot and draws a read square at given coordinates.
         @param filePath The path of the image to open.
         @param topLeftCorner The top-left corner of the rect to highlight.
@@ -208,6 +220,28 @@ class Screenshot
     /// @brief Finds any visible web view descendants of @p windowToCapture and draws their
     ///     captured content into @p dc, since a plain window blit leaves web view areas blank.
     static void CompositeWebViewsIntoDC(wxWindow* windowToCapture, wxDC& dc);
+
+    /// @brief Recursively finds the first descendant of @p parent of a given type.
+    /// @tparam WindowT The window type to look for.
+    /// @param parent The window to search within.
+    /// @returns The window, or @c nullptr if not found.
+    template<typename WindowT>
+    [[nodiscard]]
+    static WindowT* FindDescendantOfType(const wxWindow* parent)
+        {
+        for (auto* child : parent->GetChildren())
+            {
+            if (auto* foundWindow = dynamic_cast<WindowT*>(child); foundWindow != nullptr)
+                {
+                return foundWindow;
+                }
+            if (auto* foundWindow = FindDescendantOfType<WindowT>(child); foundWindow != nullptr)
+                {
+                return foundWindow;
+                }
+            }
+        return nullptr;
+        }
 
     static wxPen GetScreenshotHighlightPen(const int width)
         {
