@@ -86,6 +86,10 @@ private:
         lua_pushcfunction(L, &Luna < T >::property_setter);
         lua_settable(L, metatable);
 
+        lua_pushstring(L, "__metatable"); // Hide the metatable from getmetatable()
+        lua_pushboolean(L, 0);
+        lua_settable(L, metatable);
+
         for (int i = 0; T::properties[i].name; i++) {                // Register some properties in it
             lua_pushstring(L, T::properties[i].name);                // Having some string associated with them
             lua_pushnumber(L, i);                                    // And a number indexing which property it is
@@ -237,9 +241,17 @@ public:
             lua_remove(L, 1); // Remove userdata
             lua_remove(L, 1); // Remove [key]
 
+            if (!obj || !*obj)
+            {
+                luaL_error(L, "Internal error, no object given!");
+                return 0;
+            }
+
             return ((*obj)->*(T::properties[_index].getter)) (L);
         }
 
+        // Only properties and methods are readable, not the metatable's other entries
+        lua_pushnil(L);
         return 1;
     }
 
@@ -297,6 +309,12 @@ public:
         int i = (int)lua_tonumber(L, lua_upvalueindex(1));
         T** obj = static_cast < T ** >(lua_touserdata(L, lua_upvalueindex(2)));
 
+        if (!obj || !*obj)
+        {
+            luaL_error(L, "Internal error, no object given!");
+            return 0;
+        }
+
         return ((*obj)->*(T::methods[i].func)) (L);
     }
 
@@ -310,7 +328,10 @@ public:
         T** obj = static_cast < T ** >(lua_touserdata(L, -1));
 
         if (obj && *obj)
+        {
             delete(*obj);
+            *obj = nullptr;
+        }
 
         return 0;
     }
