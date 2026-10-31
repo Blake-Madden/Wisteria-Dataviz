@@ -77,6 +77,13 @@ namespace Wisteria::UI
         /// @brief Stop running the current script.
         static void Quit() { m_quitRequested = true; }
 
+        /// @returns @c true if the current script has been asked to stop.
+        [[nodiscard]]
+        static bool IsQuitRequested() noexcept
+            {
+            return m_quitRequested;
+            }
+
         /// @brief Sets which (1-based) script lines should pause execution when hit.
         /// @param lines The line numbers to break on.
         void SetBreakpointLines(std::set<int> lines) { m_breakpointLines = std::move(lines); }

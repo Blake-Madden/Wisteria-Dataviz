@@ -15,6 +15,8 @@
 #include "../reporting/reportbuilder.h"
 #include "../ui/app.h"
 #include "lua_interface.h"
+#include <algorithm>
+#include <wx/stopwatch.h>
 
 // NOLINTBEGIN(readability-identifier-length)
 // NOLINTBEGIN(readability-implicit-bool-conversion)
@@ -148,6 +150,30 @@ namespace LuaScripting
             luaRunner->DebugClear();
             }
         wxTheApp->Yield();
+        return 0;
+        }
+
+    //-------------------------------------------------------------
+    int Wait(lua_State* L)
+        {
+        if (!VerifyParameterCount(L, 1, __func__))
+            {
+            return 0;
+            }
+        constexpr lua_Integer MAX_SLEEP_INTERVAL{ 20 };
+        const lua_Integer waitTime{ luaL_checkinteger(L, 1) };
+        // sleep in short intervals so that the UI stays responsive and Stop takes effect
+        const wxStopWatch stopWatch;
+        while (!Wisteria::UI::LuaInterpreter::IsQuitRequested())
+            {
+            const lua_Integer remainingTime{ waitTime - stopWatch.Time() };
+            if (remainingTime <= 0)
+                {
+                break;
+                }
+            wxMilliSleep(static_cast<unsigned long>(std::min(remainingTime, MAX_SLEEP_INTERVAL)));
+            wxSafeYield(wxTheApp->GetTopWindow(), true);
+            }
         return 0;
         }
     } // namespace LuaScripting

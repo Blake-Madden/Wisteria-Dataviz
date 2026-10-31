@@ -46,6 +46,7 @@ namespace LuaScripting
     int Print(lua_State* L/*string message*/); // Prints a message to the script editor's debug window.
     int Clear(lua_State* L); // Clears the log window.
     int /*string*/ GetScriptFolder(lua_State* L); // Returns the folder path of the currently running script.
+    int Wait(lua_State* L/*number milliseconds*/); // Pauses the script for the specified number of milliseconds.
     // clang-format on
     // quneiform-suppress-end
 
@@ -53,6 +54,7 @@ namespace LuaScripting
     static const luaL_Reg DebugLib[] = { { "Print", Print },
                                          { "Clear", Clear },
                                          { "GetScriptFolder", GetScriptFolder },
+                                         { "Wait", Wait },
                                          { nullptr, nullptr } };
     } // namespace LuaScripting
 
