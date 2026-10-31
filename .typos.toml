@@ -49,10 +49,11 @@ parms = "parms"
 Parms = "Parms"
 localY = "localY"
 Autor = "Autor"
+loca = "loca"
 
 [type.svg]
 extend-glob = ["*.svg"]
 check-file = false
 
 [files]
-extend-exclude = ["src/import/Uni*-UTF16-H", "src/import/glyphlist.txt", "src/lua/"]
+extend-exclude = ["src/import/Uni*-UTF16-H", "src/import/glyphlist.txt", "src/lua/", "*.po"]
