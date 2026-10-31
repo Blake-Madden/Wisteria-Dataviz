@@ -15,6 +15,7 @@
 #include "../import/html_extract_text.h"
 #include "../util/donttranslate.h"
 #include "lua_debug.h"
+#include "lua_screenshot.h"
 #include "script_workbench_panel.h"
 #include <cstdint>
 #include <cstring>
@@ -134,6 +135,8 @@ namespace Wisteria::UI
 
         luaL_newlib(m_L, LuaScripting::DebugLib);
         lua_setglobal(m_L, "Debug");
+        luaL_newlib(m_L, LuaScripting::ScreenshotLib);
+        lua_setglobal(m_L, "Screenshot");
         RegisterLibraries(m_L);
         // NOLINTEND(readability-math-missing-parentheses,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 

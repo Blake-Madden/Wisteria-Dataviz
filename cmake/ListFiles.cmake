@@ -26,7 +26,7 @@ xrc_menu_strings[.]cpp)")
 set(WISTERIA_APP_EXCLUDE_FILTER "(testmainc|formattedtextctrl[.]cpp|gtktextview-helper[.]cpp|\
 demo[.]cpp|main[.]cpp|\
 htmltablewinprintout[.]cpp|htmltablewin[.]cpp|archivedlg[.]cpp|htmltablepanel[.]cpp|\
-screenshot[.]cpp|idhelpers[.]cpp|filelistdlg[.]cpp|getdirdlg[.]cpp|\
+idhelpers[.]cpp|filelistdlg[.]cpp|getdirdlg[.]cpp|\
 (cpp|doc|docx|html|markdown|ods|odt|postscript|rtf|odt_odp)_extract_text[.]cpp|\
 pdfreader[.]cpp|pdf_|benchmark[.]cpp|\
 utfcpp/tests/|utfcpp/samples/|utfcpp/extern|wxpdfdoc/|xrc_menu_strings[.]cpp)")

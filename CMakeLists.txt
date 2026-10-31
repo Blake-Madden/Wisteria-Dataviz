@@ -471,6 +471,14 @@ add_executable(${WISTERIA_APP} WIN32 MACOSX_BUNDLE ${APP_SRC_FILES})
 set_target_properties(${WISTERIA_APP} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/app")
 
+if(WIN32 AND wxUSE_WEBVIEW_EDGE)
+    # The screenshot API calls ICoreWebView2::CapturePreview() directly, so it needs
+    # the WebView2 SDK headers. wxwebview adds them to itself as PRIVATE, so they
+    # don't propagate through wx::webview and have to be added here as well.
+    target_include_directories(${WISTERIA_APP} PRIVATE
+        ${WEBVIEW2_PACKAGE_DIR}/build/native/include)
+endif()
+
 # Link required libraries to the executable
 if(WIN32 OR APPLE)
     target_link_libraries(${WISTERIA_APP} ${WISTERIA_LIB} ${wxWidgets_LIBRARIES})

@@ -17,6 +17,7 @@
 #include "../util/logfile.h"
 #include "../util/resource_manager.h"
 #include "mainframe.h"
+#include <map>
 #include <memory>
 #include <wx/cmdline.h>
 #include <wx/config.h>
@@ -162,6 +163,14 @@ namespace Wisteria::UI
         /// @note The application should call @c Initialize() on the runner
         ///     after anything that it depends on has been loaded.
         void SetLuaRunner(std::unique_ptr<LuaInterpreter> luaRunner);
+
+        /// @returns The IDs exposed to scripting and their respective dynamic IDs
+        ///     in the framework.
+        [[nodiscard]]
+        static const std::map<wxWindowID, wxWindowID>& GetDynamicIdMap() noexcept
+            {
+            return m_dynamicIdMap;
+            }
 
         /// @brief Applies the application's theme to a sidebar.
         /// @param sideBar The sidebar to customize.
@@ -311,6 +320,12 @@ namespace Wisteria::UI
                                            const wxString& appSubName, const wxString& vendorName,
                                            const bool includeCopyright,
                                            const wxString& copyrightPrefix = wxString{});
+
+      protected:
+        /// @brief IDs exposed to scripting and their respective dynamic IDs in the
+        ///     framework.
+        /// @details Set (or add to this) in your framework's initialization.
+        inline static std::map<wxWindowID, wxWindowID> m_dynamicIdMap;
 
       private:
         [[nodiscard]]

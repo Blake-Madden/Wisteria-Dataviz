@@ -105,6 +105,7 @@ SET(APP_WISTERIA_SRC
     src/import/xlsx_extract_text.cpp
     src/lua-scripting/lua_debug.cpp
     src/lua-scripting/lua_interface.cpp
+    src/lua-scripting/lua_screenshot.cpp
     src/lua-scripting/onelua_no_warnings.c
     src/lua-scripting/script_workbench_panel.cpp
     src/reporting/htmldashboardprintout.cpp
@@ -219,6 +220,7 @@ SET(APP_WISTERIA_SRC
     src/util/logfile.cpp
     src/util/memorymappedfile.cpp
     src/util/resource_manager.cpp
+    src/util/screenshot.cpp
     src/util/textreplace.cpp
     src/util/textstream.cpp
     src/util/warningmanager.cpp
