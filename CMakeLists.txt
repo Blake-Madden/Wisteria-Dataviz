@@ -67,7 +67,41 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(ALLOW_DIRTY_SUBMODULES OFF CACHE BOOL "Allow building even if submodules have local changes")
 endif()
 
-project(Wisteria VERSION 1.2.2.0 DESCRIPTION "Wisteria-Dataviz")
+if(CMAKE_HOST_APPLE)
+    set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
+    # Enable hardened runtime:
+	# https://developer.apple.com/documentation/security/hardened_runtime
+    # Note that this will need to be set via codesign later because we are not
+    # codesigning via CMake. This here is more for bookkeeping.
+    set(CMAKE_XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME YES)
+endif()
+
+if(CMAKE_HOST_APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+    # If no deployment target has been set default to the minimum supported
+    # OS version (this has to be set before the first project() call)
+    if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+        set(CMAKE_OSX_DEPLOYMENT_TARGET 12.0 CACHE STRING "iOS Deployment Target")
+    else()
+        set(CMAKE_OSX_DEPLOYMENT_TARGET 13.3 CACHE STRING "macOS Deployment Target")
+    endif()
+endif()
+
+project(Wisteria VERSION 1.2.2.0 DESCRIPTION "Wisteria-Dataviz" HOMEPAGE_URL "")
+
+set(PROGRAM_LONGNAME "")
+set(PUBLISHER "")
+set(PUBLISHER_RDNS_ID "")
+set(PROGRAM_AUTHOR "Blake Madden")
+set(PROGRAM_AUTHOR_MLA "Madden, Blake")
+set(PROGRAM_AUTHOR_APA "Madden, B.")
+set(PROGRAM_COMMENTS "")
+set(PROGRAM_RDNS_IDENTIFIER "")
+set(GIT_REPO "")
+set(ISSUE_PAGE "")
+set(REMOTE_VERSION_FILE "")
+set(DOWNLOAD_PAGE "")
+set(INNOSETUP_GUID "")
+set(PROGRAM_LICENSE "")
 
 set(FULL_VERSION ${Wisteria_VERSION_MAJOR}.${Wisteria_VERSION_MINOR}.${Wisteria_VERSION_PATCH}.${Wisteria_VERSION_TWEAK})
 # Build a displayable version string that only includes the necessary parts
@@ -115,25 +149,6 @@ add_custom_target(quarto-docs
             WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/docs/syntax-manual"
             COMMENT "Generating JSON syntax documentation with Quarto"
             VERBATIM)
-
-if(APPLE)
-    set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
-    # Enable hardened runtime:
-	# https://developer.apple.com/documentation/security/hardened_runtime
-    # Note that this will need to be set via codesign later because we are not
-    # codesigning via CMake. This here is more for bookkeeping.
-    set(CMAKE_XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME YES)
-endif()
-
-if(APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
-    # If no deployment target has been set default to the minimum supported
-    # OS version (this has to be set before the first project() call)
-    if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
-        set(CMAKE_OSX_DEPLOYMENT_TARGET 12.0 CACHE STRING "iOS Deployment Target")
-    else()
-        set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15 CACHE STRING "macOS Deployment Target")
-    endif()
-endif()
 
 # Add wxWidgets to the build
 include(cmake/folders.cmake)

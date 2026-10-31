@@ -28,6 +28,16 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 endif()
 
+if(CMAKE_HOST_APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+    # If no deployment target has been set default to the minimum supported
+    # OS version (this has to be set before the first project() call)
+    if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+        SET(CMAKE_OSX_DEPLOYMENT_TARGET 12.0 CACHE STRING "iOS Deployment Target")
+    else()
+        SET(CMAKE_OSX_DEPLOYMENT_TARGET 13.3 CACHE STRING "macOS Deployment Target")
+    endif()
+endif()
+
 project(WisteriaGuiTestRunner)
 
 # Setup wxWidgets
@@ -55,16 +65,6 @@ if(UNIX AND NOT APPLE)
     # and to the linker where to look for libraries
     include_directories(${GTK3_INCLUDE_DIRS})
     link_directories(${GTK3_LIBRARY_DIRS})
-endif()
-
-if(APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
-    # If no deployment target has been set default to the minimum supported
-    # OS version (this has to be set before the first project() call)
-    if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
-        SET(CMAKE_OSX_DEPLOYMENT_TARGET 12.0 CACHE STRING "iOS Deployment Target")
-    else()
-        SET(CMAKE_OSX_DEPLOYMENT_TARGET 10.10 CACHE STRING "macOS Deployment Target")
-    endif()
 endif()
 
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
