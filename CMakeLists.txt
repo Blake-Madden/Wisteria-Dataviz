@@ -282,6 +282,10 @@ add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 # Build source file lists
 include(cmake/ListFiles.cmake)
 
+# Review the translation catalogs
+include(cmake/CheckTranslations.cmake)
+check_all_translations()
+
 # Build Wisteria library
 ########################
 
