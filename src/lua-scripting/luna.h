@@ -60,17 +60,11 @@ public:
         return *obj;        // pointer to T object
     }
 
-    /*
-    @ Register
-    Arguments:
-    * L - Lua State
-    * namespac - Namespace to load into
-
-    Description:
-    Registers your class with Lua. Leave namespac "" if you want to load it into the global space.
-    */
-
 private:
+    // Marks a metatable index as a method (rather than a property).
+    // This must be above the number of methods or properties that a class can have.
+    static constexpr int METHOD_FLAG{ 1 << 16 };
+
     static void Register_Metatable(lua_State* L)
     {
         luaL_newmetatable(L, T::className);
@@ -100,13 +94,22 @@ private:
 
         for (int i = 0; T::methods[i].name; i++) {
             lua_pushstring(L, T::methods[i].name);                  // Register some functions in it
-            lua_pushnumber(L, i | (1 << 8));                        // Add a number indexing which func it is
+            lua_pushnumber(L, i | METHOD_FLAG);                     // Add a number indexing which func it is
             lua_settable(L, metatable);
         }
         lua_pop(L, 1);
     }
 
 public:
+    /*
+    @ Register
+    Arguments:
+    * L - Lua State
+    * namespac - Namespace to load into
+
+    Description:
+    Registers your class with Lua. Leave namespac "" if you want to load it into the global space.
+    */
     // REGISTER CONSTRUCTOR AS A GLOBAL TABLE via __call function
     static void Register(lua_State * L, const char *namespac = NULL) {
 
@@ -222,9 +225,9 @@ public:
 
             lua_pushvalue(L, 3);
 
-            if (_index & (1 << 8)) // A func
+            if (_index & METHOD_FLAG) // A func
             {
-                lua_pushnumber(L, _index ^ (1 << 8)); // Push the right func index
+                lua_pushnumber(L, _index ^ METHOD_FLAG); // Push the right func index
                 lua_pushlightuserdata(L, obj);
                 lua_pushcclosure(L, &Luna < T >::function_dispatch, 2);
                 return 1; // Return a func
@@ -265,11 +268,11 @@ public:
                 return 0;
             }
 
-            if (_index >> 8) // Try to set a func
+            if (_index & METHOD_FLAG) // Try to set a func
             {
                 char c[1024];
                 snprintf(c, sizeof(c), "Trying to set the method [%s] of class [%s]",
-                         (*obj)->T::methods[_index ^ (1 << 8)].name, T::className);
+                         (*obj)->T::methods[_index ^ METHOD_FLAG].name, T::className);
                 luaL_error(L, c);
                 return 0;
             }
