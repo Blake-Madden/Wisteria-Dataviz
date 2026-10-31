@@ -7,6 +7,10 @@
 # License:     Eclipse Public License 2.0
 #############################################################################
 
+# Requires: CMake's FindGettext module (built-in)
+# Will set GETTEXT_MSGFMT_EXECUTABLE if found.
+find_package(Gettext QUIET)
+
 # ==========================================================================================
 #  Function: check_all_translations
 #  ------------------------------------------------------------------------------------------
