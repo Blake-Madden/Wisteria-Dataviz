@@ -282,10 +282,8 @@ public:
 
             if (_index & METHOD_FLAG) // Try to set a func
             {
-                char c[1024];
-                snprintf(c, sizeof(c), "Trying to set the method [%s] of class [%s]",
-                         (*obj)->T::methods[_index ^ METHOD_FLAG].name, T::className);
-                luaL_error(L, c);
+                luaL_error(L, "Trying to set the method [%s] of class [%s]",
+                           T::methods[_index ^ METHOD_FLAG].name, T::className);
                 return 0;
             }
 
