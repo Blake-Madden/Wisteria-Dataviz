@@ -55,39 +55,68 @@ namespace Wisteria::UI
 
         /// @name Operations (called by the ribbon / accelerators)
         /// @{
+
+        /// @brief Adds a new, empty script.
         void NewScript();
+        /// @brief Opens a script file.
+        /// @param path The path of the file to open.
         void OpenScriptFromFile(const wxString& path);
+        /// @brief Saves the current script.
         void SaveCurrentScript();
+        /// @brief Runs the current editor's selected text, or its whole script
+        ///     if nothing is selected.
         void RunCurrentScript();
+        /// @brief Resumes a script paused at a breakpoint.
         void ContinueScript();
+        /// @brief Stops the running script.
         void StopScript();
+        /// @brief Restarts the Lua interpreter, clearing all global variables.
         void RestartInterpreter();
+        /// @brief Shows or hides the function browser.
         void ToggleFunctionBrowser();
+        /// @brief Shows the Find dialog.
         void ShowFindDialog();
+        /// @brief Shows the Replace dialog.
         void ShowReplaceDialog();
+        /// @brief Undoes the last edit in the current editor.
         void Undo();
+        /// @brief Redoes the last undone edit in the current editor.
         void Redo();
+        /// @brief Duplicates the current editor's current line.
         void DuplicateLine();
+        /// @brief Prompts for a line number and goes to it in the current editor.
         void GotoLineDialog();
+        /// @brief Comments out the selected lines in the current editor.
         void Comment();
+        /// @brief Uncomments the selected lines in the current editor.
         void Uncomment();
+        /// @brief Cuts the current editor's selection to the clipboard.
         void Cut();
+        /// @brief Copies the current editor's selection to the clipboard.
         void Copy();
+        /// @brief Pastes the clipboard's text into the current editor.
         void Paste();
+        /// @brief Selects all text in the current editor.
         void SelectAll();
+        /// @returns @c true if the current editor has an edit to undo.
         [[nodiscard]]
         bool CanUndo() const;
+        /// @returns @c true if the current editor has an edit to redo.
         [[nodiscard]]
         bool CanRedo() const;
+        /// @returns @c true if the current editor has a selection to cut.
         [[nodiscard]]
         bool CanCut() const;
+        /// @returns @c true if the current editor has a selection to copy.
         [[nodiscard]]
         bool CanCopy() const;
+        /// @returns @c true if the current editor can accept a paste.
         [[nodiscard]]
         bool CanPaste() const;
         /// @}
 
         /// @brief Append a message to the debug output window.
+        /// @param str The message, which can contain HTML markup.
         void DebugOutput(const wxString& str);
         /// @brief Clear the debug output window.
         void DebugClear();

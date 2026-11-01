@@ -117,8 +117,11 @@ namespace Wisteria::UI
         /// @brief Describes a single local variable (or table entry) for the Locals window.
         struct LuaVariableInfo
             {
+            /// @brief The variable's name (or the table entry's key).
             wxString m_name;
+            /// @brief The variable's value, as display text.
             wxString m_value;
+            /// @brief The name of the variable's Lua type (or class, for custom objects).
             wxString m_type;
             /// @brief @c true if this is a table whose entries can be queried
             ///     via GetTableEntries().
@@ -136,6 +139,7 @@ namespace Wisteria::UI
         /// @brief Returns the key/value entries of a table previously reported
         ///     as expandable by GetLocalVariables() or GetTableEntries().
         /// @param tableRef The table's LuaVariableInfo::m_tableRef handle.
+        /// @returns The table's entries (empty if not currently paused).
         [[nodiscard]]
         std::vector<LuaVariableInfo> GetTableEntries(int tableRef) const;
 
