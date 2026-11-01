@@ -9,9 +9,76 @@
 #include "pdfreportprintout.h"
 #include "../app/wisteriaapp.h"
 #include "reportprintout.h"
+#include <algorithm>
 #include <array>
+#include <wx/grid.h>
+#include <wx/listctrl.h>
 #include <wx/paper.h>
 #include <wx/pdfdc.h>
+#include <wx/pdfgridctrl.h>
+#include <wx/pdflistctrl.h>
+#include <wx/settings.h>
+
+//------------------------------------------------------
+bool Wisteria::ReportPDFExport::HasStripText(const std::array<wxString, 3>& text)
+    {
+    return std::ranges::any_of(text, [](const wxString& str) { return !str.empty(); });
+    }
+
+//------------------------------------------------------
+void Wisteria::ReportPDFExport::ApplyTableMargins(wxPdfDocument& doc, const ReportExportPage& page,
+                                                  const int stripHeight)
+    {
+    const double headerSpace{ HasStripText(page.m_headers) ? stripHeight + TABLE_STRIP_GAP : 0.0 };
+    const double footerSpace{ HasStripText(page.m_footers) ? stripHeight + TABLE_STRIP_GAP : 0.0 };
+    doc.SetMargins(TABLE_SIDE_MARGIN, TABLE_EDGE_MARGIN + headerSpace, TABLE_SIDE_MARGIN);
+    // the table starts its own pages, so that the strips can be drawn on each one
+    doc.SetAutoPageBreak(false, TABLE_EDGE_MARGIN + footerSpace);
+    }
+
+//------------------------------------------------------
+void Wisteria::ReportPDFExport::AddTable(wxPdfDocument& doc, const ReportExportPage& page,
+                                         const int stripHeight,
+                                         const std::function<void()>& pageBreakHandler)
+    {
+    const double titleSpace{ page.m_title.empty() ? 0.0 : stripHeight + TABLE_STRIP_GAP };
+    doc.SetXY(doc.GetLeftMargin(), doc.GetTopMargin() + titleSpace);
+
+    const auto applyOptions = [&pageBreakHandler](auto& tableOptions)
+    {
+        tableOptions.SetFitToPage(true);
+        tableOptions.SetAlternateRowBackgroundColour(wxPdfColour{ 240, 240, 240 });
+        tableOptions.SetBorderColour(wxPdfColour{ 200, 200, 200 });
+        tableOptions.SetPageBreakHandler(pageBreakHandler);
+    };
+
+    if (const auto* const list = std::get_if<const wxListCtrl*>(&page.m_content))
+        {
+        wxPdfListCtrlOptions listOptions;
+        applyOptions(listOptions);
+        doc.AddList(*list, listOptions);
+        }
+    else if (const auto* const grid = std::get_if<const wxGrid*>(&page.m_content))
+        {
+        wxPdfGridOptions gridOptions;
+        applyOptions(gridOptions);
+        doc.AddGrid(*grid, gridOptions);
+        }
+    }
+
+//------------------------------------------------------
+size_t Wisteria::ReportPDFExport::CountTablePages(const ReportExportPage& page,
+                                                  const wxPrintData& printData,
+                                                  const int stripHeight)
+    {
+    // lay the table out in a throwaway document with the same paper and margins
+    wxPdfDocument doc(printData.GetOrientation(), wxString{ L"pt" }, printData.GetPaperId());
+    doc.Open();
+    ApplyTableMargins(doc, page, stripHeight);
+    doc.AddPage();
+    AddTable(doc, page, stripHeight, std::function<void()>{});
+    return static_cast<size_t>(doc.PageNo());
+    }
 
 //------------------------------------------------------
 void Wisteria::ReportPDFExport::DrawPrintStrip(wxDC& dc, const wxRect& stripRect,
@@ -50,19 +117,28 @@ void Wisteria::ReportPDFExport::DrawPrintStrip(wxDC& dc, const wxRect& stripRect
 Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
                                            const wxString& filePath,
                                            const PdfExportOptions& options)
+    : ReportPDFExport(ReportExportPage::FromCanvases(canvases), filePath, options)
     {
-    if (canvases.empty() || filePath.empty())
+    }
+
+//------------------------------------------------------
+Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<ReportExportPage>& pages,
+                                           const wxString& filePath,
+                                           const PdfExportOptions& options)
+    {
+    if (pages.empty() || filePath.empty())
         {
         return;
         }
 
     // refresh auto-generated accessibility text on every page before rendering,
     // so descriptions reflect each canvas's current state
-    for (auto* canvas : canvases)
+    for (const auto& page : pages)
         {
-        if (canvas != nullptr)
+        const auto* const canvasHolder = std::get_if<Canvas*>(&page.m_content);
+        if (canvasHolder != nullptr && *canvasHolder != nullptr)
             {
-            canvas->ApplyAutoAccessibilityAttributes();
+            (*canvasHolder)->ApplyAutoAccessibilityAttributes();
             }
         }
 
@@ -92,16 +168,131 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<Canvas*>& canvases,
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast)
     pdfDC.GetPdfDocument()->SetCreator(wxTheApp->GetAppDisplayName());
 
-    const size_t pageCount{ canvases.size() };
-    int pageNum{ 0 };
-    for (auto* canvas : canvases)
+    wxPdfDocument* const pdfDoc{ pdfDC.GetPdfDocument() };
+    // the DC's logical units and its document's units are both points at 72 PPI
+    const int tableStripHeight{ pdfDC.FromDIP(wxSize{ 0, 24 }).GetHeight() };
+
+    // tables can span multiple pages, so their page counts must be measured
+    // for the headers and footers to show the correct total
+    size_t pageCount{ 0 };
+    for (const auto& page : pages)
         {
-        ++pageNum;
-        if (canvas == nullptr)
+        if (std::holds_alternative<Canvas*>(page.m_content))
+            {
+            ++pageCount;
+            }
+        else if (page.HasTableData())
+            {
+            pageCount += CountTablePages(page, printData, tableStripHeight);
+            }
+        }
+
+    int pageNum{ 0 };
+    for (const auto& page : pages)
+        {
+        const bool isTable{ !std::holds_alternative<Canvas*>(page.m_content) };
+        if (isTable && !page.HasTableData())
             {
             continue;
             }
 
+        ++pageNum;
+        if (!isTable && std::get<Canvas*>(page.m_content) == nullptr)
+            {
+            continue;
+            }
+
+        if (isTable)
+            {
+            const auto expandStrip = [&](const std::array<wxString, 3>& text)
+            {
+                std::array<wxString, 3> expanded;
+                std::ranges::transform(text, expanded.begin(),
+                                       [&](const wxString& str)
+                                       {
+                                           return Wisteria::ReportPrintout::ExpandPrintString(
+                                               str, pageNum, pageCount, options.m_title);
+                                       });
+                return expanded;
+            };
+            const auto drawTableStrips = [&]()
+            {
+                const int stripLeft{ wxRound(TABLE_SIDE_MARGIN) };
+                const int stripWidth{ wxRound(pdfDoc->GetPageWidth() - TABLE_SIDE_MARGIN * 2) };
+                // Exporter draws directly on the document, so the DC's cached font may not
+                // be what the document is using. Clearing it forces the next font to be applied.
+                pdfDC.SetFont(wxNullFont);
+                if (HasStripText(page.m_headers))
+                    {
+                    DrawPrintStrip(pdfDC,
+                                   wxRect{ stripLeft, wxRound(TABLE_EDGE_MARGIN), stripWidth,
+                                           tableStripHeight },
+                                   1.0, expandStrip(page.m_headers),
+                                   PageVerticalAlignment::TopAligned);
+                    }
+                if (HasStripText(page.m_footers))
+                    {
+                    DrawPrintStrip(pdfDC,
+                                   wxRect{ stripLeft,
+                                           wxRound(pdfDoc->GetPageHeight() - TABLE_EDGE_MARGIN) -
+                                               tableStripHeight,
+                                           stripWidth, tableStripHeight },
+                                   1.0, expandStrip(page.m_footers),
+                                   PageVerticalAlignment::BottomAligned);
+                    }
+                if (!page.m_watermark.m_label.empty())
+                    {
+                    const wxPdfColour textColour{ pdfDoc->GetTextColour() };
+                    pdfDC.SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).Bold());
+                    Canvas::DrawWatermarkLabel(pdfDC,
+                                               wxRect{ 0, 0, wxRound(pdfDoc->GetPageWidth()),
+                                                       wxRound(pdfDoc->GetPageHeight()) },
+                                               page.m_watermark, 1.0);
+                    // the exporter draws directly on the document, so it would inherit these
+                    pdfDoc->SetAlpha(1.0, 1.0);
+                    pdfDoc->SetTextColour(textColour);
+                    pdfDC.SetFont(wxNullFont);
+                    }
+            };
+
+            const double savedLeftMargin{ pdfDoc->GetLeftMargin() };
+            const double savedTopMargin{ pdfDoc->GetTopMargin() };
+            const double savedRightMargin{ pdfDoc->GetRightMargin() };
+            const double savedBreakMargin{ pdfDoc->GetBreakMargin() };
+            // the document has no other getter for this setting
+            const bool savedAutoPageBreak{ pdfDoc->AcceptPageBreak() };
+
+            ApplyTableMargins(*pdfDoc, page, tableStripHeight);
+            pdfDC.SetDeviceOrigin(0, 0);
+            pdfDC.StartPage();
+            if (!page.m_title.empty())
+                {
+                DrawPrintStrip(pdfDC,
+                               wxRect{ wxRound(TABLE_SIDE_MARGIN), wxRound(pdfDoc->GetTopMargin()),
+                                       wxRound(pdfDoc->GetPageWidth() - TABLE_SIDE_MARGIN * 2),
+                                       tableStripHeight },
+                               1.0, { wxString{}, page.m_title, wxString{} },
+                               PageVerticalAlignment::TopAligned);
+                }
+            AddTable(*pdfDoc, page, tableStripHeight,
+                     [&]()
+                     {
+                         drawTableStrips();
+                         pdfDC.EndPage();
+                         pdfDC.StartPage();
+                         ++pageNum;
+                     });
+            // the handler is not called for the table's last page
+            drawTableStrips();
+            pdfDC.EndPage();
+            pdfDoc->SetMargins(savedLeftMargin, savedTopMargin, savedRightMargin);
+            pdfDoc->SetAutoPageBreak(savedAutoPageBreak, savedBreakMargin);
+            // the strips are optional, so a following page can't rely on them having reset this
+            pdfDC.SetFont(wxNullFont);
+            continue;
+            }
+
+        auto* const canvas{ std::get<Canvas*>(page.m_content) };
         const wxWindowUpdateLocker updateLocker{ canvas };
 
         // compute page dimensions from the paper settings

@@ -13,6 +13,10 @@
 #define WISTERIA_REPORT_SLIDE_EXPORT_BASE_H
 
 #include "../base/canvas.h"
+#include "reportexportpage.h"
+#include <optional>
+#include <string_view>
+#include <vector>
 #include <wx/buffer.h>
 #include <wx/colour.h>
 #include <wx/gdicmn.h>
@@ -111,9 +115,83 @@ namespace Wisteria
     class ReportSlideExportBase
         {
       protected:
+        /// @brief A row of a table on a slide.
+        struct TableSlideRow
+            {
+            /// @brief The row's cells.
+            std::vector<wxString> m_cells;
+            /// @brief The horizontal alignment of the row's cells.
+            std::vector<wxAlignment> m_alignments;
+            /// @brief The row's height, in inches.
+            double m_height{ 0.0 };
+            /// @brief Whether the row has the band color. All rows that a long row
+            ///     was split into have the same color.
+            bool m_isBanded{ false };
+            };
+
+        /// @brief The part of a table shown on one slide.
+        struct TableSlide
+            {
+            /// @brief The title above the table.
+            wxString m_title;
+            /// @brief The columns.
+            std::vector<ReportTableColumn> m_columns;
+            /// @brief The width of each column, in inches.
+            std::vector<double> m_columnWidths;
+            /// @brief The rows on this slide.
+            std::vector<TableSlideRow> m_rows;
+            /// @brief The space on the left and right of a cell's text, in inches.
+            double m_cellMarginX{ 0.0 };
+            /// @brief The font size of the cells, in points.
+            int m_fontPoints{ 0 };
+            /// @brief The height of the header row, in inches.
+            double m_headerHeight{ 0.0 };
+            /// @brief The distance from the top of the slide to the table, in inches.
+            double m_top{ 0.0 };
+            /// @brief The slide width, in inches.
+            double m_slideWidth{ 0.0 };
+            /// @brief The slide height, in inches.
+            double m_slideHeight{ 0.0 };
+            /// @brief The watermark, with its lengths and font size in points.
+            std::optional<ReportWatermarkLayout> m_watermark;
+
+            /// @returns The height of the table on this slide, in inches.
+            [[nodiscard]]
+            double GetTableHeight() const
+                {
+                double tableHeight{ m_headerHeight };
+                for (const auto& row : m_rows)
+                    {
+                    tableHeight += row.m_height;
+                    }
+                return tableHeight;
+                }
+            };
+
+        /// @brief The slide margin around a table, in inches.
+        constexpr static double TABLE_MARGIN_INCHES{ 0.4 };
+        /// @brief The height of the title above a table, in inches.
+        constexpr static double TABLE_TITLE_HEIGHT_INCHES{ 0.6 };
+        /// @brief The font size of the title above a table, in points.
+        constexpr static int TABLE_TITLE_FONT_POINTS{ 24 };
+        /// @brief The most space on the left and right of a table cell's text, in inches.
+        constexpr static double TABLE_CELL_MARGIN_X_INCHES{ 0.1 };
+        /// @brief The space above and below a table cell's text, in inches.
+        constexpr static double TABLE_CELL_MARGIN_Y_INCHES{ 0.05 };
+        /// @brief The table header's background color, as @c "RRGGBB".
+        constexpr static std::wstring_view TABLE_HEADER_COLOR{ L"E0E0E0" };
+        /// @brief The background color of every other table row, as @c "RRGGBB".
+        constexpr static std::wstring_view TABLE_BAND_COLOR{ L"F2F2F2" };
+        /// @brief The color of the lines between table rows, as @c "RRGGBB".
+        constexpr static std::wstring_view TABLE_LINE_COLOR{ L"BFBFBF" };
+
         /// @brief One rendered page, ready to be written into a package.
         struct RenderedPage
             {
+            /// @brief The page's name. If empty, then its page number is used.
+            wxString m_label;
+            /// @brief The native table that this page shows, instead of a picture.
+            std::optional<TableSlide> m_table;
             /// @brief The page rendered as SVG.
             wxString m_svg;
             /// @brief The page rendered as PNG.
@@ -138,6 +216,15 @@ namespace Wisteria
         /// @returns The escaped text.
         [[nodiscard]]
         static wxString EscapeXmlAttribute(const wxString& str);
+        /// @brief Splits a list or grid control into slides.
+        /// @param page The page holding the control.
+        /// @param slideWidthInches The slide width, in inches.
+        /// @param slideHeightInches The slide height, in inches.
+        /// @returns The table's slides. This is empty if the page has no table data.
+        [[nodiscard]]
+        static std::vector<TableSlide> BuildTableSlides(const ReportExportPage& page,
+                                                        double slideWidthInches,
+                                                        double slideHeightInches);
         /// @brief Gathers a slide's speaker-notes text from the canvas titles and from every
         ///     fixed object's accessibility label (user override first, then the
         ///     auto-generated description). Paragraphs are separated by blank lines.

@@ -12,7 +12,10 @@
 #include "reportprintout.h"
 #include <algorithm>
 #include <cmath>
+#include <numeric>
 #include <string>
+#include <utility>
+#include <variant>
 #include <wx/arrstr.h>
 #include <wx/datetime.h>
 #include <wx/wfstream.h>
@@ -390,32 +393,154 @@ wxString Wisteria::ReportPowerPointExport::BuildTitleSlideXml(
     }
 
 //------------------------------------------------------
+wxString Wisteria::ReportPowerPointExport::BuildTableSlideXml(const TableSlide& slide)
+    {
+    const auto toEmu = [](const double inches) -> wxString
+    {
+        return wxString{ std::to_wstring(
+            std::llround(inches * PowerPointExportOptions::EMU_PER_INCH)) };
+    };
+
+    wxString shapes;
+    if (!slide.m_title.empty())
+        {
+        const double titleWidth{ std::accumulate(slide.m_columnWidths.cbegin(),
+                                                 slide.m_columnWidths.cend(), 0.0) };
+        shapes += wxString::Format(
+            L"<p:sp><p:nvSpPr><p:cNvPr id=\"2\" name=\"Title\"/>"
+            L"<p:cNvSpPr txBox=\"1\"/><p:nvPr/></p:nvSpPr>"
+            L"<p:spPr><a:xfrm><a:off x=\"%s\" y=\"%s\"/><a:ext cx=\"%s\" cy=\"%s\"/></a:xfrm>"
+            L"<a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>"
+            L"<p:txBody><a:bodyPr wrap=\"square\" anchor=\"ctr\"><a:normAutofit/></a:bodyPr>"
+            L"<a:lstStyle/><a:p><a:r><a:rPr lang=\"en-US\" sz=\"%d\" b=\"1\"/>"
+            L"<a:t>%s</a:t></a:r></a:p></p:txBody></p:sp>",
+            toEmu(TABLE_MARGIN_INCHES), toEmu(TABLE_MARGIN_INCHES), toEmu(titleWidth),
+            toEmu(TABLE_TITLE_HEIGHT_INCHES), TABLE_TITLE_FONT_POINTS * 100,
+            EscapeXml(slide.m_title));
+        }
+
+    const wxString lineXml{ wxString::Format(
+        L"<a:lnB w=\"6350\"><a:solidFill><a:srgbClr val=\"%s\"/></a:solidFill></a:lnB>",
+        wxString{ TABLE_LINE_COLOR }) };
+    const auto buildCell = [&](const wxString& text, const wxAlignment alignment,
+                               const bool isHeader, const std::wstring_view fillColor) -> wxString
+    {
+        const wxString paragraphAlignment{ (alignment == wxALIGN_RIGHT)  ? L"r" :
+                                           (alignment == wxALIGN_CENTRE) ? L"ctr" :
+                                                                           L"l" };
+        const wxString runAttributes{ wxString::Format(L"lang=\"en-US\" sz=\"%d\"%s",
+                                                       slide.m_fontPoints * 100,
+                                                       isHeader ? L" b=\"1\"" : L"") };
+        const wxString escapedText{ EscapeXmlAttribute(text) };
+        const wxString run{ escapedText.empty() ?
+                                wxString::Format(L"<a:endParaRPr %s/>", runAttributes) :
+                                wxString::Format(L"<a:r><a:rPr %s><a:solidFill><a:srgbClr "
+                                                 L"val=\"000000\"/></a:solidFill></a:rPr>"
+                                                 L"<a:t>%s</a:t></a:r>",
+                                                 runAttributes, escapedText) };
+        const wxString fillXml{ fillColor.empty() ?
+                                    wxString{ L"<a:noFill/>" } :
+                                    wxString::Format(
+                                        L"<a:solidFill><a:srgbClr val=\"%s\"/></a:solidFill>",
+                                        wxString{ fillColor }) };
+        return wxString::Format(
+            L"<a:tc><a:txBody><a:bodyPr/><a:lstStyle/><a:p><a:pPr algn=\"%s\"/>%s</a:p></a:txBody>"
+            L"<a:tcPr marL=\"%s\" marR=\"%s\" marT=\"%s\" marB=\"%s\" anchor=\"ctr\">%s%s</a:tcPr>"
+            L"</a:tc>",
+            paragraphAlignment, run, toEmu(slide.m_cellMarginX), toEmu(slide.m_cellMarginX),
+            toEmu(TABLE_CELL_MARGIN_Y_INCHES), toEmu(TABLE_CELL_MARGIN_Y_INCHES), lineXml, fillXml);
+    };
+
+    wxString gridXml;
+    double tableWidth{ 0.0 };
+    for (const double columnWidth : slide.m_columnWidths)
+        {
+        gridXml += wxString::Format(L"<a:gridCol w=\"%s\"/>", toEmu(columnWidth));
+        tableWidth += columnWidth;
+        }
+
+    wxString rowsXml{ wxString::Format(L"<a:tr h=\"%s\">", toEmu(slide.m_headerHeight)) };
+    for (const auto& column : slide.m_columns)
+        {
+        rowsXml += buildCell(column.m_label, column.m_alignment, true, TABLE_HEADER_COLOR);
+        }
+    rowsXml += L"</a:tr>";
+    for (const auto& row : slide.m_rows)
+        {
+        rowsXml += wxString::Format(L"<a:tr h=\"%s\">", toEmu(row.m_height));
+        for (size_t col = 0; col < slide.m_columns.size(); ++col)
+            {
+            rowsXml += buildCell(row.m_cells[col], row.m_alignments[col], false,
+                                 row.m_isBanded ? TABLE_BAND_COLOR : std::wstring_view{});
+            }
+        rowsXml += L"</a:tr>";
+        }
+
+    shapes += wxString::Format(
+        L"<p:graphicFrame><p:nvGraphicFramePr>"
+        L"<p:cNvPr id=\"3\" name=\"Table\" descr=\"%s\"/>"
+        L"<p:cNvGraphicFramePr><a:graphicFrameLocks noGrp=\"1\"/></p:cNvGraphicFramePr><p:nvPr/>"
+        L"</p:nvGraphicFramePr>"
+        L"<p:xfrm><a:off x=\"%s\" y=\"%s\"/><a:ext cx=\"%s\" cy=\"%s\"/></p:xfrm>"
+        L"<a:graphic><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/table\">"
+        L"<a:tbl><a:tblPr firstRow=\"1\" bandRow=\"1\"/><a:tblGrid>%s</a:tblGrid>%s</a:tbl>"
+        L"</a:graphicData></a:graphic></p:graphicFrame>",
+        EscapeXmlAttribute(slide.m_title), toEmu(TABLE_MARGIN_INCHES), toEmu(slide.m_top),
+        toEmu(tableWidth), toEmu(slide.GetTableHeight()), gridXml, rowsXml);
+
+    if (slide.m_watermark.has_value())
+        {
+        constexpr double POINTS_PER_INCH{ 72.0 };
+        constexpr double WATERMARK_LINE_HEIGHT{ 1.5 };
+        constexpr long long DEGREES_IN_CIRCLE{ 360 };
+        constexpr long long ROTATION_UNITS_PER_DEGREE{ 60000 };
+        constexpr int MIN_FONT_SIZE{ 100 };
+        constexpr int MAX_FONT_SIZE{ 400000 };
+
+        const ReportWatermarkLayout& watermark{ slide.m_watermark.value() };
+        const double boxWidth{ watermark.m_length / POINTS_PER_INCH };
+        const double boxHeight{ watermark.m_fontSize * WATERMARK_LINE_HEIGHT / POINTS_PER_INCH };
+        // rotations are clockwise and can't be negative
+        const long long rotation{ std::llround((DEGREES_IN_CIRCLE - watermark.m_angle) *
+                                               ROTATION_UNITS_PER_DEGREE) %
+                                  (DEGREES_IN_CIRCLE * ROTATION_UNITS_PER_DEGREE) };
+        shapes += wxString::Format(
+            L"<p:sp><p:nvSpPr><p:cNvPr id=\"4\" name=\"Watermark\"/>"
+            L"<p:cNvSpPr txBox=\"1\"/><p:nvPr/></p:nvSpPr>"
+            L"<p:spPr><a:xfrm rot=\"%s\"><a:off x=\"%s\" y=\"%s\"/><a:ext cx=\"%s\" cy=\"%s\"/>"
+            L"</a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>"
+            L"<p:txBody><a:bodyPr wrap=\"none\" lIns=\"0\" tIns=\"0\" rIns=\"0\" bIns=\"0\" "
+            L"anchor=\"ctr\"/><a:lstStyle/><a:p><a:pPr algn=\"ctr\"/><a:r>"
+            L"<a:rPr lang=\"en-US\" sz=\"%d\" b=\"1\"><a:solidFill><a:srgbClr val=\"%s\">"
+            L"<a:alpha val=\"%d\"/></a:srgbClr></a:solidFill></a:rPr>"
+            L"<a:t>%s</a:t></a:r></a:p></p:txBody></p:sp>",
+            wxString{ std::to_wstring(rotation) }, toEmu((slide.m_slideWidth - boxWidth) / 2),
+            toEmu((slide.m_slideHeight - boxHeight) / 2), toEmu(boxWidth), toEmu(boxHeight),
+            std::clamp(static_cast<int>(std::lround(watermark.m_fontSize * 100)), MIN_FONT_SIZE,
+                       MAX_FONT_SIZE),
+            ColorToHex(watermark.m_color),
+            static_cast<int>(std::lround(watermark.m_opacity * 100 * ALPHA_UNITS_PER_PERCENT)),
+            EscapeXmlAttribute(watermark.m_label));
+        }
+    return shapes;
+    }
+
+//------------------------------------------------------
 Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canvas*>& canvases,
                                                          const wxString& filePath,
                                                          const PowerPointExportOptions& options)
+    : ReportPowerPointExport(ReportExportPage::FromCanvases(canvases), filePath, options)
+    {
+    }
+
+//------------------------------------------------------
+Wisteria::ReportPowerPointExport::ReportPowerPointExport(
+    const std::vector<ReportExportPage>& exportPages, const wxString& filePath,
+    const PowerPointExportOptions& options)
     {
     if (filePath.empty())
         {
         return;
-        }
-
-    std::vector<Canvas*> pages;
-    pages.reserve(canvases.size());
-    for (auto* canvas : canvases)
-        {
-        if (canvas != nullptr)
-            {
-            pages.push_back(canvas);
-            }
-        }
-    if (pages.empty())
-        {
-        return;
-        }
-
-    for (auto* canvas : pages)
-        {
-        canvas->ApplyAutoAccessibilityAttributes();
         }
 
     const wxSize slideEMU{ options.GetSlideSizeEMU() };
@@ -425,11 +550,33 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
 
     // render every page and collect its notes
     std::vector<RenderedPage> rendered;
-    rendered.reserve(pages.size());
+    rendered.reserve(exportPages.size());
     bool anyNotes{ false };
-    for (auto* canvas : pages)
+    for (const auto& exportPage : exportPages)
         {
+        const auto* const canvasHolder = std::get_if<Canvas*>(&exportPage.m_content);
+        if (canvasHolder == nullptr)
+            {
+            for (auto& tableSlide : BuildTableSlides(
+                     exportPage, slideEMU.GetWidth() / PowerPointExportOptions::EMU_PER_INCH,
+                     slideEMU.GetHeight() / PowerPointExportOptions::EMU_PER_INCH))
+                {
+                RenderedPage tablePage;
+                tablePage.m_label = tableSlide.m_title;
+                tablePage.m_table = std::move(tableSlide);
+                rendered.push_back(std::move(tablePage));
+                }
+            continue;
+            }
+        Canvas* const canvas{ *canvasHolder };
+        if (canvas == nullptr)
+            {
+            continue;
+            }
+        canvas->ApplyAutoAccessibilityAttributes();
+
         RenderedPage page;
+        page.m_label = canvas->GetLabel();
         if (options.m_includeAccessibilityNotes)
             {
             page.m_notes = CollectAccessibilityText(canvas);
@@ -453,6 +600,10 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
         page.m_pixelHeight = renderSize.GetHeight();
         RenderCanvas(canvas, renderSize, page.m_svg, &page.m_png);
         rendered.push_back(std::move(page));
+        }
+    if (rendered.empty())
+        {
+        return;
         }
 
     const bool includeTitleSlide{ options.m_includeTitleSlide && !options.m_title.empty() };
@@ -498,7 +649,7 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
                         L"ContentType=\"application/"
                         L"vnd.openxmlformats-officedocument.presentationml.slide+xml\"/>";
         }
-    for (size_t pageIndex = 0; pageIndex < pages.size(); ++pageIndex)
+    for (size_t pageIndex = 0; pageIndex < rendered.size(); ++pageIndex)
         {
         contentTypes +=
             wxString::Format(L"<Override PartName=\"/ppt/slides/slide%zu.xml\" "
@@ -514,7 +665,7 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
             L"presentationml.notesMaster+xml\"/>"
             L"<Override PartName=\"/ppt/theme/theme2.xml\" "
             L"ContentType=\"application/vnd.openxmlformats-officedocument.theme+xml\"/>";
-        for (size_t pageIndex = 0; pageIndex < pages.size(); ++pageIndex)
+        for (size_t pageIndex = 0; pageIndex < rendered.size(); ++pageIndex)
             {
             if (!rendered[pageIndex].m_notes.empty())
                 {
@@ -563,7 +714,7 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
         L"<LinksUpToDate>false</LinksUpToDate><SharedDoc>false</SharedDoc>"
         L"<HyperlinksChanged>false</HyperlinksChanged>%s<AppVersion>16.0000</AppVersion>"
         L"</Properties>",
-        EscapeXml(appName), pages.size() + (includeTitleSlide ? 1 : 0), companyElement) };
+        EscapeXml(appName), rendered.size() + (includeTitleSlide ? 1 : 0), companyElement) };
 
     wxString presProps{
         L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
@@ -589,7 +740,7 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
         {
         sldIdLst += wxString::Format(L"<p:sldId id=\"256\" r:id=\"%s\"/>", titleSlideRelId);
         }
-    for (size_t pageIndex = 0; pageIndex < pages.size(); ++pageIndex)
+    for (size_t pageIndex = 0; pageIndex < rendered.size(); ++pageIndex)
         {
         sldIdLst += wxString::Format(L"<p:sldId id=\"%zu\" r:id=\"rId%zu\"/>", 257 + pageIndex,
                                      SLIDE_REL_START + pageIndex);
@@ -642,7 +793,7 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
         {
         presRels.emplace_back(titleSlideRelId, wxString{ REL_SLIDE }, L"slides/slide0.xml");
         }
-    for (size_t pageIndex = 0; pageIndex < pages.size(); ++pageIndex)
+    for (size_t pageIndex = 0; pageIndex < rendered.size(); ++pageIndex)
         {
         presRels.emplace_back(wxString::Format(L"rId%zu", SLIDE_REL_START + pageIndex),
                               wxString{ REL_SLIDE },
@@ -725,23 +876,26 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
              addText(L"ppt/slides/_rels/slide0.xml.rels", titleSlideRels);
         }
 
-    for (size_t pageIndex = 0; pageIndex < pages.size(); ++pageIndex)
+    for (size_t pageIndex = 0; pageIndex < rendered.size(); ++pageIndex)
         {
         const size_t oneBased{ pageIndex + 1 };
         const RenderedPage& page{ rendered[pageIndex] };
         const bool slideHasNotes{ anyNotes && !page.m_notes.empty() };
 
-        ok = addBinary(wxString::Format(L"ppt/media/image%zu.png", oneBased), page.m_png.GetData(),
-                       page.m_png.GetDataLen()) &&
-             ok;
-        ok = addText(wxString::Format(L"ppt/media/image%zu.svg", oneBased), page.m_svg) && ok;
-
         std::vector<std::tuple<wxString, wxString, wxString>> slideRels{
-            { L"rId1", wxString{ REL_SLIDE_LAYOUT }, L"../slideLayouts/slideLayout1.xml" },
-            { L"rId2", wxString{ REL_IMAGE },
-              wxString::Format(L"../media/image%zu.png", oneBased) },
-            { L"rId3", wxString{ REL_IMAGE }, wxString::Format(L"../media/image%zu.svg", oneBased) }
+            { L"rId1", wxString{ REL_SLIDE_LAYOUT }, L"../slideLayouts/slideLayout1.xml" }
         };
+        if (!page.m_table.has_value())
+            {
+            ok = addBinary(wxString::Format(L"ppt/media/image%zu.png", oneBased),
+                           page.m_png.GetData(), page.m_png.GetDataLen()) &&
+                 ok;
+            ok = addText(wxString::Format(L"ppt/media/image%zu.svg", oneBased), page.m_svg) && ok;
+            slideRels.emplace_back(L"rId2", wxString{ REL_IMAGE },
+                                   wxString::Format(L"../media/image%zu.png", oneBased));
+            slideRels.emplace_back(L"rId3", wxString{ REL_IMAGE },
+                                   wxString::Format(L"../media/image%zu.svg", oneBased));
+            }
         if (slideHasNotes)
             {
             slideRels.emplace_back(L"rId4", wxString{ REL_NOTES_SLIDE },
@@ -751,15 +905,46 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
                      BuildRelationshipsXml(slideRels)) &&
              ok;
 
-        const wxString altText{ page.m_notes.empty() ? pages[pageIndex]->GetLabel() :
-                                                       page.m_notes.Left(MAX_ALT_TEXT_LENGTH) };
-        // a short, distinct accessible name for the Selection Pane and screen readers,
-        // separate from the (possibly long) alt text description above
-        const wxString slideTitle{ !pages[pageIndex]->GetLabel().empty() ?
-                                       pages[pageIndex]->GetLabel() :
-                                       wxString::Format(_(L"Page %zu"), oneBased) };
-        const wxString placement{ BuildPicturePlacementXml(slideCx, slideCy, page.m_pixelWidth,
-                                                           page.m_pixelHeight) };
+        wxString shapesXml;
+        if (page.m_table.has_value())
+            {
+            shapesXml = BuildTableSlideXml(page.m_table.value());
+            }
+        else
+            {
+            const wxString altText{ page.m_notes.empty() ? page.m_label :
+                                                           page.m_notes.Left(MAX_ALT_TEXT_LENGTH) };
+            // a short, distinct accessible name for the Selection Pane and screen readers,
+            // separate from the (possibly long) alt text description above
+            const wxString slideTitle{ !page.m_label.empty() ?
+                                           page.m_label :
+                                           wxString::Format(_(L"Page %zu"), oneBased) };
+            const wxString placement{ BuildPicturePlacementXml(slideCx, slideCy, page.m_pixelWidth,
+                                                               page.m_pixelHeight) };
+            shapesXml = wxString::Format(
+                L"<p:pic>"
+                L"<p:nvPicPr>"
+                L"<p:cNvPr id=\"2\" name=\"Page %zu\" title=\"%s\" descr=\"%s\"/>"
+                L"<p:cNvPicPr><a:picLocks noChangeAspect=\"1\"/></p:cNvPicPr>"
+                L"<p:nvPr/>"
+                L"</p:nvPicPr>"
+                L"<p:blipFill>"
+                L"<a:blip r:embed=\"rId2\">"
+                L"<a:extLst><a:ext uri=\"{96DAC541-7B7A-43D3-8B79-37D633B846F1}\">"
+                L"<asvg:svgBlip "
+                L"xmlns:asvg=\"http://schemas.microsoft.com/office/drawing/2016/SVG/main\" "
+                L"r:embed=\"rId3\"/>"
+                L"</a:ext></a:extLst>"
+                L"</a:blip>"
+                L"<a:stretch><a:fillRect/></a:stretch>"
+                L"</p:blipFill>"
+                L"<p:spPr>"
+                L"<a:xfrm>%s</a:xfrm>"
+                L"<a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom>"
+                L"</p:spPr>"
+                L"</p:pic>",
+                oneBased, EscapeXmlAttribute(slideTitle), EscapeXmlAttribute(altText), placement);
+            }
         const wxString slideXml{ wxString::Format(
             L"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
             L"<p:sld xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" "
@@ -769,33 +954,12 @@ Wisteria::ReportPowerPointExport::ReportPowerPointExport(const std::vector<Canva
             L"<p:nvGrpSpPr><p:cNvPr id=\"1\" name=\"\"/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>"
             L"<p:grpSpPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"0\" cy=\"0\"/>"
             L"<a:chOff x=\"0\" y=\"0\"/><a:chExt cx=\"0\" cy=\"0\"/></a:xfrm></p:grpSpPr>"
-            L"<p:pic>"
-            L"<p:nvPicPr>"
-            L"<p:cNvPr id=\"2\" name=\"Page %zu\" title=\"%s\" descr=\"%s\"/>"
-            L"<p:cNvPicPr><a:picLocks noChangeAspect=\"1\"/></p:cNvPicPr>"
-            L"<p:nvPr/>"
-            L"</p:nvPicPr>"
-            L"<p:blipFill>"
-            L"<a:blip r:embed=\"rId2\">"
-            L"<a:extLst><a:ext uri=\"{96DAC541-7B7A-43D3-8B79-37D633B846F1}\">"
-            L"<asvg:svgBlip "
-            L"xmlns:asvg=\"http://schemas.microsoft.com/office/drawing/2016/SVG/main\" "
-            L"r:embed=\"rId3\"/>"
-            L"</a:ext></a:extLst>"
-            L"</a:blip>"
-            L"<a:stretch><a:fillRect/></a:stretch>"
-            L"</p:blipFill>"
-            L"<p:spPr>"
-            L"<a:xfrm>%s</a:xfrm>"
-            L"<a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom>"
-            L"</p:spPr>"
-            L"</p:pic>"
+            L"%s"
             L"</p:spTree></p:cSld>"
             L"<p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr>"
             L"%s"
             L"</p:sld>",
-            oneBased, EscapeXmlAttribute(slideTitle), EscapeXmlAttribute(altText), placement,
-            transitionXml) };
+            shapesXml, transitionXml) };
         ok = addText(wxString::Format(L"ppt/slides/slide%zu.xml", oneBased), slideXml) && ok;
 
         if (slideHasNotes)

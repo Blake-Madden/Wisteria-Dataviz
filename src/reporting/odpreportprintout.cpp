@@ -11,6 +11,9 @@
 #include "../math/safe_math.h"
 #include <algorithm>
 #include <cmath>
+#include <numbers>
+#include <utility>
+#include <variant>
 #include <wx/arrstr.h>
 #include <wx/datetime.h>
 #include <wx/wfstream.h>
@@ -49,7 +52,7 @@ wxSize Wisteria::OdpExportOptions::GetSlideSizeDIPs() const
 //------------------------------------------------------
 wxString Wisteria::ReportOdpExport::ToInches(const double value)
     {
-    return wxString::Format(L"%.4fin", value);
+    return wxString::FromCDouble(value, 4) + L"in";
     }
 
 //------------------------------------------------------
@@ -430,7 +433,207 @@ wxString Wisteria::ReportOdpExport::BuildTitleSlideXml(const OdpExportOptions& o
     }
 
 //------------------------------------------------------
+wxString Wisteria::ReportOdpExport::BuildTableCellStyles(const double cellMarginX,
+                                                         const size_t slideNumber)
+    {
+    const wxString marginX{ ToInches(cellMarginX) };
+    const wxString marginY{ ToInches(TABLE_CELL_MARGIN_Y_INCHES) };
+    const wxString paddingAttributes{ wxString::Format(
+        L"fo:padding-left=\"%s\" fo:padding-right=\"%s\" fo:padding-top=\"%s\" "
+        L"fo:padding-bottom=\"%s\"",
+        marginX, marginX, marginY, marginY) };
+
+    const auto buildCellStyle =
+        [&](const wchar_t* const cellType, const std::wstring_view fillColor)
+    {
+        const wxString fillAttributes{
+            fillColor.empty() ? wxString{ L"draw:fill=\"none\"" } :
+                                wxString::Format(L"draw:fill=\"solid\" draw:fill-color=\"#%s\"",
+                                                 wxString{ fillColor })
+        };
+        const wxString backgroundAttribute{ fillColor.empty() ?
+                                                wxString{} :
+                                                wxString::Format(L" fo:background-color=\"#%s\"",
+                                                                 wxString{ fillColor }) };
+        // Impress reads cell fills from the graphic properties
+        return wxString::Format(
+            L"<style:style style:name=\"tc%zu%s\" style:family=\"table-cell\">"
+            L"<style:graphic-properties %s draw:textarea-vertical-align=\"middle\" %s/>"
+            L"<style:table-cell-properties style:vertical-align=\"middle\" "
+            L"fo:border-bottom=\"0.5pt solid #%s\"%s %s/></style:style>",
+            slideNumber, cellType, fillAttributes, paddingAttributes, wxString{ TABLE_LINE_COLOR },
+            backgroundAttribute, paddingAttributes);
+    };
+
+    return buildCellStyle(L"Header", TABLE_HEADER_COLOR) +
+           buildCellStyle(L"Body", std::wstring_view{}) + buildCellStyle(L"Band", TABLE_BAND_COLOR);
+    }
+
+//------------------------------------------------------
+wxString Wisteria::ReportOdpExport::BuildTableStyles()
+    {
+    return wxString::Format(
+        L"<style:style style:name=\"tsTableTitle\" style:family=\"paragraph\">"
+        L"<style:text-properties fo:font-size=\"%dpt\" fo:font-weight=\"bold\"/>"
+        L"</style:style>",
+        TABLE_TITLE_FONT_POINTS);
+    }
+
+//------------------------------------------------------
+wxString Wisteria::ReportOdpExport::BuildTableSlideXml(const TableSlide& slide,
+                                                       const size_t slideNumber,
+                                                       wxString& automaticStyles)
+    {
+    wxString frames;
+    double tableWidth{ 0.0 };
+    wxString columnsXml;
+    for (size_t col = 0; col < slide.m_columnWidths.size(); ++col)
+        {
+        automaticStyles += wxString::Format(
+            L"<style:style style:name=\"tco%zu_%zu\" style:family=\"table-column\">"
+            L"<style:table-column-properties style:column-width=\"%s\"/></style:style>",
+            slideNumber, col, ToInches(slide.m_columnWidths[col]));
+        columnsXml += wxString::Format(L"<table:table-column table:style-name=\"tco%zu_%zu\"/>",
+                                       slideNumber, col);
+        tableWidth += slide.m_columnWidths[col];
+        }
+
+    const auto addRowStyle = [&](const wxString& styleName, const double rowHeight)
+    {
+        automaticStyles +=
+            wxString::Format(L"<style:style style:name=\"%s\" style:family=\"table-row\">"
+                             L"<style:table-row-properties style:row-height=\"%s\"/></style:style>",
+                             styleName, ToInches(rowHeight));
+    };
+
+    automaticStyles += BuildTableCellStyles(slide.m_cellMarginX, slideNumber);
+
+    // paragraph styles for the header (h) and body (b) in each alignment
+    for (const wchar_t* const rowType : { L"h", L"b" })
+        {
+        const bool isHeader{ rowType[0] == L'h' };
+        for (const wchar_t* const textAlignment : { L"left", L"center", L"right" })
+            {
+            automaticStyles += wxString::Format(
+                L"<style:style style:name=\"tp%zu%s%s\" style:family=\"paragraph\">"
+                L"<style:paragraph-properties fo:text-align=\"%s\"/>"
+                L"<style:text-properties fo:font-size=\"%dpt\" fo:color=\"#000000\"%s/>"
+                L"</style:style>",
+                slideNumber, rowType, textAlignment, textAlignment, slide.m_fontPoints,
+                isHeader ? L" fo:font-weight=\"bold\"" : L"");
+            }
+        }
+
+    const auto buildCell = [slideNumber](const wxString& text, const wxAlignment alignment,
+                                         const wchar_t* const rowType,
+                                         const wchar_t* const cellType) -> wxString
+    {
+        const wxString textAlignment{ (alignment == wxALIGN_RIGHT)  ? L"right" :
+                                      (alignment == wxALIGN_CENTRE) ? L"center" :
+                                                                      L"left" };
+        return wxString::Format(L"<table:table-cell table:style-name=\"tc%zu%s\">"
+                                L"<text:p text:style-name=\"tp%zu%s%s\">%s</text:p>"
+                                L"</table:table-cell>",
+                                slideNumber, cellType, slideNumber, rowType, textAlignment,
+                                EscapeXmlAttribute(text));
+    };
+
+    const wxString headerRowStyle{ wxString::Format(L"tro%zu", slideNumber) };
+    addRowStyle(headerRowStyle, slide.m_headerHeight);
+    wxString rowsXml{ wxString::Format(L"<table:table-row table:style-name=\"%s\">",
+                                       headerRowStyle) };
+    for (const auto& column : slide.m_columns)
+        {
+        rowsXml += buildCell(column.m_label, column.m_alignment, L"h", L"Header");
+        }
+    rowsXml += L"</table:table-row>";
+    for (size_t row = 0; row < slide.m_rows.size(); ++row)
+        {
+        const TableSlideRow& slideRow{ slide.m_rows[row] };
+        const wxString rowStyle{ wxString::Format(L"tro%zu_%zu", slideNumber, row) };
+        addRowStyle(rowStyle, slideRow.m_height);
+        rowsXml += wxString::Format(L"<table:table-row table:style-name=\"%s\">", rowStyle);
+        for (size_t col = 0; col < slide.m_columns.size(); ++col)
+            {
+            rowsXml += buildCell(slideRow.m_cells[col], slideRow.m_alignments[col], L"b",
+                                 slideRow.m_isBanded ? L"Band" : L"Body");
+            }
+        rowsXml += L"</table:table-row>";
+        }
+
+    if (!slide.m_title.empty())
+        {
+        frames += wxString::Format(
+            L"<draw:frame draw:style-name=\"tsTitleFrameTable\" draw:layer=\"layout\" "
+            L"svg:x=\"%s\" svg:y=\"%s\" svg:width=\"%s\" svg:height=\"%s\"><draw:text-box>"
+            L"<text:p text:style-name=\"tsTableTitle\">%s</text:p></draw:text-box></draw:frame>",
+            ToInches(TABLE_MARGIN_INCHES), ToInches(TABLE_MARGIN_INCHES), ToInches(tableWidth),
+            ToInches(TABLE_TITLE_HEIGHT_INCHES), EscapeXml(slide.m_title));
+        }
+
+    // ODF text has no standard opacity, so the watermark goes behind the table in a paler
+    // color, the same as its opacity over a white slide
+    if (slide.m_watermark.has_value())
+        {
+        constexpr double POINTS_PER_INCH{ 72.0 };
+        constexpr double WATERMARK_LINE_HEIGHT{ 1.5 };
+
+        const ReportWatermarkLayout& watermark{ slide.m_watermark.value() };
+        const auto blendChannel = [&watermark](const unsigned char channel)
+        {
+            return static_cast<unsigned char>(std::lround(
+                (channel * watermark.m_opacity) + (wxALPHA_OPAQUE * (1 - watermark.m_opacity))));
+        };
+        const wxColour paleColor{ blendChannel(watermark.m_color.Red()),
+                                  blendChannel(watermark.m_color.Green()),
+                                  blendChannel(watermark.m_color.Blue()) };
+        automaticStyles += wxString::Format(
+            L"<style:style style:name=\"twm%zu\" style:family=\"paragraph\">"
+            L"<style:paragraph-properties fo:text-align=\"center\"/>"
+            L"<style:text-properties fo:font-size=\"%dpt\" fo:font-weight=\"bold\" "
+            L"fo:color=\"%s\"/></style:style>",
+            slideNumber, static_cast<int>(std::lround(watermark.m_fontSize)),
+            ColorToOdfHex(paleColor));
+
+        const double boxWidth{ watermark.m_length / POINTS_PER_INCH };
+        const double boxHeight{ watermark.m_fontSize * WATERMARK_LINE_HEIGHT / POINTS_PER_INCH };
+        // draw:transform turns the frame around its top-left corner, not its center
+        const double radians{ watermark.m_angle * std::numbers::pi / 180 };
+        const double cornerX{ (slide.m_slideWidth / 2) - (boxWidth / 2 * std::cos(radians)) -
+                              (boxHeight / 2 * std::sin(radians)) };
+        const double cornerY{ (slide.m_slideHeight / 2) + (boxWidth / 2 * std::sin(radians)) -
+                              (boxHeight / 2 * std::cos(radians)) };
+        frames += wxString::Format(
+            L"<draw:frame draw:style-name=\"tsWatermarkFrame\" draw:layer=\"layout\" "
+            L"svg:width=\"%s\" svg:height=\"%s\" "
+            L"draw:transform=\"rotate (%s) translate (%s %s)\"><draw:text-box>"
+            L"<text:p text:style-name=\"twm%zu\">%s</text:p></draw:text-box></draw:frame>",
+            ToInches(boxWidth), ToInches(boxHeight), wxString::FromCDouble(radians, 6),
+            ToInches(cornerX), ToInches(cornerY), slideNumber,
+            EscapeXmlAttribute(watermark.m_label));
+        }
+
+    frames += wxString::Format(
+        L"<draw:frame draw:layer=\"layout\" svg:x=\"%s\" svg:y=\"%s\" svg:width=\"%s\" "
+        L"svg:height=\"%s\"><table:table>%s%s</table:table>%s</draw:frame>",
+        ToInches(TABLE_MARGIN_INCHES), ToInches(slide.m_top), ToInches(tableWidth),
+        ToInches(slide.GetTableHeight()), columnsXml, rowsXml,
+        slide.m_title.empty() ?
+            wxString{} :
+            wxString::Format(L"<svg:title>%s</svg:title>", EscapeXml(slide.m_title)));
+    return frames;
+    }
+
+//------------------------------------------------------
 Wisteria::ReportOdpExport::ReportOdpExport(const std::vector<Canvas*>& canvases,
+                                           const wxString& filePath,
+                                           const OdpExportOptions& options)
+    : ReportOdpExport(ReportExportPage::FromCanvases(canvases), filePath, options)
+    {
+    }
+
+//------------------------------------------------------
+Wisteria::ReportOdpExport::ReportOdpExport(const std::vector<ReportExportPage>& exportPages,
                                            const wxString& filePath,
                                            const OdpExportOptions& options)
     {
@@ -439,35 +642,37 @@ Wisteria::ReportOdpExport::ReportOdpExport(const std::vector<Canvas*>& canvases,
         return;
         }
 
-    std::vector<Canvas*> pages;
-    pages.reserve(canvases.size());
-    for (auto* canvas : canvases)
-        {
-        if (canvas != nullptr)
-            {
-            pages.push_back(canvas);
-            }
-        }
-    if (pages.empty())
-        {
-        return;
-        }
-
-    for (auto* canvas : pages)
-        {
-        canvas->ApplyAutoAccessibilityAttributes();
-        }
-
     const double slideWidthInches{ options.GetSlideWidthInches() };
     const double slideHeightInches{ options.GetSlideHeightInches() };
     const wxSize slideDIPs{ options.GetSlideSizeDIPs() };
 
     // render every page
     std::vector<RenderedPage> rendered;
-    rendered.reserve(pages.size());
-    for (auto* canvas : pages)
+    rendered.reserve(exportPages.size());
+    for (const auto& exportPage : exportPages)
         {
+        const auto* const canvasHolder = std::get_if<Canvas*>(&exportPage.m_content);
+        if (canvasHolder == nullptr)
+            {
+            for (auto& tableSlide :
+                 BuildTableSlides(exportPage, slideWidthInches, slideHeightInches))
+                {
+                RenderedPage tablePage;
+                tablePage.m_label = tableSlide.m_title;
+                tablePage.m_table = std::move(tableSlide);
+                rendered.push_back(std::move(tablePage));
+                }
+            continue;
+            }
+        Canvas* const canvas{ *canvasHolder };
+        if (canvas == nullptr)
+            {
+            continue;
+            }
+        canvas->ApplyAutoAccessibilityAttributes();
+
         RenderedPage page;
+        page.m_label = canvas->GetLabel();
         if (options.m_includeAccessibilityNotes)
             {
             page.m_notes = CollectAccessibilityText(canvas);
@@ -488,14 +693,22 @@ Wisteria::ReportOdpExport::ReportOdpExport(const std::vector<Canvas*>& canvases,
         RenderCanvas(canvas, renderSize, page.m_svg, nullptr);
         rendered.push_back(std::move(page));
         }
+    if (rendered.empty())
+        {
+        return;
+        }
 
     const bool includeTitleSlide{ options.m_includeTitleSlide && !options.m_title.empty() };
 
+    // only pages drawn as pictures have a file in the package
     std::vector<wxString> pictureFileNames;
-    pictureFileNames.reserve(pages.size());
-    for (size_t pageIndex = 0; pageIndex < pages.size(); ++pageIndex)
+    pictureFileNames.reserve(rendered.size());
+    for (size_t pageIndex = 0; pageIndex < rendered.size(); ++pageIndex)
         {
-        pictureFileNames.push_back(wxString::Format(L"image%zu.svg", pageIndex + 1));
+        if (!rendered[pageIndex].m_table.has_value())
+            {
+            pictureFileNames.push_back(wxString::Format(L"image%zu.svg", pageIndex + 1));
+            }
         }
 
     const wxString nowUtc{ wxDateTime::Now().ToUTC().Format(L"%Y-%m-%dT%H:%M:%S") };
@@ -558,8 +771,15 @@ Wisteria::ReportOdpExport::ReportOdpExport(const std::vector<Canvas*>& canvases,
         L"<style:graphic-properties draw:fill=\"none\" draw:stroke=\"none\"/></style:style>"
         L"<style:style style:name=\"dpContent\" style:family=\"drawing-page\">"
         L"<style:drawing-page-properties draw:fill=\"solid\" draw:fill-color=\"#FFFFFF\"%s/>"
-        L"</style:style>",
+        L"</style:style>"
+        L"<style:style style:name=\"tsTitleFrameTable\" style:family=\"graphic\">"
+        L"<style:graphic-properties draw:fill=\"none\" draw:stroke=\"none\" "
+        L"draw:textarea-vertical-align=\"middle\"/></style:style>"
+        L"<style:style style:name=\"tsWatermarkFrame\" style:family=\"graphic\">"
+        L"<style:graphic-properties draw:fill=\"none\" draw:stroke=\"none\" "
+        L"draw:textarea-vertical-align=\"middle\" fo:wrap-option=\"no-wrap\"/></style:style>",
         transitionAttributes) };
+    automaticStyles += BuildTableStyles();
     const wxString titleSlideXml{ includeTitleSlide ?
                                       BuildTitleSlideXml(options, slideWidthInches,
                                                          slideHeightInches, transitionAttributes,
@@ -567,15 +787,25 @@ Wisteria::ReportOdpExport::ReportOdpExport(const std::vector<Canvas*>& canvases,
                                       wxString{} };
 
     wxString pagesXml;
-    for (size_t pageIndex = 0; pageIndex < pages.size(); ++pageIndex)
+    for (size_t pageIndex = 0; pageIndex < rendered.size(); ++pageIndex)
         {
         const size_t oneBased{ pageIndex + 1 };
         const RenderedPage& page{ rendered[pageIndex] };
 
-        const wxString altText{ page.m_notes.empty() ? pages[pageIndex]->GetLabel() :
+        if (page.m_table.has_value())
+            {
+            pagesXml += wxString::Format(
+                L"<draw:page draw:name=\"%s\" draw:style-name=\"dpContent\" "
+                L"draw:master-page-name=\"Default\">%s</draw:page>",
+                EscapeXmlAttribute(wxString::Format(_(L"Page %zu"), oneBased)),
+                BuildTableSlideXml(page.m_table.value(), oneBased, automaticStyles));
+            continue;
+            }
+
+        const wxString altText{ page.m_notes.empty() ? page.m_label :
                                                        page.m_notes.Left(MAX_ALT_TEXT_LENGTH) };
-        const wxString slideTitle{ !pages[pageIndex]->GetLabel().empty() ?
-                                       pages[pageIndex]->GetLabel() :
+        const wxString slideTitle{ !page.m_label.empty() ?
+                                       page.m_label :
                                        wxString::Format(_(L"Page %zu"), oneBased) };
         const wxString placement{ BuildPicturePlacementAttributes(
             slideWidthInches, slideHeightInches, page.m_pixelWidth, page.m_pixelHeight) };
@@ -591,7 +821,7 @@ Wisteria::ReportOdpExport::ReportOdpExport(const std::vector<Canvas*>& canvases,
             L"xlink:actuate=\"onLoad\" draw:mime-type=\"image/svg+xml\"/></draw:frame>%s"
             L"</draw:page>",
             EscapeXmlAttribute(wxString::Format(_(L"Page %zu"), oneBased)), placement,
-            EscapeXml(slideTitle), EscapeXml(altText), pictureFileNames[pageIndex],
+            EscapeXml(slideTitle), EscapeXml(altText), wxString::Format(L"image%zu.svg", oneBased),
             BuildNotesXml(page.m_notes));
         }
 
@@ -601,6 +831,7 @@ Wisteria::ReportOdpExport::ReportOdpExport(const std::vector<Canvas*>& canvases,
         L"xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\" "
         L"xmlns:style=\"urn:oasis:names:tc:opendocument:xmlns:style:1.0\" "
         L"xmlns:text=\"urn:oasis:names:tc:opendocument:xmlns:text:1.0\" "
+        L"xmlns:table=\"urn:oasis:names:tc:opendocument:xmlns:table:1.0\" "
         L"xmlns:draw=\"urn:oasis:names:tc:opendocument:xmlns:drawing:1.0\" "
         L"xmlns:fo=\"urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0\" "
         L"xmlns:xlink=\"http://www.w3.org/1999/xlink\" "
@@ -651,9 +882,14 @@ Wisteria::ReportOdpExport::ReportOdpExport(const std::vector<Canvas*>& canvases,
              addText(L"content.xml", contentXml) && addText(L"styles.xml", stylesXml) &&
              addText(L"meta.xml", metaXml) };
 
-    for (size_t pageIndex = 0; pageIndex < pages.size(); ++pageIndex)
+    for (size_t pageIndex = 0; pageIndex < rendered.size(); ++pageIndex)
         {
-        ok = addText(L"Pictures/" + pictureFileNames[pageIndex], rendered[pageIndex].m_svg) && ok;
+        if (!rendered[pageIndex].m_table.has_value())
+            {
+            ok = addText(wxString::Format(L"Pictures/image%zu.svg", pageIndex + 1),
+                         rendered[pageIndex].m_svg) &&
+                 ok;
+            }
         }
 
     const bool closedOk{ zipStream.Close() && fileStream.Close() };

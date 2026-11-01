@@ -62,6 +62,7 @@
 #include "htmldashboardprintout.h"
 #include "odpreportprintout.h"
 #include "pptxreportprintout.h"
+#include "reportexportpage.h"
 #include "svgreportprintout.h"
 #include <algorithm>
 #include <functional>
@@ -936,32 +937,52 @@ namespace Wisteria
             }
 
         /// @brief Removes the pages that are excluded from an export format.
+        /// @details Tables without their own watermark are given the report's.
         /// @param format The export format.
         /// @param pages The pages of the report.
         /// @returns The pages that should be included in the export.
         [[nodiscard]]
-        std::vector<Canvas*> GetPagesForExport(const ExportFormat format,
-                                               const std::vector<Canvas*>& pages) const
+        std::vector<ReportExportPage>
+        GetPagesForExport(const ExportFormat format,
+                          const std::vector<ReportExportPage>& pages) const
             {
             const auto foundGuids = m_excludedPageGuids.find(format);
-            if (foundGuids == m_excludedPageGuids.cend())
-                {
-                return pages;
-                }
-            std::vector<Canvas*> includedPages;
+            const auto isExcluded = [&](const ReportExportPage& page)
+            {
+                if (foundGuids == m_excludedPageGuids.cend())
+                    {
+                    return false;
+                    }
+                if (std::visit([](const auto* content) { return content == nullptr; },
+                               page.m_content))
+                    {
+                    return true;
+                    }
+                const auto* const canvasHolder = std::get_if<Canvas*>(&page.m_content);
+                const wxString pageGuid{ (canvasHolder != nullptr) ? (*canvasHolder)->GetGuid() :
+                                                                     page.m_guid };
+                return std::ranges::any_of(foundGuids->second, [&pageGuid](const auto& guid)
+                                           { return pageGuid.CmpNoCase(guid) == 0; });
+            };
+
+            std::vector<ReportExportPage> includedPages;
             includedPages.reserve(pages.size());
-            for (auto* page : pages)
+            for (const auto& page : pages)
                 {
-                if (page == nullptr)
+                if (isExcluded(page))
                     {
                     continue;
                     }
-                const bool isExcluded =
-                    std::ranges::any_of(foundGuids->second, [&page](const auto& guid)
-                                        { return page->GetGuid().CmpNoCase(guid) == 0; });
-                if (!isExcluded)
+                includedPages.push_back(page);
+                auto& includedPage{ includedPages.back() };
+                if (!std::holds_alternative<Canvas*>(includedPage.m_content) &&
+                    includedPage.m_watermark.m_label.empty())
                     {
-                    includedPages.push_back(page);
+                    includedPage.m_watermark.m_label = m_watermarkLabel;
+                    if (m_watermarkColor.IsOk())
+                        {
+                        includedPage.m_watermark.m_color = m_watermarkColor;
+                        }
                     }
                 }
             return includedPages;

@@ -121,6 +121,7 @@ SET(APP_WISTERIA_SRC
     src/reporting/report_builder_stat_graphs.cpp
     src/reporting/reportbuilder.cpp
     src/reporting/reportbuildercolors.cpp
+    src/reporting/reportexportpage.cpp
     src/reporting/reportprintout.cpp
     src/reporting/reportslideexportbase.cpp
     src/reporting/reporttableloader.cpp

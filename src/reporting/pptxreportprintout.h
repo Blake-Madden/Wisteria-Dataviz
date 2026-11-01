@@ -57,11 +57,12 @@ namespace Wisteria
         wxSize GetSlideSizeDIPs() const;
         };
 
-    /// @brief Exports a collection of canvases as slides into a single @c .pptx file.
+    /// @brief Exports a collection of canvases and tables as slides into a single @c .pptx file.
     /// @details Each canvas becomes one slide, rendered to fill the slide. The slide
     ///     picture references a rasterized PNG (the OOXML picture blip) with the
     ///     vector SVG attached through the DrawingML SVG extension, so PowerPoint 2016+
-    ///     shows the crisp vector and other clients show the PNG.
+    ///     shows the crisp vector and other clients show the PNG.\n
+    ///     List and grid controls become native tables, spanning as many slides as needed.
     class ReportPowerPointExport : public ReportSlideExportBase
         {
       public:
@@ -70,6 +71,13 @@ namespace Wisteria
             @param filePath The output @c .pptx file path.
             @param options The PowerPoint export options.*/
         ReportPowerPointExport(const std::vector<Canvas*>& canvases, const wxString& filePath,
+                               const PowerPointExportOptions& options = PowerPointExportOptions{});
+        /** @brief Constructor. Exports all pages as slides to a @c .pptx file immediately.
+            @param exportPages The canvases, list controls, and grid controls to export.
+            @param filePath The output @c .pptx file path.
+            @param options The PowerPoint export options.*/
+        ReportPowerPointExport(const std::vector<ReportExportPage>& exportPages,
+                               const wxString& filePath,
                                const PowerPointExportOptions& options = PowerPointExportOptions{});
 
       private:
@@ -152,6 +160,9 @@ namespace Wisteria
         static wxString BuildTitleSlideXml(const PowerPointExportOptions& options,
                                            long long slideCx, long long slideCy,
                                            const wxString& transitionXml);
+        /// @returns The shapes of a slide showing a table.
+        [[nodiscard]]
+        static wxString BuildTableSlideXml(const TableSlide& slide);
         };
     } // namespace Wisteria
 

@@ -44,7 +44,8 @@ namespace Wisteria
         wxSize GetSlideSizeDIPs() const;
         };
 
-    /// @brief Exports a collection of canvases as slides into a single @c .odp file.
+    /// @brief Exports a collection of canvases and tables as slides into a single @c .odp file.
+    /// @details List and grid controls become native tables, spanning as many slides as needed.
     class ReportOdpExport : public ReportSlideExportBase
         {
       public:
@@ -53,6 +54,12 @@ namespace Wisteria
             @param filePath The output @c .odp file path.
             @param options The ODP export options.*/
         ReportOdpExport(const std::vector<Canvas*>& canvases, const wxString& filePath,
+                        const OdpExportOptions& options = OdpExportOptions{});
+        /** @brief Constructor. Exports all pages as slides to an @c .odp file immediately.
+            @param exportPages The canvases, list controls, and grid controls to export.
+            @param filePath The output @c .odp file path.
+            @param options The ODP export options.*/
+        ReportOdpExport(const std::vector<ReportExportPage>& exportPages, const wxString& filePath,
                         const OdpExportOptions& options = OdpExportOptions{});
 
       private:
@@ -91,6 +98,21 @@ namespace Wisteria
         static wxString BuildTitleSlideXml(const OdpExportOptions& options, double slideWidthInches,
                                            double slideHeightInches,
                                            const wxString& transitionAttributes,
+                                           wxString& automaticStyles);
+        /// @returns The style definitions shared by all table slides.
+        [[nodiscard]]
+        static wxString BuildTableStyles();
+        /// @returns The table cell style definitions of a slide.
+        /// @param cellMarginX The space on the left and right of a cell's text, in inches.
+        /// @param slideNumber The number of the slide, which makes its style names unique.
+        [[nodiscard]]
+        static wxString BuildTableCellStyles(double cellMarginX, size_t slideNumber);
+        /// @returns The frames of a slide showing a table.
+        /// @param slide The table slide.
+        /// @param slideNumber The number of the slide, which makes its style names unique.
+        /// @param[in,out] automaticStyles Style definitions the slide needs are appended here.
+        [[nodiscard]]
+        static wxString BuildTableSlideXml(const TableSlide& slide, size_t slideNumber,
                                            wxString& automaticStyles);
         };
     } // namespace Wisteria

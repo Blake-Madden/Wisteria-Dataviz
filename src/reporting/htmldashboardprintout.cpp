@@ -10,6 +10,8 @@
 #include "../graphs/filterablegraph.h"
 #include "svgreportprintout.h"
 #include <algorithm>
+#include <cmath>
+#include <iterator>
 #include <map>
 #include <optional>
 #include <string>
@@ -2509,9 +2511,213 @@ wxString Wisteria::HtmlDashboardPrintout::GetFilterCaption(const Canvas& canvas)
     }
 
 //------------------------------------------------------
+size_t Wisteria::HtmlDashboardPrintout::GetTableRowsPerPage(const int pageHeight,
+                                                            const bool hasTitle)
+    {
+    const int titleSpace{ hasTitle ? TABLE_ROW_HEIGHT : 0 };
+    // one row is used by the column headers
+    const int bodyRows{ (pageHeight - (TABLE_MARGIN * 2) - titleSpace) / TABLE_ROW_HEIGHT - 1 };
+    return static_cast<size_t>(std::max(bodyRows, 1));
+    }
+
+//------------------------------------------------------
+wxString Wisteria::HtmlDashboardPrintout::RenderTableRows(const ReportTableData& table,
+                                                          const size_t firstRow,
+                                                          const size_t rowCount,
+                                                          const wxString& title, const wxSize& size,
+                                                          const wxString& fontFace)
+    {
+    const int pageTableWidth{ size.GetWidth() - (TABLE_MARGIN * 2) };
+    int neededWidth{ 0 };
+    for (const auto& column : table.m_columns)
+        {
+        neededWidth += column.m_width;
+        }
+    // Columns never get narrower than their text at the smallest font size.
+    // A table wider than the page at that size is scaled down as a whole.
+    const int minTableWidth{ static_cast<int>(
+        std::ceil(neededWidth * safe_divide<double>(TABLE_MIN_FONT_SIZE, TABLE_FONT_SIZE))) };
+    const int tableWidth{ std::max(pageTableWidth, minTableWidth) };
+    // columns stretch or shrink to the page, but the text is only ever shrunk
+    const double widthScale{ safe_divide<double>(tableWidth, neededWidth) };
+    const double textScale{ std::min(widthScale, 1.0) };
+    // round down, so that the text stays within its measured width
+    const int fontSize{ std::max(static_cast<int>(std::floor(TABLE_FONT_SIZE * textScale)),
+                                 TABLE_MIN_FONT_SIZE) };
+    const int cellPadding{ static_cast<int>(std::floor(TABLE_CELL_PADDING * textScale)) };
+
+    // text that is wider than expected (e.g., from a substitute font) overflows
+    // its cell, because clipping could turn a number into a different, valid number
+    const auto renderCell = [&](const wxString& text, const wxString& anchor, const int cellLeft,
+                                const int cellTop, const int cellWidth, const bool isHeader)
+    {
+        int textLeft{ cellPadding };
+        if (anchor == L"middle")
+            {
+            textLeft = cellWidth / 2;
+            }
+        else if (anchor == L"end")
+            {
+            textLeft = cellWidth - cellPadding;
+            }
+        return wxString::Format(
+            L"<svg role=\"%s\" x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" overflow=\"visible\">"
+            "<text x=\"%d\" y=\"%d\" dy=\"0.35em\" text-anchor=\"%s\" fill=\"#000000\" "
+            "font-family=\"%s\" font-size=\"%d\"%s>%s</text></svg>\n",
+            isHeader ? L"columnheader" : L"cell", cellLeft, cellTop, cellWidth, TABLE_ROW_HEIGHT,
+            textLeft, TABLE_ROW_HEIGHT / 2, anchor, fontFace, fontSize,
+            isHeader ? L" font-weight=\"bold\"" : L"", SVGReportPrintout::EscapeXmlText(text));
+    };
+    const auto columnLeft = [&](const size_t columnIndex)
+    {
+        int leadingWidth{ 0 };
+        for (size_t col = 0; col < columnIndex; ++col)
+            {
+            leadingWidth += table.m_columns[col].m_width;
+            }
+        return TABLE_MARGIN + wxRound(leadingWidth * widthScale);
+    };
+    const auto renderRow = [&](const std::vector<wxString>& cells,
+                               const std::vector<wxAlignment>& alignments, const int rowTop,
+                               const bool isHeader, const bool isShaded)
+    {
+        wxString row{ L"<g role=\"row\">\n" };
+        if (isShaded)
+            {
+            // the page's script animates a shape in place when it has a transform
+            row += wxString::Format(L"<rect transform=\"translate(%d %d)\" width=\"%d\" "
+                                    "height=\"%d\" fill=\"#000000\" fill-opacity=\"%s\"/>\n",
+                                    TABLE_MARGIN, rowTop, tableWidth, TABLE_ROW_HEIGHT,
+                                    isHeader ? L"0.12" : L"0.05");
+            }
+        for (size_t col = 0; col < cells.size(); ++col)
+            {
+            const int cellLeft{ columnLeft(col) };
+            const wxString anchor{ (alignments[col] == wxALIGN_RIGHT)  ? L"end" :
+                                   (alignments[col] == wxALIGN_CENTRE) ? L"middle" :
+                                                                         L"start" };
+            row += renderCell(cells[col], anchor, cellLeft, rowTop, columnLeft(col + 1) - cellLeft,
+                              isHeader);
+            }
+        row += wxString::Format(L"<line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" "
+                                "stroke=\"#000000\" stroke-opacity=\"0.25\" stroke-width=\"1\"/>\n",
+                                TABLE_MARGIN, rowTop + TABLE_ROW_HEIGHT, TABLE_MARGIN + tableWidth,
+                                rowTop + TABLE_ROW_HEIGHT);
+        return row + L"</g>\n";
+    };
+
+    wxString content;
+    int rowTop{ TABLE_MARGIN };
+    if (!title.empty())
+        {
+        content += wxString::Format(L"<text x=\"%d\" y=\"%d\" dy=\"0.35em\" fill=\"#000000\" "
+                                    "font-family=\"%s\" font-size=\"%d\" font-weight=\"bold\">"
+                                    "%s</text>\n",
+                                    TABLE_MARGIN, rowTop + (TABLE_ROW_HEIGHT / 2), fontFace,
+                                    TABLE_TITLE_FONT_SIZE, SVGReportPrintout::EscapeXmlText(title));
+        rowTop += TABLE_ROW_HEIGHT;
+        }
+
+    content += wxString::Format(L"<g role=\"table\" aria-label=\"%s\">\n",
+                                SVGReportPrintout::EscapeXmlAttr(title));
+    std::vector<wxString> labels;
+    labels.reserve(table.m_columns.size());
+    std::vector<wxAlignment> headerAlignments;
+    headerAlignments.reserve(table.m_columns.size());
+    for (const auto& column : table.m_columns)
+        {
+        labels.push_back(column.m_label);
+        headerAlignments.push_back(column.m_alignment);
+        }
+    content += renderRow(labels, headerAlignments, rowTop, true, true);
+    rowTop += TABLE_ROW_HEIGHT;
+    for (size_t row = firstRow; row < firstRow + rowCount; ++row)
+        {
+        content +=
+            renderRow(table.m_rows[row], table.m_cellAlignments[row], rowTop, false, row % 2 != 0);
+        rowTop += TABLE_ROW_HEIGHT;
+        }
+    content += L"</g>\n";
+
+    if (tableWidth > pageTableWidth)
+        {
+        const double pageScale{ safe_divide<double>(size.GetWidth(),
+                                                    tableWidth + (TABLE_MARGIN * 2)) };
+        // FromCDouble() because SVG numbers don't follow the locale's decimal separator
+        content = L"<g transform=\"scale(" + wxString::FromCDouble(pageScale, 4) + L")\">\n" +
+                  content + L"</g>\n";
+        }
+    return content;
+    }
+
+//------------------------------------------------------
+wxString Wisteria::HtmlDashboardPrintout::RenderTableWatermark(const ReportExportPage& page,
+                                                               const wxSize& size,
+                                                               const wxString& fontFace)
+    {
+    const auto layout{ page.GetWatermarkLayout(size.GetWidth(), size.GetHeight()) };
+    if (!layout.has_value())
+        {
+        return {};
+        }
+    const int centerX{ size.GetWidth() / 2 };
+    const int centerY{ size.GetHeight() / 2 };
+    // FromCDouble() because SVG numbers don't follow the locale's decimal separator
+    return wxString::Format(
+        L"<text x=\"%d\" y=\"%d\" dy=\"0.35em\" text-anchor=\"middle\" "
+        "transform=\"rotate(%s %d %d)\" fill=\"%s\" fill-opacity=\"%s\" font-family=\"%s\" "
+        "font-size=\"%d\" font-weight=\"bold\" aria-hidden=\"true\" pointer-events=\"none\">"
+        "%s</text>\n",
+        centerX, centerY, wxString::FromCDouble(-layout->m_angle, 2), centerX, centerY,
+        layout->m_color.GetAsString(wxC2S_HTML_SYNTAX), wxString::FromCDouble(layout->m_opacity, 2),
+        fontFace, wxRound(layout->m_fontSize), SVGReportPrintout::EscapeXmlText(layout->m_label));
+    }
+
+//------------------------------------------------------
+wxString Wisteria::HtmlDashboardPrintout::WrapPageSvg(const wxString& content, const wxSize& size,
+                                                      const int captionHeight,
+                                                      const bool dualOrientations,
+                                                      const bool isSwapped, const size_t pageIndex,
+                                                      const wxString& idSuffix)
+    {
+    const int fullHeight{ size.GetHeight() + captionHeight };
+    wxString orientAttrs;
+    if (dualOrientations)
+        {
+        // the orientation comes from the page itself, without the caption
+        orientAttrs =
+            wxString::Format(L" data-orient=\"%s\" style=\"--svg-w:%d;--svg-h:%d\"",
+                             (size.GetWidth() < size.GetHeight()) ? L"portrait" : L"landscape",
+                             size.GetWidth(), fullHeight);
+        }
+    return wxString::Format(L"<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"page-svg\"%s "
+                            "viewBox=\"0 0 %d %d\" preserveAspectRatio=\"xMidYMid meet\">\n"
+                            "<g id=\"page-content-%s%zu%s\">\n%s</g>\n</svg>\n",
+                            orientAttrs, size.GetWidth(), fullHeight, isSwapped ? L"alt-" : L"",
+                            pageIndex, idSuffix, content);
+    }
+
+//------------------------------------------------------
 Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*>& canvases,
                                                        HtmlDashboardOptions options)
+    : HtmlDashboardPrintout(ReportExportPage::FromCanvases(canvases), std::move(options))
     {
+    }
+
+//------------------------------------------------------
+Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<ReportExportPage>& pages,
+                                                       HtmlDashboardOptions options)
+    {
+    // tables are empty slots here, which all of the canvas steps skip
+    std::vector<Canvas*> canvases;
+    canvases.reserve(pages.size());
+    std::ranges::transform(pages, std::back_inserter(canvases),
+                           [](const ReportExportPage& page) -> Canvas*
+                           {
+                               const auto* const holder = std::get_if<Canvas*>(&page.m_content);
+                               return (holder != nullptr) ? *holder : nullptr;
+                           });
+
     for (auto* canvas : canvases)
         {
         if (canvas != nullptr)
@@ -2551,6 +2757,24 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
                                  pageSize.GetWidth() != pageSize.GetHeight() };
     const wxSize swappedSize{ pageSize.GetHeight(), pageSize.GetWidth() };
 
+    // a table's pages hold the same rows in both orientations, so the shorter one decides
+    const int tablePageHeight{ dualOrientations ?
+                                   std::min(pageSize.GetHeight(), swappedSize.GetHeight()) :
+                                   pageSize.GetHeight() };
+    std::vector<ReportTableData> tables(pages.size());
+    size_t tablePageCount{ 0 };
+    for (size_t i = 0; i < pages.size(); ++i)
+        {
+        tables[i] = pages[i].GetTableData(TABLE_FONT_SIZE, TABLE_CELL_PADDING);
+        if (!tables[i].m_columns.empty())
+            {
+            const size_t rowsPerPage{ GetTableRowsPerPage(tablePageHeight,
+                                                          !pages[i].m_title.empty()) };
+            tablePageCount += std::max<size_t>(
+                safe_divide<size_t>(tables[i].m_rows.size() + rowsPerPage - 1, rowsPerPage), 1);
+            }
+        }
+
     // every page sets aside room below its graphs for a filter caption,
     // so that all pages stay the same size
     const bool hasFilterCaptions{ std::ranges::any_of(
@@ -2558,8 +2782,10 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         { return canvas != nullptr && !canvas->GetFilterableGraphs().empty(); }) };
     constexpr static int CAPTION_FONT_SIZE{ 14 };
     const int captionHeight{ hasFilterCaptions ? CAPTION_FONT_SIZE * 2 : 0 };
+    // the fallback keeps text close to its measured width on systems without this font
     const wxString captionFont{ SVGReportPrintout::EscapeXmlAttr(
-        wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName()) };
+        L"'" + wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName() +
+        L"', sans-serif") };
 
     wxString css{ options.m_css };
     // keep the CSS from ending the <style> element
@@ -2579,8 +2805,10 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         }
 
     // a lone page is always shown as a slide, without the view toggle or page rail
-    const bool singlePage{ std::count_if(canvases.cbegin(), canvases.cend(), [](const auto* canvas)
-                                         { return canvas != nullptr; }) == 1 };
+    const bool singlePage{ tablePageCount + std::count_if(canvases.cbegin(), canvases.cend(),
+                                                          [](const auto* canvas)
+                                                          { return canvas != nullptr; }) ==
+                           1 };
     const wxString initialView{ HtmlDashboardOptions::ViewToString(
         singlePage ? HtmlDashboardOptions::DashboardView::Slides : options.m_view) };
 
@@ -2912,6 +3140,56 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
         auto* canvas = canvases[canvasIndex];
         if (canvas == nullptr)
             {
+            const ReportTableData& table{ tables[canvasIndex] };
+            if (table.m_columns.empty())
+                {
+                continue;
+                }
+            const wxString& tableTitle{ pages[canvasIndex].m_title };
+            const size_t rowsPerPage{ GetTableRowsPerPage(tablePageHeight, !tableTitle.empty()) };
+            const size_t tablePages{ std::max<size_t>(
+                safe_divide<size_t>(table.m_rows.size() + rowsPerPage - 1, rowsPerPage), 1) };
+            for (size_t tablePage = 0; tablePage < tablePages; ++tablePage)
+                {
+                const size_t firstRow{ tablePage * rowsPerPage };
+                const size_t rowCount{ std::min(rowsPerPage, table.m_rows.size() - firstRow) };
+                wxString shownTitle{ tableTitle };
+                if (!shownTitle.empty() && tablePages > 1)
+                    {
+                    shownTitle = wxString::Format(_(L"%s (%zu of %zu)"), tableTitle, tablePage + 1,
+                                                  tablePages);
+                    }
+                const wxString sectionTitle{ shownTitle.empty() ?
+                                                 wxString::Format(_(L"Page %zu"), pageIndex + 1) :
+                                                 shownTitle };
+                // a table without a GUID falls back to its position in the report
+                const wxString& tableGuid{ pages[canvasIndex].m_guid };
+                const wxString pageGuid{ wxString::Format(
+                    L"%s-%zu",
+                    tableGuid.empty() ? wxString::Format(L"table-%zu", canvasIndex) : tableGuid,
+                    tablePage) };
+                html += wxString::Format(
+                    L"<section class=\"page\" id=\"page-%zu\" data-index=\"%zu\" "
+                    "data-guid=\"%s\" data-layer=\"\" aria-label=\"%s\" "
+                    "tabindex=\"-1\">\n",
+                    pageIndex, pageIndex, SVGReportPrintout::EscapeXmlAttr(pageGuid),
+                    SVGReportPrintout::EscapeXmlAttr(sectionTitle));
+                html += WrapPageSvg(
+                    RenderTableRows(table, firstRow, rowCount, shownTitle, pageSize, captionFont) +
+                        RenderTableWatermark(pages[canvasIndex], pageSize, captionFont),
+                    pageSize, captionHeight, dualOrientations, false, pageIndex, wxString{});
+                if (dualOrientations)
+                    {
+                    html += WrapPageSvg(
+                        RenderTableRows(table, firstRow, rowCount, shownTitle, swappedSize,
+                                        captionFont) +
+                            RenderTableWatermark(pages[canvasIndex], swappedSize, captionFont),
+                        swappedSize, captionHeight, dualOrientations, true, pageIndex, wxString{});
+                    }
+                html += wxString::Format(L"<h2 class=\"page-title\">%s</h2>\n</section>\n",
+                                         SVGReportPrintout::EscapeXmlText(sectionTitle));
+                ++pageIndex;
+                }
             continue;
             }
         wxString pageTitle{ (canvasIndex < options.m_pageTitles.size() &&
@@ -2930,15 +3208,6 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
             const wxString content{ ScopeSvgIds(
                 SVGReportPrintout::RenderCanvasToSvg(canvas, size),
                 wxString::Format(L"p%zu%s%s", pageIndex, isSwapped ? L"-alt" : L"", idSuffix)) };
-            const int fullHeight{ size.GetHeight() + captionHeight };
-            wxString orientAttrs;
-            if (dualOrientations)
-                {
-                orientAttrs = wxString::Format(
-                    L" data-orient=\"%s\" style=\"--svg-w:%d;--svg-h:%d\"",
-                    (size.GetWidth() < size.GetHeight()) ? L"portrait" : L"landscape",
-                    size.GetWidth(), fullHeight);
-                }
             wxString caption;
             if (const wxString captionText{ GetFilterCaption(*canvas) }; !captionText.empty())
                 {
@@ -2949,12 +3218,8 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<Canvas*
                                      CAPTION_FONT_SIZE, size.GetHeight() + (captionHeight / 2),
                                      captionFont, CAPTION_FONT_SIZE, captionText);
                 }
-            return wxString::Format(
-                L"<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"page-svg\"%s "
-                "viewBox=\"0 0 %d %d\" preserveAspectRatio=\"xMidYMid meet\">\n"
-                "<g id=\"page-content-%s%zu%s\">\n%s\n%s</g>\n</svg>\n",
-                orientAttrs, size.GetWidth(), fullHeight, isSwapped ? L"alt-" : L"", pageIndex,
-                idSuffix, content, caption);
+            return WrapPageSvg(content + L"\n" + caption, size, captionHeight, dualOrientations,
+                               isSwapped, pageIndex, idSuffix);
         };
 
         std::vector<FilterGroup> filterGroups{ GetFilterGroups(*canvas, filterLinks[canvasIndex]) };

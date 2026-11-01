@@ -14,6 +14,7 @@
 
 #include "../base/canvas.h"
 #include "../data/dataset.h"
+#include "reportexportpage.h"
 #include <memory>
 #include <optional>
 #include <utility>
@@ -361,7 +362,10 @@ namespace Wisteria
             }
         };
 
-    /// @brief Exports a collection of canvases into a single self-contained HTML5 file.
+    /// @brief Exports a collection of canvases and tables into a single self-contained
+    ///     HTML5 file.
+    /// @details A list or grid control is exported as a table, spanning as many pages
+    ///     as it needs.
     class HtmlDashboardPrintout
         {
       public:
@@ -369,6 +373,12 @@ namespace Wisteria
         /// @param canvases The canvases (pages) to export.
         /// @param options Export options.
         HtmlDashboardPrintout(const std::vector<Canvas*>& canvases, HtmlDashboardOptions options);
+
+        /// @brief Constructor.
+        /// @param pages The canvases and tables to export.
+        /// @param options Export options.
+        HtmlDashboardPrintout(const std::vector<ReportExportPage>& pages,
+                              HtmlDashboardOptions options);
 
         /// @returns The script managing color mode, view, and layer state.
         [[nodiscard]]
@@ -501,6 +511,59 @@ namespace Wisteria
             bool m_isAll{ false };
             wxString m_pageTitle;
             };
+
+        /// @brief Margin around a table.
+        constexpr static int TABLE_MARGIN{ 24 };
+        /// @brief Height of a table's rows.
+        constexpr static int TABLE_ROW_HEIGHT{ 28 };
+        /// @brief Space between a cell's text and its edges.
+        constexpr static int TABLE_CELL_PADDING{ 8 };
+        /// @brief Font size of a table's text, before fitting it to the page.
+        constexpr static int TABLE_FONT_SIZE{ 14 };
+        /// @brief Smallest font size of a table's text.
+        constexpr static int TABLE_MIN_FONT_SIZE{ 8 };
+        /// @brief Font size of a table's title. This is kept below the size
+        ///     where the page's script counts up numbers.
+        constexpr static int TABLE_TITLE_FONT_SIZE{ 18 };
+
+        /// @returns The number of rows that fit on one of a table's pages.
+        /// @param pageHeight The height of the page.
+        /// @param hasTitle Whether the table has a title.
+        [[nodiscard]]
+        static size_t GetTableRowsPerPage(int pageHeight, bool hasTitle);
+        /** @brief Renders some of a table's rows as SVG content.
+            @param table The table.
+            @param firstRow The index of the first row to render.
+            @param rowCount The number of rows to render.
+            @param title The title above the table.
+            @param size The size of the page.
+            @param fontFace The font to use.
+            @returns The SVG content.*/
+        [[nodiscard]]
+        static wxString RenderTableRows(const ReportTableData& table, size_t firstRow,
+                                        size_t rowCount, const wxString& title, const wxSize& size,
+                                        const wxString& fontFace);
+        /// @brief Renders the watermark of a table's page.
+        /// @param page The table's page.
+        /// @param size The page size.
+        /// @param fontFace The font to use.
+        /// @returns The SVG content, or an empty string if there is no watermark.
+        [[nodiscard]]
+        static wxString RenderTableWatermark(const ReportExportPage& page, const wxSize& size,
+                                             const wxString& fontFace);
+        /** @brief Wraps a page's content in its SVG element.
+            @param content The content, along with any filter caption.
+            @param size The size of the page, which decides its orientation.
+            @param captionHeight The height set aside below the page for a filter caption.
+            @param dualOrientations Whether the page is rendered in both orientations.
+            @param isSwapped Whether this is the second orientation.
+            @param pageIndex The index of the page.
+            @param idSuffix A suffix for the content's ID.
+            @returns The SVG element.*/
+        [[nodiscard]]
+        static wxString WrapPageSvg(const wxString& content, const wxSize& size, int captionHeight,
+                                    bool dualOrientations, bool isSwapped, size_t pageIndex,
+                                    const wxString& idSuffix);
 
         [[nodiscard]]
         wxString BuildLogo(HtmlDashboardOptions options);

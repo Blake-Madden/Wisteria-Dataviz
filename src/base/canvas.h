@@ -921,6 +921,11 @@ namespace Wisteria
         ///     inserted into a parent (e.g., splitter window).
         void ResetResizeDelay() { m_blockResize = false; }
 
+        /// @brief Replaces the placeholders in a watermark's text (e.g., @c \@DATE@).
+        /// @param label The watermark's text.
+        /// @returns The expanded text.
+        [[nodiscard]]
+        static wxString ExpandWatermark(wxString label);
         /** @brief Draws a watermark label across a canvas.
             @param dc The device context to draw on.
             @param drawingRect The rect within the DC to draw within.
@@ -990,9 +995,6 @@ namespace Wisteria
         /// @brief Gives a table a fresh, generous box so it measures at its natural size
         ///     instead of being scaled down to the box left over from a previous layout.
         void SeedTableForMeasuring(GraphItems::GraphItemBase& item, wxDC& dc);
-
-        [[nodiscard]]
-        static wxString ExpandWatermark(wxString label);
 
         /// @brief Divides the width of a row into columns, taking into account items
         ///     whose width should not be more than its content (at default scaling).

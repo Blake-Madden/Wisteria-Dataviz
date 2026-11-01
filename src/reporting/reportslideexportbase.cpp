@@ -9,6 +9,10 @@
 #include "reportslideexportbase.h"
 #include "../base/graphitems.h"
 #include "../base/settings.h"
+#include "../math/safe_math.h"
+#include <algorithm>
+#include <cmath>
+#include <utility>
 #include <wx/dcgraph.h>
 #include <wx/dcmemory.h>
 #include <wx/dcsvg.h>
@@ -64,6 +68,222 @@ wxString Wisteria::ReportSlideExportBase::EscapeXmlAttribute(const wxString& str
         {
         }
     return EscapeXml(collapsed.Trim(true).Trim(false));
+    }
+
+//------------------------------------------------------
+std::vector<Wisteria::ReportSlideExportBase::TableSlide>
+Wisteria::ReportSlideExportBase::BuildTableSlides(const ReportExportPage& page,
+                                                  const double slideWidthInches,
+                                                  const double slideHeightInches)
+    {
+    constexpr int DEFAULT_FONT_POINTS{ 12 };
+    constexpr int MIN_FONT_POINTS{ 8 };
+    constexpr int MEASURE_FONT_PIXELS{ 16 }; // 12 points at 96 DPI
+    constexpr double DIPS_PER_INCH{ 96.0 };
+    constexpr double POINTS_PER_INCH{ 72.0 };
+    constexpr double LINE_SPACING{ 1.2 };
+
+    const ReportTableData table{ page.GetTableData(MEASURE_FONT_PIXELS, 0) };
+    if (table.m_columns.empty())
+        {
+        return {};
+        }
+
+    const double tableWidth{ std::max(1.0, slideWidthInches - (TABLE_MARGIN_INCHES * 2)) };
+    // cell margins get narrower if they would take up more than this share of the table
+    constexpr double MAX_MARGIN_SHARE{ 0.5 };
+    const double columnCount{ static_cast<double>(table.m_columns.size()) };
+    const double cellMarginX{ std::min(
+        TABLE_CELL_MARGIN_X_INCHES, safe_divide(tableWidth * MAX_MARGIN_SHARE, columnCount * 2)) };
+    const double textSpace{ tableWidth - (columnCount * cellMarginX * 2) };
+
+    double textWidth{ 0.0 };
+    for (const auto& column : table.m_columns)
+        {
+        textWidth += column.m_width / DIPS_PER_INCH;
+        }
+
+    // shrink the font to fit the widest text, and let the text wrap if that isn't enough
+    const double fitScale{ (textWidth > textSpace) ? safe_divide(textSpace, textWidth) : 1.0 };
+    const int fontPoints{ std::max(MIN_FONT_POINTS,
+                                   static_cast<int>(std::floor(DEFAULT_FONT_POINTS * fitScale))) };
+    const double fontScale{ static_cast<double>(fontPoints) / DEFAULT_FONT_POINTS };
+
+    // Columns get the text width they need, as long as it's within their fair share of the
+    // space. That share grows as narrow columns leave some of theirs for the wider ones.
+    std::vector<double> neededWidths;
+    neededWidths.reserve(table.m_columns.size());
+    for (const auto& column : table.m_columns)
+        {
+        neededWidths.push_back(column.m_width / DIPS_PER_INCH * fontScale);
+        }
+    std::vector<double> textWidths(neededWidths.size(), 0.0);
+    std::vector<bool> isFitted(neededWidths.size(), false);
+    double spaceLeft{ textSpace };
+    size_t columnsLeft{ neededWidths.size() };
+    bool fittedColumn{ true };
+    while (fittedColumn && columnsLeft > 0)
+        {
+        fittedColumn = false;
+        const double fairShare{ safe_divide(spaceLeft, static_cast<double>(columnsLeft)) };
+        for (size_t col = 0; col < neededWidths.size(); ++col)
+            {
+            if (!isFitted[col] && neededWidths[col] <= fairShare)
+                {
+                textWidths[col] = neededWidths[col];
+                isFitted[col] = true;
+                spaceLeft -= neededWidths[col];
+                --columnsLeft;
+                fittedColumn = true;
+                }
+            }
+        }
+
+    // The columns that don't fit split what's left, and wrap their text.
+    // If they all fit, then the leftover space is shared by every column.
+    const double sharedWidth{ safe_divide(
+        spaceLeft, static_cast<double>((columnsLeft > 0) ? columnsLeft : neededWidths.size())) };
+    std::vector<double> columnWidths;
+    columnWidths.reserve(neededWidths.size());
+    for (size_t col = 0; col < neededWidths.size(); ++col)
+        {
+        if (!isFitted[col])
+            {
+            textWidths[col] = sharedWidth;
+            }
+        else if (columnsLeft == 0)
+            {
+            textWidths[col] += sharedWidth;
+            }
+        columnWidths.push_back(textWidths[col] + (cellMarginX * 2));
+        }
+
+    // only the widest text in each column was measured, so the others are estimated from
+    // their share of its characters
+    std::vector<wxString> labels;
+    labels.reserve(table.m_columns.size());
+    std::vector<size_t> longestText;
+    longestText.reserve(table.m_columns.size());
+    for (const auto& column : table.m_columns)
+        {
+        labels.push_back(column.m_label);
+        longestText.push_back(column.m_label.length());
+        }
+    for (const auto& row : table.m_rows)
+        {
+        for (size_t col = 0; col < row.size(); ++col)
+            {
+            longestText[col] = std::max(longestText[col], row[col].length());
+            }
+        }
+    const auto countLines = [&](const std::vector<wxString>& cells)
+    {
+        int lines{ 1 };
+        for (size_t col = 0; col < cells.size(); ++col)
+            {
+            const double cellWidth{ safe_divide(neededWidths[col] *
+                                                    static_cast<double>(cells[col].length()),
+                                                static_cast<double>(longestText[col])) };
+            if (cellWidth > textWidths[col])
+                {
+                // words don't break evenly, so allow for an extra line
+                lines = std::max(
+                    lines,
+                    static_cast<int>(std::ceil(safe_divide(cellWidth, textWidths[col]))) + 1);
+                }
+            }
+        return lines;
+    };
+
+    const double lineHeight{ fontPoints * LINE_SPACING / POINTS_PER_INCH };
+    const double cellMargins{ TABLE_CELL_MARGIN_Y_INCHES * 2 };
+    const double headerHeight{ (countLines(labels) * lineHeight) + cellMargins };
+    const double titleHeight{ page.m_title.empty() ? 0.0 : TABLE_TITLE_HEIGHT_INCHES };
+    const double tableTop{ TABLE_MARGIN_INCHES + titleHeight };
+    const double tableHeight{ slideHeightInches - tableTop - TABLE_MARGIN_INCHES };
+    const int maxLines{ std::max(1, static_cast<int>(std::floor(safe_divide(
+                                        tableHeight - headerHeight - cellMargins, lineHeight)))) };
+
+    // a row can't span slides, so a row taller than a slide continues in further rows
+    std::vector<TableSlideRow> slideRows;
+    slideRows.reserve(table.m_rows.size());
+    for (size_t rowIndex = 0; rowIndex < table.m_rows.size(); ++rowIndex)
+        {
+        const bool isBanded{ rowIndex % 2 != 0 };
+        std::vector<wxString> cells{ table.m_rows[rowIndex] };
+        while (countLines(cells) > maxLines)
+            {
+            // the extra line that countLines() allows must also fit
+            const double fullLines{ static_cast<double>(std::max(maxLines - 1, 1)) };
+            std::vector<wxString> firstCells(cells.size());
+            for (size_t col = 0; col < cells.size(); ++col)
+                {
+                const double maxChars{ safe_divide(textWidths[col] * fullLines *
+                                                       static_cast<double>(longestText[col]),
+                                                   neededWidths[col]) };
+                if (static_cast<double>(cells[col].length()) <= maxChars)
+                    {
+                    firstCells[col] = cells[col];
+                    cells[col].clear();
+                    continue;
+                    }
+                const size_t hardBreak{ std::max<size_t>(static_cast<size_t>(maxChars), 1) };
+                const size_t spacePosition{ cells[col].rfind(L' ', hardBreak) };
+                const size_t breakPosition{ (spacePosition != wxString::npos && spacePosition > 0) ?
+                                                spacePosition :
+                                                hardBreak };
+                firstCells[col] = cells[col].substr(0, breakPosition);
+                cells[col] = cells[col].substr(breakPosition);
+                cells[col].Trim(false);
+                }
+            const int lines{ countLines(firstCells) };
+            slideRows.push_back(TableSlideRow{ .m_cells = std::move(firstCells),
+                                               .m_alignments = table.m_cellAlignments[rowIndex],
+                                               .m_height = (lines * lineHeight) + cellMargins,
+                                               .m_isBanded = isBanded });
+            }
+        const int lines{ countLines(cells) };
+        slideRows.push_back(TableSlideRow{ .m_cells = std::move(cells),
+                                           .m_alignments = table.m_cellAlignments[rowIndex],
+                                           .m_height = (lines * lineHeight) + cellMargins,
+                                           .m_isBanded = isBanded });
+        }
+
+    const auto watermark{ page.GetWatermarkLayout(slideWidthInches * POINTS_PER_INCH,
+                                                  slideHeightInches * POINTS_PER_INCH) };
+
+    std::vector<TableSlide> slides;
+    const auto startSlide = [&]()
+    {
+        TableSlide slide;
+        slide.m_title = (slides.empty() || page.m_title.empty()) ?
+                            page.m_title :
+                            wxString::Format(_(L"%s (continued)"), page.m_title);
+        slide.m_columns = table.m_columns;
+        slide.m_columnWidths = columnWidths;
+        slide.m_cellMarginX = cellMarginX;
+        slide.m_fontPoints = fontPoints;
+        slide.m_headerHeight = headerHeight;
+        slide.m_top = tableTop;
+        slide.m_slideWidth = slideWidthInches;
+        slide.m_slideHeight = slideHeightInches;
+        slide.m_watermark = watermark;
+        slides.push_back(std::move(slide));
+    };
+
+    double usedHeight{ 0.0 };
+    for (auto& slideRow : slideRows)
+        {
+        if (slides.empty() ||
+            (!slides.back().m_rows.empty() && usedHeight + slideRow.m_height > tableHeight))
+            {
+            startSlide();
+            usedHeight = headerHeight;
+            }
+        usedHeight += slideRow.m_height;
+        slides.back().m_rows.push_back(std::move(slideRow));
+        }
+    return slides;
     }
 
 //------------------------------------------------------

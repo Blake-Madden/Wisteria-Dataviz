@@ -229,6 +229,10 @@ class Screenshot
     [[nodiscard]]
     static WindowT* FindDescendantOfType(const wxWindow* parent)
         {
+        if (parent == nullptr)
+            {
+            return nullptr;
+            }
         for (auto* child : parent->GetChildren())
             {
             if (auto* foundWindow = dynamic_cast<WindowT*>(child); foundWindow != nullptr)
