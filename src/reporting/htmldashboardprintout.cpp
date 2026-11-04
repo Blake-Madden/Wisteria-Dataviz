@@ -75,7 +75,8 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptState()
         });
       }
     });
-    const state = { view: view, hiddenLayers: hidden, choices: choices };
+    const state = { view: view, hiddenLayers: hidden, choices: choices,
+                    toolbarHidden: chromeHidden };
     if (rememberChoices && hasGroupToggles) state.hiddenGroups = Array.from(hiddenFilters);
     try {
       localStorage.setItem(stateKey, JSON.stringify(state));
@@ -1545,7 +1546,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptPresent()
     }
   }
   // the toolbar, strip and rail are hidden by the user, apart from fullscreen
-  let chromeHidden = false;
+  let chromeHidden = savedState.toolbarHidden === true;
   function updatePresenting() {
     const fullscreen = !!document.fullscreenElement;
     root.classList.toggle('is-presenting', fullscreen || chromeHidden);
@@ -1560,6 +1561,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptPresent()
   }
   function setChromeHidden(on) {
     chromeHidden = on;
+    saveState();
     updatePresenting();
     const target = document.getElementById(on ? 'dash-show-toolbar' : 'dash-hide-toolbar');
     if (target && !target.hidden) target.focus({ preventScroll: true });
@@ -1577,6 +1579,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptPresent()
     if (hideBtn) hideBtn.addEventListener('click', function() { setChromeHidden(true); });
     const handle = document.getElementById('dash-show-toolbar');
     if (handle) handle.addEventListener('click', function() { setChromeHidden(false); });
+    if (chromeHidden) updatePresenting();
     const btn = document.getElementById('dash-full');
     if (!btn || !document.fullscreenEnabled) return;
     btn.hidden = false;
