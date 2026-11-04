@@ -954,6 +954,10 @@ html.motion-ready .page:not(.is-revealed) .page-svg
 .dash-full-btn[hidden]
   { display: none; }
 
+/* the hide-toolbar arrow is part of the toolbar's frame, so it has no outline until hovered */
+.dash-hide-toolbar-btn
+  { border-color: transparent; }
+
 /* brings back the toolbar after it was hidden */
 .dash-show-toolbar
   {
