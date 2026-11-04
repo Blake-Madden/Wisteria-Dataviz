@@ -428,7 +428,7 @@ wxString Wisteria::ReportPowerPointExport::BuildTableSlideXml(const TableSlide& 
         const wxString paragraphAlignment{ (alignment == wxALIGN_RIGHT)  ? L"r" :
                                            (alignment == wxALIGN_CENTRE) ? L"ctr" :
                                                                            L"l" };
-        const wxString runAttributes{ wxString::Format(L"lang=\"en-US\" sz=\"%d\"%s",
+        const wxString runAttributes{ wxString::Format(_DT(L"lang=\"en-US\" sz=\"%d\"%s"),
                                                        slide.m_fontPoints * 100,
                                                        isHeader ? L" b=\"1\"" : L"") };
         const wxString escapedText{ EscapeXmlAttribute(text) };

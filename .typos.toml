@@ -50,6 +50,7 @@ Parms = "Parms"
 localY = "localY"
 Autor = "Autor"
 loca = "loca"
+tro = "tro"
 
 [type.svg]
 extend-glob = ["*.svg"]
