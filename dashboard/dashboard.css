@@ -131,11 +131,11 @@ body
 html[data-view="slides"] .dash-progress
   { display: block; }
 
-/* the view toggle sits in a labeled capsule */
+/* the view toggle sits in a capsule */
 .dash-views
   {
   align-items: center;
-  padding: 3px 4px 3px 12px;
+  padding: 3px 4px;
   border: 1px solid var(--border-color);
   border-radius: 999px;
   }
