@@ -340,6 +340,13 @@ html[data-view="slides"] .dash-progress
 .page-svg [fill="#000000"]:not(.ink-keep), .page-svg [fill="black"]:not(.ink-keep)
   { fill: light-dark(#000000, #E8E8E8); }
 
+/* navy is too dark to read on the dark-mode background, so it becomes a light blue */
+.page-svg [fill="#1F4387"]
+  { fill: light-dark(#1F4387, #87CEFA); }
+
+.page-svg [stroke="#1F4387"]
+  { stroke: light-dark(#1F4387, #87CEFA); }
+
 /* shapes inside a kept group (e.g., the white base under translucent map layers)
    stay as painted */
 .page-svg .ink-keep [fill="#FFFFFF"]
