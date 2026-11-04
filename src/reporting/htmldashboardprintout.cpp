@@ -655,10 +655,12 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptInk()
       return true;
     }
   }
-  // black or white text drawn on a colored shape keeps its painted color in dark mode
+  // black or white text drawn on a colored shape keeps its painted color in dark mode,
+  // as does the shape
   function tagInk(page) {
     const shapes = [];
     const keep = [];
+    const backdrops = [];
     const nodes = page.svg.querySelectorAll('rect, path, polygon, ellipse, circle, text');
     nodes.forEach(function(el) {
       if (el.tagName !== 'text') {
@@ -680,12 +682,16 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptInk()
         if (x < shape.box.left || x > shape.box.right ||
             y < shape.box.top || y > shape.box.bottom) continue;
         if (!insideShape(shape.el, x, y)) continue;
-        if (shape.kind === 'color') keep.push(el);
+        if (shape.kind === 'color') {
+          keep.push(el);
+          backdrops.push(shape.el);
+        }
         return;
       }
     });
     // classes are added after all measuring so that layout is not forced between texts
     keep.forEach(function(el) { el.classList.add('ink-keep'); });
+    backdrops.forEach(function(el) { el.classList.add('ink-backdrop'); });
   }
   let inkAssigned = false;
   function tagPageInk(page) {
@@ -1342,14 +1348,15 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSaveCopy()
     clone.setAttribute('viewBox', '0 0 ' + size.width + ' ' + size.height);
     clone.setAttribute('width', String(size.width));
     clone.setAttribute('height', String(size.height));
-    const liveNodes = svg.querySelectorAll('[fill], [stroke]');
-    const cloneNodes = clone.querySelectorAll('[fill], [stroke]');
+    const liveNodes = svg.querySelectorAll('[fill], [stroke], .ink-backdrop');
+    const cloneNodes = clone.querySelectorAll('[fill], [stroke], .ink-backdrop');
     liveNodes.forEach(function(el, i) {
       const target = cloneNodes[i];
       if (!target) return;
       const computed = getComputedStyle(el);
-      if (el.hasAttribute('fill')) target.setAttribute('fill', computed.fill);
-      if (el.hasAttribute('stroke')) target.setAttribute('stroke', computed.stroke);
+      const backdrop = el.classList.contains('ink-backdrop');
+      if (backdrop || el.hasAttribute('fill')) target.setAttribute('fill', computed.fill);
+      if (backdrop || el.hasAttribute('stroke')) target.setAttribute('stroke', computed.stroke);
     });
     // the stylesheet that hides filtered items isn't part of the exported copy
     clone.querySelectorAll('.is-filtered-out').forEach(function(el) { el.remove(); });

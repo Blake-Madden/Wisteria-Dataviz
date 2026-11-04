@@ -340,12 +340,19 @@ html[data-view="slides"] .dash-progress
 .page-svg [fill="#000000"]:not(.ink-keep), .page-svg [fill="black"]:not(.ink-keep)
   { fill: light-dark(#000000, #E8E8E8); }
 
-/* navy is too dark to read on the dark-mode background, so it becomes a light blue */
-.page-svg [fill="#1F4387"]
+/* navy is too dark to read on the dark-mode background, so it becomes a light blue,
+   apart from shapes with kept text drawn on them */
+.page-svg [fill="#1F4387"]:not(.ink-backdrop)
   { fill: light-dark(#1F4387, #87CEFA); }
 
-.page-svg [stroke="#1F4387"]
+.page-svg [stroke="#1F4387"]:not(.ink-backdrop)
   { stroke: light-dark(#1F4387, #87CEFA); }
+
+.page-svg [fill="#1F4387"] .ink-backdrop
+  { fill: #1F4387; }
+
+.page-svg [stroke="#1F4387"] .ink-backdrop
+  { stroke: #1F4387; }
 
 /* shapes inside a kept group (e.g., the white base under translucent map layers)
    stay as painted */
