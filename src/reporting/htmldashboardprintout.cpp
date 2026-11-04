@@ -1035,6 +1035,7 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptReveal()
     prepareMarks(page);
     bindSpot(page);
     bindZoom(page);
+    if (page.alt) bindZoom(page.alt);
     startCounters(page);
     const svg = page.svg;
     page.el.classList.add('is-revealed', 'is-entering');
@@ -1139,6 +1140,15 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptZoom()
       e.preventDefault();
       zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.2 : 1 / 1.2);
     }, { passive: false });
+    // zooms around the center of the page's visible part, for the keyboard
+    svg.zoomBy = function(factor) {
+      const rect = svg.getBoundingClientRect();
+      const left = Math.max(rect.left, 0);
+      const right = Math.min(rect.right, window.innerWidth);
+      const top = Math.max(rect.top, 0);
+      const bottom = Math.min(rect.bottom, window.innerHeight);
+      zoomAt((left + right) / 2, (top + bottom) / 2, factor);
+    };
     let dragging = false;
     let lastX = 0;
     let lastY = 0;
@@ -1736,6 +1746,12 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptKeys()
     } else if (e.key === 'End') {
       e.preventDefault();
       stepPage(pages.length);
+    } else if (e.code === 'NumpadAdd' || e.code === 'NumpadSubtract') {
+      const svg = visibleSvg(pages[current]);
+      if (svg && svg.zoomBy) {
+        e.preventDefault();
+        svg.zoomBy(e.code === 'NumpadAdd' ? 1.2 : 1 / 1.2);
+      }
     } else if (e.key === 'f' || e.key === 'F') {
       e.preventDefault();
       togglePresenting();
@@ -2083,6 +2099,7 @@ wxString Wisteria::HtmlDashboardPrintout::BuildKeyboardTip(const bool singlePage
         "<dt><kbd>Space</kbd> <kbd>Enter</kbd></dt><dd>%s</dd>\n"
         "<dt><kbd>Esc</kbd></dt><dd>%s</dd>\n"
         "<dt>%s</dt><dd>%s</dd>\n"
+        "<dt><kbd>+</kbd> <kbd>&minus;</kbd></dt><dd>%s</dd>\n"
         "<dt>%s</dt><dd>%s</dd>\n"
         "<dt>%s</dt><dd>%s</dd>\n"
         "</div>\n"
@@ -2098,6 +2115,7 @@ wxString Wisteria::HtmlDashboardPrintout::BuildKeyboardTip(const bool singlePage
         SVGReportPrintout::EscapeXmlText(_(L"Close the open menu")),
         SVGReportPrintout::EscapeXmlText(_(L"Ctrl") + L"+" + _(L"scroll") + L" / " + _(L"pinch")),
         SVGReportPrintout::EscapeXmlText(_(L"Zoom in or out, centered on the cursor")),
+        SVGReportPrintout::EscapeXmlText(_(L"Zoom in or out (numeric keypad)")),
         SVGReportPrintout::EscapeXmlText(_(L"Drag")),
         SVGReportPrintout::EscapeXmlText(_(L"Pan around a zoomed-in page")),
         SVGReportPrintout::EscapeXmlText(_(L"Double-click")),
