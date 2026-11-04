@@ -10,6 +10,7 @@
 #include "../graphs/filterablegraph.h"
 #include "svgreportprintout.h"
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <iterator>
 #include <map>
@@ -2362,6 +2363,63 @@ void Wisteria::HtmlDashboardPrintout::ShowFilterChoice(
     }
 
 //------------------------------------------------------
+wxString Wisteria::HtmlDashboardPrintout::AddSvgFontFallbacks(const wxString& svg)
+    {
+    constexpr std::wstring_view FONT_ATTR{ L"font-family=\"" };
+    constexpr std::wstring_view GUI_FONT_FALLBACK{
+        L"system-ui, -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', Arial, "
+        "sans-serif"
+    };
+    constexpr std::wstring_view FONT_FALLBACK{ L"sans-serif" };
+    constexpr std::array<std::wstring_view, 6> GENERIC_FAMILIES{ L"serif",     L"sans-serif",
+                                                                 L"monospace", L"cursive",
+                                                                 L"fantasy",   L"system-ui" };
+
+    const std::wstring source{ svg.ToStdWstring() };
+    const std::wstring_view text{ source };
+    const std::wstring guiFontFace{
+        wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFaceName().ToStdWstring()
+    };
+
+    std::wstring result;
+    result.reserve(text.size() + (text.size() / 8));
+
+    size_t pos{ 0 };
+    size_t attrPos{ text.find(FONT_ATTR) };
+    while (attrPos != std::wstring_view::npos)
+        {
+        const size_t faceStart{ attrPos + FONT_ATTR.size() };
+        const size_t faceEnd{ text.find(L'"', faceStart) };
+        if (faceEnd == std::wstring_view::npos)
+            {
+            break;
+            }
+        const std::wstring_view face{ text.substr(faceStart, faceEnd - faceStart) };
+        result.append(text.substr(pos, faceStart - pos));
+        // lists and generic families already resolve on any system
+        if (face.find(L',') != std::wstring_view::npos ||
+            std::ranges::find(GENERIC_FAMILIES, face) != GENERIC_FAMILIES.cend())
+            {
+            result.append(face);
+            }
+        else
+            {
+            if (!face.empty())
+                {
+                result.append(L"'").append(face).append(L"', ");
+                }
+            result.append((face.empty() || face == guiFontFace) ? GUI_FONT_FALLBACK :
+                                                                  FONT_FALLBACK);
+            }
+        pos = faceEnd;
+        attrPos = text.find(FONT_ATTR, faceEnd);
+        }
+    result.append(text.substr(pos));
+
+    return wxString{ result };
+    }
+
+//------------------------------------------------------
 wxString Wisteria::HtmlDashboardPrintout::ScopeSvgIds(const wxString& svg, const wxString& scope)
     {
     constexpr std::wstring_view ID_ATTR{ L" id=\"" };
@@ -3206,7 +3264,7 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<ReportE
         {
             // every render (page, orientation and filter choice) gets its own element IDs
             const wxString content{ ScopeSvgIds(
-                SVGReportPrintout::RenderCanvasToSvg(canvas, size),
+                AddSvgFontFallbacks(SVGReportPrintout::RenderCanvasToSvg(canvas, size)),
                 wxString::Format(L"p%zu%s%s", pageIndex, isSwapped ? L"-alt" : L"", idSuffix)) };
             wxString caption;
             if (const wxString captionText{ GetFilterCaption(*canvas) }; !captionText.empty())

@@ -216,19 +216,9 @@ html[data-view="slides"] .dash-progress
   border-top: 1px solid var(--border-color);
   }
 
-.dash-group-label
-  {
-  margin-right: 4px;
-  font-size: 0.8em;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  opacity: 0.7;
-  }
-
 .dash-views button, .dash-layers-btn, .dash-filters-btn,
 .dash-help-btn, .dash-save-btn, .dash-theme-btn, .dash-print-btn, .dash-copy-btn,
-.dash-full-btn
+.dash-full-btn, .dash-hide-toolbar-btn
   {
   padding: 4px 12px;
   border: 1px solid var(--border-color);
@@ -242,7 +232,7 @@ html[data-view="slides"] .dash-progress
 
 .dash-views button:hover, .dash-layers-btn:hover, .dash-filters-btn:hover,
 .dash-help-btn:hover, .dash-save-btn:hover, .dash-theme-btn:hover, .dash-print-btn:hover,
-.dash-copy-btn:hover, .dash-full-btn:hover
+.dash-copy-btn:hover, .dash-full-btn:hover, .dash-hide-toolbar-btn:hover
   { border-color: var(--accent); }
 
 .dash-views button[aria-pressed="true"],
@@ -259,7 +249,8 @@ html[data-view="slides"] .dash-progress
 .dash-layers-btn:focus-visible, .dash-filters-btn:focus-visible,
 .dash-rail button:focus-visible, .dash-card:focus-visible, .dash-help-btn:focus-visible,
 .dash-save-btn:focus-visible, .dash-theme-btn:focus-visible, .dash-print-btn:focus-visible,
-.dash-copy-btn:focus-visible, .dash-full-btn:focus-visible
+.dash-copy-btn:focus-visible, .dash-full-btn:focus-visible,
+.dash-hide-toolbar-btn:focus-visible, .dash-show-toolbar:focus-visible
   {
   outline: 2px solid Highlight;
   outline-offset: 2px;
@@ -862,9 +853,20 @@ html.motion-ready .page:not(.is-revealed) .page-svg
   margin: 0;
   }
 
+.dash-help-list .dash-desktop-only
+  { display: contents; }
+
 @media not (any-pointer: coarse)
   {
-  .dash-help-list .dash-touch-only
+  .dash-help-list .dash-touch-only, .dash-help-header .dash-touch-only
+    { display: none; }
+  }
+
+/* touch screens with no mouse or trackpad have no shortcuts to show */
+@media (any-pointer: coarse) and (any-hover: none)
+  {
+  .dash-help-list .dash-desktop-only, .dash-help-header .dash-desktop-only,
+  .dash-help-btn.dash-desktop-only
     { display: none; }
   }
 
@@ -929,7 +931,7 @@ html.motion-ready .page:not(.is-revealed) .page-svg
   stroke-linejoin: round;
   }
 
-.dash-print-btn, .dash-full-btn
+.dash-print-btn, .dash-full-btn, .dash-hide-toolbar-btn
   {
   display: inline-flex;
   align-items: center;
@@ -937,6 +939,39 @@ html.motion-ready .page:not(.is-revealed) .page-svg
 
 .dash-full-btn[hidden]
   { display: none; }
+
+/* brings back the toolbar after it was hidden */
+.dash-show-toolbar
+  {
+  position: fixed;
+  top: calc(8px + env(safe-area-inset-top));
+  right: calc(8px + env(safe-area-inset-right));
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background-color: var(--toolbar-bg);
+  color: inherit;
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  }
+
+.dash-show-toolbar:hover, .dash-show-toolbar:focus-visible
+  { opacity: 1; }
+
+.dash-show-toolbar[hidden]
+  { display: none; }
+
+/* invisible but still reachable with Tab while the toolbar is shown */
+html.show-toolbar .dash-show-toolbar,
+.dash-toolbar:focus-within ~ .dash-show-toolbar
+  {
+  opacity: 0;
+  pointer-events: none;
+  }
 
 /* presentation mode: only the page remains on screen */
 html.is-presenting .dash-gallery, html.is-presenting .dash-rail

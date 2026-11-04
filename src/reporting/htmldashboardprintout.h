@@ -633,6 +633,11 @@ namespace Wisteria
             @returns The SVG content with scoped IDs.*/
         [[nodiscard]]
         static wxString ScopeSvgIds(const wxString& svg, const wxString& scope);
+        /** @brief Adds fallback fonts to each single-font @c font-family in a rendered page.
+            @param svg The rendered SVG content.
+            @returns The SVG content with font fallbacks.*/
+        [[nodiscard]]
+        static wxString AddSvgFontFallbacks(const wxString& svg);
         /// @brief Restores how a page's filterable graphs were originally shown.
         /// @param pageFilters The page's filterable graphs.
         /// @param originalStates How the graphs were originally shown.
