@@ -691,6 +691,12 @@ namespace Wisteria
         [[nodiscard]]
         bool IsAnythingSelected() const;
 
+        /// @brief Selects all selectable fixed objects, free-floating objects, and titles.
+        void SelectAll();
+
+        /// @brief Unselects all items (and sub-items) on the canvas.
+        void ClearSelections();
+
         /// @}
 
         /** @name Title Functions

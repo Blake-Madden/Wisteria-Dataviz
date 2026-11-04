@@ -815,6 +815,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
 
         Bind(wxEVT_MENU, [this]([[maybe_unused]] wxCommandEvent&) { ZoomReset(); }, wxID_ZOOM_FIT);
 
+        Bind(wxEVT_MENU, [this]([[maybe_unused]] wxCommandEvent&) { SelectAll(); }, wxID_SELECTALL);
+
         Bind(wxEVT_TIMER,
              [this]([[maybe_unused]] wxTimerEvent&)
              {
@@ -2371,6 +2373,56 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         }
 
     //-------------------------------------------
+    void Canvas::SelectAll()
+        {
+        const auto selectItem = [](const auto& item)
+        {
+            if (item != nullptr && item->IsSelectable())
+                {
+                item->SetSelected(true);
+                }
+        };
+        std::ranges::for_each(GetFreeFloatingObjects(), selectItem);
+        for (const auto& fixedObjectsRow : GetFixedObjects())
+            {
+            std::ranges::for_each(fixedObjectsRow, selectItem);
+            }
+        std::ranges::for_each(GetTitles(), selectItem);
+
+        Refresh(true);
+        Update();
+
+        wxCommandEvent selEvent(wxEVT_WISTERIA_CANVAS_SELECTION_CHANGED, GetId());
+        selEvent.SetEventObject(this);
+        GetEventHandler()->ProcessEvent(selEvent);
+        }
+
+    //-------------------------------------------
+    void Canvas::ClearSelections()
+        {
+        const auto clearItem = [](const auto& item)
+        {
+            if (item != nullptr)
+                {
+                item->ClearSelections();
+                }
+        };
+        std::ranges::for_each(GetFreeFloatingObjects(), clearItem);
+        for (const auto& fixedObjectsRow : GetFixedObjects())
+            {
+            std::ranges::for_each(fixedObjectsRow, clearItem);
+            }
+        std::ranges::for_each(GetTitles(), clearItem);
+
+        Refresh(true);
+        Update();
+
+        wxCommandEvent selEvent(wxEVT_WISTERIA_CANVAS_SELECTION_CHANGED, GetId());
+        selEvent.SetEventObject(this);
+        GetEventHandler()->ProcessEvent(selEvent);
+        }
+
+    //-------------------------------------------
     void Canvas::OnMouseEvents(wxMouseEvent & event)
         {
         wxPoint unscrolledPosition;
@@ -2639,7 +2691,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
     //------------------------------------------------------
     void Canvas::OnKeyDown(wxKeyEvent & event)
         {
-        if (event.GetKeyCode() == WXK_NUMPAD_ADD)
+        if (event.GetModifiers() == wxMOD_CONTROL && event.GetKeyCode() == L'A')
+            {
+            SelectAll();
+            }
+        else if (event.GetKeyCode() == WXK_NUMPAD_ADD)
             {
             ZoomIn();
             }
@@ -2651,18 +2707,17 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             {
             ZoomReset();
             }
-        // get out of full screen mode
+        // get out of full screen mode, or clear the selections if not in full screen
         else if (event.GetKeyCode() == WXK_ESCAPE)
             {
-            auto* parent = GetParent();
-            while (parent != nullptr && parent->IsKindOf(CLASSINFO(wxFrame)))
+            auto* topLevelWindow = dynamic_cast<wxTopLevelWindow*>(wxGetTopLevelParent(this));
+            if (topLevelWindow != nullptr && topLevelWindow->IsFullScreen())
                 {
-                auto* parentFrame = dynamic_cast<wxFrame*>(parent);
-                if (parentFrame != nullptr)
-                    {
-                    parentFrame->ShowFullScreen(false);
-                    }
-                parent = parent->GetParent();
+                topLevelWindow->ShowFullScreen(false);
+                }
+            else
+                {
+                ClearSelections();
                 }
             }
         // moving draggable objects
