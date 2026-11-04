@@ -15,6 +15,7 @@
 #include "../base/canvas.h"
 #include "../data/dataset.h"
 #include "reportexportpage.h"
+#include <map>
 #include <memory>
 #include <optional>
 #include <utility>
@@ -638,6 +639,15 @@ namespace Wisteria
             @returns The SVG content with font fallbacks.*/
         [[nodiscard]]
         static wxString AddSvgFontFallbacks(const wxString& svg);
+        /** @brief Replaces each embedded image in a rendered page with a reference to
+                a shared copy, so that an image appears only once in the dashboard.
+            @param svg The rendered SVG content.
+            @param[in,out] imageIds The ID of each shared image, keyed by its size and data.
+            @param[in,out] sharedImages The shared image elements.
+            @returns The SVG content with image references.*/
+        [[nodiscard]]
+        static wxString ShareSvgImages(const wxString& svg, std::map<wxString, size_t>& imageIds,
+                                       wxString& sharedImages);
         /// @brief Restores how a page's filterable graphs were originally shown.
         /// @param pageFilters The page's filterable graphs.
         /// @param originalStates How the graphs were originally shown.

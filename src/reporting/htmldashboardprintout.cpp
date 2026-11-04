@@ -1353,6 +1353,16 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptSaveCopy()
     });
     // the stylesheet that hides filtered items isn't part of the exported copy
     clone.querySelectorAll('.is-filtered-out').forEach(function(el) { el.remove(); });
+    // shared images live outside the page, so the exported copy gets its own
+    clone.querySelectorAll('use[href^="#dash-img-"]').forEach(function(ref) {
+      const source = document.getElementById(ref.getAttribute('href').slice(1));
+      if (!source) return;
+      const image = source.cloneNode(true);
+      image.removeAttribute('id');
+      image.setAttribute('x', ref.getAttribute('x'));
+      image.setAttribute('y', ref.getAttribute('y'));
+      ref.replaceWith(image);
+    });
     const background = getComputedStyle(svg).backgroundColor;
     if (background) {
       const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -2445,6 +2455,75 @@ wxString Wisteria::HtmlDashboardPrintout::AddSvgFontFallbacks(const wxString& sv
     }
 
 //------------------------------------------------------
+wxString Wisteria::HtmlDashboardPrintout::ShareSvgImages(const wxString& svg,
+                                                         std::map<wxString, size_t>& imageIds,
+                                                         wxString& sharedImages)
+    {
+    constexpr std::wstring_view IMAGE_TAG{ L"<image " };
+
+    const std::wstring source{ svg.ToStdWstring() };
+    const std::wstring_view text{ source };
+
+    // the value of an attribute in an element's tag, or empty if not found
+    const auto getAttribute = [](const std::wstring_view tag,
+                                 const std::wstring_view name) -> std::wstring_view
+    {
+        const std::wstring key{ L" " + std::wstring{ name } + L"=\"" };
+        const size_t keyPos{ tag.find(key) };
+        if (keyPos == std::wstring_view::npos)
+            {
+            return {};
+            }
+        const size_t valueStart{ keyPos + key.size() };
+        const size_t valueEnd{ tag.find(L'"', valueStart) };
+        return (valueEnd == std::wstring_view::npos) ?
+                   std::wstring_view{} :
+                   tag.substr(valueStart, valueEnd - valueStart);
+    };
+
+    std::wstring result;
+    result.reserve(text.size());
+
+    size_t pos{ 0 };
+    size_t tagStart{ text.find(IMAGE_TAG) };
+    while (tagStart != std::wstring_view::npos)
+        {
+        // base64 data has no '>', so the first one closes the tag
+        const size_t tagEnd{ text.find(L'>', tagStart) };
+        if (tagEnd == std::wstring_view::npos)
+            {
+            break;
+            }
+        const std::wstring_view tag{ text.substr(tagStart, tagEnd + 1 - tagStart) };
+        const std::wstring_view href{ getAttribute(tag, L"xlink:href") };
+        if (href.starts_with(L"data:"))
+            {
+            const std::wstring_view width{ getAttribute(tag, L"width") };
+            const std::wstring_view height{ getAttribute(tag, L"height") };
+            const wxString key{ std::wstring{ width } + L"x" + std::wstring{ height } + L":" +
+                                std::wstring{ href } };
+            const auto [entry, inserted] = imageIds.try_emplace(key, imageIds.size());
+            if (inserted)
+                {
+                sharedImages += wxString::Format(
+                    L"<image id=\"dash-img-%zu\" width=\"%s\" height=\"%s\" href=\"%s\"/>\n",
+                    entry->second, wxString{ width }, wxString{ height }, wxString{ href });
+                }
+            result.append(text.substr(pos, tagStart - pos));
+            result.append(wxString::Format(L"<use href=\"#dash-img-%zu\" x=\"%s\" y=\"%s\"/>",
+                                           entry->second, wxString{ getAttribute(tag, L"x") },
+                                           wxString{ getAttribute(tag, L"y") })
+                              .ToStdWstring());
+            pos = tagEnd + 1;
+            }
+        tagStart = text.find(IMAGE_TAG, tagEnd);
+        }
+    result.append(text.substr(pos));
+
+    return wxString{ result };
+    }
+
+//------------------------------------------------------
 wxString Wisteria::HtmlDashboardPrintout::ScopeSvgIds(const wxString& svg, const wxString& scope)
     {
     constexpr std::wstring_view ID_ATTR{ L" id=\"" };
@@ -3228,6 +3307,9 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<ReportE
     // linked filter groups open on the choice of the first group in their link
     const std::vector<std::vector<std::optional<size_t>>> filterLinks{ GetFilterLinks(canvases) };
     std::map<size_t, LinkedChoice> linkedChoices;
+    // images repeated across orientations and filter choices are embedded once
+    std::map<wxString, size_t> imageIds;
+    wxString sharedImages;
     size_t pageIndex{ 0 };
     for (size_t canvasIndex = 0; canvasIndex < canvases.size(); ++canvasIndex)
         {
@@ -3295,13 +3377,16 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<ReportE
             pageTitle = wxString::Format(_(L"Page %zu"), pageIndex + 1);
             }
         const auto renderPageSvg = [canvas, dualOrientations, pageIndex, captionHeight,
-                                    &captionFont](const wxSize& size, const bool isSwapped,
-                                                  const wxString& idSuffix = wxString{})
+                                    &captionFont, &imageIds,
+                                    &sharedImages](const wxSize& size, const bool isSwapped,
+                                                   const wxString& idSuffix = wxString{})
         {
             // every render (page, orientation and filter choice) gets its own element IDs
-            const wxString content{ ScopeSvgIds(
-                AddSvgFontFallbacks(SVGReportPrintout::RenderCanvasToSvg(canvas, size)),
-                wxString::Format(L"p%zu%s%s", pageIndex, isSwapped ? L"-alt" : L"", idSuffix)) };
+            const wxString content{ ShareSvgImages(
+                ScopeSvgIds(
+                    AddSvgFontFallbacks(SVGReportPrintout::RenderCanvasToSvg(canvas, size)),
+                    wxString::Format(L"p%zu%s%s", pageIndex, isSwapped ? L"-alt" : L"", idSuffix)),
+                imageIds, sharedImages) };
             wxString caption;
             if (const wxString captionText{ GetFilterCaption(*canvas) }; !captionText.empty())
                 {
@@ -3446,7 +3531,14 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<ReportE
                                  SVGReportPrintout::EscapeXmlText(pageTitle));
         ++pageIndex;
         }
-    html += L"</main>\n</body>\n</html>\n";
+    html += L"</main>\n";
+    if (!sharedImages.empty())
+        {
+        html += L"<svg class=\"dash-shared-images\" width=\"0\" height=\"0\" "
+                "aria-hidden=\"true\" style=\"position:absolute\">\n<defs>\n" +
+                sharedImages + L"</defs>\n</svg>\n";
+        }
+    html += L"</body>\n</html>\n";
 
     wxFile outFile(options.m_filePath, wxFile::write);
     if (outFile.IsOpened())
