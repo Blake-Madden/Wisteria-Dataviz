@@ -13,6 +13,7 @@
 #include <array>
 #include <cstdlib>
 #include <wx/dcprint.h>
+#include <wx/dcsvg.h>
 #include <wx/pdfdc.h>
 #include <wx/rawbmp.h>
 
@@ -746,14 +747,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
             dc.SetClippingRegion(GetClippingRect().value());
             }
 
-        // for print/PDF output, keep the source bitmap at full resolution and
-        // fit it to the layout via the DC's user scale — this embeds a high-DPI
-        // copy in the document so it stays crisp when zoomed or printed
-        const bool isPrintDC =
-            dc.IsKindOf(wxCLASSINFO(wxPdfDC)) || dc.IsKindOf(wxCLASSINFO(wxPrinterDC));
+        // For print, PDF, and SVG output, keep the source bitmap at full resolution
+        // and fit it to the layout via the DC's user scale. This embeds a high-DPI
+        // copy in the document so it stays crisp when zoomed or printed.
+        const bool keepFullResolution = dc.IsKindOf(wxCLASSINFO(wxPdfDC)) ||
+                                        dc.IsKindOf(wxCLASSINFO(wxPrinterDC)) ||
+                                        dc.IsKindOf(wxCLASSINFO(wxSVGFileDC));
 
         wxImage img = m_originalImg;
-        if (!isPrintDC && img.GetSize() != scaledSize)
+        if (!keepFullResolution && img.GetSize() != scaledSize)
             {
             img.Rescale(scaledSize.GetWidth(), scaledSize.GetHeight(), wxIMAGE_QUALITY_HIGH);
             }
@@ -837,7 +839,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
             }
 
         const wxBitmap bmp{ img, 32 };
-        if (isPrintDC && bmp.GetSize() != scaledSize)
+        if (keepFullResolution && bmp.GetSize() != scaledSize)
             {
             // shrink the DC's user scale so the full-resolution bitmap fits the
             // layout-sized destination; using DrawBitmap (rather than StretchBlit)
