@@ -1544,21 +1544,39 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptPresent()
       root.classList.remove('show-toolbar');
     }
   }
-  function onFullscreenChange() {
-    const on = !!document.fullscreenElement;
-    root.classList.toggle('is-presenting', on);
+  // the toolbar, strip and rail are hidden by the user, apart from fullscreen
+  let chromeHidden = false;
+  function updatePresenting() {
+    const fullscreen = !!document.fullscreenElement;
+    root.classList.toggle('is-presenting', fullscreen || chromeHidden);
     root.classList.remove('show-toolbar');
-    if (on) document.addEventListener('mousemove', onPresentPointerMove);
-    else document.removeEventListener('mousemove', onPresentPointerMove);
-    const btn = document.getElementById('dash-full');
-    if (btn) btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    const handle = document.getElementById('dash-show-toolbar');
+    if (handle) handle.hidden = !chromeHidden || fullscreen;
     // the toolbar and strip are gone (or back), so the page is re-fitted and re-aligned
     window.requestAnimationFrame(function() {
       measureChrome();
       revealCurrent('auto');
     });
   }
+  function setChromeHidden(on) {
+    chromeHidden = on;
+    updatePresenting();
+    const target = document.getElementById(on ? 'dash-show-toolbar' : 'dash-hide-toolbar');
+    if (target && !target.hidden) target.focus({ preventScroll: true });
+  }
+  function onFullscreenChange() {
+    const on = !!document.fullscreenElement;
+    if (on) document.addEventListener('mousemove', onPresentPointerMove);
+    else document.removeEventListener('mousemove', onPresentPointerMove);
+    const btn = document.getElementById('dash-full');
+    if (btn) btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    updatePresenting();
+  }
   function bindPresent() {
+    const hideBtn = document.getElementById('dash-hide-toolbar');
+    if (hideBtn) hideBtn.addEventListener('click', function() { setChromeHidden(true); });
+    const handle = document.getElementById('dash-show-toolbar');
+    if (handle) handle.addEventListener('click', function() { setChromeHidden(false); });
     const btn = document.getElementById('dash-full');
     if (!btn || !document.fullscreenEnabled) return;
     btn.hidden = false;
@@ -2033,10 +2051,12 @@ wxString Wisteria::HtmlDashboardPrintout::BuildKeyboardTip(const bool singlePage
         L"<div id=\"dash-help-panel\" class=\"dash-help-panel no-print\" role=\"dialog\" "
         "aria-modal=\"false\" aria-labelledby=\"dash-help-title\" hidden>\n"
         "<div class=\"dash-help-header\">\n"
-        "<h2 id=\"dash-help-title\">%s</h2>\n"
+        "<h2 id=\"dash-help-title\"><span class=\"dash-desktop-only\">%s</span>"
+        "<span class=\"dash-touch-only\">%s</span></h2>\n"
         "<button type=\"button\" id=\"dash-help-close\" aria-label=\"%s\">&times;</button>\n"
         "</div>\n"
         "<dl class=\"dash-help-list\">\n"
+        "<div class=\"dash-desktop-only\">\n"
         "%s"
         "<dt><kbd>F</kbd></dt><dd>%s</dd>\n"
         "<dt><kbd>&uarr;</kbd> <kbd>&darr;</kbd></dt><dd>%s</dd>\n"
@@ -2045,10 +2065,12 @@ wxString Wisteria::HtmlDashboardPrintout::BuildKeyboardTip(const bool singlePage
         "<dt>%s</dt><dd>%s</dd>\n"
         "<dt>%s</dt><dd>%s</dd>\n"
         "<dt>%s</dt><dd>%s</dd>\n"
+        "</div>\n"
         "%s"
         "</dl>\n"
         "</div>\n",
         SVGReportPrintout::EscapeXmlText(_(L"Keyboard & mouse shortcuts")),
+        SVGReportPrintout::EscapeXmlText(_(L"Touch gestures")),
         SVGReportPrintout::EscapeXmlAttr(_(L"Close")), pageRows,
         SVGReportPrintout::EscapeXmlText(_(L"Enter or leave fullscreen presentation mode")),
         SVGReportPrintout::EscapeXmlText(_(L"Move through the items of a menu (Tab also works)")),
@@ -3023,12 +3045,11 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<ReportE
     if (!singlePage)
         {
         html += wxString::Format(
-            L"<div class=\"dash-views\" role=\"group\" aria-labelledby=\"dash-views-label\">\n"
-            "<span id=\"dash-views-label\" class=\"dash-group-label\">%s</span>\n"
+            L"<div class=\"dash-views\" role=\"group\" aria-label=\"%s\">\n"
             "<button type=\"button\" data-view=\"gallery\" aria-pressed=\"false\">%s</button>\n"
             "<button type=\"button\" data-view=\"slides\" aria-pressed=\"false\">%s</button>\n"
             "</div>\n",
-            SVGReportPrintout::EscapeXmlText(_(L"View")),
+            SVGReportPrintout::EscapeXmlAttr(_(L"View")),
             SVGReportPrintout::EscapeXmlText(_(L"Gallery")),
             SVGReportPrintout::EscapeXmlText(_(L"Slideshow")));
         }
@@ -3109,11 +3130,23 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<ReportE
             SVGReportPrintout::EscapeXmlAttr(_(L"Save page")), caretIcon);
         }
     html += wxString::Format(
-        L"<button type=\"button\" id=\"dash-help\" class=\"dash-help-btn\" "
+        L"<button type=\"button\" id=\"dash-help\" class=\"dash-help-btn%s\" "
         "aria-haspopup=\"dialog\" aria-expanded=\"false\" aria-controls=\"dash-help-panel\" "
         "aria-label=\"%s\">?</button>\n",
+        // a lone page has no touch gestures to list
+        singlePage ? L" dash-desktop-only" : L"",
         SVGReportPrintout::EscapeXmlAttr(_(L"Keyboard and mouse shortcuts")));
+    html += wxString::Format(
+        L"<button type=\"button\" id=\"dash-hide-toolbar\" class=\"dash-hide-toolbar-btn\" "
+        "aria-label=\"%s\"><svg class=\"dash-btn-icon\" viewBox=\"0 0 16 16\" "
+        "aria-hidden=\"true\"><path d=\"M4.5 10l3.5-3.5 3.5 3.5\"/></svg></button>\n",
+        SVGReportPrintout::EscapeXmlAttr(_(L"Hide toolbar")));
     html += L"</div>\n<div class=\"dash-progress\" aria-hidden=\"true\"></div>\n</header>\n";
+    html += wxString::Format(
+        L"<button type=\"button\" id=\"dash-show-toolbar\" class=\"dash-show-toolbar no-print\" "
+        "aria-label=\"%s\" hidden><svg class=\"dash-btn-icon\" viewBox=\"0 0 16 16\" "
+        "aria-hidden=\"true\"><path d=\"M4.5 6.5l3.5 3.5 3.5-3.5\"/></svg></button>\n",
+        SVGReportPrintout::EscapeXmlAttr(_(L"Show toolbar")));
 
     html += wxString::Format(
         L"<nav id=\"dash-gallery\" class=\"dash-gallery no-print\" aria-label=\"%s\"></nav>\n",
