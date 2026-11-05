@@ -1781,8 +1781,12 @@ wxString Wisteria::HtmlDashboardPrintout::GetDashboardScriptTouch()
     let tracking = false;
     container.addEventListener('touchstart', function(e) {
       const svg = e.target.closest ? e.target.closest('.page-svg') : null;
+      // swiping on mobile works for slideshows or the gallery
+      // (if the toolbar is hidden)
+      const canSwipe = view === 'slides' ||
+        (view === 'gallery' && root.classList.contains('is-presenting'));
       // dragging a zoomed-in page pans it instead
-      tracking = view === 'slides' && e.touches.length === 1 &&
+      tracking = canSwipe && e.touches.length === 1 &&
         !(svg && svg.classList.contains('is-zoomed'));
       if (!tracking) return;
       startX = e.touches[0].clientX;
@@ -2075,14 +2079,13 @@ wxString Wisteria::HtmlDashboardPrintout::BuildKeyboardTip(const bool singlePage
                 SVGReportPrintout::EscapeXmlText(_(L"Jump to a page")),
                 SVGReportPrintout::EscapeXmlText(_(L"Switch between gallery and slideshow")))
     };
-    const wxString swipeRow{
-        singlePage ? wxString{} :
-                     wxString::Format(L"<dt class=\"dash-touch-only\">%s</dt>"
-                                      "<dd class=\"dash-touch-only\">%s</dd>\n",
-                                      SVGReportPrintout::EscapeXmlText(_(L"Swipe")),
-                                      SVGReportPrintout::EscapeXmlText(
-                                          _(L"Go to the previous or next page (touch screens)")))
-    };
+    const wxString swipeRow{ singlePage ?
+                                 wxString{} :
+                                 wxString::Format(L"<dt class=\"dash-touch-only\">%s</dt>"
+                                                  "<dd class=\"dash-touch-only\">%s</dd>\n",
+                                                  SVGReportPrintout::EscapeXmlText(_(L"Swipe")),
+                                                  SVGReportPrintout::EscapeXmlText(
+                                                      _(L"Go to the previous or next page"))) };
     return wxString::Format(
         L"<div id=\"dash-help-panel\" class=\"dash-help-panel no-print\" role=\"dialog\" "
         "aria-modal=\"false\" aria-labelledby=\"dash-help-title\" hidden>\n"
