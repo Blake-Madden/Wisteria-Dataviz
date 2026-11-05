@@ -2909,6 +2909,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             {
             img->ResetToBaseSize();
             }
+        // a scaling-locked label's font follows the last canvas zoom, so measure it at 1.0
+        if (auto* label = dynamic_cast<GraphItems::Label*>(&item); label != nullptr)
+            {
+            label->m_parentScaling = 1.0;
+            label->InvalidateCachedBoundingBox();
+            }
         item.SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
         item.SetCanvasHeightProportion(std::nullopt);
         SeedTableForMeasuring(item, gdc);
