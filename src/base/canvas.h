@@ -512,6 +512,12 @@ namespace Wisteria
                 {
                 img->ResetToBaseSize();
                 }
+            // a scaling-locked label's font follows the last canvas zoom, so measure it at 1.0
+            if (auto* label = dynamic_cast<GraphItems::Label*>(&item); label != nullptr)
+                {
+                label->m_parentScaling = 1.0;
+                label->InvalidateCachedBoundingBox();
+                }
             // also, reset any previous min size information for a call to the object's
             // SetBoundingBox(), as we will be resizing this item from scratch
             item.SetMinimumUserSizeDIPs(std::nullopt, std::nullopt);
