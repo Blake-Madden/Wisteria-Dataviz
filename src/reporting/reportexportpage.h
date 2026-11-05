@@ -117,7 +117,7 @@ namespace Wisteria
             pages.reserve(canvases.size());
             for (auto* canvas : canvases)
                 {
-                pages.push_back(ReportExportPage{ .m_content = canvas });
+                pages.emplace_back().m_content = canvas;
                 }
             return pages;
             }

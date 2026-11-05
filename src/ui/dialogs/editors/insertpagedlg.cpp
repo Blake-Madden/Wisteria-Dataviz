@@ -2076,7 +2076,9 @@ namespace Wisteria::UI
             return false;
             }
 
-        const auto& graphTypes = WisteriaView::GetFilterableGraphTypes();
+        auto graphTypes = WisteriaView::GetFilterableGraphTypes();
+        std::sort(graphTypes.begin(), graphTypes.end(),
+                  [](const auto& left, const auto& right) { return left.m_label < right.m_label; });
         wxArrayString graphNames;
         for (const auto& graphType : graphTypes)
             {

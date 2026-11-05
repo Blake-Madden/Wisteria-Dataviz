@@ -3771,7 +3771,9 @@ void WisteriaView::OnInsertFilteredGraph([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    const auto& graphTypes = GetFilterableGraphTypes();
+    auto graphTypes = GetFilterableGraphTypes();
+    std::sort(graphTypes.begin(), graphTypes.end(),
+              [](const auto& left, const auto& right) { return left.m_label < right.m_label; });
     wxArrayString graphNames;
     for (const auto& graphType : graphTypes)
         {
@@ -3808,7 +3810,9 @@ void WisteriaView::EditFilterableGraph(Wisteria::Graphs::FilterableGraph& filter
     {
     // the graph being shown holds the settings that every filter value's graph is built from
     const auto activeGraph = filterableGraph.GetActiveGraph();
-    const auto& graphTypes = GetFilterableGraphTypes();
+    auto graphTypes = GetFilterableGraphTypes();
+    std::sort(graphTypes.begin(), graphTypes.end(),
+              [](const auto& left, const auto& right) { return left.m_label < right.m_label; });
     const auto graphType =
         std::ranges::find_if(graphTypes, [&activeGraph](const auto& type)
                              { return activeGraph->GetClassInfo() == type.m_classInfo; });
@@ -3833,7 +3837,7 @@ void WisteriaView::EditFilterableGraph(Wisteria::Graphs::FilterableGraph& filter
     filterDlg.SetFilter(activeGraph->GetPropertyTemplate(L"dataset"),
                         filterableGraph.GetFilterColumn(),
                         filteredGraphs.at(filterableGraph.GetActiveIndex()).m_label,
-                        static_cast<int>(std::distance(graphTypes.cbegin(), graphType)), allLabel);
+                        static_cast<int>(std::distance(graphTypes.begin(), graphType)), allLabel);
     if (filterDlg.ShowModal() != wxID_OK)
         {
         return;
