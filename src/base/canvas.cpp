@@ -1016,7 +1016,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             }
 
         m_resizeTimer.Stop();
-        m_blockResize = true;
+        // a layout done while hidden may be stale by the time the canvas is reshown,
+        // so let the first resize after that happen immediately
+        m_blockResize = IsShownOnScreen();
 
         wxGCDC gdc(this);
         // if the new size is larger than the canvas itself, then turn off zooming
