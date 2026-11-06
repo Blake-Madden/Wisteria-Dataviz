@@ -401,6 +401,8 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
                   ID_INSERT_DATASET);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnEditDataset, this,
                   ID_EDIT_DATASET);
+    m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnEditDatasetFile, this,
+                  ID_EDIT_DATASET_FILE);
     m_frame->Bind(wxEVT_RIBBONBUTTONBAR_CLICKED, &WisteriaView::OnDeleteDataset, this,
                   ID_DELETE_DATASET);
 
@@ -540,6 +542,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
     // as menu events
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnInsertDataset, this, ID_INSERT_DATASET);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnEditDataset, this, ID_EDIT_DATASET);
+    m_frame->Bind(wxEVT_MENU, &WisteriaView::OnEditDatasetFile, this, ID_EDIT_DATASET_FILE);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnDeleteDataset, this, ID_DELETE_DATASET);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPivotWider, this, ID_PIVOT_WIDER);
     m_frame->Bind(wxEVT_MENU, &WisteriaView::OnPivotLonger, this, ID_PIVOT_LONGER);
@@ -1146,6 +1149,33 @@ bool WisteriaView::IsDatasetFileReadable(const wxString& datasetFilePath)
     const wxLogNull noLog;
     wxFile file;
     return file.Open(datasetFilePath, wxFile::read);
+    }
+
+//-------------------------------------------
+std::optional<wxString> WisteriaView::GetSelectedDatasetLocalFilePath() const
+    {
+    const auto* doc = dynamic_cast<const WisteriaDoc*>(GetDocument());
+    if (doc == nullptr || m_sideBar == nullptr || m_sideBar->GetSelectedFolder() != 0 ||
+        !m_sideBar->GetSelectedSubItemId().second)
+        {
+        return std::nullopt;
+        }
+
+    const auto foundOptions =
+        m_reportBuilder.GetDatasetImportOptions().find(m_sideBar->GetSelectedLabel());
+    if (foundOptions == m_reportBuilder.GetDatasetImportOptions().cend() ||
+        foundOptions->second.m_filePath.empty())
+        {
+        return std::nullopt;
+        }
+
+    FilePathResolverBase resolver;
+    resolver.ResolvePath(doc->ResolveFilePath(foundOptions->second.m_filePath));
+    if (!resolver.IsLocalOrNetworkFile())
+        {
+        return std::nullopt;
+        }
+    return resolver.GetResolvedPath();
     }
 
 //-------------------------------------------
@@ -2673,10 +2703,12 @@ bool WisteriaView::IsCanvasItemSelected() const noexcept
 void WisteriaView::UpdateDatasetButtonStates() const
     {
     const bool enabled = IsDatasetSelected();
+    const bool fileEnabled = enabled && GetSelectedDatasetLocalFilePath().has_value();
 
     if (m_datasetButtonBar != nullptr)
         {
         m_datasetButtonBar->EnableButton(ID_EDIT_DATASET, enabled);
+        m_datasetButtonBar->EnableButton(ID_EDIT_DATASET_FILE, fileEnabled);
         m_datasetButtonBar->EnableButton(ID_DELETE_DATASET, enabled);
         }
 
@@ -2684,6 +2716,7 @@ void WisteriaView::UpdateDatasetButtonStates() const
         menuBar != nullptr)
         {
         menuBar->Enable(ID_EDIT_DATASET, enabled);
+        menuBar->Enable(ID_EDIT_DATASET_FILE, fileEnabled);
         menuBar->Enable(ID_DELETE_DATASET, enabled);
         }
     }

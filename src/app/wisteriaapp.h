@@ -455,6 +455,7 @@ constexpr wxWindowID ID_REARRANGE_PAGES{ wxID_HIGHEST + 76 };
 
 // Data transformations
 constexpr wxWindowID ID_EDIT_DATASET{ wxID_HIGHEST + 50 };
+constexpr wxWindowID ID_EDIT_DATASET_FILE{ wxID_HIGHEST + 98 };
 constexpr wxWindowID ID_PIVOT_WIDER{ wxID_HIGHEST + 36 };
 constexpr wxWindowID ID_PIVOT_LONGER{ wxID_HIGHEST + 37 };
 constexpr wxWindowID ID_SUBSET_DATASET{ wxID_HIGHEST + 51 };

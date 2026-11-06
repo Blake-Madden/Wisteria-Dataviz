@@ -401,6 +401,30 @@ void WisteriaView::OnRibbonAddConstant([[maybe_unused]] wxCommandEvent& event)
     }
 
 //-------------------------------------------
+void WisteriaView::OnEditDatasetFile([[maybe_unused]] wxCommandEvent& event)
+    {
+    const auto filePath = GetSelectedDatasetLocalFilePath();
+    if (!filePath)
+        {
+        wxMessageBox(_(L"Please select a dataset that was imported from a local or network file."),
+                     _(L"Dataset Selection"), wxOK | wxICON_WARNING, m_frame);
+        return;
+        }
+    if (!wxFileName::FileExists(filePath.value()))
+        {
+        wxMessageBox(wxString::Format(_(L"'%s' could not be found."), filePath.value()),
+                     _(L"File Not Found"), wxOK | wxICON_WARNING, m_frame);
+        return;
+        }
+    if (!wxLaunchDefaultApplication(filePath.value()))
+        {
+        wxMessageBox(
+            wxString::Format(_(L"Unable to open '%s' in its default editor."), filePath.value()),
+            _(L"Edit Dataset"), wxOK | wxICON_WARNING, m_frame);
+        }
+    }
+
+//-------------------------------------------
 void WisteriaView::OnEditDataset([[maybe_unused]] wxCommandEvent& event)
     {
     // get the selected dataset

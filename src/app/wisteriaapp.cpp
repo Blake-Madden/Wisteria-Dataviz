@@ -123,6 +123,7 @@ void WisteriaApp::RegisterMenuBarItemIds()
     seedId("ID_REARRANGE_PAGES", ID_REARRANGE_PAGES);
     seedId("ID_INSERT_DATASET", ID_INSERT_DATASET);
     seedId("ID_EDIT_DATASET", ID_EDIT_DATASET);
+    seedId("ID_EDIT_DATASET_FILE", ID_EDIT_DATASET_FILE);
     seedId("ID_DELETE_DATASET", ID_DELETE_DATASET);
     seedId("ID_SUBSET_DATASET", ID_SUBSET_DATASET);
     seedId("ID_JOIN_DATASET", ID_JOIN_DATASET);
@@ -1553,6 +1554,10 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
                                  ReadSvgIcon(L"images/data-import.svg"),
                                  _(L"Edit the selected dataset's import options"));
         dataButtonBar->SetKeyTip(ID_EDIT_DATASET, _DT(L"I"));
+        dataButtonBar->AddButton(ID_EDIT_DATASET_FILE, _(L"Edit"),
+                                 ReadSvgIcon(L"images/data-edit.svg"),
+                                 _(L"Open the selected dataset's file in its default editor"));
+        dataButtonBar->SetKeyTip(ID_EDIT_DATASET_FILE, _DT(L"ED"));
         dataButtonBar->AddButton(ID_DELETE_DATASET, _(L"Delete"),
                                  ReadSvgIcon(L"images/data-delete.svg"),
                                  _(L"Delete the selected dataset from the project"));

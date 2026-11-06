@@ -199,6 +199,7 @@ class WisteriaView final : public wxView
     void OnProjectSettings(wxCommandEvent& event);
     void OnInsertDataset(wxCommandEvent& event);
     void OnEditDataset(wxCommandEvent& event);
+    void OnEditDatasetFile(wxCommandEvent& event);
     void OnDeleteDataset(wxCommandEvent& event);
     void OnPivotWider(wxCommandEvent& event);
     void OnPivotLonger(wxCommandEvent& event);
@@ -484,6 +485,10 @@ class WisteriaView final : public wxView
     ///     (e.g., while it is being saved).
     [[nodiscard]]
     static bool IsDatasetFileReadable(const wxString& datasetFilePath);
+    /// @returns The resolved path of the selected dataset's source file,
+    ///     or empty if it was not imported from a local or network file.
+    [[nodiscard]]
+    std::optional<wxString> GetSelectedDatasetLocalFilePath() const;
     void OnAutoRefreshTimer(wxTimerEvent& event);
 
     void PopulateConstantsGrid();
