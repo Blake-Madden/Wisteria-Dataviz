@@ -145,6 +145,25 @@ wxBitmapBundle ResourceManager::GetSVG(wxString path)
     }
 
 //-------------------------------------------------------
+wxBitmap ResourceManager::GetSVGBitmapToFit(const wxBitmapBundle& bmpBundle,
+                                            const double logicalSize, const double scaleFactor)
+    {
+    const double targetPixels{ logicalSize * scaleFactor };
+    // snap down to one of the sizes that GetSVG() pre-renders
+    int iconPixels{ 16 };
+    for (const int bundleSize : { 32, 64, 128, 256 })
+        {
+        if (bundleSize <= targetPixels)
+            {
+            iconPixels = bundleSize;
+            }
+        }
+    auto bmp = bmpBundle.GetBitmap(wxSize{ iconPixels, iconPixels });
+    bmp.SetScaleFactor(scaleFactor);
+    return bmp;
+    }
+
+//-------------------------------------------------------
 wxBitmapBundle ResourceManager::CreateColorIcon(const wxColour& color)
     {
     wxASSERT(color.IsOk());

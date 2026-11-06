@@ -70,6 +70,8 @@ namespace Wisteria::UI
                                EditMode editMode = EditMode::Insert);
 
         /// @private
+        ~InsertPageDlg() override;
+        /// @private
         InsertPageDlg() = delete;
         /// @private
         InsertPageDlg(const InsertPageDlg&) = delete;
@@ -294,9 +296,6 @@ namespace Wisteria::UI
         int m_columnCount{ 1 };
         size_t m_selectedRow{ 0 };
         size_t m_selectedColumn{ 0 };
-        // Fixed once from the grid's initial cell size so that resizing the dialog
-        // repositions (but does not rescale) the item icons drawn in the preview.
-        int m_iconPixelSize{ 0 };
         // Local, editable copy of the canvas's fixed object grid. Edits made in the
         // preview panel (e.g., deleting an item) are applied here first and only
         // committed back to the canvas via ApplyGridEdits().

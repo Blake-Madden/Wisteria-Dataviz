@@ -115,8 +115,6 @@ namespace Wisteria::UI
             {
             row.resize(static_cast<size_t>(m_columnCount), nullptr);
             }
-        // grid dimensions changed, so the cell size (and thus the fixed icon size) is stale
-        m_iconPixelSize = 0;
         }
 
     //-------------------------------------------
@@ -194,14 +192,10 @@ namespace Wisteria::UI
 
         const auto cellWidth = safe_divide<double>(clientRect.GetWidth(), m_columnCount);
         const auto cellHeight = safe_divide<double>(clientRect.GetHeight(), m_rowCount);
-
-        // fix the icon size to the grid's initial cell size so that resizing the
-        // dialog repositions (but doesn't upscale) the icons
-        if (m_iconPixelSize <= 0)
-            {
-            m_iconPixelSize = std::max(1, static_cast<int>(std::min(cellWidth, cellHeight) *
-                                                           math_constants::three_fourths));
-            }
+        const auto iconSize =
+            std::min(std::min(cellWidth, cellHeight) * math_constants::three_fourths,
+                     static_cast<double>(FromDIP(256)));
+        const auto scaleFactor = m_previewPanel->GetContentScaleFactor();
 
         const wxBrush occupiedBrush(wxColour{ 220, 220, 220 });
 
@@ -244,12 +238,12 @@ namespace Wisteria::UI
                         const auto bmpBundle = wxGetApp().GetResourceManager().GetSVG(svgName);
                         if (bmpBundle.IsOk())
                             {
-                            const auto bmp =
-                                bmpBundle.GetBitmap(wxSize(m_iconPixelSize, m_iconPixelSize));
+                            const auto bmp = ResourceManager::GetSVGBitmapToFit(bmpBundle, iconSize,
+                                                                                scaleFactor);
                             const auto iconLeft =
-                                clientRect.x + cellLeft + (cellW - bmp.GetWidth()) / 2;
+                                clientRect.x + cellLeft + (cellW - bmp.GetLogicalWidth()) / 2;
                             const auto iconTop =
-                                clientRect.y + cellTop + (cellH - bmp.GetHeight()) / 2;
+                                clientRect.y + cellTop + (cellH - bmp.GetLogicalHeight()) / 2;
                             dc.DrawBitmap(bmp, iconLeft, iconTop, true);
                             }
                         }
@@ -344,9 +338,9 @@ namespace Wisteria::UI
                     if (bmpBundle.IsOk())
                         {
                         const auto bmp =
-                            bmpBundle.GetBitmap(wxSize(m_iconPixelSize, m_iconPixelSize));
-                        dc.DrawBitmap(bmp, m_dragPosition.x - (bmp.GetWidth() / 2),
-                                      m_dragPosition.y - (bmp.GetHeight() / 2), true);
+                            ResourceManager::GetSVGBitmapToFit(bmpBundle, iconSize, scaleFactor);
+                        dc.DrawBitmap(bmp, m_dragPosition.x - (bmp.GetLogicalWidth() / 2),
+                                      m_dragPosition.y - (bmp.GetLogicalHeight() / 2), true);
                         }
                     }
                 }

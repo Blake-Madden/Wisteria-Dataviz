@@ -94,10 +94,19 @@ class ResourceManager
     /// @returns A bitmap bundle from the provided path.
     /// @param path The path to the image.\n
     ///     Can be relative to the ZIP file loaded by this class, or a local file.
-    /// @note The returned bundle will contain 16x16, 32x32, 64x64, and 128x128
-    ///     copies of the image.
+    /// @note The returned bundle will contain 16x16, 32x32, 64x64, 128x128,
+    ///     and 256x256 copies of the image.
     [[nodiscard]]
     wxBitmapBundle GetSVG(wxString path);
+
+    /// @returns The largest copy of the image from a bundle returned by @c GetSVG()
+    ///     that fits within the given size (without rescaling it).
+    /// @param bmpBundle A bundle returned by @c GetSVG().
+    /// @param logicalSize The maximum width and height (in logical pixels).
+    /// @param scaleFactor The content scale factor of the window being drawn on.
+    [[nodiscard]]
+    static wxBitmap GetSVGBitmapToFit(const wxBitmapBundle& bmpBundle, double logicalSize,
+                                      double scaleFactor);
 
     /** @returns A list of files in a given folder
             (relative to its location in the loaded archive's folder structure).
