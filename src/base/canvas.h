@@ -182,6 +182,16 @@ namespace Wisteria
             size_t m_rowCount{ 1 };
             };
 
+        /// @brief A saved layout of a fixed object, used to undo layout changes made to it.
+        /// @sa SaveFixedObjectsLayout(), RestoreFixedObjectsLayout().
+        class FixedObjectLayout
+            {
+            friend class Canvas;
+            std::shared_ptr<GraphItems::GraphItemBase> m_item;
+            double m_canvasWidthProportion{ 1.0 };
+            double m_originalCanvasScaling{ 1.0 };
+            };
+
         /** @brief Constructor.
             @param parent The parent window that will manage the canvas.
             @param itemId The ID of this canvas.
@@ -575,6 +585,11 @@ namespace Wisteria
         /// @returns The size of the fixed object grid (number of rows x columns).
         [[nodiscard]]
         std::pair<size_t, size_t> GetFixedObjectsGridSize() const;
+        /// @brief Adds an empty row to the top of the grid, moving existing items down.
+        /// @note Row height proportions are reset to be uniform.
+        void PrependEmptyRow();
+        /// @brief Adds an empty column to the left of the grid, moving existing items right.
+        void PrependEmptyColumn();
 
         /// @brief Removes all fixed objects and sets the grid back to (0, 0).
         void ClearFixedObjects() { m_fixedObjects.clear(); }
@@ -595,6 +610,16 @@ namespace Wisteria
             @param object The object being added to the location.*/
         void SetFixedObject(size_t row, size_t column,
                             const std::shared_ptr<GraphItems::GraphItemBase>& object);
+        /** @brief Connects a graph (or a filterable graph's graphs) to a canvas.
+            @param object The item to connect. Non-graph items are ignored.
+            @param canvas The canvas to connect to. Can be @c nullptr.*/
+        static void ConnectGraphToCanvas(GraphItems::GraphItemBase* object, Canvas* canvas);
+        /// @returns The layouts of the fixed objects, which can be restored later.
+        [[nodiscard]]
+        std::vector<FixedObjectLayout> SaveFixedObjectsLayout() const;
+        /** @brief Restores saved layouts to fixed objects and reconnects them to this canvas.
+            @param layouts The layouts from SaveFixedObjectsLayout().*/
+        void RestoreFixedObjectsLayout(const std::vector<FixedObjectLayout>& layouts);
         /// @returns The fixed object at @p row and @p column.
         /// @param row The row of the object.
         /// @param column The column of the object.

@@ -301,6 +301,9 @@ namespace Wisteria::UI
         // committed back to the canvas via ApplyGridEdits().
         std::vector<std::vector<std::shared_ptr<Wisteria::GraphItems::GraphItemBase>>>
             m_fixedObjectsGrid;
+
+        // layouts of the items shared with the page being edited, restored if the dialog is cancelled
+        std::vector<Canvas::FixedObjectLayout> m_sharedItemLayouts;
         // the last graph placed by a gallery drop, which a filterable graph replaces
         std::weak_ptr<Wisteria::GraphItems::GraphItemBase> m_lastPlacedGraph;
         std::optional<LegendPlacement> m_lastPlacedLegendPlacement;

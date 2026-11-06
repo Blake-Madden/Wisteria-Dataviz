@@ -443,6 +443,18 @@ class WisteriaView final : public wxView
         std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend, size_t graphRow,
         size_t graphCol, Wisteria::UI::LegendPlacement legendPlacement);
 
+    /// @returns @c true if @p item is a graph's legend.
+    /// @param item The canvas item to review.
+    [[nodiscard]]
+    static bool IsLegendItem(const Wisteria::GraphItems::GraphItemBase* item);
+
+    /// @brief If a graph is in the given cell, removes it and its legend,
+    ///     so that a new item can replace the graph.
+    /// @param canvas The canvas to edit.
+    /// @param row The row of the cell about to be replaced.
+    /// @param column The column of the cell about to be replaced.
+    static void ClearGraphBeingReplaced(Wisteria::Canvas* canvas, size_t row, size_t column);
+
   private:
     void UpdateGraphButtonStates() const;
     void UpdateMenuBarStates() const;

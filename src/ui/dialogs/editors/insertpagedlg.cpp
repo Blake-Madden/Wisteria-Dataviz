@@ -94,6 +94,17 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    InsertPageDlg::~InsertPageDlg()
+        {
+        // staging gallery drops re-laid out the items shared with the page being edited,
+        // so put them back the way they were unless the edits are being applied
+        if (GetReturnCode() != wxID_OK && m_canvas != nullptr)
+            {
+            m_canvas->RestoreFixedObjectsLayout(m_sharedItemLayouts);
+            }
+        }
+
+    //-------------------------------------------
     void InsertPageDlg::SelectCell(size_t row, size_t column)
         {
         if (std::cmp_less(row, m_rowCount) && std::cmp_less(column, m_columnCount))
@@ -198,6 +209,7 @@ namespace Wisteria::UI
         const auto scaleFactor = m_previewPanel->GetContentScaleFactor();
 
         const wxBrush occupiedBrush(wxColour{ 220, 220, 220 });
+        const wxBrush legendBrush{ wxColour{ 160, 160, 160 }, wxBRUSHSTYLE_BDIAGONAL_HATCH };
 
         for (size_t row = 0; std::cmp_less(row, m_rowCount); ++row)
             {
@@ -229,6 +241,14 @@ namespace Wisteria::UI
                     dc.SetBrush(isOccupied ? occupiedBrush : *wxWHITE_BRUSH);
                     }
                 dc.DrawRectangle(clientRect.x + cellLeft, clientRect.y + cellTop, cellW, cellH);
+
+                // hatch legends, since they can't be replaced or moved
+                if (WisteriaView::IsLegendItem(item.get()))
+                    {
+                    const wxDCPenChanger penChanger{ dc, *wxTRANSPARENT_PEN };
+                    const wxDCBrushChanger brushChanger{ dc, legendBrush };
+                    dc.DrawRectangle(clientRect.x + cellLeft, clientRect.y + cellTop, cellW, cellH);
+                    }
 
                 if (isOccupied)
                     {
@@ -409,7 +429,12 @@ namespace Wisteria::UI
                     if ((m_dragTargetRow != m_dragSourceRow ||
                          m_dragTargetColumn != m_dragSourceColumn) &&
                         m_dragTargetRow < m_fixedObjectsGrid.size() &&
-                        m_dragTargetColumn < m_fixedObjectsGrid[m_dragTargetRow].size())
+                        m_dragTargetColumn < m_fixedObjectsGrid[m_dragTargetRow].size() &&
+                        // a legend must stay next to its graph
+                        !WisteriaView::IsLegendItem(
+                            m_fixedObjectsGrid[m_dragSourceRow][m_dragSourceColumn].get()) &&
+                        !WisteriaView::IsLegendItem(
+                            m_fixedObjectsGrid[m_dragTargetRow][m_dragTargetColumn].get()))
                         {
                         std::swap(m_fixedObjectsGrid[m_dragSourceRow][m_dragSourceColumn],
                                   m_fixedObjectsGrid[m_dragTargetRow][m_dragTargetColumn]);
@@ -447,6 +472,7 @@ namespace Wisteria::UI
                     m_fixedObjectsGrid[row][col] = m_canvas->GetFixedObject(row, col);
                     }
                 }
+            m_sharedItemLayouts = m_canvas->SaveFixedObjectsLayout();
             }
 
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
@@ -793,11 +819,14 @@ namespace Wisteria::UI
             TransferDataToWindow();
             }
 
-        for (size_t row = 0; row < rows; ++row)
+        // the staging grid may have trimmed empty outer cells,
+        // so anything outside of it was removed
+        for (size_t row = 0; row < m_fixedObjectsGrid.size(); ++row)
             {
-            for (size_t col = 0; col < cols; ++col)
+            for (size_t col = 0; col < m_fixedObjectsGrid[row].size(); ++col)
                 {
-                m_fixedObjectsGrid[row][col] = stagingCanvas->GetFixedObject(row, col);
+                m_fixedObjectsGrid[row][col] =
+                    (row < rows && col < cols) ? stagingCanvas->GetFixedObject(row, col) : nullptr;
                 }
             }
         }
@@ -834,6 +863,15 @@ namespace Wisteria::UI
         const auto clientPos = m_previewPanel->ScreenToClient(event.GetDropScreenPosition());
         const auto [row, col] = CellFromPoint(clientPos);
 
+        if (row < m_fixedObjectsGrid.size() && col < m_fixedObjectsGrid[row].size() &&
+            WisteriaView::IsLegendItem(m_fixedObjectsGrid[row][col].get()))
+            {
+            wxMessageBox(_(L"A graph's legend cannot be replaced. "
+                           L"Please drop the item onto a different cell."),
+                         _(L"Legend Cell"), wxOK | wxICON_INFORMATION, this);
+            return;
+            }
+
         auto* stagingCanvas = CreateStagingCanvas();
 
         if (DropItem(event.GetItemType(), stagingCanvas, row, col))
@@ -846,6 +884,16 @@ namespace Wisteria::UI
 
         m_lastPlacedGraph.reset();
         m_lastPlacedLegendPlacement.reset();
+
+        // staging connected the grid's graphs (including ones shared with the page being
+        // edited) to the staging canvas, so reconnect them before it is destroyed
+        for (const auto& gridRow : m_fixedObjectsGrid)
+            {
+            for (const auto& item : gridRow)
+                {
+                Canvas::ConnectGraphToCanvas(item.get(), m_canvas);
+                }
+            }
         stagingCanvas->Destroy();
         }
 
@@ -970,6 +1018,7 @@ namespace Wisteria::UI
         Canvas* stagingCanvas, const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
         const size_t graphRow, const size_t graphCol)
         {
+        WisteriaView::ClearGraphBeingReplaced(stagingCanvas, graphRow, graphCol);
         stagingCanvas->SetFixedObject(graphRow, graphCol, plot);
         m_lastPlacedGraph = plot;
         m_lastPlacedLegendPlacement = LegendPlacement::None;
@@ -987,6 +1036,8 @@ namespace Wisteria::UI
             }
 
         dlg.ApplyGridSize();
+        WisteriaView::ClearGraphBeingReplaced(stagingCanvas, dlg.GetSelectedRow(),
+                                              dlg.GetSelectedColumn());
         stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
                                       dlg.BuildLabel());
         return true;
@@ -1004,6 +1055,8 @@ namespace Wisteria::UI
             }
 
         dlg.ApplyGridSize();
+        WisteriaView::ClearGraphBeingReplaced(stagingCanvas, dlg.GetSelectedRow(),
+                                              dlg.GetSelectedColumn());
         stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
                                       dlg.BuildKpiCard());
         return true;
@@ -1026,6 +1079,8 @@ namespace Wisteria::UI
 
         dlg.ApplyGridSize();
 
+        WisteriaView::ClearGraphBeingReplaced(stagingCanvas, dlg.GetSelectedRow(),
+                                              dlg.GetSelectedColumn());
         stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
                                       Wisteria::UI::InsertLabelDlg::BuildSpacerLabel(
                                           stagingCanvas, Wisteria::SpacerType::Spacer));
@@ -1062,6 +1117,8 @@ namespace Wisteria::UI
         dlg.ApplyGridSize();
         dlg.ApplyPageOptions(*label);
 
+        WisteriaView::ClearGraphBeingReplaced(stagingCanvas, dlg.GetSelectedRow(),
+                                              dlg.GetSelectedColumn());
         stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), label);
         return true;
         }
@@ -1081,6 +1138,8 @@ namespace Wisteria::UI
             }
 
         dlg.ApplyGridSize();
+        WisteriaView::ClearGraphBeingReplaced(stagingCanvas, dlg.GetSelectedRow(),
+                                              dlg.GetSelectedColumn());
         stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
                                       dlg.BuildShape());
         return true;
@@ -1105,6 +1164,8 @@ namespace Wisteria::UI
             return false;
             }
 
+        WisteriaView::ClearGraphBeingReplaced(stagingCanvas, dlg.GetSelectedRow(),
+                                              dlg.GetSelectedColumn());
         stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(), image);
         return true;
         }
@@ -1128,6 +1189,8 @@ namespace Wisteria::UI
             return false;
             }
 
+        WisteriaView::ClearGraphBeingReplaced(stagingCanvas, dlg.GetSelectedRow(),
+                                              dlg.GetSelectedColumn());
         stagingCanvas->SetFixedObject(dlg.GetSelectedRow(), dlg.GetSelectedColumn(),
                                       std::move(commonAxis));
         return true;

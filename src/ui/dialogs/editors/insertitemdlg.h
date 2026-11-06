@@ -302,6 +302,8 @@ namespace Wisteria::UI
 
       private:
         void SelectCell(size_t row, size_t column);
+        [[nodiscard]]
+        bool IsLegendCell(size_t row, size_t column) const;
 
         Canvas* m_canvas{ nullptr };
         const ReportBuilder* m_reportBuilder{ nullptr };

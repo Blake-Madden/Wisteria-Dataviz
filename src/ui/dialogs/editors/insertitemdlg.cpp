@@ -8,6 +8,7 @@
 
 #include "insertitemdlg.h"
 #include "../../app/wisteriaapp.h"
+#include "../../app/wisteriaview.h"
 #include "../../base/image.h"
 #include "../../base/label.h"
 #include "../../graphs/barchart.h"
@@ -51,8 +52,7 @@ namespace Wisteria::UI
         m_rows = std::max<size_t>(gridSize.first, 1);
         m_columns = std::max<size_t>(gridSize.second, 1);
 
-        // select the first empty cell (scanning in reading order),
-        // falling back to (0, 0) if all cells are occupied
+        // select the first empty cell (scanning in reading order)
         for (size_t row = 0; row < gridSize.first; ++row)
             {
             for (size_t col = 0; col < gridSize.second; ++col)
@@ -65,10 +65,45 @@ namespace Wisteria::UI
                     }
                 }
             }
+        // otherwise, select the first cell that isn't a legend
+        for (size_t row = 0; row < gridSize.first; ++row)
+            {
+            for (size_t col = 0; col < gridSize.second; ++col)
+                {
+                if (!IsLegendCell(row, col))
+                    {
+                    m_selectedRow = row;
+                    m_selectedColumn = col;
+                    return;
+                    }
+                }
+            }
         }
 
     //-------------------------------------------
-    void InsertItemDlg::SelectCell(size_t row, size_t column)
+    bool InsertItemDlg::IsLegendCell(const size_t row, const size_t column) const
+        {
+        if (m_canvas == nullptr)
+            {
+            return false;
+            }
+        const auto [canvasRows, canvasCols] = m_canvas->GetFixedObjectsGridSize();
+        return row < canvasRows && column < canvasCols &&
+               WisteriaView::IsLegendItem(m_canvas->GetFixedObject(row, column).get());
+        }
+
+    //-------------------------------------------
+    void InsertItemDlg::SelectCell(const size_t row, const size_t column)
+        {
+        // a graph's legend cannot be replaced by a new item
+        if (!IsLegendCell(row, column))
+            {
+            SetSelectedCell(row, column);
+            }
+        }
+
+    //-------------------------------------------
+    void InsertItemDlg::SetSelectedCell(const size_t row, const size_t column)
         {
         if (row < m_rows && column < m_columns)
             {
@@ -179,6 +214,8 @@ namespace Wisteria::UI
                     const auto scaleFactor = m_gridPanel->GetContentScaleFactor();
 
                     const wxBrush occupiedBrush(wxColour{ 220, 220, 220 });
+                    const wxBrush legendBrush{ wxColour{ 160, 160, 160 },
+                                               wxBRUSHSTYLE_BDIAGONAL_HATCH };
 
                     for (size_t row = 0; row < m_rows; ++row)
                         {
@@ -212,6 +249,15 @@ namespace Wisteria::UI
                                 }
                             dc.DrawRectangle(clientRect.x + cellLeft, clientRect.y + cellTop, cellW,
                                              cellH);
+
+                            // hatch legends, since they can't be replaced
+                            if (WisteriaView::IsLegendItem(item.get()))
+                                {
+                                const wxDCPenChanger penChanger{ dc, *wxTRANSPARENT_PEN };
+                                const wxDCBrushChanger brushChanger{ dc, legendBrush };
+                                dc.DrawRectangle(clientRect.x + cellLeft, clientRect.y + cellTop,
+                                                 cellW, cellH);
+                                }
 
                             if (isOccupied)
                                 {
@@ -285,51 +331,54 @@ namespace Wisteria::UI
 
             // keyboard handler (arrow keys navigate cells,
             // Tab/Shift+Tab pass through for normal focus traversal)
-            m_gridPanel->Bind(wxEVT_KEY_DOWN,
-                              [this](wxKeyEvent& evt)
-                              {
-                                  const auto keyCode = evt.GetKeyCode();
-                                  if (keyCode == WXK_RIGHT)
-                                      {
-                                      if (m_selectedColumn + 1 < m_columns)
-                                          {
-                                          SelectCell(m_selectedRow, m_selectedColumn + 1);
-                                          }
-                                      else if (m_selectedRow + 1 < m_rows)
-                                          {
-                                          SelectCell(m_selectedRow + 1, 0);
-                                          }
-                                      }
-                                  else if (keyCode == WXK_LEFT)
-                                      {
-                                      if (m_selectedColumn > 0)
-                                          {
-                                          SelectCell(m_selectedRow, m_selectedColumn - 1);
-                                          }
-                                      else if (m_selectedRow > 0)
-                                          {
-                                          SelectCell(m_selectedRow - 1, m_columns - 1);
-                                          }
-                                      }
-                                  else if (keyCode == WXK_UP)
-                                      {
-                                      if (m_selectedRow > 0)
-                                          {
-                                          SelectCell(m_selectedRow - 1, m_selectedColumn);
-                                          }
-                                      }
-                                  else if (keyCode == WXK_DOWN)
-                                      {
-                                      if (m_selectedRow + 1 < m_rows)
-                                          {
-                                          SelectCell(m_selectedRow + 1, m_selectedColumn);
-                                          }
-                                      }
-                                  else
-                                      {
-                                      evt.Skip();
-                                      }
-                              });
+            m_gridPanel->Bind(
+                wxEVT_KEY_DOWN,
+                [this](wxKeyEvent& evt)
+                {
+                    // steps through the cells in reading order by
+                    // the given amount, skipping over legends
+                    const auto moveSelection = [this](const long step)
+                    {
+                        const auto cellCount = static_cast<long>(m_rows * m_columns);
+                        for (auto index =
+                                 static_cast<long>(m_selectedRow * m_columns + m_selectedColumn) +
+                                 step;
+                             index >= 0 && index < cellCount; index += step)
+                            {
+                            const auto row =
+                                safe_divide<size_t>(static_cast<size_t>(index), m_columns);
+                            const auto col =
+                                safe_modulus<size_t>(static_cast<size_t>(index), m_columns);
+                            if (!IsLegendCell(row, col))
+                                {
+                                SelectCell(row, col);
+                                return;
+                                }
+                            }
+                    };
+
+                    const auto keyCode = evt.GetKeyCode();
+                    if (keyCode == WXK_RIGHT)
+                        {
+                        moveSelection(1);
+                        }
+                    else if (keyCode == WXK_LEFT)
+                        {
+                        moveSelection(-1);
+                        }
+                    else if (keyCode == WXK_UP)
+                        {
+                        moveSelection(-static_cast<long>(m_columns));
+                        }
+                    else if (keyCode == WXK_DOWN)
+                        {
+                        moveSelection(static_cast<long>(m_columns));
+                        }
+                    else
+                        {
+                        evt.Skip();
+                        }
+                });
 
             // focus handlers
             m_gridPanel->Bind(wxEVT_SET_FOCUS,
@@ -669,11 +718,6 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
-    void InsertItemDlg::SetSelectedCell(const size_t row, const size_t column)
-        {
-        SelectCell(row, column);
-        }
-
     //-------------------------------------------
     void InsertItemDlg::LoadCanvasMargins(const GraphItems::GraphItemBase& item)
         {

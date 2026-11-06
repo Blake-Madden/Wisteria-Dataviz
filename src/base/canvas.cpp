@@ -1681,6 +1681,32 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         }
 
     //---------------------------------------------------
+    void Canvas::PrependEmptyRow()
+        {
+        const auto columns = (m_fixedObjects.empty() ? 1 : m_fixedObjects.front().size());
+        m_fixedObjects.insert(m_fixedObjects.begin(),
+                              std::vector<std::shared_ptr<GraphItems::GraphItemBase>>(columns));
+
+        m_rowsInfo.clear();
+        m_rowsInfo.resize(m_fixedObjects.size(),
+                          CanvasRowInfo{ safe_divide<double>(1.0, m_fixedObjects.size()) });
+        }
+
+    //---------------------------------------------------
+    void Canvas::PrependEmptyColumn()
+        {
+        if (m_fixedObjects.empty())
+            {
+            SetFixedObjectsGridSize(1, 1);
+            return;
+            }
+        for (auto& row : m_fixedObjects)
+            {
+            row.insert(row.begin(), nullptr);
+            }
+        }
+
+    //---------------------------------------------------
     std::pair<size_t, size_t> Canvas::RemoveEmptyOuterCells()
         {
         const auto [rowCount, columnCount] = GetFixedObjectsGridSize();
@@ -1877,6 +1903,55 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
         }
 
     //---------------------------------------------------
+    void Canvas::ConnectGraphToCanvas(GraphItems::GraphItemBase * object, Canvas * canvas)
+        {
+        if (auto* graph = dynamic_cast<Graphs::Graph2D*>(object); graph != nullptr)
+            {
+            graph->SetCanvas(canvas);
+            }
+        else if (const auto* filterableGraph = dynamic_cast<const Graphs::FilterableGraph*>(object);
+                 filterableGraph != nullptr)
+            {
+            for (const auto& filteredGraph : filterableGraph->GetVariants())
+                {
+                filteredGraph.m_graph->SetCanvas(canvas);
+                }
+            }
+        }
+
+    //---------------------------------------------------
+    std::vector<Canvas::FixedObjectLayout> Canvas::SaveFixedObjectsLayout() const
+        {
+        std::vector<FixedObjectLayout> layouts;
+        for (const auto& row : m_fixedObjects)
+            {
+            for (const auto& item : row)
+                {
+                if (item != nullptr)
+                    {
+                    FixedObjectLayout layout;
+                    layout.m_item = item;
+                    layout.m_canvasWidthProportion = item->GetCanvasWidthProportion();
+                    layout.m_originalCanvasScaling = item->GetOriginalCanvasScaling();
+                    layouts.push_back(std::move(layout));
+                    }
+                }
+            }
+        return layouts;
+        }
+
+    //---------------------------------------------------
+    void Canvas::RestoreFixedObjectsLayout(const std::vector<FixedObjectLayout>& layouts)
+        {
+        for (const auto& layout : layouts)
+            {
+            layout.m_item->SetCanvasWidthProportion(layout.m_canvasWidthProportion);
+            layout.m_item->SetOriginalCanvasScaling(layout.m_originalCanvasScaling);
+            ConnectGraphToCanvas(layout.m_item.get(), this);
+            }
+        }
+
+    //---------------------------------------------------
     void Canvas::SetFixedObject(const size_t row, const size_t column,
                                 const std::shared_ptr<GraphItems::GraphItemBase>& object)
         {
@@ -1888,19 +1963,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             // A graph built against a different (e.g., temporary staging) canvas
             // still points back to it. Connect it to this canvas now that it is
             // actually being placed here, so it never queries a destroyed canvas
-            if (auto* graph = dynamic_cast<Graphs::Graph2D*>(object.get()); graph != nullptr)
-                {
-                graph->SetCanvas(this);
-                }
-            else if (const auto* filterableGraph =
-                         dynamic_cast<const Graphs::FilterableGraph*>(object.get());
-                     filterableGraph != nullptr)
-                {
-                for (const auto& filteredGraph : filterableGraph->GetVariants())
-                    {
-                    filteredGraph.m_graph->SetCanvas(this);
-                    }
-                }
+            ConnectGraphToCanvas(object.get(), this);
             }
         // resize the grid, if necessary
         auto currentColumnCount = (GetFixedObjects().empty() ? 0 : GetFixedObjects().at(0).size());
