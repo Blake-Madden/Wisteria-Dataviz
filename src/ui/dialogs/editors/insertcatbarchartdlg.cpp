@@ -248,10 +248,12 @@ namespace Wisteria::UI
         serpentineSizer->Add(m_serpentineModeChoice, wxSizerFlags{}.CenterVertical());
         m_serpentineThresholdLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Fold threshold:"));
         serpentineSizer->Add(m_serpentineThresholdLabel, wxSizerFlags{}.CenterVertical());
-        m_serpentineThresholdSpin = new wxSpinCtrl(optionsPage, wxID_ANY);
-        m_serpentineThresholdSpin->SetRange(2, 25);
-        m_serpentineThresholdSpin->SetValidator(
-            wxGenericValidator{ &m_serpentineThresholdMultiple });
+        m_serpentineThresholdSpin = new wxSpinCtrlDouble(optionsPage, wxID_ANY);
+        m_serpentineThresholdSpin->SetRange(2, 40);
+        m_serpentineThresholdSpin->SetDigits(1);
+        m_serpentineThresholdSpin->SetIncrement(0.5);
+        // validators do not work with wxSpinCtrlDouble
+        m_serpentineThresholdSpin->SetValue(m_serpentineThreshold);
         serpentineSizer->Add(m_serpentineThresholdSpin, wxSizerFlags{}.CenterVertical());
         serpentineSizer->AddSpacer(0);
         m_serpentineFoldArrowsCheck = new wxCheckBox(
@@ -1735,6 +1737,8 @@ namespace Wisteria::UI
             return false;
             }
 
+        m_serpentineThreshold = m_serpentineThresholdSpin->GetValue();
+
         return true;
         }
 
@@ -1781,7 +1785,8 @@ namespace Wisteria::UI
         m_applyBrushesToUngroupedBars = barChart->IsApplyingBrushesToUngroupedBars();
         m_constrainScalingAxisToBars = barChart->IsConstrainingScalingAxisToBars();
         m_serpentineModeIndex = SerpentineModeToIndex(barChart->GetSerpentineMode());
-        m_serpentineThresholdMultiple = static_cast<int>(barChart->GetSerpentineThreshold());
+        m_serpentineThreshold = barChart->GetSerpentineThreshold();
+        m_serpentineThresholdSpin->SetValue(m_serpentineThreshold);
         m_serpentineFoldArrows = barChart->IsShowingSerpentineFoldArrows();
         m_ghostOpacity = barChart->GetGhostOpacity();
         m_hideLabelsOnGhostedBars = barChart->IsHidingGhostedLabels();

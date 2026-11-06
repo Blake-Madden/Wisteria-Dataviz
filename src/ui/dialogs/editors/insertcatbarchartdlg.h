@@ -131,7 +131,7 @@ namespace Wisteria::UI
         [[nodiscard]]
         double GetSerpentineThreshold() const noexcept
             {
-            return static_cast<double>(m_serpentineThresholdMultiple);
+            return m_serpentineThreshold;
             }
 
         /// @returns Whether a direction arrow should be drawn inside the ribbon at each fold.
@@ -374,7 +374,7 @@ namespace Wisteria::UI
         wxChoice* m_boxEffectChoice{ nullptr };
         wxChoice* m_serpentineModeChoice{ nullptr };
         wxStaticText* m_serpentineThresholdLabel{ nullptr };
-        wxSpinCtrl* m_serpentineThresholdSpin{ nullptr };
+        wxSpinCtrlDouble* m_serpentineThresholdSpin{ nullptr };
         wxCheckBox* m_serpentineFoldArrowsCheck{ nullptr };
         wxStaticText* m_categoricalVarLabel{ nullptr };
         wxStaticText* m_weightVarLabel{ nullptr };
@@ -412,7 +412,7 @@ namespace Wisteria::UI
         int m_barLabelDisplayIndex{ 0 };
         int m_barShapeAllIndex{ 0 };
         int m_serpentineModeIndex{ 0 };
-        int m_serpentineThresholdMultiple{ 3 };
+        double m_serpentineThreshold{ 3.0 };
         bool m_serpentineFoldArrows{ false };
         int m_ghostOpacity{ 32 };
         bool m_hideLabelsOnGhostedBars{ true };

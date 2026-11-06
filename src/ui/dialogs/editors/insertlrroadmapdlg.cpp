@@ -205,8 +205,10 @@ namespace Wisteria::UI
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         pLevelSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"p-value threshold:")),
                          wxSizerFlags{}.CenterVertical());
-        m_pLevelSpin = new wxSpinCtrlDouble(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
-                                            wxDefaultSize, wxSP_ARROW_KEYS, 0.001, 1.0, 0.05, 0.01);
+        m_pLevelSpin =
+            new wxSpinCtrlDouble(optionsPage, wxID_ANY, wxString{}, wxDefaultPosition,
+                                 wxDefaultSize, wxSP_ARROW_KEYS, 0.0001, 1.0, 0.05, 0.01);
+        m_pLevelSpin->SetDigits(4);
         pLevelSizer->Add(m_pLevelSpin);
         optionsSizer->Add(pLevelSizer, wxSizerFlags{}.Border());
 

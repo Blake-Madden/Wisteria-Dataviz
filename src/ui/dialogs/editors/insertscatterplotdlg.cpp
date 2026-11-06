@@ -169,7 +169,7 @@ namespace Wisteria::UI
                              wxSizerFlags{}.CenterVertical());
             {
             m_confidenceLevelSpin = new wxSpinCtrlDouble(optionsPage, wxID_ANY);
-            m_confidenceLevelSpin->SetRange(0.5, 0.99);
+            m_confidenceLevelSpin->SetRange(0.01, 0.99);
             m_confidenceLevelSpin->SetDigits(2);
             m_confidenceLevelSpin->SetIncrement(0.01);
             // validators do not work with wxSpinCtrlDouble
@@ -329,6 +329,7 @@ namespace Wisteria::UI
         m_showRegressionLines = scatter->IsShowingRegressionLines();
         m_showConfidenceBands = scatter->IsShowingConfidenceBands();
         m_confidenceLevel = scatter->GetConfidenceLevel();
+        m_confidenceLevelSpin->SetValue(m_confidenceLevel);
 
         TransferDataToWindow();
         }

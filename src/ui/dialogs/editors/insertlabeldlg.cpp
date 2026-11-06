@@ -260,7 +260,7 @@ namespace Wisteria::UI
             wxSizerFlags{}.CenterVertical());
         m_headerScalingSpin =
             new wxSpinCtrlDouble(headerBox->GetStaticBox(), wxID_ANY, wxString{}, wxDefaultPosition,
-                                 wxDefaultSize, wxSP_ARROW_KEYS, 0.5, 3.0, 1.0, 0.1);
+                                 wxDefaultSize, wxSP_ARROW_KEYS, 0.1, 32.0, 1.0, 0.1);
         headerGrid->Add(m_headerScalingSpin, wxSizerFlags{}.Expand());
 
         headerBox->Add(headerGrid, wxSizerFlags{}.Expand().Border());
