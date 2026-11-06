@@ -1413,6 +1413,8 @@ void WisteriaView::OnPasteItem([[maybe_unused]] wxCommandEvent& event)
     canvas->SendSizeEvent();
     canvas->Refresh();
     canvas->Update();
+
+    GetDocument()->Modify(true);
     }
 
 //-------------------------------------------
