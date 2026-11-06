@@ -1753,6 +1753,14 @@ namespace Wisteria::Data
                                   const std::vector<std::wstring>& columnNames,
                                   const ImportInfo& info)
         {
+        // remove trailing empty rows
+        const auto isBlankRow = [](const auto& dataRow)
+        { return std::ranges::all_of(dataRow, [](const auto& cell) { return cell.empty(); }); };
+        while (!dataStrings.empty() && isBlankRow(dataStrings.back()))
+            {
+            dataStrings.pop_back();
+            }
+
         // pad every row so that access by column index is always in range
         for (auto& dataRow : dataStrings)
             {
