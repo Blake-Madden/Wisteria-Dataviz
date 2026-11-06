@@ -242,22 +242,27 @@ namespace Wisteria::UI
         serpentineModes.Add(_(L"None"));
         serpentineModes.Add(_(L"Serpentine"));
         serpentineModes.Add(_(L"Aggressive serpentine"));
-        serpentineSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                          serpentineModes, 0,
-                                          wxGenericValidator{ &m_serpentineModeIndex }),
-                             wxSizerFlags{}.CenterVertical());
-        serpentineSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Fold threshold:")),
-                             wxSizerFlags{}.CenterVertical());
-        auto* serpentineThresholdSpin = new wxSpinCtrl(optionsPage, wxID_ANY);
-        serpentineThresholdSpin->SetRange(2, 25);
-        serpentineThresholdSpin->SetValidator(wxGenericValidator{ &m_serpentineThresholdMultiple });
-        serpentineSizer->Add(serpentineThresholdSpin, wxSizerFlags{}.CenterVertical());
+        m_serpentineModeChoice =
+            new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, serpentineModes,
+                         0, wxGenericValidator{ &m_serpentineModeIndex });
+        serpentineSizer->Add(m_serpentineModeChoice, wxSizerFlags{}.CenterVertical());
+        m_serpentineThresholdLabel = new wxStaticText(optionsPage, wxID_ANY, _(L"Fold threshold:"));
+        serpentineSizer->Add(m_serpentineThresholdLabel, wxSizerFlags{}.CenterVertical());
+        m_serpentineThresholdSpin = new wxSpinCtrl(optionsPage, wxID_ANY);
+        m_serpentineThresholdSpin->SetRange(2, 25);
+        m_serpentineThresholdSpin->SetValidator(
+            wxGenericValidator{ &m_serpentineThresholdMultiple });
+        serpentineSizer->Add(m_serpentineThresholdSpin, wxSizerFlags{}.CenterVertical());
         serpentineSizer->AddSpacer(0);
-        serpentineSizer->Add(new wxCheckBox(optionsPage, wxID_ANY, _(L"Show fold direction arrows"),
-                                            wxDefaultPosition, wxDefaultSize, 0,
-                                            wxGenericValidator{ &m_serpentineFoldArrows }),
-                             wxSizerFlags{}.CenterVertical());
+        m_serpentineFoldArrowsCheck = new wxCheckBox(
+            optionsPage, wxID_ANY, _(L"Show fold direction arrows"), wxDefaultPosition,
+            wxDefaultSize, 0, wxGenericValidator{ &m_serpentineFoldArrows });
+        serpentineSizer->Add(m_serpentineFoldArrowsCheck, wxSizerFlags{}.CenterVertical());
         leftSizer->Add(serpentineSizer, wxSizerFlags{}.Border());
+        // folding is off by default
+        m_serpentineThresholdLabel->Enable(false);
+        m_serpentineThresholdSpin->Enable(false);
+        m_serpentineFoldArrowsCheck->Enable(false);
 
         // bar label suffix
         auto* suffixSizer = new wxFlexGridSizer(
@@ -362,15 +367,17 @@ namespace Wisteria::UI
 
         auto* sortComparisonSizer = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
-        sortComparisonSizer->Add(
-            new wxStaticText(sortBox->GetStaticBox(), wxID_ANY, _(L"Sort by:")),
-            wxSizerFlags{}.CenterVertical());
+        m_sortComparisonLabel = new wxStaticText(sortBox->GetStaticBox(), wxID_ANY, _(L"Sort by:"));
+        sortComparisonSizer->Add(m_sortComparisonLabel, wxSizerFlags{}.CenterVertical());
         wxArrayString sortComparisons;
         sortComparisons.Add(_(L"Bar length"));
         sortComparisons.Add(_(L"Bar label"));
         m_sortComparisonChoice = new wxChoice(sortBox->GetStaticBox(), wxID_ANY, wxDefaultPosition,
                                               wxDefaultSize, sortComparisons);
         m_sortComparisonChoice->SetSelection(0);
+        // "No custom sort" is selected by default
+        m_sortComparisonLabel->Enable(false);
+        m_sortComparisonChoice->Enable(false);
         sortComparisonSizer->Add(m_sortComparisonChoice, wxSizerFlags{}.CenterVertical());
         sortBox->Add(sortComparisonSizer, wxSizerFlags{}.Border(wxLEFT, FromDIP(20)));
 
@@ -947,6 +954,9 @@ namespace Wisteria::UI
         m_boxEffectChoice->Bind(wxEVT_CHOICE,
                                 [this]([[maybe_unused]] wxCommandEvent&) { OnBoxEffectChanged(); });
 
+        m_serpentineModeChoice->Bind(wxEVT_CHOICE, [this]([[maybe_unused]] wxCommandEvent&)
+                                     { OnSerpentineModeChanged(); });
+
         m_shapeButton->Bind(wxEVT_BUTTON,
                             [this]([[maybe_unused]] wxCommandEvent&) { OnSelectStippleShape(); });
 
@@ -1165,6 +1175,16 @@ namespace Wisteria::UI
         }
 
     //-------------------------------------------
+    void InsertCatBarChartDlg::OnSerpentineModeChanged()
+        {
+        // "None" is index 0
+        const bool isFolding = (m_serpentineModeChoice->GetSelection() > 0);
+        m_serpentineThresholdLabel->Enable(isFolding);
+        m_serpentineThresholdSpin->Enable(isFolding);
+        m_serpentineFoldArrowsCheck->Enable(isFolding);
+        }
+
+    //-------------------------------------------
     void InsertCatBarChartDlg::OnBarSortChanged()
         {
         const bool isLengthOrLabelSort =
@@ -1172,6 +1192,7 @@ namespace Wisteria::UI
             (m_sortDescRadio != nullptr && m_sortDescRadio->GetValue());
         if (m_sortComparisonChoice != nullptr)
             {
+            m_sortComparisonLabel->Enable(isLengthOrLabelSort);
             m_sortComparisonChoice->Enable(isLengthOrLabelSort);
             }
         if (m_sortLabelListBox != nullptr)
@@ -1982,6 +2003,7 @@ namespace Wisteria::UI
 
         // update button enabled states after DDX transfers the box effect
         OnBoxEffectChanged();
+        OnSerpentineModeChanged();
         // enable/disable the sort list box without clearing bar groups
         if (m_sortLabelListBox != nullptr)
             {
@@ -1993,6 +2015,7 @@ namespace Wisteria::UI
             const bool isLengthOrLabelSort =
                 (m_sortAscRadio != nullptr && m_sortAscRadio->GetValue()) ||
                 (m_sortDescRadio != nullptr && m_sortDescRadio->GetValue());
+            m_sortComparisonLabel->Enable(isLengthOrLabelSort);
             m_sortComparisonChoice->Enable(isLengthOrLabelSort);
             }
         // sync bar-shape controls (populates list and sets enable state)

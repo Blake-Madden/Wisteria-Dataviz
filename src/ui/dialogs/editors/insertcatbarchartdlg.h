@@ -15,6 +15,7 @@
 #include "../../graphs/categoricalbarchart.h"
 #include "insertgraphdlg.h"
 #include <vector>
+#include <wx/spinctrl.h>
 #include <wx/wx.h>
 
 class WisteriaDoc;
@@ -340,6 +341,7 @@ namespace Wisteria::UI
         void OnSelectStippleShape();
         void OnSelectImages();
         void OnBoxEffectChanged();
+        void OnSerpentineModeChanged();
         void OnBarSortChanged();
         void OnBarShapeModeChanged();
         void OnBarShapeAllChanged();
@@ -370,6 +372,10 @@ namespace Wisteria::UI
         constexpr static wxWindowID ID_SELECT_VARS_BUTTON{ wxID_HIGHEST + 4 };
 
         wxChoice* m_boxEffectChoice{ nullptr };
+        wxChoice* m_serpentineModeChoice{ nullptr };
+        wxStaticText* m_serpentineThresholdLabel{ nullptr };
+        wxSpinCtrl* m_serpentineThresholdSpin{ nullptr };
+        wxCheckBox* m_serpentineFoldArrowsCheck{ nullptr };
         wxStaticText* m_categoricalVarLabel{ nullptr };
         wxStaticText* m_weightVarLabel{ nullptr };
         wxStaticText* m_groupVarLabel{ nullptr };
@@ -383,6 +389,7 @@ namespace Wisteria::UI
         wxRadioButton* m_sortNoneRadio{ nullptr };
         wxRadioButton* m_sortAscRadio{ nullptr };
         wxRadioButton* m_sortDescRadio{ nullptr };
+        wxStaticText* m_sortComparisonLabel{ nullptr };
         wxChoice* m_sortComparisonChoice{ nullptr };
         wxRadioButton* m_sortCustomRadio{ nullptr };
         wxEditableListBox* m_sortLabelListBox{ nullptr };

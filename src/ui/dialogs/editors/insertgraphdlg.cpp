@@ -683,10 +683,12 @@ namespace Wisteria::UI
         grid->Add(headerCheck, wxSizerFlags{}.CenterVertical());
 
         m_legendTitleLabel = new wxStaticText(m_legendPage, wxID_ANY, _(L"Custom title:"));
-        grid->Add(m_legendTitleLabel, wxSizerFlags{}.CenterVertical());
+        grid->Add(m_legendTitleLabel, wxSizerFlags{}.Top());
         m_legendTitleCtrl =
             new wxTextCtrl(m_legendPage, wxID_ANY, wxString{}, wxDefaultPosition, wxDefaultSize,
                            wxTE_MULTILINE | wxTE_RICH2, wxGenericValidator{ &m_legendTitle });
+        m_legendTitleCtrl->SetMinSize(
+            wxSize{ -1, m_legendTitleCtrl->GetBestSize().GetHeight() * 3 });
 #if wxUSE_SPELLCHECK
         m_legendTitleCtrl->EnableProofCheck(wxTextProofOptions::Default().GrammarCheck());
 #endif
