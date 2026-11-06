@@ -32,6 +32,7 @@ images/dashboard.svg
 images/data-add.svg
 images/data-delete.svg
 images/data-edit.svg
+images/data-import.svg
 images/data.svg
 images/date.svg
 images/delete.svg

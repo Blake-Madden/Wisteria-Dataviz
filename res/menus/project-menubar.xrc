@@ -86,7 +86,7 @@
                     <label>Add...</label>
                 </object>
                 <object class="wxMenuItem" name="ID_EDIT_DATASET">
-                    <label>Edit...</label>
+                    <label>Edit Import...</label>
                 </object>
                 <object class="wxMenuItem" name="ID_DELETE_DATASET">
                     <label>Delete</label>

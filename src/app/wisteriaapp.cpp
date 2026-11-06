@@ -1549,7 +1549,8 @@ wxRibbonBar* WisteriaApp::CreateRibbon(wxWindow* parent, const wxDocument* doc)
         dataButtonBar->AddButton(ID_INSERT_DATASET, _(L"Add"), ReadSvgIcon(L"images/data-add.svg"),
                                  _(L"Import a dataset into the project"));
         dataButtonBar->SetKeyTip(ID_INSERT_DATASET, _DT(L"N"));
-        dataButtonBar->AddButton(ID_EDIT_DATASET, _(L"Edit"), ReadSvgIcon(L"images/data-edit.svg"),
+        dataButtonBar->AddButton(ID_EDIT_DATASET, _(L"Edit Import"),
+                                 ReadSvgIcon(L"images/data-import.svg"),
                                  _(L"Edit the selected dataset's import options"));
         dataButtonBar->SetKeyTip(ID_EDIT_DATASET, _DT(L"I"));
         dataButtonBar->AddButton(ID_DELETE_DATASET, _(L"Delete"),
