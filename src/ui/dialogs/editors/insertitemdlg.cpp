@@ -854,17 +854,25 @@ namespace Wisteria::UI
 
         Bind(
             wxEVT_BUTTON,
-            [this](wxCommandEvent& evt)
+            [this]([[maybe_unused]] wxCommandEvent&)
             {
-                ApplyGridSize();
                 TransferDataFromWindow();
-
-                if (!ConfirmOverwrite())
+                if (!Validate() || !TransferDataFromWindow() || !ConfirmOverwrite())
                     {
                     return;
                     }
 
-                evt.Skip();
+                ApplyGridSize();
+
+                if (IsModal())
+                    {
+                    EndModal(wxID_OK);
+                    }
+                else
+                    {
+                    SetReturnCode(wxID_OK);
+                    Show(false);
+                    }
             },
             wxID_OK);
         }
