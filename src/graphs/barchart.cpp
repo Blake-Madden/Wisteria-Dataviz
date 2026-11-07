@@ -1167,6 +1167,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BarChart, Wisteria::Graphs::GroupGra
                 }
             }
 
+        // tiles smaller than a pixel would never advance the tiling loops below
+        if (static_cast<int>(shapeWidth) < 1 || static_cast<int>(shapeHeight) < 1 ||
+            static_cast<int>(barRenderInfo.m_barWidth) < 1)
+            {
+            return;
+            }
+
         const auto addStipple = [this, &barRenderInfo, &rect, &barBlock,
                                  opacityToApply = colors.m_opacity, shapeWidth,
                                  shapeHeight](const wxPoint& anchorPt, const wxSize& stippleImgSize)

@@ -50,7 +50,8 @@ namespace Wisteria::GraphItems
                 DrawBaseFlower(flowerRect, dc,
                                Colors::ColorBrewer::GetColor(Colors::Color::ChapelBlue),
                                Colors::ColorBrewer::GetColor(Colors::Color::Sand));
-                flowerRect.Offset(flowerRect.GetWidth() * math_constants::half, 0);
+                flowerRect.Offset(
+                    std::max(1, static_cast<int>(flowerRect.GetWidth() * math_constants::half)), 0);
                 }
             }
         }

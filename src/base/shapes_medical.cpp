@@ -110,7 +110,8 @@ namespace Wisteria::GraphItems
                                                                   math_constants::three_fourths)),
                   currentY },
                 { drawRect.GetRight(), currentY });
-            currentY += ScaleToScreenAndCanvas(GetScaling() <= 2.0 ? 2 : 1);
+            currentY += std::max<int>(
+                1, static_cast<int>(ScaleToScreenAndCanvas(GetScaling() <= 2.0 ? 2 : 1)));
             ++currentLine;
             }
         }
@@ -310,7 +311,7 @@ namespace Wisteria::GraphItems
                                                                   math_constants::three_fourths)),
                   currentY },
                 { drawRect.GetRight(), currentY });
-            currentY += ScaleToScreenAndCanvas(2);
+            currentY += std::max<int>(1, static_cast<int>(ScaleToScreenAndCanvas(2)));
             ++currentLine;
             }
         }

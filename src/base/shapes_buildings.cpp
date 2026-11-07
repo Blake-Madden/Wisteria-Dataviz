@@ -85,8 +85,8 @@ namespace Wisteria::GraphItems
             while (currentY < barnRect.GetBottom())
                 {
                 gc->StrokeLine(barnRect.GetLeft(), currentY, barnRect.GetRight(), currentY);
-                currentY +=
-                    static_cast<wxCoord>(ScaleToScreenAndCanvas(GetScaling() <= 2.0 ? 4 : 2));
+                currentY += std::max<wxCoord>(
+                    1, static_cast<wxCoord>(ScaleToScreenAndCanvas(GetScaling() <= 2.0 ? 4 : 2)));
                 }
             gc->PopState();
 
@@ -220,7 +220,8 @@ namespace Wisteria::GraphItems
             while (currentY < ladderRect.GetBottom())
                 {
                 gc->StrokeLine(ladderRect.GetLeft(), currentY, ladderRect.GetRight(), currentY);
-                currentY += ScaleToScreenAndCanvas(GetScaling() <= 2.0 ? 2 : 1);
+                currentY += std::max<int>(
+                    1, static_cast<int>(ScaleToScreenAndCanvas(GetScaling() <= 2.0 ? 2 : 1)));
                 }
 
             // top of silo
