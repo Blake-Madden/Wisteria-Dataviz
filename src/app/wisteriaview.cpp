@@ -1045,10 +1045,30 @@ void WisteriaView::ReloadProject()
                                     wxString{ L"wisteria_reload" } :
                                     wxFileName{ projectPath }.GetPathWithSep() + L"wisteria_reload";
     const wxString tempPath = wxFileName::CreateTempFileName(tempPrefix);
-    if (tempPath.empty() || !doc->SaveProject(tempPath))
+    bool savedTemp{ false };
+    wxString saveError;
+    if (!tempPath.empty())
         {
-        wxMessageBox(_(L"Unable to reload the project after the change."), _(L"Reload Error"),
-                     wxOK | wxICON_ERROR, m_frame);
+        try
+            {
+            savedTemp = doc->SaveProject(tempPath);
+            }
+        catch (const std::exception& exc)
+            {
+            saveError = wxString::FromUTF8(exc.what());
+            }
+        }
+    if (!savedTemp)
+        {
+        if (!tempPath.empty())
+            {
+            wxRemoveFile(tempPath);
+            }
+        wxMessageBox(saveError.empty() ?
+                         _(L"Unable to reload the project after the change.") :
+                         wxString::Format(
+                             _(L"Unable to reload the project after the change.\n\n%s"), saveError),
+                     _(L"Reload Error"), wxOK | wxICON_ERROR, m_frame);
         return;
         }
 
