@@ -8,7 +8,9 @@
 
 #include "insertgraphdlg.h"
 #include "../../app/wisteriaapp.h"
+#include "../../app/wisteriaview.h"
 #include "../../base/colorschemenames.h"
+#include "../../graphs/filterablegraph.h"
 #include "../../graphs/graph2d.h"
 #include "../../reporting/reportenumconvert.h"
 #include "axisoptionspanel.h"
@@ -312,8 +314,7 @@ namespace Wisteria::UI
             }
 
         const auto legendPlace = GetLegendPlacement();
-        if (GetEditMode() != EditMode::Insert || legendPlace == LegendPlacement::None ||
-            GetCanvas() == nullptr)
+        if (legendPlace == LegendPlacement::None || GetCanvas() == nullptr)
             {
             return true;
             }
@@ -357,17 +358,47 @@ namespace Wisteria::UI
             // graphRow == 0: grid will be expanded, no existing cell to overwrite
             }
 
-        if (legendCellExists && GetCanvas()->GetFixedObject(legendRow, legendCol) != nullptr)
+        if (!legendCellExists)
             {
-            if (wxMessageBox(_(L"The legend cell already contains an "
-                               "item. Do you want to replace it?"),
-                             _(L"Replace Item"), wxYES_NO | wxICON_QUESTION, this) != wxYES)
+            return true;
+            }
+
+        const auto occupant = GetCanvas()->GetFixedObject(legendRow, legendCol);
+        if (occupant == nullptr)
+            {
+            return true;
+            }
+
+        // when editing, the graph's own legend is replaced along with the graph
+        if (GetEditMode() == EditMode::Edit && WisteriaView::IsLegendItem(occupant.get()))
+            {
+            const auto editedItem = GetCanvas()->GetFixedObject(graphRow, graphCol);
+            if (const auto* filterableGraph =
+                    dynamic_cast<const Graphs::FilterableGraph*>(editedItem.get());
+                filterableGraph != nullptr)
                 {
-                return false;
+                if (filterableGraph->GetLegend() == occupant)
+                    {
+                    return true;
+                    }
+                }
+            else if (const auto* graph = dynamic_cast<const Graphs::Graph2D*>(editedItem.get());
+                     graph != nullptr && graph->GetLegendInfo().has_value())
+                {
+                const auto oldSide = graph->GetLegendInfo()->GetPlacement();
+                if ((oldSide == Side::Right && legendPlace == LegendPlacement::Right) ||
+                    (oldSide == Side::Left && legendPlace == LegendPlacement::Left) ||
+                    (oldSide == Side::Bottom && legendPlace == LegendPlacement::Bottom) ||
+                    (oldSide == Side::Top && legendPlace == LegendPlacement::Top))
+                    {
+                    return true;
+                    }
                 }
             }
 
-        return true;
+        return (wxMessageBox(_(L"The legend cell already contains an item. "
+                               "Do you want to replace it?"),
+                             _(L"Replace Item"), wxYES_NO | wxICON_QUESTION, this) == wxYES);
         }
 
     //-------------------------------------------
