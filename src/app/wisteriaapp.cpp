@@ -406,16 +406,9 @@ void WisteriaApp::ApplyDefaultExportOptions(Wisteria::ReportBuilder& builder)
     if (!builder.HasLoadedSvgExportOptions())
         {
         auto& svgOpts = builder.GetSvgExportOptions();
-        svgOpts = appSettings->GetSvgExportOptions();
         svgOpts.m_paperId = appSettings->GetPaperId();
         svgOpts.m_paperOrientation =
             static_cast<wxPrintOrientation>(appSettings->GetPrintOrientation());
-        }
-    if (!builder.HasLoadedHtmlExportOptions())
-        {
-        builder.GetHtmlExportOptions() = appSettings->GetHtmlExportOptions();
-        // a logo is specific to a project, so it is never inherited
-        builder.GetHtmlExportOptions().m_logoPath.clear();
         }
     if (!builder.HasLoadedPdfExportOptions())
         {
@@ -423,14 +416,6 @@ void WisteriaApp::ApplyDefaultExportOptions(Wisteria::ReportBuilder& builder)
         pdfOpts.m_paperSize = appSettings->GetPaperId();
         pdfOpts.m_paperOrientation =
             static_cast<wxPrintOrientation>(appSettings->GetPrintOrientation());
-        }
-    if (!builder.HasLoadedPowerPointExportOptions())
-        {
-        builder.GetPowerPointExportOptions() = appSettings->GetPowerPointExportOptions();
-        }
-    if (!builder.HasLoadedOdpExportOptions())
-        {
-        builder.GetOdpExportOptions() = appSettings->GetOdpExportOptions();
         }
     }
 

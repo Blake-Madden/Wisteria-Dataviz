@@ -287,8 +287,8 @@ class WisteriaApp final : public Wisteria::UI::BaseApp
     /// @param datasetPath The path to the dataset to open.
     void StartProjectFromDataset(const wxString& datasetPath);
 
-    /// @brief Fills in the export options that a loaded project did not save,
-    ///     using the app settings.
+    /// @brief Fills in the SVG and PDF export paper settings that a loaded project
+    ///     did not save, using the global print settings.
     /// @param builder The project's report builder.
     void ApplyDefaultExportOptions(Wisteria::ReportBuilder& builder);
 

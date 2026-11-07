@@ -665,7 +665,7 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
 
     LoadProject(GetDocument()->GetFilename());
 
-    // seed the per-project export options from the global app settings when the
+    // seed the export paper settings from the global print settings when the
     // project file did not carry its own
     wxGetApp().ApplyDefaultExportOptions(GetReportBuilder());
 
@@ -1757,7 +1757,7 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
         GetReportBuilder().SetKeywords(optionsDlg.GetKeywords());
         }
 
-    // persist the choices to the project, and to the app settings for new projects
+    // persist the choices to the project
     const bool changed =
         docInfoChanged || (savedOptions.m_theme != optionsDlg.GetTheme()) ||
         (savedOptions.m_logoPath != optionsDlg.GetLogoPath()) ||
@@ -1790,7 +1790,6 @@ void WisteriaView::OnHtmlExport([[maybe_unused]] wxCommandEvent& event)
         {
         GetDocument()->Modify(true);
         }
-    wxGetApp().GetAppSettings()->GetHtmlExportOptions() = savedOptions;
 
     wxFileDialog fileDlg(m_frame, _(L"Export to HTML"), wxString{},
                          GetDocument()->GetUserReadableName(), _(L"HTML files (*.html)|*.html"),
