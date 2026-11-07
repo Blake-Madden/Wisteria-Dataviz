@@ -4261,27 +4261,6 @@ void WisteriaView::OnDeleteItem([[maybe_unused]] wxCommandEvent& event)
         return;
         }
 
-    const auto isLegend = [](const auto& item)
-    {
-        if (item == nullptr)
-            {
-            return false;
-            }
-        if (item->IsKindOf(wxCLASSINFO(Wisteria::GraphItems::Label)))
-            {
-            if (auto* label = dynamic_cast<Wisteria::GraphItems::Label*>(item.get());
-                label != nullptr && label->IsLegend())
-                {
-                return true;
-                }
-            }
-        if (item->IsKindOf(wxCLASSINFO(Wisteria::Graphs::ChernoffFacesPlot::ChernoffLegend)))
-            {
-            return true;
-            }
-        return false;
-    };
-
     // find the selected item in the canvas grid
     const auto [gridRows, gridCols] = canvas->GetFixedObjectsGridSize();
     std::shared_ptr<Wisteria::GraphItems::GraphItemBase> selectedItem;
@@ -4296,7 +4275,7 @@ void WisteriaView::OnDeleteItem([[maybe_unused]] wxCommandEvent& event)
             if (item != nullptr && (item->IsSelected() || !item->GetSelectedIds().empty()))
                 {
                 // skip legend labels
-                if (isLegend(item))
+                if (IsLegendItem(item.get()))
                     {
                     continue;
                     }
@@ -4357,7 +4336,7 @@ void WisteriaView::OnDeleteItem([[maybe_unused]] wxCommandEvent& event)
                                          (oldSide == Wisteria::Side::Right) ? itemCol + 1 :
                                                                               itemCol;
 
-                if (isLegend(canvas->GetFixedObject(legendRow, legendCol)))
+                if (IsLegendItem(canvas->GetFixedObject(legendRow, legendCol).get()))
                     {
                     canvas->SetFixedObject(legendRow, legendCol, nullptr);
                     }
