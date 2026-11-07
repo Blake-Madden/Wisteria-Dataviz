@@ -811,7 +811,8 @@ namespace Wisteria::UI
                         SelectCell(m_selectedRow + 1, m_selectedColumn);
                         }
                     }
-                if (keyCode == WXK_DELETE || keyCode == WXK_NUMPAD_DELETE || keyCode == WXK_BACK)
+                else if (keyCode == WXK_DELETE || keyCode == WXK_NUMPAD_DELETE ||
+                         keyCode == WXK_BACK)
                     {
                     if (m_selectedRow < m_fixedObjectsGrid.size() &&
                         m_selectedColumn < m_fixedObjectsGrid[m_selectedRow].size() &&
