@@ -142,6 +142,12 @@ namespace Wisteria::UI
             {
             row.resize(static_cast<size_t>(m_columnCount), nullptr);
             }
+
+        // keep the selection inside the grid
+        m_selectedRow = std::min(m_selectedRow, static_cast<size_t>(m_rowCount - 1));
+        m_selectedColumn = std::min(m_selectedColumn, static_cast<size_t>(m_columnCount - 1));
+
+        UpdateAxisGalleryState();
         }
 
     //-------------------------------------------
@@ -826,6 +832,7 @@ namespace Wisteria::UI
                                 m_fixedObjectsGrid[legendCell->first][legendCell->second] = nullptr;
                                 }
                             m_fixedObjectsGrid[m_selectedRow][m_selectedColumn] = nullptr;
+                            UpdateAxisGalleryState();
                             m_previewPanel->Refresh();
                             }
                         }
@@ -964,7 +971,22 @@ namespace Wisteria::UI
         if (DropItem(event.GetItemType(), stagingCanvas, row, col))
             {
             SyncFromCanvas(stagingCanvas);
-            SelectCell(row, col);
+            // a legend placed left of or above a graph in the first column or row
+            // shifts the graph over, so select the graph rather than its legend
+            std::pair<size_t, size_t> selectedCell{ row, col };
+            if (WisteriaView::IsLegendItem(m_fixedObjectsGrid[row][col].get()))
+                {
+                for (const auto& graphCell :
+                     { std::pair{ row, col + 1 }, std::pair{ row + 1, col } })
+                    {
+                    if (FindLegendCell(graphCell.first, graphCell.second) == selectedCell)
+                        {
+                        selectedCell = graphCell;
+                        break;
+                        }
+                    }
+                }
+            SelectCell(selectedCell.first, selectedCell.second);
             UpdateAxisGalleryState();
             m_previewPanel->Refresh();
             }
