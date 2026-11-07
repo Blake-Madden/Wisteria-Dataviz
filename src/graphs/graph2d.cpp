@@ -1222,9 +1222,10 @@ namespace Wisteria::Graphs
                 {
                 object.GetObject()->SetAnchorPoint({ x, y });
                 }
-            // client may have used a custom scaling for the annotation,
-            // so maintain that ratio
-            object.GetObject()->SetScaling(GetScaling() * object.GetOriginalScaling());
+            // size annotations and such based on the main axis
+            // (maintain aspect ratio of any custom scaling for the annotation)
+            object.GetObject()->SetScaling(GetLeftYAxis().GetAxisLabelScaling() *
+                                           object.GetOriginalScaling());
             }
         }
 
