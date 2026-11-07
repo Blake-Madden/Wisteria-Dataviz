@@ -2144,6 +2144,15 @@ namespace Wisteria::UI
 
         Wisteria::UI::FilterableGraphDlg filterDlg(m_reportBuilder, graphNames, this);
         WisteriaView::SetDialogIcon(filterDlg, L"images/filtered-graph.svg");
+        // graphs placed on this page in the dialog are searched first
+        std::vector<const Canvas*> linkedPages{ stagingCanvas };
+        if (const auto* view = dynamic_cast<const WisteriaView*>(m_doc->GetFirstView());
+            view != nullptr)
+            {
+            linkedPages.insert(linkedPages.cend(), view->GetPages().cbegin(),
+                               view->GetPages().cend());
+            }
+        filterDlg.SetLinkedPages(std::move(linkedPages));
         if (filterDlg.ShowModal() != wxID_OK || filterDlg.GetGraphType() < 0 ||
             std::cmp_greater_equal(filterDlg.GetGraphType(), graphTypes.size()))
             {

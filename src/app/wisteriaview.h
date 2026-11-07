@@ -56,6 +56,14 @@ class WisteriaView final : public wxView
         return m_sidebarShown;
         }
 
+    /// @returns @c true if loading the project changed filtered graphs' values
+    ///     to match the other graphs linked to them.
+    [[nodiscard]]
+    bool HasSyncedFiltersOnLoad() const noexcept
+        {
+        return m_filtersSyncedOnLoad;
+        }
+
     /// @returns The canvases/pages in the project.
     [[nodiscard]]
     const std::vector<Wisteria::Canvas*>& GetPages() const noexcept
@@ -420,6 +428,25 @@ class WisteriaView final : public wxView
         const wxString& allLabel,
         const std::optional<FilterableGraphFallback>& fallback = std::nullopt);
 
+    /// @brief Shows a filtered graph's filter value on every other filtered graph in the
+    ///     project that filters the same dataset and column.
+    /// @param source The filtered graph whose filter value was changed.
+    /// @returns @c true if any graph's filter value was changed.
+    bool SyncLinkedFilters(const Wisteria::Graphs::FilterableGraph& source);
+
+    /// @brief Makes linked filtered graphs show the same filter value, using the
+    ///     first graph (in page order) of each dataset and column.
+    /// @returns @c true if any graph's filter value was changed.
+    bool SyncLinkedFiltersOnLoad();
+
+    /// @brief Applies the filter values of a page's newly added filtered graphs
+    ///     to the other filtered graphs linked to them.
+    /// @param canvas The page that filtered graphs were added to.
+    /// @param previousGraphs The page's filtered graphs before the new ones were added.
+    void SyncAddedFilters(
+        const Wisteria::Canvas& canvas,
+        const std::vector<std::shared_ptr<Wisteria::Graphs::FilterableGraph>>& previousGraphs);
+
     void PlaceGraphWithLegend(Wisteria::Canvas* canvas,
                               const std::shared_ptr<Wisteria::GraphItems::GraphItemBase>& plot,
                               std::unique_ptr<Wisteria::GraphItems::GraphItemBase> legend,
@@ -628,6 +655,8 @@ class WisteriaView final : public wxView
     std::map<wxString, std::pair<wxDateTime, wxFileOffset>> m_sourceFileStates;
     // a change was seen, but the file is still being written or is locked
     bool m_refreshPending{ false };
+    // loading the project changed linked filtered graphs' values
+    bool m_filtersSyncedOnLoad{ false };
 
     Wisteria::ReportBuilder m_reportBuilder;
     std::vector<Wisteria::Canvas*> m_pages;

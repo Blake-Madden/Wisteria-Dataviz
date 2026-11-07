@@ -56,7 +56,8 @@ bool WisteriaDoc::OnOpenDocument(const wxString& filename)
     // the view has already loaded the project by now, so any dataset paths that
     // the user relocated need to be saved
     const auto* view = dynamic_cast<WisteriaView*>(GetFirstView());
-    Modify(view != nullptr && view->GetReportBuilder().HasResolvedMissingDatasets());
+    Modify(view != nullptr && (view->GetReportBuilder().HasResolvedMissingDatasets() ||
+                               view->HasSyncedFiltersOnLoad()));
     UpdateAllViews();
     return true;
     }

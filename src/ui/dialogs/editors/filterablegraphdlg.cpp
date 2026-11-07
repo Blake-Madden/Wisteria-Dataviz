@@ -93,8 +93,10 @@ namespace Wisteria::UI
         auto* noteLabel = new wxStaticText(
             this, wxID_STATIC,
             _(L"The default value is what you see in the program and in most exports. "
-              "(Filtering only works in HTML dashboards.) "
-              "Filtered graphs that use the same dataset and column are linked together."));
+              "(Filtering only works in exported HTML dashboards.)\n\n"
+              "Filtered graphs that use the same dataset and column are linked together. "
+              "The value chosen here will also be shown on the other linked graphs, "
+              "including those on other pages."));
         noteLabel->Wrap(FromDIP(350));
         mainSizer->Add(noteLabel, wxSizerFlags{}.Expand().Border());
 
@@ -175,7 +177,64 @@ namespace Wisteria::UI
             defaultValues.Add(value);
             }
         m_defaultChoice->Set(defaultValues);
-        m_defaultIndex = 0;
+        m_defaultIndex = FindLinkedValueIndex().value_or(0);
+        }
+
+    //-------------------------------------------
+    std::optional<int> FilterableGraphDlg::FindLinkedValueIndex() const
+        {
+        if (m_reportBuilder == nullptr)
+            {
+            return std::nullopt;
+            }
+        const auto& datasets = m_reportBuilder->GetDatasets();
+        const auto foundPos = datasets.find(GetDatasetName());
+        if (foundPos == datasets.cend() || foundPos->second == nullptr)
+            {
+            return std::nullopt;
+            }
+
+        const wxString column{ GetFilterColumn() };
+        for (const auto* page : m_linkedPages)
+            {
+            if (page == nullptr)
+                {
+                continue;
+                }
+            for (const auto& filterableGraph : page->GetFilterableGraphs())
+                {
+                if (filterableGraph->GetData() != foundPos->second ||
+                    filterableGraph->GetFilterColumn().CmpNoCase(column) != 0)
+                    {
+                    continue;
+                    }
+                // the '(All)' choice is always first, but its label may be different
+                if (filterableGraph->GetActiveIndex() == 0)
+                    {
+                    return 0;
+                    }
+                const wxString& activeLabel{
+                    filterableGraph->GetVariants().at(filterableGraph->GetActiveIndex()).m_label
+                };
+                const auto valuePos =
+                    std::ranges::find_if(m_defaultValues, [&activeLabel](const auto& value)
+                                         { return value.CmpNoCase(activeLabel) == 0; });
+                if (valuePos != m_defaultValues.cend())
+                    {
+                    return static_cast<int>(std::distance(m_defaultValues.cbegin(), valuePos));
+                    }
+                }
+            }
+        return std::nullopt;
+        }
+
+    //-------------------------------------------
+    void FilterableGraphDlg::SetLinkedPages(std::vector<const Canvas*> pages)
+        {
+        m_linkedPages = std::move(pages);
+        TransferDataFromWindow();
+        FillDefaultValues();
+        TransferDataToWindow();
         }
 
     //-------------------------------------------

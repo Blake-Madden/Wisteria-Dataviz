@@ -14,6 +14,7 @@
 
 #include "../../reporting/reportbuilder.h"
 #include "../dialogwithhelp.h"
+#include <optional>
 #include <vector>
 #include <wx/choice.h>
 #include <wx/wx.h>
@@ -58,6 +59,13 @@ namespace Wisteria::UI
                        const wxString& defaultValue, int graphType,
                        const wxString& allLabel = wxString{});
 
+        /** @brief Sets the pages to search for filtered graphs that are linked to
+                the selected dataset and column.
+            @details The default value is set to the value those graphs show,
+                so that inserting a graph doesn't change what they show.
+            @param pages The pages to search.*/
+        void SetLinkedPages(std::vector<const Canvas*> pages);
+
         /// @returns The name of the selected dataset.
         [[nodiscard]]
         wxString GetDatasetName() const;
@@ -92,7 +100,13 @@ namespace Wisteria::UI
         [[nodiscard]]
         static wxString GetItem(const std::vector<wxString>& items, int index);
 
+        /// @returns The index of the default value shown by the linked filtered graphs,
+        ///     if any are found.
+        [[nodiscard]]
+        std::optional<int> FindLinkedValueIndex() const;
+
         const ReportBuilder* m_reportBuilder{ nullptr };
+        std::vector<const Canvas*> m_linkedPages;
         bool m_editMode{ false };
         wxString m_allLabel;
 

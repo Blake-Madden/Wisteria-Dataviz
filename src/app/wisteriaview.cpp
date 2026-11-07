@@ -752,6 +752,8 @@ void WisteriaView::ShowSideBar(const bool show)
 //-------------------------------------------
 bool WisteriaView::LoadProject(const wxString& filename)
     {
+    m_filtersSyncedOnLoad = false;
+
     // set up sidebar image list from the app's persistent list
     m_sideBar->SetImageList(wxGetApp().GetProjectSideBarImageList());
 
@@ -973,6 +975,8 @@ bool WisteriaView::LoadProject(const wxString& filename)
                                   PAGE_ICON_INDEX);
             ++pageNum;
             }
+
+        m_filtersSyncedOnLoad = SyncLinkedFiltersOnLoad();
         }
 
     // expand the Data folder
@@ -2241,6 +2245,7 @@ void WisteriaView::OnInsertPage([[maybe_unused]] wxCommandEvent& event)
     if (newCanvas != nullptr)
         {
         dlg.ApplyGridEdits(newCanvas);
+        SyncAddedFilters(*newCanvas, {});
         newCanvas->SetLayer(dlg.GetLayer());
         newCanvas->SetWatermark(
             Wisteria::Canvas::Watermark{ dlg.GetWatermarkLabel(), dlg.GetWatermarkColor() });
@@ -2287,8 +2292,10 @@ void WisteriaView::OnEditPage([[maybe_unused]] wxCommandEvent& event)
         }
 
     canvas->SetLayer(dlg.GetLayer());
+    const auto previousFilterableGraphs = canvas->GetFilterableGraphs();
     canvas->SetFixedObjectsGridSize(dlg.GetRows(), dlg.GetColumns());
     dlg.ApplyGridEdits(canvas);
+    SyncAddedFilters(*canvas, previousFilterableGraphs);
     canvas->FitToPageWhenPrinting(true);
     canvas->SetSizeFromPaperSize();
     canvas->MaintainAspectRatio(true);
@@ -3868,6 +3875,7 @@ void WisteriaView::OnInsertFilteredGraph([[maybe_unused]] wxCommandEvent& event)
 
     Wisteria::UI::FilterableGraphDlg filterDlg(&m_reportBuilder, graphNames, m_frame);
     SetDialogIcon(filterDlg, L"images/filtered-graph.svg");
+    filterDlg.SetLinkedPages({ m_pages.cbegin(), m_pages.cend() });
     if (filterDlg.ShowModal() != wxID_OK || filterDlg.GetGraphType() < 0 ||
         std::cmp_greater_equal(filterDlg.GetGraphType(), graphTypes.size()))
         {
@@ -3969,6 +3977,7 @@ void WisteriaView::EditFilterableGraph(Wisteria::Graphs::FilterableGraph& filter
         if (filterableGraph.SetActiveValue(filterDlg.GetDefaultValue()))
             {
             UpdateCanvas(canvas);
+            SyncLinkedFilters(filterableGraph);
             GetDocument()->Modify(true);
             }
         return;
@@ -3995,6 +4004,7 @@ void WisteriaView::ReplaceWithFilterableGraph(
         return;
         }
 
+    const auto previousFilterableGraphs = canvas->GetFilterableGraphs();
     const auto errorMessage = PlaceFilterableGraphInGrid(canvas, m_reportBuilder, *doc, placedGraph,
                                                          m_lastPlacedLegendPlacement, filterColumn,
                                                          defaultValue, allLabel, fallback);
@@ -4004,7 +4014,96 @@ void WisteriaView::ReplaceWithFilterableGraph(
         wxMessageBox(errorMessage.value(), _(L"Error"), wxOK | wxICON_ERROR, m_frame);
         return;
         }
+    SyncAddedFilters(*canvas, previousFilterableGraphs);
     GetDocument()->Modify(true);
+    }
+
+//-------------------------------------------
+bool WisteriaView::SyncLinkedFilters(const Wisteria::Graphs::FilterableGraph& source)
+    {
+    bool anyChanged{ false };
+    const bool isAllChoice{ source.GetActiveIndex() == 0 };
+    const wxString& activeLabel{ source.GetVariants().at(source.GetActiveIndex()).m_label };
+    for (auto* page : m_pages)
+        {
+        if (page == nullptr)
+            {
+            continue;
+            }
+        bool pageChanged{ false };
+        for (const auto& filterableGraph : page->GetFilterableGraphs())
+            {
+            if (filterableGraph.get() == &source ||
+                filterableGraph->GetData() != source.GetData() ||
+                filterableGraph->GetFilterColumn().CmpNoCase(source.GetFilterColumn()) != 0)
+                {
+                continue;
+                }
+            const std::optional<size_t> choiceIndex{
+                isAllChoice ? std::optional<size_t>{ 0 } : filterableGraph->FindVariant(activeLabel)
+            };
+            if (choiceIndex.has_value() && choiceIndex.value() != filterableGraph->GetActiveIndex())
+                {
+                filterableGraph->SetActiveIndex(choiceIndex.value());
+                pageChanged = true;
+                }
+            }
+        if (pageChanged)
+            {
+            UpdateCanvas(page);
+            anyChanged = true;
+            }
+        }
+    return anyChanged;
+    }
+
+//-------------------------------------------
+bool WisteriaView::SyncLinkedFiltersOnLoad()
+    {
+    bool anyChanged{ false };
+    // the first graph (in page order) for each dataset and column sets the others
+    std::vector<std::pair<const Wisteria::Data::Dataset*, wxString>> syncedKeys;
+    for (const auto* page : m_pages)
+        {
+        if (page == nullptr)
+            {
+            continue;
+            }
+        for (const auto& filterableGraph : page->GetFilterableGraphs())
+            {
+            const Wisteria::Data::Dataset* graphData{ filterableGraph->GetData().get() };
+            const wxString& column{ filterableGraph->GetFilterColumn() };
+            if (std::ranges::any_of(syncedKeys,
+                                    [graphData, &column](const auto& syncedKey)
+                                    {
+                                        return syncedKey.first == graphData &&
+                                               syncedKey.second.CmpNoCase(column) == 0;
+                                    }))
+                {
+                continue;
+                }
+            syncedKeys.emplace_back(graphData, column);
+            if (SyncLinkedFilters(*filterableGraph))
+                {
+                anyChanged = true;
+                }
+            }
+        }
+    return anyChanged;
+    }
+
+//-------------------------------------------
+void WisteriaView::SyncAddedFilters(
+    const Wisteria::Canvas& canvas,
+    const std::vector<std::shared_ptr<Wisteria::Graphs::FilterableGraph>>& previousGraphs)
+    {
+    for (const auto& filterableGraph : canvas.GetFilterableGraphs())
+        {
+        if (std::ranges::find(previousGraphs, filterableGraph) == previousGraphs.cend())
+            {
+            SyncLinkedFilters(*filterableGraph);
+            }
+        }
     }
 
 //-------------------------------------------
@@ -4431,6 +4530,7 @@ void WisteriaView::OnFilterChoice(wxCommandEvent& event)
 
     filterableGraph->SetActiveIndex(index);
     UpdateCanvas(canvas);
+    SyncLinkedFilters(*filterableGraph);
     GetDocument()->Modify(true);
     }
 
