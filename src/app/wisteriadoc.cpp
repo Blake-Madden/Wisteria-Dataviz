@@ -424,7 +424,12 @@ bool WisteriaDoc::SaveProject(const wxString& filePath) const
 
         // per-page watermark
         const auto& pageWatermark = canvas->GetWatermark();
-        if (!pageWatermark.m_label.empty())
+        const bool inheritsProjectWatermark{
+            !wmLabel.empty() && pageWatermark.m_label == wmLabel &&
+            pageWatermark.m_color ==
+                (wmColor.IsOk() ? wmColor : Wisteria::Canvas::Watermark{}.m_color)
+        };
+        if (!pageWatermark.m_label.empty() && !inheritsProjectWatermark)
             {
             auto wmNode = wxSimpleJSON::Create(L"{}");
             wmNode->Add(L"label", pageWatermark.m_label);

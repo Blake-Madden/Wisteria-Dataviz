@@ -443,9 +443,9 @@ namespace Wisteria
         wxColour reportWatermarkColor;
         if (watermarkProperty->IsOk())
             {
-            reportWatermark = ExpandConstants(watermarkProperty->GetProperty(L"label")->AsString());
+            m_watermarkLabel = watermarkProperty->GetProperty(L"label")->AsString();
+            reportWatermark = m_watermarkLabel;
             reportWatermarkColor = ConvertColor(watermarkProperty->GetProperty(L"color"));
-            m_watermarkLabel = reportWatermark;
             m_watermarkColor = reportWatermarkColor;
             }
 
