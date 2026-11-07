@@ -231,7 +231,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGauge, Wisteria::Graphs::GroupGra
             // labels on the other side of the score
             activeScoreAreas.push_back(leftRulerAxisPos - 5);
 
-            // axis point numbers (range cut-off points)
+            // Axis point numbers (range cut-off points).
             // The axis points are the true values of the ranges, while the label
             // on the left is the label for area below (numerically) that range.
             // So a score of 30 should light up the "30" axis point, but the label

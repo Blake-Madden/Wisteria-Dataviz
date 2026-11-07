@@ -310,8 +310,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::StemAndLeafPlot, Wisteria::Graphs::G
         double smallestHeaderScaling{ std::numeric_limits<double>::max() };
         double smallestDataScaling{ std::numeric_limits<double>::max() };
 
-        // helper to create a header: a filled rounded Polygon for the background,
-        // then a text Label on top. Using a Polygon ensures the header background
+        // Helper to create a header, using a filled rounded Polygon for the background
+        // and a text Label on top. Using a Polygon ensures the header background
         // is the exact same width as the column border Polygon beneath it.
         const auto addHeaderLabel = [&](const wxString& text, const wxRect& cellRect,
                                         const wxColour& bgColor,

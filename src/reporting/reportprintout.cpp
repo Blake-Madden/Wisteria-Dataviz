@@ -18,7 +18,7 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
     wxASSERT_MSG(canvas, L"Invalid page when printing report!");
     if (dc != nullptr && canvas != nullptr)
         {
-        const wxWindowUpdateLocker wl(canvas);
+        const wxWindowUpdateLocker wl{ canvas };
         // immediately recalc everything when we change the canvas size
         const CanvasResizeDelayChanger resizeDelay{ *canvas };
         canvas->DelayResizing(false);
@@ -78,7 +78,7 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
         wxBitmap previewImg;
         previewImg.CreateWithDIPSize(wxSize{ canvas->ToDIP(dcWidth), canvas->ToDIP(dcHeight) },
                                      canvas->GetDPIScaleFactor());
-        wxMemoryDC memDc(previewImg);
+        wxMemoryDC memDc{ previewImg };
         memDc.Clear();
 #ifdef __WXMSW__
         // use Direct2D for rendering
@@ -91,7 +91,7 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
 
         if (context != nullptr)
             {
-            wxGCDC gcdc(context);
+            wxGCDC gcdc{ context };
 
             /* Set the scale and origin.
                Note that we use the same scale factor for x and y to maintain aspect ratio*/
@@ -103,7 +103,7 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
             }
         else
             {
-            wxGCDC gcdc(memDc);
+            wxGCDC gcdc{ memDc };
 
             gcdc.SetUserScale(std::min(scaleX, scaleY), std::min(scaleX, scaleY));
             gcdc.SetDeviceOrigin(static_cast<wxCoord>(posX), static_cast<wxCoord>(posY));
@@ -112,7 +112,7 @@ bool Wisteria::ReportPrintout::OnPrintPage(const int page)
             canvas->DrawWatermarkLabel(gcdc);
             }
 #else
-        wxGCDC gcdc(memDc);
+        wxGCDC gcdc{ memDc };
 
         gcdc.SetUserScale(std::min(scaleX, scaleY), std::min(scaleX, scaleY));
         gcdc.SetDeviceOrigin(static_cast<wxCoord>(posX), static_cast<wxCoord>(posY));
@@ -260,7 +260,7 @@ Wisteria::PrintFitToPageChanger::PrintFitToPageChanger(Canvas* canvas,
             // this will force a call to CalcAllSizes() and fit all the objects to the
             // altered drawing area
             m_canvas->SetSize(m_canvas->FromDIP(
-                wxSize(m_canvas->GetCanvasMinWidthDIPs(), m_canvas->GetCanvasMinHeightDIPs())));
+                wxSize{ m_canvas->GetCanvasMinWidthDIPs(), m_canvas->GetCanvasMinHeightDIPs() }));
             }
         }
     }
@@ -287,8 +287,8 @@ Wisteria::FitToSaveOptionsChanger::FitToSaveOptionsChanger(Canvas* canvas, const
     wxASSERT_MSG(canvas, L"Invalid canvas passed to PrintFitToPageChanger!");
     if (m_canvas != nullptr)
         {
-        const wxSize currentSize(canvas->GetCanvasRectDIPs().GetWidth(),
-                                 canvas->GetCanvasRectDIPs().GetHeight());
+        const wxSize currentSize{ canvas->GetCanvasRectDIPs().GetWidth(),
+                                  canvas->GetCanvasRectDIPs().GetHeight() };
         m_sizeChanged = currentSize != newSize;
         if (m_sizeChanged)
             {

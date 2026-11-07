@@ -148,7 +148,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WinLossSparkline, Wisteria::Graphs::
                          "Data should be sorted by season before calling SetData().!");
             wxASSERT_MSG(currentColumn < m_matrix[currentRow].second.size(),
                          L"Invalid column when filling WL sparkline matrix!");
-            // should not happen, just do this to prevent crash if data was not sorted by
+            // This should not happen, but prevents a crash if data was not sorted by
             // value and then by season first. What's displayed if this happens is the data
             // won't be grouped properly, but it's showing it how the client passed it in.
             if (currentRow >= m_matrix.size())

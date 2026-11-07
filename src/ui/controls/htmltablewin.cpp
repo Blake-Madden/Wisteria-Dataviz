@@ -124,7 +124,7 @@ namespace Wisteria::UI
         printer.GetPrintDialogData().EnableSelection(false);
         if (!printer.Print(this, printOut, true))
             {
-            // just show a message if a real error occurred. They may have just cancelled.
+            // Just show a message if a real error occurred. They may have just cancelled.
             if (wxPrinter::GetLastError() == wxPRINTER_ERROR)
                 {
                 wxMessageBox(_(L"An error occurred while printing.\n"

@@ -193,10 +193,9 @@ namespace Wisteria::UI
 
         sampleGrid->Add(new wxStaticText(sampleBox->GetStaticBox(), wxID_ANY, _(L"Collect:")),
                         wxSizerFlags{}.CenterVertical());
-        wxArrayString modeChoices;
-        modeChoices.Add(_(L"Each row is a point"));
-        modeChoices.Add(_(L"Rows sharing the Sample value"));
-        modeChoices.Add(_(L"A fixed number of rows per sample"));
+        const wxArrayString modeChoices{ _(L"Each row is a point"),
+                                         _(L"Rows sharing the Sample value"),
+                                         _(L"A fixed number of rows per sample") };
         auto* modeChoice =
             new wxChoice(sampleBox->GetStaticBox(), ID_SAMPLE_MODE, wxDefaultPosition,
                          wxDefaultSize, modeChoices, 0, wxGenericValidator{ &m_sampleMode });
@@ -212,9 +211,7 @@ namespace Wisteria::UI
 
         sampleGrid->Add(new wxStaticText(sampleBox->GetStaticBox(), wxID_ANY, _(L"Plot:")),
                         wxSizerFlags{}.CenterVertical());
-        wxArrayString statisticChoices;
-        statisticChoices.Add(_(L"Sample mean"));
-        statisticChoices.Add(_(L"Sample median"));
+        const wxArrayString statisticChoices{ _(L"Sample mean"), _(L"Sample median") };
         m_statisticChoice =
             new wxChoice(sampleBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
                          statisticChoices, 0, wxGenericValidator{ &m_sampleStatistic });

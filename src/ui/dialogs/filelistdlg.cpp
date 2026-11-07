@@ -29,28 +29,28 @@ namespace Wisteria::UI
         controlsSizer->Add(fileListSizer, wxSizerFlags{ 2 }.Expand().Border());
 
         auto* buttonsSizer = new wxGridSizer(
-            4, wxSize(wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder()));
+            4, wxSize{ wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder() });
 
         auto* button = new wxButton(this, wxID_OPEN, _(L"&Open Files..."));
         button->SetBitmap(
-            wxArtProvider::GetBitmap(wxART_FILE_OPEN, wxART_BUTTON, FromDIP(wxSize(16, 16))));
+            wxArtProvider::GetBitmap(wxART_FILE_OPEN, wxART_BUTTON, FromDIP(wxSize{ 16, 16 })));
         buttonsSizer->Add(button, wxSizerFlags{}.Align(wxALIGN_LEFT).Expand());
 
 #ifdef __WXMSW__
         button = new wxButton(this, ID_FOLDER_OPEN, _(L"Open &Folders..."));
         button->SetBitmap(
-            wxArtProvider::GetBitmap(wxART_FOLDER_OPEN, wxART_BUTTON, FromDIP(wxSize(16, 16))));
+            wxArtProvider::GetBitmap(wxART_FOLDER_OPEN, wxART_BUTTON, FromDIP(wxSize{ 16, 16 })));
         buttonsSizer->Add(button, wxSizerFlags{}.Align(wxALIGN_LEFT).Expand());
 #endif
 
         button = new wxButton(this, wxID_DELETE, _(L"&Delete Files"));
         button->SetBitmap(
-            wxArtProvider::GetBitmap(wxART_DELETE, wxART_BUTTON, FromDIP(wxSize(16, 16))));
+            wxArtProvider::GetBitmap(wxART_DELETE, wxART_BUTTON, FromDIP(wxSize{ 16, 16 })));
         buttonsSizer->Add(button, wxSizerFlags{}.Align(wxALIGN_LEFT).Expand());
 
         button = new wxButton(this, wxID_REFRESH, _(L"&Refresh List"));
         button->SetBitmap(
-            wxArtProvider::GetBitmap(wxART_REDO, wxART_BUTTON, FromDIP(wxSize(16, 16))));
+            wxArtProvider::GetBitmap(wxART_REDO, wxART_BUTTON, FromDIP(wxSize{ 16, 16 })));
         buttonsSizer->Add(button, wxSizerFlags{}.Align(wxALIGN_LEFT).Expand());
 
         fileListSizer->Add(buttonsSizer);
@@ -197,7 +197,7 @@ namespace Wisteria::UI
             [this]([[maybe_unused]] wxCommandEvent&)
             {
                 SetCursor(*wxHOURGLASS_CURSOR);
-                const wxWindowUpdateLocker lock(m_listCtrl);
+                const wxWindowUpdateLocker lock{ m_listCtrl };
                 if (m_listCtrl->GetItemCount() > 0)
                     {
                     for (auto i = m_listCtrl->GetItemCount() - 1; i >= 0; --i)

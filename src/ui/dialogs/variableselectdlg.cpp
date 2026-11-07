@@ -90,7 +90,7 @@ namespace Wisteria::UI
                 }
             }
         auto selStrings = GetSelectedVariablesInList(list);
-        const wxWindowUpdateLocker noUpdates(otherList);
+        const wxWindowUpdateLocker noUpdates{ otherList };
         // de-select items in the target list, and then select the item(s) being moved into it
         for (int i = 0; i < otherList->GetItemCount(); ++i)
             {
@@ -132,7 +132,7 @@ namespace Wisteria::UI
     //-------------------------------------------------------------
     void VariableSelectDlg::RemoveSelectedVariablesFromList(wxListView* list)
         {
-        const wxWindowUpdateLocker noUpdates(list);
+        const wxWindowUpdateLocker noUpdates{ list };
         long item{ wxNOT_FOUND };
         for (;;)
             {

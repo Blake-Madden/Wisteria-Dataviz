@@ -68,7 +68,7 @@ namespace Wisteria
                             const auto color = ConvertColor(blockNode->GetProperty(L"color"));
                             blocks.emplace_back(
                                 Graphs::BarChart::BarBlockInfo(length)
-                                    .Brush(color.IsOk() ? wxBrush(color) : *wxGREEN_BRUSH)
+                                    .Brush(color.IsOk() ? wxBrush{ color } : *wxGREEN_BRUSH)
                                     .Decal(GraphItems::Label(
                                         GraphItems::GraphItemInfo{ label }.LabelFitting(
                                             LabelFit::ScaleFontToFit))));

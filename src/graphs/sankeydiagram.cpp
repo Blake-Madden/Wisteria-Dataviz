@@ -847,8 +847,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::SankeyDiagram, Wisteria::Graphs::Gra
             {
             label += L". ";
 
-            // column header (the "question"). Prefer the user-supplied header
-            // (which may expand placeholders like @COLUMNNAME@); fall back to
+            // Column header (the "question"). Prefer the user-supplied header
+            // (which may expand placeholders like @COLUMNNAME@). Fall back to
             // the raw column name if no header is set yet.
             wxString header;
             if (colIdx < m_columnHeaders.size() && !m_columnHeaders[colIdx].empty())

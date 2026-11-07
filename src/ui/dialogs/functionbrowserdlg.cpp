@@ -92,7 +92,7 @@ namespace Wisteria::UI
     //------------------------------------------------
     void FunctionBrowserCtrl::OnListSelected(wxCommandEvent& event)
         {
-        const wxWindowUpdateLocker noUpdates(this);
+        const wxWindowUpdateLocker noUpdates{ this };
         if (event.GetId() == ID_CATEGORY_LIST)
             {
             auto pos = m_functionCollection.find(CategoryInfo(event.GetString().ToStdWstring()));

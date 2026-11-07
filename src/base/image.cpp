@@ -321,7 +321,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Images::Schemes::ImageScheme, wxObject)
     //-------------------------------------------
     void Image::SetOpacity(wxBitmap & bmp, const uint8_t opacity, bool preserveTransparentPixels)
         {
-        // note: don't call HasAlpha as this is disabled (for legacy reasons) on Windows
+        // Don't call HasAlpha as this is disabled (for legacy reasons) on Windows
         // by default, even though its depth is 32. You have to explicitly call UseAlpha,
         // which caller may not have done.
         if (bmp.IsOk() && bmp.GetDepth() == 32)

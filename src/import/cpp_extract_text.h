@@ -81,7 +81,7 @@ namespace lily_of_the_valley
 
         // meta data
         std::wstring m_author;
-        // doxygen tags that are removed (but their following text is read in).
+        // Doxygen tags that are removed (but their following text is read in).
         // Note that 'param' is not included here so that 'in|out' info is handled separately.
         std::set<std::wstring> m_doxygen_tags = {
             L"{",       L"}",       L"a",           L"b",          L"c",       L"cond",
@@ -90,7 +90,7 @@ namespace lily_of_the_valley
             L"remark",  L"remarks", L"retval",      L"warning",    L"sa",      L"see",
             L"related", L"relates", L"relatedalso", L"relatesalso"
         };
-        // doxygen tags that are removed (but their following text is read in)
+        // Doxygen tags that are removed (but their following text is read in)
         // and newlines are wrapped around their text because their text
         // should be single-line content. These would be things like names
         // of classes, groups, functions, etc.

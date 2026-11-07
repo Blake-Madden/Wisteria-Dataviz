@@ -107,7 +107,7 @@ namespace Wisteria::UI
         m_fileFilterCombo =
             new wxChoice(this, wxID_ANY, wxDefaultPosition,
                          // need to hard code size in case file filter is too wide
-                         wxSize(FromDIP(wxSize{ 150, 150 }).GetWidth(), -1), choiceStrings, 0,
+                         wxSize{ FromDIP(wxSize{ 150, 150 }).GetWidth(), -1 }, choiceStrings, 0,
                          wxGenericValidator{ &m_selectedFileFilter });
         fileTypeSizer->Add(m_fileFilterCombo, wxSizerFlags{ 1 }.Expand().Border());
 

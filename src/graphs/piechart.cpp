@@ -1879,8 +1879,8 @@ namespace Wisteria::Graphs
 
         const double minSpotSpacing = ScaleToScreenAndCanvas(35);
 
-        const wxColour toastedColor(160, 120, 70, 100);
-        const wxColour toastedHaloColor(180, 145, 90, 50);
+        const wxColour toastedColor{ 160, 120, 70, 100 };
+        const wxColour toastedHaloColor{ 180, 145, 90, 50 };
 
         constexpr uint32_t TOASTED_SEED{ 0xC00C1E77 };
 
@@ -2751,9 +2751,9 @@ namespace Wisteria::Graphs
         const double minRadius = ScaleToScreenAndCanvas(14);
         const double maxRadius = ScaleToScreenAndCanvas(22);
 
-        const wxColour pepperoniFillBase(170, 45, 45);
-        const wxColour pepperoniEdgeBase(110, 20, 20);
-        const wxColour pepperoniBlisterColor(120, 35, 25, 90);
+        const wxColour pepperoniFillBase{ 170, 45, 45 };
+        const wxColour pepperoniEdgeBase{ 110, 20, 20 };
+        const wxColour pepperoniBlisterColor{ 120, 35, 25, 90 };
 
         const wxPoint pieCenter(pieRect.GetX() + pieRect.GetWidth() / 2,
                                 pieRect.GetY() + pieRect.GetHeight() / 2);
@@ -2822,15 +2822,15 @@ namespace Wisteria::Graphs
 
             const double shade = 0.9 + 0.15 * HashToUnitInterval(seed ^ 0x4444U);
 
-            const wxColour fillColor(static_cast<unsigned char>(pepperoniFillBase.Red() * shade),
-                                     static_cast<unsigned char>(pepperoniFillBase.Green() * shade),
-                                     static_cast<unsigned char>(pepperoniFillBase.Blue() * shade),
-                                     pepperoniFillBase.Alpha());
+            const wxColour fillColor{ static_cast<unsigned char>(pepperoniFillBase.Red() * shade),
+                                      static_cast<unsigned char>(pepperoniFillBase.Green() * shade),
+                                      static_cast<unsigned char>(pepperoniFillBase.Blue() * shade),
+                                      pepperoniFillBase.Alpha() };
 
-            const wxColour edgeColor(static_cast<unsigned char>(pepperoniEdgeBase.Red() * shade),
-                                     static_cast<unsigned char>(pepperoniEdgeBase.Green() * shade),
-                                     static_cast<unsigned char>(pepperoniEdgeBase.Blue() * shade),
-                                     pepperoniEdgeBase.Alpha());
+            const wxColour edgeColor{ static_cast<unsigned char>(pepperoniEdgeBase.Red() * shade),
+                                      static_cast<unsigned char>(pepperoniEdgeBase.Green() * shade),
+                                      static_cast<unsigned char>(pepperoniEdgeBase.Blue() * shade),
+                                      pepperoniEdgeBase.Alpha() };
 
             auto pepperoni = std::make_unique<GraphItems::Polygon>(
                 GraphItems::GraphItemInfo{}
@@ -2914,7 +2914,7 @@ namespace Wisteria::Graphs
                                                           blisterPoints));
                 }
 
-            const wxColour oreganoColor(80, 95, 60, 110);
+            const wxColour oreganoColor{ 80, 95, 60, 110 };
             constexpr int SEASONING_COUNT{ 20 };
             const double seasoningRadius = ScaleToScreenAndCanvas(1.3);
             // Oregano specks
@@ -3102,8 +3102,8 @@ namespace Wisteria::Graphs
 
         const double minSpotSpacing = ScaleToScreenAndCanvas(40);
 
-        const wxColour toastedSpotColor(215, 185, 120, 80);
-        const wxColour toastedHaloColor(235, 215, 160, 60);
+        const wxColour toastedSpotColor{ 215, 185, 120, 80 };
+        const wxColour toastedHaloColor{ 235, 215, 160, 60 };
 
         constexpr uint32_t SPOT_SEED{ 0xBEEFCAFE };
 
@@ -3536,7 +3536,7 @@ namespace Wisteria::Graphs
 
         // the dough itself
         addBand(0.0, crustThickness, 0.0, wxBrush{ doughColor },
-                wxPen(wxColour(165, 115, 60, 120), GetScaledPenWidth(), wxPENSTYLE_SOLID));
+                wxPen(wxColour{ 165, 115, 60, 120 }, GetScaledPenWidth(), wxPENSTYLE_SOLID));
         // browned along the outer edge
         addBand(0.0, crustThickness * 0.4, 0.0, wxBrush{ toastedColor }, wxNullPen);
         // lighter ridge, offset half a flute so that it follows the crimps

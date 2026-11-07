@@ -22,17 +22,17 @@ namespace Wisteria::UI
 
         auto* copyButton = new wxBitmapButton(
             this, wxID_COPY,
-            wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON, FromDIP(wxSize(16, 16))));
+            wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON, FromDIP(wxSize{ 16, 16 })));
         toolbarSizer->Add(copyButton, 0, wxALIGN_CENTER_VERTICAL);
 
         auto* saveButton = new wxBitmapButton(
             this, wxID_SAVE,
-            wxArtProvider::GetBitmap(wxART_FILE_SAVE, wxART_BUTTON, FromDIP(wxSize(16, 16))));
+            wxArtProvider::GetBitmap(wxART_FILE_SAVE, wxART_BUTTON, FromDIP(wxSize{ 16, 16 })));
         toolbarSizer->Add(saveButton, 0, wxALIGN_CENTER_VERTICAL);
 
         mainSizer->Add(toolbarSizer);
         m_htmlWindow = new HtmlTableWindow(this, wxID_ANY, wxDefaultPosition,
-                                           wxSize(FromDIP(wxSize(300, 300)).GetWidth(), -1),
+                                           wxSize{ FromDIP(wxSize{ 300, 300 }).GetWidth(), -1 },
                                            wxHW_DEFAULT_STYLE | wxBORDER_THEME);
         mainSizer->Add(m_htmlWindow, 1);
 

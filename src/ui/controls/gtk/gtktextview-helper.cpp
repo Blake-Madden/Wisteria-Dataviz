@@ -165,9 +165,9 @@ wxString GtkTextTagToRtfTag(const GtkTextTag* tag,
     if ((fgColorSet != 0) && (fgColor != nullptr))
         {
         // search for the color to see if it's already in the color table
-        const wxColour foregroundColor(FloatingPointChannelToByteChannel(fgColor->red),
-            FloatingPointChannelToByteChannel(fgColor->green),
-            FloatingPointChannelToByteChannel(fgColor->blue));
+        const wxColour foregroundColor{ FloatingPointChannelToByteChannel(fgColor->red),
+                                        FloatingPointChannelToByteChannel(fgColor->green),
+                                        FloatingPointChannelToByteChannel(fgColor->blue) };
         auto colorPos = std::ranges::find(colorTable, foregroundColor);
         if (colorPos == colorTable.cend())
             {

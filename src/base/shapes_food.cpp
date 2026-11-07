@@ -1026,7 +1026,7 @@ namespace Wisteria::GraphItems
             }
 
             //--------------------------------------------------
-            // stem – outline only, parametric:
+            // stem (outline only, parametric)
             // wide base -> 15% neck at 50% width ->
             // smooth right-leaning taper to 1/4 width
             //--------------------------------------------------

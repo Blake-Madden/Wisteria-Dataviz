@@ -1146,8 +1146,8 @@ namespace Wisteria
                 const wxString brushPropertyName = propertyPrefix.empty() ?
                                                        wxString{ L"brush.color" } :
                                                        propertyPrefix + L".color";
-                const wxColour brushColor(
-                    ConvertColor(brushNode->AsString(), item, brushPropertyName));
+                const wxColour brushColor{ ConvertColor(brushNode->AsString(), item,
+                                                        brushPropertyName) };
                 if (brushColor.IsOk())
                     {
                     brush.SetColour(brushColor);
@@ -1160,10 +1160,11 @@ namespace Wisteria
                                                        wxString{ L"brush.color" } :
                                                        propertyPrefix + L".color";
                 const auto colorPropNode = brushNode->GetProperty(L"color");
-                const wxColour brushColor(
+                const wxColour brushColor{
                     (colorPropNode->IsOk() && !colorPropNode->IsValueNull()) ?
                         ConvertColor(colorPropNode->AsString(), item, brushPropertyName) :
-                        wxTransparentColour);
+                        wxTransparentColour
+                };
                 if (brushColor.IsOk())
                     {
                     brush.SetColour(brushColor);
@@ -1200,7 +1201,7 @@ namespace Wisteria
                 {
                 const wxString penPropertyName =
                     propertyPrefix.empty() ? wxString{ L"pen.color" } : propertyPrefix + L".color";
-                const wxColour penColor(ConvertColor(penNode->AsString(), item, penPropertyName));
+                const wxColour penColor{ ConvertColor(penNode->AsString(), item, penPropertyName) };
                 if (penColor.IsOk())
                     {
                     pen.SetColour(penColor);
@@ -1211,10 +1212,10 @@ namespace Wisteria
                 const wxString penPropertyName =
                     propertyPrefix.empty() ? wxString{ L"pen.color" } : propertyPrefix + L".color";
                 const auto colorPropNode = penNode->GetProperty(L"color");
-                const wxColour penColor(
-                    (colorPropNode->IsOk() && !colorPropNode->IsValueNull()) ?
-                        ConvertColor(colorPropNode->AsString(), item, penPropertyName) :
-                        wxTransparentColour);
+                const wxColour penColor{ (colorPropNode->IsOk() && !colorPropNode->IsValueNull()) ?
+                                             ConvertColor(colorPropNode->AsString(), item,
+                                                          penPropertyName) :
+                                             wxTransparentColour };
                 if (penColor.IsOk())
                     {
                     pen.SetColour(penColor);
@@ -1748,7 +1749,7 @@ namespace Wisteria
                         label->GetHeaderInfo().GetFont().SetFractionalPointSize(fontSize);
                         }
                     }
-                const wxColour headerColor(ConvertColor(headerNode->GetProperty(L"color")));
+                const wxColour headerColor{ ConvertColor(headerNode->GetProperty(L"color")) };
                 if (headerColor.IsOk())
                     {
                     label->GetHeaderInfo().FontColor(headerColor);
@@ -2699,7 +2700,7 @@ namespace Wisteria
                                          .ToUTF8());
             }
 
-        wxSize sz(32, 32);
+        wxSize sz{ 32, 32 };
         const auto sizeNode = shapeNode->GetProperty(L"size");
         if (sizeNode->IsOk())
             {

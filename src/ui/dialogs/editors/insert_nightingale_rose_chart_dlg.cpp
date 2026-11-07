@@ -166,18 +166,15 @@ namespace Wisteria::UI
 
         roseSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Radial scaling:")),
                        wxSizerFlags{}.CenterVertical());
-        wxArrayString radialScalingChoices;
-        radialScalingChoices.Add(_(L"Area proportional"));
-        radialScalingChoices.Add(_(L"Radius proportional"));
+        const wxArrayString radialScalingChoices{ _(L"Area proportional"),
+                                                  _(L"Radius proportional") };
         roseSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                     radialScalingChoices, 0,
                                     wxGenericValidator{ &m_radialScalingSelection }));
 
         roseSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Series display:")),
                        wxSizerFlags{}.CenterVertical());
-        wxArrayString seriesDisplayChoices;
-        seriesDisplayChoices.Add(_(L"Overlaid"));
-        seriesDisplayChoices.Add(_(L"Stacked"));
+        const wxArrayString seriesDisplayChoices{ _(L"Overlaid"), _(L"Stacked") };
         roseSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                     seriesDisplayChoices, 0,
                                     wxGenericValidator{ &m_seriesDisplaySelection }));

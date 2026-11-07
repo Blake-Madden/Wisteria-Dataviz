@@ -128,7 +128,7 @@ namespace Wisteria::UI
             m_sideBarBook->AddPage(mainPage, _(L"Product Info"), ID_VERSION_PAGE, true);
 
             auto* productInfoGrid =
-                new wxFlexGridSizer(2, wxSize(wxSizerFlags::GetDefaultBorder(), 0));
+                new wxFlexGridSizer(2, wxSize{ wxSizerFlags::GetDefaultBorder(), 0 });
             productInfoGrid->Add(new wxStaticText(mainPage, wxID_ANY, _(L"Version:")));
             productInfoGrid->Add(new wxStaticText(mainPage, wxID_ANY, m_info.m_appVersion));
             if (!m_info.m_buildVersion.empty())

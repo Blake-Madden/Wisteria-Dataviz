@@ -195,7 +195,7 @@ namespace Wisteria::UI
         filterTypeBox->Add(m_sectionRadio, wxSizerFlags{}.CenterVertical().Border());
         mainSizer->Add(filterTypeBox, wxSizerFlags{}.Expand().Border());
 
-        // filter criteria (Single / AND / OR) — all controls on dialog, no child panel
+        // filter criteria (Single / AND / OR), with all controls on the dialog (no child panel)
         m_filterBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Column Filters"));
         m_filterRowsSizer = new wxBoxSizer(wxVERTICAL);
         m_filterBox->Add(m_filterRowsSizer, wxSizerFlags{}.Expand());
@@ -209,7 +209,7 @@ namespace Wisteria::UI
         m_filterBox->Add(filterBtnSizer, wxSizerFlags{}.Border(wxTOP));
         mainSizer->Add(m_filterBox, wxSizerFlags{}.Expand().Border());
 
-        // section controls — all controls on dialog, no child panel
+        // section controls, with all controls on the dialog (no child panel)
         m_sectionBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Section Filter"));
         auto* sectionGrid = new wxFlexGridSizer(
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });

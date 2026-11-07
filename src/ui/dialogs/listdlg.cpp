@@ -216,17 +216,17 @@ namespace Wisteria::UI
                     {
                     buttonBar->AddButton(wxID_SAVE, _(L"Save"),
                                          wxArtProvider::GetBitmap(wxART_FILE_SAVE, wxART_BUTTON,
-                                                                  FromDIP(wxSize(32, 32)))
+                                                                  FromDIP(wxSize{ 32, 32 }))
                                              .ConvertToImage(),
                                          _(L"Save the list."));
                     }
                 if ((m_buttonStyle & LD_PRINT_BUTTON) != 0)
                     {
-                    buttonBar->AddButton(
-                        wxID_PRINT, _(L"Print"),
-                        wxArtProvider::GetBitmap(wxART_PRINT, wxART_BUTTON, FromDIP(wxSize(32, 32)))
-                            .ConvertToImage(),
-                        _(L"Print the list."));
+                    buttonBar->AddButton(wxID_PRINT, _(L"Print"),
+                                         wxArtProvider::GetBitmap(wxART_PRINT, wxART_BUTTON,
+                                                                  FromDIP(wxSize{ 32, 32 }))
+                                             .ConvertToImage(),
+                                         _(L"Print the list."));
                     }
                 }
             // edit
@@ -244,18 +244,18 @@ namespace Wisteria::UI
                 m_editButtonBar = new wxRibbonButtonBar(editPage, ID_EDIT_BUTTON_BAR);
                 if ((m_buttonStyle & LD_COPY_BUTTON) != 0)
                     {
-                    m_editButtonBar->AddButton(
-                        wxID_COPY, _(L"Copy Selection"),
-                        wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON, FromDIP(wxSize(32, 32)))
-                            .ConvertToImage(),
-                        _(L"Copy the selected items."));
+                    m_editButtonBar->AddButton(wxID_COPY, _(L"Copy Selection"),
+                                               wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON,
+                                                                        FromDIP(wxSize{ 32, 32 }))
+                                                   .ConvertToImage(),
+                                               _(L"Copy the selected items."));
                     }
                 if ((m_buttonStyle & LD_SELECT_ALL_BUTTON) != 0)
                     {
                     m_editButtonBar->AddButton(wxID_SELECTALL, _(L"Select All"),
                                                wxArtProvider::GetBitmap(L"ID_SELECT_ALL",
                                                                         wxART_BUTTON,
-                                                                        FromDIP(wxSize(32, 32)))
+                                                                        FromDIP(wxSize{ 32, 32 }))
                                                    .ConvertToImage(),
                                                _(L"Select the entire list."));
                     }
@@ -264,7 +264,7 @@ namespace Wisteria::UI
                     m_editButtonBar->AddButton(XRCID("ID_LIST_SORT"), _(L"Sort"),
                                                wxArtProvider::GetBitmap(L"ID_LIST_SORT",
                                                                         wxART_BUTTON,
-                                                                        FromDIP(wxSize(32, 32)))
+                                                                        FromDIP(wxSize{ 32, 32 }))
                                                    .ConvertToImage(),
                                                _(L"Sort the list."));
                     }

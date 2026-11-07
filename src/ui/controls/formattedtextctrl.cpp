@@ -317,9 +317,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
                     {
                     m_printCanvas.Create(dc->GetSize());
                     }
-                wxMemoryDC memDc(m_printCanvas);
+                wxMemoryDC memDc{ m_printCanvas };
                 memDc.Clear();
-                wxGCDC gcdc(memDc);
+                wxGCDC gcdc{ memDc };
 
                 // will just calculate pagination if not rendering
                 const auto retval = measureAndDrawText(gcdc);
@@ -327,7 +327,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
                     {
                     drawHeadersAndFooters(gcdc);
                     Wisteria::Canvas::DrawWatermarkLabel(
-                        gcdc, wxRect(wxSize(drawingWidth, drawingHeight)),
+                        gcdc, wxRect{ wxSize{ drawingWidth, drawingHeight } },
                         m_control->GetWatermark(), 1.0);
                     // copy renderings back into printer DC
                     dc->Blit(0, 0, dc->GetSize().GetWidth(), dc->GetSize().GetHeight(), &memDc, 0,
@@ -429,7 +429,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
         printer.GetPrintDialogData().EnableSelection(false);
         if (!printer.Print(m_printWindow, printOut, true))
             {
-            // just show a message if a real error occurred.
+            // Just show a message if a real error occurred.
             // They may have just cancelled.
             if (printer.GetLastError() == wxPRINTER_ERROR)
                 {
@@ -561,7 +561,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
 
         macOSPrintRTF(
             rtfContent,
-            wxSize(static_cast<int>(paperWidthInPoints), static_cast<int>(paperHeightInPoints)),
+            wxSize{ static_cast<int>(paperWidthInPoints), static_cast<int>(paperHeightInPoints) },
             static_cast<int>(m_printData->GetOrientation()), fullHeader, fullFooter,
             GetWatermark());
 #endif
@@ -644,7 +644,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
         int x{ 0 }, y{ 0 }, width{ 0 }, height{ 0 };
         wxClientDisplayRect(&x, &y, &width, &height);
         wxPreviewFrame* frame = new wxPreviewFrame(preview, this, _(L"Print Preview"),
-                                                   wxDefaultPosition, wxSize(width, height));
+                                                   wxDefaultPosition, wxSize{ width, height });
 
         frame->Centre(wxBOTH);
         frame->Initialize();
@@ -1159,7 +1159,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::FormattedTextCtrl, wxTextCtrl)
             else
                 {
                 firstTag = GtkTextTagToRtfTag(GTK_TEXT_TAG(tags->data), colorTable, fontTable);
-                // just get the font family. The face name in Pango includes other
+                // Just get the font family. The face name in Pango includes other
                 // descriptive strings that we don't use here
                 g_object_get(G_OBJECT(tags->data), "size-points", &defaultFontSize, "family",
                              &family, nullptr);

@@ -208,30 +208,22 @@ namespace Wisteria::UI
 
         displaySizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Fade effect:")),
                           wxSizerFlags{}.CenterVertical());
-        wxArrayString fadeChoices;
-        fadeChoices.Add(_(L"None"));
-        fadeChoices.Add(_(L"Remaining lifetime"));
-        fadeChoices.Add(_(L"Elapsed time"));
+        const wxArrayString fadeChoices{ _(L"None"), _(L"Remaining lifetime"), _(L"Elapsed time") };
         displaySizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                        fadeChoices, 0,
                                        wxGenericValidator{ &m_fadeEffectSelection }));
 
         displaySizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Cell display:")),
                           wxSizerFlags{}.CenterVertical());
-        wxArrayString anonymizeChoices;
-        anonymizeChoices.Add(_(L"Labels"));
-        anonymizeChoices.Add(_(L"Dots (anonymized)"));
+        const wxArrayString anonymizeChoices{ _(L"Labels"), _(L"Dots (anonymized)") };
         displaySizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                        anonymizeChoices, 0,
                                        wxGenericValidator{ &m_anonymizeSelection }));
 
         displaySizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Survival statistics:")),
                           wxSizerFlags{}.CenterVertical());
-        wxArrayString survivalChoices;
-        survivalChoices.Add(_(L"None"));
-        survivalChoices.Add(_(L"At-risk count"));
-        survivalChoices.Add(_(L"Survival percent"));
-        survivalChoices.Add(_(L"Both"));
+        const wxArrayString survivalChoices{ _(L"None"), _(L"At-risk count"),
+                                             _(L"Survival percent"), _(L"Both") };
         displaySizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                        survivalChoices, 0,
                                        wxGenericValidator{ &m_survivalDisplaySelection }));

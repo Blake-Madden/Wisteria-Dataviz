@@ -689,7 +689,7 @@ namespace Wisteria::GraphItems
             wxRect2DDouble monitorRect{ monitorOuterRect };
             monitorRect.Deflate(ScaleToScreenAndCanvas(math_constants::half));
 
-            // stand pole
+            // Stand pole
             // (Note that we do not apply a translucency to the white backgrounds
             //  as that would allow the monitor stand to show through it.
             //  Instead, we only make the outline and monitor content translucent.)

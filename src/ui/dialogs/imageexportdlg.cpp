@@ -22,7 +22,7 @@ namespace Wisteria::UI
 
         TransferDataFromWindow();
 
-        wxImage img(m_originalBitmap.ConvertToImage());
+        wxImage img{ m_originalBitmap.ConvertToImage() };
 
         if (m_options.m_mode ==
             static_cast<decltype(m_options.m_mode)>(ImageExportOptions::ColorMode::Grayscale))
@@ -93,7 +93,7 @@ namespace Wisteria::UI
 
         auto* imageSizeSizer = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Image Size"));
         auto* imageSizeInfoSizer = new wxGridSizer(
-            2, 2, wxSize(wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder()));
+            2, 2, wxSize{ wxSizerFlags::GetDefaultBorder(), wxSizerFlags::GetDefaultBorder() });
         imageSizeSizer->Add(imageSizeInfoSizer, wxSizerFlags{ 1 }.Expand());
 
         auto* widthLabel = new wxStaticText(imageSizeSizer->GetStaticBox(), wxID_STATIC,
@@ -120,9 +120,7 @@ namespace Wisteria::UI
         // unknown/non-image formats (e.g., SVG) won't use these options
         if (bitmapType != wxBITMAP_TYPE_ANY)
             {
-            wxArrayString colorModes;
-            colorModes.Add(_(L"&RGB (Color)"));
-            colorModes.Add(_(L"&Grayscale"));
+            const wxArrayString colorModes{ _(L"&RGB (Color)"), _(L"&Grayscale") };
             auto* colorModesRadioBox =
                 new wxRadioBox(this, ControlIDs::COLOR_MODE_COMBO_ID, _(L"Color Mode"),
                                wxDefaultPosition, wxDefaultSize, colorModes, 0, wxRA_SPECIFY_ROWS,

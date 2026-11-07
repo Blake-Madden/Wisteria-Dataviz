@@ -127,8 +127,8 @@ namespace Wisteria
                 {
                 table->GetCell(position.value(), i).SetValue(values[i]);
                 }
-            const wxColour bgcolor(
-                m_reportBuilder.ConvertColor(rowAddCommand->GetProperty(L"background")));
+            const wxColour bgcolor{ m_reportBuilder.ConvertColor(
+                rowAddCommand->GetProperty(L"background")) };
             if (bgcolor.IsOk())
                 {
                 table->SetRowBackgroundColor(position.value(), bgcolor, std::nullopt);
@@ -267,8 +267,8 @@ namespace Wisteria
             borders[2] = (cellBorders.size() > 2 ? cellBorders[2] : table->IsShowingBottomBorder());
             borders[3] = (cellBorders.size() > 3 ? cellBorders[3] : table->IsShowingLeftBorder());
 
-            const wxColour bkColor(
-                m_reportBuilder.ConvertColor(columnRowAggregate->GetProperty(L"background")));
+            const wxColour bkColor{ m_reportBuilder.ConvertColor(
+                columnRowAggregate->GetProperty(L"background")) };
 
             Graphs::Table::AggregateInfo aggInfo;
             if (startColumn.has_value())
@@ -323,7 +323,7 @@ namespace Wisteria
     void ReportTableLoader::ApplyTableRowTotals(std::shared_ptr<Graphs::Table>& table,
                                                 const wxSimpleJSON::Ptr_t& node) const
         {
-        const wxColour bkColor(m_reportBuilder.ConvertColor(node->GetProperty(L"background")));
+        const wxColour bkColor{ m_reportBuilder.ConvertColor(node->GetProperty(L"background")) };
         table->InsertRowTotals(bkColor.IsOk() ? std::optional<wxColour>(bkColor) : std::nullopt);
         }
 
@@ -395,8 +395,8 @@ namespace Wisteria
                     }
                 }
             // background color
-            const wxColour bgcolor(
-                m_reportBuilder.ConvertColor(cellUpdate->GetProperty(L"background")));
+            const wxColour bgcolor{ m_reportBuilder.ConvertColor(
+                cellUpdate->GetProperty(L"background")) };
             if (bgcolor.IsOk())
                 {
                 currentCell->SetBackgroundColor(bgcolor);
@@ -713,8 +713,8 @@ namespace Wisteria
                 {
                 const auto [position, startPosition, endPosition] =
                     ReadPositions(table, rowColorCommand);
-                const wxColour bgcolor(
-                    m_reportBuilder.ConvertColor(rowColorCommand->GetProperty(L"background")));
+                const wxColour bgcolor{ m_reportBuilder.ConvertColor(
+                    rowColorCommand->GetProperty(L"background")) };
                 const std::set<size_t> colStops =
                     LoadTableStops(table, rowColorCommand->GetProperty(L"stops"));
                 if (bgcolor.IsOk())
@@ -1030,8 +1030,8 @@ namespace Wisteria
                 {
                 const auto [position, startPosition, endPosition] =
                     ReadPositions(table, colColorCommand);
-                const wxColour bgcolor(
-                    m_reportBuilder.ConvertColor(colColorCommand->GetProperty(L"background")));
+                const wxColour bgcolor{ m_reportBuilder.ConvertColor(
+                    colColorCommand->GetProperty(L"background")) };
                 const std::set<size_t> rowStops =
                     LoadTableStops(table, colColorCommand->GetProperty(L"stops"));
                 if (bgcolor.IsOk())

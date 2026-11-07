@@ -24,10 +24,10 @@ namespace Wisteria::UI
         // Start off with enough height for a usual icon and some padding around it.
         // This will be adjusted in Realize() to take into account the actual height of the
         // text and any loaded icons.
-        m_itemHeight = FromDIP(wxSize(16, 16)).GetHeight() + GetPaddingHeight();
+        m_itemHeight = FromDIP(wxSize{ 16, 16 }).GetHeight() + GetPaddingHeight();
         wxWindow::SetBackgroundStyle(wxBG_STYLE_CUSTOM);
-        wxScrollHelper::SetScrollbars(FromDIP(wxSize(30, 30)).GetWidth(),
-                                      FromDIP(wxSize(30, 30)).GetHeight(), 0, 0);
+        wxScrollHelper::SetScrollbars(FromDIP(wxSize{ 30, 30 }).GetWidth(),
+                                      FromDIP(wxSize{ 30, 30 }).GetHeight(), 0, 0);
         ShowScrollbars(wxSHOW_SB_NEVER, wxSHOW_SB_DEFAULT);
         SetVirtualSize(GetSize().GetWidth(), GetSize().GetHeight());
         wxWindowBase::SetMinSize(wxSize(GetPaddingWidth(), m_itemHeight));
@@ -174,7 +174,7 @@ namespace Wisteria::UI
             }
 
         ClearHighlightedItems();
-        // if going down, select next item. If it has subitems, then select the first subitem.
+        // If going down, select next item. If it has subitems, then select the first subitem.
         if (event.GetKeyCode() == WXK_DOWN)
             {
             if (IsFolderSelected() &&
@@ -191,7 +191,7 @@ namespace Wisteria::UI
                 SelectSubItem(GetSelectedFolder().value() + 1, 0);
                 }
             }
-        // if going up, select the previous item. If it has subitems, then select the last subitem.
+        // If going up, select the previous item. If it has subitems, then select the last subitem.
         else if (event.GetKeyCode() == WXK_UP)
             {
             if (IsFolderSelected() &&
@@ -368,7 +368,7 @@ namespace Wisteria::UI
             {
             return 0;
             }
-        wxClientDC dc(this);
+        wxClientDC dc{ this };
         dc.SetFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
         wxCoord textWidth(0), textHeight(0);
         dc.GetTextExtent(m_folders[item].m_label, &textWidth, &textHeight);
@@ -501,8 +501,8 @@ namespace Wisteria::UI
             return;
             }
 
-        const wxDCFontChanger fc(dc, wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
-        const wxDCTextColourChanger tc(dc, GetForegroundColour());
+        const wxDCFontChanger fc{ dc, wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT) };
+        const wxDCTextColourChanger tc{ dc, GetForegroundColour() };
 
         // draw the borders and background for root-level folders
         const auto currentParentColour =
@@ -520,18 +520,18 @@ namespace Wisteria::UI
                 if (GetStyle() == SidebarStyle::Glassy)
                     {
                     DrawGlassEffect(dc,
-                                    wxRect(buttonBorderRect.GetLeftTop().x,
-                                           buttonBorderRect.GetLeftTop().y, GetSize().GetWidth(),
-                                           GetItemHeight()),
+                                    wxRect{ buttonBorderRect.GetLeftTop().x,
+                                            buttonBorderRect.GetLeftTop().y, GetSize().GetWidth(),
+                                            GetItemHeight() },
                                     m_selectedColor);
                     }
                 else
                     {
-                    const wxDCBrushChanger bc(dc, m_selectedColor);
-                    const wxDCPenChanger pc(dc, m_selectedColor);
-                    dc.DrawRectangle(wxRect(buttonBorderRect.GetLeftTop().x,
-                                            buttonBorderRect.GetLeftTop().y, GetSize().GetWidth(),
-                                            GetItemHeight()));
+                    const wxDCBrushChanger bc{ dc, m_selectedColor };
+                    const wxDCPenChanger pc{ dc, m_selectedColor };
+                    dc.DrawRectangle(wxRect{ buttonBorderRect.GetLeftTop().x,
+                                             buttonBorderRect.GetLeftTop().y, GetSize().GetWidth(),
+                                             GetItemHeight() });
                     }
                 }
             else if (m_highlightedFolder.has_value() && m_highlightedFolder.value() == folderIndex)
@@ -539,18 +539,18 @@ namespace Wisteria::UI
                 if (GetStyle() == SidebarStyle::Glassy)
                     {
                     DrawGlassEffect(dc,
-                                    wxRect(buttonBorderRect.GetLeftTop().x,
-                                           buttonBorderRect.GetLeftTop().y, GetSize().GetWidth(),
-                                           GetItemHeight()),
+                                    wxRect{ buttonBorderRect.GetLeftTop().x,
+                                            buttonBorderRect.GetLeftTop().y, GetSize().GetWidth(),
+                                            GetItemHeight() },
                                     m_highlightColor);
                     }
                 else
                     {
-                    const wxDCBrushChanger bc(dc, m_highlightColor);
-                    const wxDCPenChanger pc(dc, m_highlightColor);
-                    dc.DrawRectangle(wxRect(buttonBorderRect.GetLeftTop().x,
-                                            buttonBorderRect.GetLeftTop().y, GetSize().GetWidth(),
-                                            GetItemHeight()));
+                    const wxDCBrushChanger bc{ dc, m_highlightColor };
+                    const wxDCPenChanger pc{ dc, m_highlightColor };
+                    dc.DrawRectangle(wxRect{ buttonBorderRect.GetLeftTop().x,
+                                             buttonBorderRect.GetLeftTop().y, GetSize().GetWidth(),
+                                             GetItemHeight() });
                     }
                 }
             else
@@ -558,18 +558,18 @@ namespace Wisteria::UI
                 if (GetStyle() == SidebarStyle::Glassy)
                     {
                     DrawGlassEffect(dc,
-                                    wxRect(buttonBorderRect.GetLeftTop().x,
-                                           buttonBorderRect.GetLeftTop().y, GetSize().GetWidth(),
-                                           GetItemHeight()),
+                                    wxRect{ buttonBorderRect.GetLeftTop().x,
+                                            buttonBorderRect.GetLeftTop().y, GetSize().GetWidth(),
+                                            GetItemHeight() },
                                     currentParentColour);
                     }
                 else
                     {
                     const wxDCBrushChanger bc{ dc, currentParentColour };
                     const wxDCPenChanger pc{ dc, currentParentColour };
-                    dc.DrawRectangle(wxRect(buttonBorderRect.GetLeftTop().x,
-                                            buttonBorderRect.GetLeftTop().y, GetSize().GetWidth(),
-                                            GetItemHeight()));
+                    dc.DrawRectangle(wxRect{ buttonBorderRect.GetLeftTop().x,
+                                             buttonBorderRect.GetLeftTop().y, GetSize().GetWidth(),
+                                             GetItemHeight() });
                     }
                 }
         };
@@ -584,13 +584,14 @@ namespace Wisteria::UI
                 // draw the folder (i.e., parent label)
                 {
                 // priority must mirror drawFolderBackground() (selected beats highlighted)
-                const wxDCTextColourChanger tcc(
+                const wxDCTextColourChanger tcc{
                     dc, (GetSelectedFolder().has_value() && GetSelectedFolder().value() == i &&
                          !m_folders[i].m_isExpanded) ?
                             m_selectedFontColor :
                         (m_highlightedFolder.has_value() && m_highlightedFolder.value() == i) ?
                             m_highlightFontColor :
-                            GetForegroundColour());
+                            GetForegroundColour()
+                };
                 drawFolderBackground(i);
                 if (IsValidImageId(m_folders[i].m_iconIndex))
                     {
@@ -599,14 +600,14 @@ namespace Wisteria::UI
                     bmp.SetScaleFactor(GetContentScaleFactor());
                     dc.DrawLabel(
                         m_folders[i].m_label, bmp,
-                        wxRect(m_folders[i].m_Rect).Deflate(wxSizerFlags::GetDefaultBorder()),
+                        wxRect{ m_folders[i].m_Rect }.Deflate(wxSizerFlags::GetDefaultBorder()),
                         wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
                     }
                 else
                     {
                     dc.DrawLabel(
                         m_folders[i].m_label, wxNullBitmap,
-                        wxRect(m_folders[i].m_Rect).Deflate(wxSizerFlags::GetDefaultBorder()),
+                        wxRect{ m_folders[i].m_Rect }.Deflate(wxSizerFlags::GetDefaultBorder()),
                         wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
                     }
                 }
@@ -654,8 +655,8 @@ namespace Wisteria::UI
                             }
                         else
                             {
-                            const wxDCBrushChanger bc(dc, m_highlightColor);
-                            const wxDCPenChanger pc(dc, m_highlightColor);
+                            const wxDCBrushChanger bc{ dc, m_highlightColor };
+                            const wxDCPenChanger pc{ dc, m_highlightColor };
                             dc.DrawRectangle(wxRect(
                                 buttonBorderRect.GetLeftTop().x, buttonBorderRect.GetLeftTop().y,
                                 GetSize().GetWidth() >= GetSubitemIndentation() ?
@@ -681,8 +682,8 @@ namespace Wisteria::UI
                             }
                         else
                             {
-                            const wxDCBrushChanger bc(dc, m_selectedColor);
-                            const wxDCPenChanger pc(dc, m_selectedColor);
+                            const wxDCBrushChanger bc{ dc, m_selectedColor };
+                            const wxDCPenChanger pc{ dc, m_selectedColor };
                             dc.DrawRectangle(wxRect(
                                 buttonBorderRect.GetLeftTop().x, buttonBorderRect.GetLeftTop().y,
                                 GetSize().GetWidth() >= GetSubitemIndentation() ?
@@ -697,12 +698,13 @@ namespace Wisteria::UI
                         //  subitem ends up with a background/font pairing that was computed for
                         //  different colors.)
                         {
-                        const wxDCTextColourChanger tcc(
+                        const wxDCTextColourChanger tcc{
                             dc, subitemIsSelected ? m_selectedFontColor :
                                 (m_folders[i].m_highlightedItem.has_value() &&
                                  m_folders[i].m_highlightedItem.value() == j) ?
                                                     m_highlightFontColor :
-                                                    GetForegroundColour());
+                                                    GetForegroundColour()
+                        };
                         if (IsValidImageId(m_folders[i].m_subItems[j].m_iconIndex))
                             {
                             wxBitmap bmp =
@@ -710,15 +712,15 @@ namespace Wisteria::UI
                                     .GetBitmap(ScaleToContentSize(GetIconSize()));
                             bmp.SetScaleFactor(GetContentScaleFactor());
                             dc.DrawLabel(m_folders[i].m_subItems[j].m_label, bmp,
-                                         wxRect(m_folders[i].m_subItems[j].m_Rect)
-                                             .Deflate(wxSizerFlags::GetDefaultBorder()),
+                                         wxRect{ m_folders[i].m_subItems[j].m_Rect }.Deflate(
+                                             wxSizerFlags::GetDefaultBorder()),
                                          wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
                             }
                         else
                             {
                             dc.DrawLabel(m_folders[i].m_subItems[j].m_label, wxNullBitmap,
-                                         wxRect(m_folders[i].m_subItems[j].m_Rect)
-                                             .Deflate(wxSizerFlags::GetDefaultBorder()),
+                                         wxRect{ m_folders[i].m_subItems[j].m_Rect }.Deflate(
+                                             wxSizerFlags::GetDefaultBorder()),
                                          wxALIGN_LEFT | wxALIGN_CENTER_VERTICAL);
                             }
                         }
@@ -746,9 +748,9 @@ namespace Wisteria::UI
             wxWindow::SetBackgroundColour(wxColour{ 200, 211, 231 });
             }
 
-        wxAutoBufferedPaintDC pdc(this);
+        wxAutoBufferedPaintDC pdc{ this };
         pdc.Clear();
-        wxGCDC dc(pdc);
+        wxGCDC dc{ pdc };
         PrepareDC(dc);
         OnDraw(dc);
         }
@@ -865,7 +867,7 @@ namespace Wisteria::UI
     void SideBar::Minimize()
         {
         ShowScrollbars(wxSHOW_SB_NEVER, wxSHOW_SB_NEVER);
-        SetMinSize(wxSize(0, wxDefaultCoord));
+        SetMinSize(wxSize{ 0, wxDefaultCoord });
         SetSize(0, wxDefaultCoord);
         }
 
@@ -1009,7 +1011,7 @@ namespace Wisteria::UI
                     }
                 else
                     {
-                    folder.m_subItems[subCounter].m_Rect = wxRect(0, 0, 0, 0);
+                    folder.m_subItems[subCounter].m_Rect = wxRect{ 0, 0, 0, 0 };
                     }
                 }
             // if we haven't hit selected item yet, and this folder is the selected one

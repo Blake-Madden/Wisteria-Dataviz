@@ -211,9 +211,7 @@ namespace Wisteria::UI
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         flowSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Flow shape:")),
                        wxSizerFlags{}.CenterVertical());
-        wxArrayString flowShapes;
-        flowShapes.Add(_(L"Curvy"));
-        flowShapes.Add(_(L"Jagged"));
+        const wxArrayString flowShapes{ _(L"Curvy"), _(L"Jagged") };
         flowSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                     flowShapes, 0, wxGenericValidator{ &m_flowShapeIndex }),
                        wxSizerFlags{}.CenterVertical());
@@ -224,14 +222,13 @@ namespace Wisteria::UI
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         glSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Group labels:")),
                      wxSizerFlags{}.CenterVertical());
-        wxArrayString groupLabelDisplays;
-        groupLabelDisplays.Add(_(L"Name"));
-        groupLabelDisplays.Add(_(L"Value"));
-        groupLabelDisplays.Add(_(L"Percentage"));
-        groupLabelDisplays.Add(_(L"Name & Value"));
-        groupLabelDisplays.Add(_(L"Name & Percentage"));
-        groupLabelDisplays.Add(_(L"Value & Percentage"));
-        groupLabelDisplays.Add(_(L"No Display"));
+        const wxArrayString groupLabelDisplays{ _(L"Name"),
+                                                _(L"Value"),
+                                                _(L"Percentage"),
+                                                _(L"Name & Value"),
+                                                _(L"Name & Percentage"),
+                                                _(L"Value & Percentage"),
+                                                _(L"No Display") };
         glSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                   groupLabelDisplays, 0,
                                   wxGenericValidator{ &m_groupLabelDisplayIndex }),
@@ -243,10 +240,8 @@ namespace Wisteria::UI
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         chSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Column headers:")),
                      wxSizerFlags{}.CenterVertical());
-        wxArrayString columnHeaderDisplays;
-        columnHeaderDisplays.Add(_(L"No Display"));
-        columnHeaderDisplays.Add(_(L"As Header"));
-        columnHeaderDisplays.Add(_(L"As Footer"));
+        const wxArrayString columnHeaderDisplays{ _(L"No Display"), _(L"As Header"),
+                                                  _(L"As Footer") };
         m_columnHeaderChoice = new wxChoice(optionsPage, ID_COLUMN_HEADER_CHOICE, wxDefaultPosition,
                                             wxDefaultSize, columnHeaderDisplays, 0,
                                             wxGenericValidator{ &m_columnHeaderDisplayIndex });

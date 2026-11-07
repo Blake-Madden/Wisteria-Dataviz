@@ -406,8 +406,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScaleChart, Wisteria::Graphs::BarCha
             return wxString{};
         };
 
-        // explain each scale — the main scale ruler and scores column have no blocks,
-        // so they are naturally skipped
+        // Explain each scale. The main scale ruler and scores column have no blocks,
+        // so they are naturally skipped.
         for (const auto& theBar : GetBars())
             {
             if (theBar.GetBlocks().empty())

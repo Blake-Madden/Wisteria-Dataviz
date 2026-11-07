@@ -750,7 +750,7 @@ namespace Wisteria::UI
         const auto newDataAggregation =
             static_cast<Data::GeoColumnAggregation>(GetDataAggregation());
 
-        // imports the KML/GeoJSON region file and copies over any mapped
+        // Imports the KML/GeoJSON region file and copies over any mapped
         // dataset columns from scratch. A group column is read straight from the
         // dataset by SetGroupData(), so only a value or symbol column is merged here.
         const auto buildGeoData = [this, hasSourceColumns, &newKeyColumn, &newShadingColumn,

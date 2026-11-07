@@ -86,7 +86,7 @@ namespace lily_of_the_valley
                 continue;
                 }
 
-            // normal character — keep it
+            // keep normal characters
             output.push_back(input[index]);
             }
 
@@ -286,7 +286,7 @@ namespace lily_of_the_valley
             if (string[0] == 0x22) // double quote
                 {
                 isInsideOfQuotes = !isInsideOfQuotes;
-                // whether this double quote ends a quote pair or starts a new one, turn this flag
+                // Whether this double quote ends a quote pair or starts a new one, turn this flag
                 // off. This means that a double quote can close a single quote.
                 isInsideOfSingleQuotes = false;
                 }
@@ -857,7 +857,7 @@ namespace lily_of_the_valley
                 if (currentPos[i] == 0x22) // double quote
                     {
                     isInsideOfQuotes = !isInsideOfQuotes;
-                    // whether this double quote ends a quote pair or starts a new one, turn this
+                    // Whether this double quote ends a quote pair or starts a new one, turn this
                     // flag off. This means that a double quote can close a single quote.
                     isInsideOfSingleQuotes = false;
                     }
@@ -1809,7 +1809,7 @@ namespace lily_of_the_valley
                 {
                 return true;
                 }
-            // if we are allowing terminated elements ("/>") then it's a match if we
+            // If we are allowing terminated elements ("/>") then it's a match if we
             // are on a '/'. Otherwise, if not a space after it then fail. If it is a space,
             // then we need to scan beyond that to make sure it isn't self terminated after the
             // space.
@@ -1867,7 +1867,7 @@ namespace lily_of_the_valley
                 {
                 return true;
                 }
-            // if we are allowing terminated elements ("/>") then it's a match if we
+            // If we are allowing terminated elements ("/>") then it's a match if we
             // are on a '/'. Otherwise, if not a space after it then fail. If it is a space,
             // then we need to scan beyond that to make sure it isn't self terminated
             // after the space.

@@ -486,7 +486,7 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertIshikawaDiagramDlg::RebuildBranchRows()
         {
-        const wxWindowUpdateLocker noUpdates(m_branchPanel);
+        const wxWindowUpdateLocker noUpdates{ m_branchPanel };
         m_branchSizer->Clear(true);
 
         const auto columnNames = GetColumnNames();

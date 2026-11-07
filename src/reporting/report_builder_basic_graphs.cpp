@@ -914,7 +914,7 @@ namespace Wisteria
                     {
                     pieChart->SetDonutHoleProportion(propNode->AsDouble());
                     }
-                const wxColour color(ConvertColor(donutHoleNode->GetProperty(L"color")));
+                const wxColour color{ ConvertColor(donutHoleNode->GetProperty(L"color")) };
                 if (color.IsOk())
                     {
                     pieChart->SetDonutHoleColor(color);

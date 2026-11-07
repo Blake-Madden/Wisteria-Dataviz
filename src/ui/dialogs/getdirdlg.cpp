@@ -109,7 +109,7 @@ namespace Wisteria::UI
                 }
             }
         m_fileFilterCombo = new wxChoice(
-            this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(wxSize{ 100, 100 }).GetWidth(), -1),
+            this, wxID_ANY, wxDefaultPosition, wxSize{ FromDIP(wxSize{ 100, 100 }).GetWidth(), -1 },
             choiceStrings, 0, wxGenericValidator{ &m_selectedFileFilter });
         fileTypeSizer->Add(m_fileFilterCombo, wxSizerFlags{ 1 }.Expand().Border());
 

@@ -469,7 +469,7 @@ namespace lily_of_the_valley
                     pos = endKeyword + 6;
                     }
                 }
-            // incrementally-updated PDFs (re-saved by Acrobat, form-filled, annotated, etc.)
+            // Incrementally-updated PDFs (re-saved by Acrobat, form-filled, annotated, etc.)
             // append newer bodies for the same object number later in the file. This scan
             // runs forward, so the later (i.e., newest) occurrence must win, not the first.
             const bool isNewObject{ m_objects.find(objectNumber) == m_objects.cend() };
@@ -658,7 +658,7 @@ namespace lily_of_the_valley
                     {
                     return;
                     }
-                // field 1 (the entry type) defaults to 1 (in use) when its
+                // Field 1 (the entry type) defaults to 1 (in use) when its
                 // width is 0, per the spec. Widened to 64 bits while
                 // accumulating since widths[0] can be up to 8 bytes.
                 uint64_t type{ 1 };
@@ -673,9 +673,9 @@ namespace lily_of_the_valley
                         }
                     }
                 streamPos += entryWidth;
-                // type 0 = free, type 1 = in use (uncompressed). Type 2 (in use,
-                // packed in an object stream) needs no entry here: it's neither
-                // free nor governed by this table, it's handled separately when
+                // Type 0 = free, type 1 = in use (uncompressed). Type 2 (in use,
+                // packed in an object stream) needs no entry here. It's neither
+                // free nor governed by this table, and is handled separately when
                 // expand_object_streams() unpacks its containing /ObjStm.
                 if (type == 0 || type == 1)
                     {
@@ -840,7 +840,7 @@ namespace lily_of_the_valley
             filters.push_back(filterValue);
             }
 
-        // gather the parallel /DecodeParms (or abbreviated /DP) entries, if any. This can be
+        // Gather the parallel /DecodeParms (or abbreviated /DP) entries, if any. This can be
         // a single dictionary (applying to the lone filter) or an array running parallel to
         // /Filter (one entry, possibly `null`, per filter in the chain).
         std::vector<std::string_view> filterParms;

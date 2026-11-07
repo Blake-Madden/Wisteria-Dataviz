@@ -34,8 +34,10 @@ namespace Wisteria::UI
         auto* slideSizeBox = new wxStaticBoxSizer(wxVERTICAL, this, _(L"Slide Size"));
 
         wxArrayString slideSizeChoices;
-        slideSizeChoices.Add(_(L"Widescreen (16:9)"));
-        slideSizeChoices.Add(_(L"Standard (4:3)"));
+        slideSizeChoices.Add(
+            /* TRANSLATORS: numbers are the aspect ratio, don't change. */ _(L"Widescreen (16:9)"));
+        slideSizeChoices.Add(
+            /* TRANSLATORS: numbers are the aspect ratio, don't change. */ _(L"Standard (4:3)"));
         slideSizeChoices.Add(_(L"Custom"));
         m_slideSizeRadio =
             new wxRadioBox(slideSizeBox->GetStaticBox(), wxID_ANY, _(L"Preset"), wxDefaultPosition,
@@ -128,8 +130,7 @@ namespace Wisteria::UI
         m_titleSlideThemeLabel =
             new wxStaticText(docInfoBox->GetStaticBox(), wxID_STATIC, _(L"Theme:"));
         themeSizer->Add(m_titleSlideThemeLabel, wxSizerFlags{}.CenterVertical());
-        wxArrayString themeChoices;
-        themeChoices.Add(_(L"None"));
+        wxArrayString themeChoices{ _(L"None") };
         for (const auto& entry : Colors::Schemes::ColorSchemeCatalog::GetEntries())
             {
             themeChoices.Add(entry.first);
@@ -166,14 +167,8 @@ namespace Wisteria::UI
         transitionsGrid->Add(
             new wxStaticText(transitionsBox->GetStaticBox(), wxID_STATIC, _(L"Effect:")),
             wxSizerFlags{}.CenterVertical());
-        wxArrayString transitionChoices;
-        transitionChoices.Add(_(L"None"));
-        transitionChoices.Add(_(L"Fade"));
-        transitionChoices.Add(_(L"Push"));
-        transitionChoices.Add(_(L"Wipe"));
-        transitionChoices.Add(_(L"Split"));
-        transitionChoices.Add(_(L"Cut"));
-        transitionChoices.Add(_(L"Morph"));
+        const wxArrayString transitionChoices{ _(L"None"),  _(L"Fade"), _(L"Push"), _(L"Wipe"),
+                                               _(L"Split"), _(L"Cut"),  _(L"Morph") };
         m_transitionChoice = new wxChoice(transitionsBox->GetStaticBox(), wxID_ANY,
                                           wxDefaultPosition, wxDefaultSize, transitionChoices);
         m_transitionChoice->SetSelection(static_cast<int>(m_options.m_transition));
@@ -182,10 +177,7 @@ namespace Wisteria::UI
         m_transitionSpeedLabel =
             new wxStaticText(transitionsBox->GetStaticBox(), wxID_STATIC, _(L"Speed:"));
         transitionsGrid->Add(m_transitionSpeedLabel, wxSizerFlags{}.CenterVertical());
-        wxArrayString speedChoices;
-        speedChoices.Add(_(L"Slow"));
-        speedChoices.Add(_(L"Medium"));
-        speedChoices.Add(_(L"Fast"));
+        const wxArrayString speedChoices{ _(L"Slow"), _(L"Medium"), _(L"Fast") };
         m_transitionSpeedChoice = new wxChoice(transitionsBox->GetStaticBox(), wxID_ANY,
                                                wxDefaultPosition, wxDefaultSize, speedChoices);
         m_transitionSpeedChoice->SetSelection(static_cast<int>(m_options.m_transitionSpeed));

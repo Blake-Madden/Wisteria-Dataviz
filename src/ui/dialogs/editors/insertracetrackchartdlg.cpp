@@ -138,10 +138,7 @@ namespace Wisteria::UI
 
         trackSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Tracks:")),
                         wxSizerFlags{}.CenterVertical());
-        wxArrayString trackCountChoices;
-        trackCountChoices.Add(_(L"Automatic"));
-        trackCountChoices.Add(_(L"One"));
-        trackCountChoices.Add(_(L"Two"));
+        const wxArrayString trackCountChoices{ _(L"Automatic"), _(L"One"), _(L"Two") };
         trackSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                      trackCountChoices, 0,
                                      wxGenericValidator{ &m_trackCountSelection }));

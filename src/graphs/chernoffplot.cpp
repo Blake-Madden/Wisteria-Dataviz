@@ -1091,10 +1091,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             const bool penIsLight{ (
                 GetPen().IsOk() && GetPen().GetColour().IsOk() &&
                 Wisteria::Colors::ColorContrast::IsLight(GetPen().GetColour())) };
-            const wxDCPenChanger pc(
+            const wxDCPenChanger pc{
                 dc, wxPen(penIsLight ? Colors::ColorBrewer::GetColor(Colors::Color::White) :
                                        Colors::ColorBrewer::GetColor(Colors::Color::Black),
-                          ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT));
+                          ScaleToScreenAndCanvas(2), wxPENSTYLE_DOT)
+            };
             std::array<wxPoint, 5> pts;
             GraphItems::Polygon::GetRectPoints(m_rect, pts);
             dc.DrawLines(pts.size(), pts.data());
@@ -1754,15 +1755,15 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         // (0 = lighter, 1 = darker)
         const double colorBlendFactor = features.m_faceSaturation;
         geom.m_faceCol =
-            wxColour(static_cast<unsigned char>(
-                         faceColorLighter.Red() +
-                         colorBlendFactor * (faceColorDarker.Red() - faceColorLighter.Red())),
-                     static_cast<unsigned char>(
-                         faceColorLighter.Green() +
-                         colorBlendFactor * (faceColorDarker.Green() - faceColorLighter.Green())),
-                     static_cast<unsigned char>(
-                         faceColorLighter.Blue() +
-                         colorBlendFactor * (faceColorDarker.Blue() - faceColorLighter.Blue())));
+            wxColour{ static_cast<unsigned char>(
+                          faceColorLighter.Red() +
+                          colorBlendFactor * (faceColorDarker.Red() - faceColorLighter.Red())),
+                      static_cast<unsigned char>(
+                          faceColorLighter.Green() +
+                          colorBlendFactor * (faceColorDarker.Green() - faceColorLighter.Green())),
+                      static_cast<unsigned char>(
+                          faceColorLighter.Blue() +
+                          colorBlendFactor * (faceColorDarker.Blue() - faceColorLighter.Blue())) };
 
         geom.m_cx = rect.GetX() + rect.GetWidth() * math_constants::half;
         geom.m_cy = rect.GetY() + rect.GetHeight() * math_constants::half;
@@ -1817,8 +1818,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         gc->SetPen(*wxTRANSPARENT_PEN);
         const double cheekRadius = faceHeight * 0.225;
         const double cheekY = cy + faceHeight * 0.1;
-        const wxColour rosyCenter(255, 150, 170, 80);
-        const wxColour rosyEdge(255, 200, 210, 0);
+        const wxColour rosyCenter{ 255, 150, 170, 80 };
+        const wxColour rosyEdge{ 255, 200, 210, 0 };
 
         // left cheek
         const double leftCheekX = cx - faceWidth * 0.55;
@@ -2244,8 +2245,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             }
         else if (features.m_facialHair == FacialHair::ChinCurtain)
             {
-            // chin curtain (a.k.a. Shenandoah, whaler, Lincoln beard):
-            // same beard shape as Beard but no mustache -- upper lip is clean-shaved
+            // chin curtain (a.k.a. Shenandoah, whaler, Lincoln beard) has the same
+            // beard shape as Beard, but with no mustache and a clean-shaved upper lip
             gc->SetPen(wxPen{ outlineColor, 1 });
             gc->SetBrush(wxBrush{ hairColor });
 
@@ -2422,7 +2423,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 gc->StrokePath(mustache);
                 }
 
-            // horseshoe connector: both strands drop around the mouth corners and
+            // For the horseshoe connector, both strands drop around the mouth corners and
             // connect across the bottom under the chin as one continuous U shape.
             // Trace inner boundary right-to-left, then outer boundary left-to-right.
             const double hangX = faceWidth * 0.42;
@@ -2580,7 +2581,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         auto bobSheenBrush = gc->CreateLinearGradientBrush(
             cx - faceWidth * 0.5, cy - faceHeight * 0.95, cx - faceWidth * 0.5,
             cy - faceHeight * 0.6, hairHighlight,
-            wxColour(hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0));
+            wxColour{ hairColor.Red(), hairColor.Green(), hairColor.Blue(), 0 });
         gc->SetBrush(bobSheenBrush);
         gc->SetPen(*wxTRANSPARENT_PEN);
         gc->FillPath(bobHairSheen);
@@ -3335,7 +3336,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
         // down to the top of the left tuft
         swoosh.AddQuadCurveToPoint(cx - faceWidth * 0.75, cy - faceHeight * 0.92,
                                    cx - faceWidth * 0.75, cy - faceHeight * 0.9);
-        // swoosh front edge — low on left (where hair ends), curving up to the
+        // swoosh front edge, low on left (where hair ends) and curving up to the
         // part on viewer's right
         swoosh.AddQuadCurveToPoint(cx - faceWidth * 0.65, cy - faceHeight * 0.4,
                                    cx - faceWidth * 0.1, cy - faceHeight * 0.5);

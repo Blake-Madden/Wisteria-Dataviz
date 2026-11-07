@@ -261,7 +261,7 @@ namespace lily_of_the_valley
             return nullptr;
             }
 
-        // revisions 5/6 (/V 5, AES-256): entirely different, SHA-256-based key
+        // Revisions 5/6 (/V 5, AES-256) use an entirely different, SHA-256-based key
         // derivation and authentication (ISO 32000-2, Algorithm 2.A/2.B). Only the
         // empty-user-password path is implemented, matching revisions 2-4 below.
         if (revision == 5 || revision == 6)

@@ -208,9 +208,7 @@ namespace Wisteria::UI
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         valueSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Value format:")),
                         wxSizerFlags{}.CenterVertical());
-        wxArrayString valueFormatChoices;
-        valueFormatChoices.Add(_(L"Value"));
-        valueFormatChoices.Add(_(L"Percentage"));
+        const wxArrayString valueFormatChoices{ _(L"Value"), _(L"Percentage") };
         valueSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                      valueFormatChoices, 0,
                                      wxGenericValidator{ &m_valueFormatIndex }));
@@ -228,9 +226,8 @@ namespace Wisteria::UI
         // range color scheme
         auto* colorSchemeBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Range Colors"));
 
-        wxArrayString colorSchemeChoices;
-        colorSchemeChoices.Add(_(L"Met/did not meet goal"));
-        colorSchemeChoices.Add(_(L"Two-tone gradient"));
+        const wxArrayString colorSchemeChoices{ _(L"Met/did not meet goal"),
+                                                _(L"Two-tone gradient") };
         colorSchemeBox->Add(new wxChoice(colorSchemeBox->GetStaticBox(), wxID_ANY,
                                          wxDefaultPosition, wxDefaultSize, colorSchemeChoices, 0,
                                          wxGenericValidator{ &m_rangeColorSchemeIndex }),
@@ -343,7 +340,7 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertBulletChartDlg::RefreshRangesList()
         {
-        const wxWindowUpdateLocker noUpdates(m_rangesList);
+        const wxWindowUpdateLocker noUpdates{ m_rangesList };
         m_rangesList->DeleteAllItems();
         for (size_t i = 0; i < m_ranges.size(); ++i)
             {

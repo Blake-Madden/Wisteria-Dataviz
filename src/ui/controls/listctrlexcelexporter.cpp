@@ -107,7 +107,7 @@ namespace Wisteria::UI
                 }
             // add header style (blue background, white text)
             CellStyle headerStyle;
-            headerStyle.m_backgroundColor = wxColour(0x33, 0x7B, 0xC4); // #337BC4
+            headerStyle.m_backgroundColor = wxColour{ 0x33, 0x7B, 0xC4 }; // #337BC4
             headerStyle.m_textColor = *wxWHITE;
             GetOrAddStyle(headerStyle);
             }
@@ -756,7 +756,7 @@ namespace Wisteria::UI
 
             // get header style index (blue background, white text)
             CellStyle headerStyle;
-            headerStyle.m_backgroundColor = wxColour(0x33, 0x7B, 0xC4);
+            headerStyle.m_backgroundColor = wxColour{ 0x33, 0x7B, 0xC4 };
             headerStyle.m_textColor = *wxWHITE;
             const size_t headerStyleIndex = GetOrAddStyle(headerStyle);
 

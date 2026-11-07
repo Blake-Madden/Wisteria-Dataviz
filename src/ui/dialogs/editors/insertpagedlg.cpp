@@ -250,7 +250,7 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertPageDlg::PaintPreview([[maybe_unused]] wxPaintEvent& event)
         {
-        wxAutoBufferedPaintDC pdc(m_previewPanel);
+        wxAutoBufferedPaintDC pdc{ m_previewPanel };
         pdc.SetBackground(*wxWHITE_BRUSH);
         pdc.Clear();
 
@@ -264,16 +264,16 @@ namespace Wisteria::UI
 
         if (context != nullptr)
             {
-            wxGCDC dc(context);
+            wxGCDC dc{ context };
             DrawPreview(dc);
             }
         else
             {
-            wxGCDC dc(pdc);
+            wxGCDC dc{ pdc };
             DrawPreview(dc);
             }
 #else
-        wxGCDC dc(pdc);
+        wxGCDC dc{ pdc };
         DrawPreview(dc);
 #endif
         }
@@ -294,7 +294,7 @@ namespace Wisteria::UI
                      static_cast<double>(FromDIP(256)));
         const auto scaleFactor = m_previewPanel->GetContentScaleFactor();
 
-        const wxBrush occupiedBrush(wxColour{ 220, 220, 220 });
+        const wxBrush occupiedBrush{ wxColour{ 220, 220, 220 } };
         const wxBrush legendBrush{ wxColour{ 160, 160, 160 }, wxBRUSHSTYLE_BDIAGONAL_HATCH };
 
         for (size_t row = 0; std::cmp_less(row, m_rowCount); ++row)
@@ -380,7 +380,7 @@ namespace Wisteria::UI
 
             // highlight the drop target cell
             dc.SetPen(wxPen{ dropColor, FromDIP(4), wxPENSTYLE_SHORT_DASH });
-            dc.SetBrush(wxBrush{ wxColour(0, 150, 0, 30) });
+            dc.SetBrush(wxBrush{ wxColour{ 0, 150, 0, 30 } });
             dc.DrawRectangle(clientRect.x + targetLeft, clientRect.y + targetTop, targetW, targetH);
 
             // arrow pointing down at the drop target
@@ -430,7 +430,7 @@ namespace Wisteria::UI
             gc->SetBrush(gc->CreateLinearGradientBrush(
                 (outerTopX + outerBottomX) / 2.0, (outerTopY + outerBottomY) / 2.0,
                 (innerTopX + innerBottomX) / 2.0, (outerTopY + outerBottomY) / 2.0,
-                wxColour(255, 255, 255, 190), wxColour(255, 255, 255, 0)));
+                wxColour{ 255, 255, 255, 190 }, wxColour{ 255, 255, 255, 0 }));
             gc->DrawPath(sheenPath);
 
             // ghost of the dragged item, following the mouse cursor

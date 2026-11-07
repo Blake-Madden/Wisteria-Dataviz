@@ -1369,10 +1369,10 @@ void WisteriaApp::ReadLogIntoListCtrl(Wisteria::UI::ListCtrlEx* listCtrl)
         const auto currentRow = listCtrl->GetItemText(i, 0);
         const wxColour rowColor =
             (currentRow.find(L"Error: ") != wxString::npos) ?
-                wxColour(242, 94, 101) :
+                wxColour{ 242, 94, 101 } :
             (currentRow.find(L"Warning: ") != wxString::npos) ?
                 Wisteria::Colors::ColorBrewer::GetColor(Wisteria::Colors::Color::Yellow) :
-            (currentRow.find(L"Debug: ") != wxString::npos) ? wxColour(143, 214, 159) :
+            (currentRow.find(L"Debug: ") != wxString::npos) ? wxColour{ 143, 214, 159 } :
                                                               wxNullColour;
         if (rowColor.IsOk())
             {

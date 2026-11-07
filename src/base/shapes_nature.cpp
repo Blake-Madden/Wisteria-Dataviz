@@ -152,7 +152,7 @@ namespace Wisteria::GraphItems
                         gc->StrokePath(path);
                     };
 
-                    // left and right creases — thin, separated, slightly different curves
+                    // left and right creases as thin, separated, slightly different curves
                     crease((-w * 0.17) + jitterLeft, (-w * 0.06) + jitterLeft,
                            -w * math_constants::tenth);
                     crease((w * 0.17) + jitterRight, (w * 0.06) + jitterRight,
@@ -277,7 +277,7 @@ namespace Wisteria::GraphItems
                 centerX + (bodyWidth / 3), centerY + (drawRect.m_height * 0.10));
             lowerWingFrame.CloseSubpath();
 
-            // fill wings with gradients — outer-tip light, inner-base darker
+            // fill wings with gradients (outer tip light, inner base darker)
             gc->SetPen(*wxTRANSPARENT_PEN);
             gc->SetBrush(gc->CreateLinearGradientBrush(
                 centerX + (drawRect.m_width * 0.40), centerY - (drawRect.m_height * 0.38),
@@ -290,11 +290,11 @@ namespace Wisteria::GraphItems
                 cellColor2, cellColor3));
             gc->FillPath(lowerWingFrame);
 
-            // inset accent ovals — radial gradient: bright gold highlight → deep amber edge
+            // inset accent ovals with a radial gradient (bright gold highlight → deep amber edge)
             const wxColour amberLight{ ApplyColorOpacity(wxColour(255, 235, 120)) };
             const wxColour amberDark{ ApplyColorOpacity(wxColour(230, 175, 50)) };
 
-            // upper wing oval — gradient defined in post-translate local space (center = 0,0)
+            // upper wing oval, with gradient defined in post-translate local space (center = 0,0)
             gc->PushState();
             gc->Translate(centerX + (drawRect.m_width * 0.26),
                           centerY - (drawRect.m_height * 0.13));
@@ -316,7 +316,7 @@ namespace Wisteria::GraphItems
                             drawRect.m_width * 0.18, drawRect.m_height * 0.18);
             gc->PopState();
 
-            // thick black border stroke on top — defines wing outline and hides any edge artifacts
+            // thick black border stroke on top defines wing outline and hides any edge artifacts
             const wxPen borderPen(frameColor,
                                   std::max(1, static_cast<int>(drawRect.m_width * 0.02)));
             gc->SetBrush(*wxTRANSPARENT_BRUSH);
@@ -330,7 +330,7 @@ namespace Wisteria::GraphItems
         drawWings(1.0);  // right wings
         drawWings(-1.0); // left wings
 
-        // body — radial gradient lit from upper-left
+        // body, with radial gradient lit from upper-left
         const double bodyWidth = drawRect.m_width * 0.06;
         const double bodyHeight = drawRect.m_height * 0.55;
         const double bodyCenterX = centerX;
@@ -344,7 +344,7 @@ namespace Wisteria::GraphItems
         gc->DrawEllipse(centerX - (bodyWidth / 2), centerY - (bodyHeight * 0.4), bodyWidth,
                         bodyHeight);
 
-        // head — same radial highlight
+        // head, with the same radial highlight
         const double headSize = bodyWidth * 1.3;
         const double headCenterX = centerX;
         const double headCenterY =

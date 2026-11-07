@@ -420,7 +420,7 @@ namespace lily_of_the_valley
         document.set_charset_converter(m_charset_convert);
         document.catalog_objects();
 
-        // review the trailer(s) for encryption, the document ID, the page tree root,
+        // Review the trailer(s) for encryption, the document ID, the page tree root,
         // and the metadata. This must happen before expand_object_streams(), since an
         // encrypted file's compressed object streams need to be decrypted before they
         // can be expanded.

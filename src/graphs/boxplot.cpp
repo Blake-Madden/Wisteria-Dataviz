@@ -313,7 +313,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
         // units wide then will have to fail
         if (boxWidth < 3 * GetScaling())
             {
-            // show "can't be drawn" message on graph if the boxes won't fit.
+            // Show "can't be drawn" message on graph if the boxes won't fit.
             // Should never happen unless you add an absurd amount of boxes to the plot
             const wxPoint textCoordinate(
                 GetPlotAreaBoundingBox().GetX() + (GetPlotAreaBoundingBox().GetWidth() / 2),

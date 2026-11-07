@@ -277,10 +277,7 @@ namespace Wisteria::UI
         m_shapeAllRadio->SetValue(true);
         shapesBox->Add(m_shapeAllRadio, wxSizerFlags{}.Border());
 
-        wxArrayString barShapeChoices;
-        barShapeChoices.Add(_(L"Rectangle"));
-        barShapeChoices.Add(_(L"Arrow"));
-        barShapeChoices.Add(_(L"Reverse Arrow"));
+        const wxArrayString barShapeChoices{ _(L"Rectangle"), _(L"Arrow"), _(L"Reverse Arrow") };
         m_shapeAllChoice =
             new wxChoice(shapesBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
                          barShapeChoices, 0, wxGenericValidator{ &m_barShapeAllIndex });
@@ -348,10 +345,7 @@ namespace Wisteria::UI
                                            wxString& inOutLabel,
                                            Graphs::BarChart::BarShape& inOutShape) -> bool
         {
-            wxArrayString shapeChoices;
-            shapeChoices.Add(_(L"Rectangle"));
-            shapeChoices.Add(_(L"Arrow"));
-            shapeChoices.Add(_(L"Reverse Arrow"));
+            const wxArrayString shapeChoices{ _(L"Rectangle"), _(L"Arrow"), _(L"Reverse Arrow") };
 
             wxDialog dlg(this, wxID_ANY, caption, wxDefaultPosition, wxDefaultSize,
                          wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);

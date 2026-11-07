@@ -493,7 +493,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     //------------------------------------------------------
     void ListCtrlEx::RemoveAll(const wxString& valueToRemove)
         {
-        const wxWindowUpdateLocker noUpdates(this);
+        const wxWindowUpdateLocker noUpdates{ this };
         const long style = GetExtraStyle();
         SetExtraStyle(style | wxWS_EX_BLOCK_EVENTS);
         long index = 0;
@@ -516,7 +516,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     //------------------------------------------------------
     void ListCtrlEx::DeleteSelectedItems()
         {
-        const wxWindowUpdateLocker noUpdates(this);
+        const wxWindowUpdateLocker noUpdates{ this };
 
         long item = wxNOT_FOUND;
         const long firstSelected = GetNextItem(wxNOT_FOUND, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
@@ -826,7 +826,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                             {
                             wxCoord currentX = marginX + currentTableOffset;
                             // draw the column headers' background
-                            drawDC.SetBrush(wxColour(L"#337BC4"));
+                            drawDC.SetBrush(wxColour{ L"#337BC4" });
                             drawDC.DrawRectangle(currentX, bodyStart, GetTableWidth(),
                                                  GetColumnHeight());
                             // draw the cell borders
@@ -856,8 +856,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                     // fill cell background color
                                     if (rowAttributes.GetBackgroundColour().IsOk())
                                         {
-                                        const wxDCBrushChanger cellBCH(
-                                            drawDC, rowAttributes.GetBackgroundColour());
+                                        const wxDCBrushChanger cellBCH{
+                                            drawDC, rowAttributes.GetBackgroundColour()
+                                        };
                                         drawDC.DrawRectangle(currentX, currentY, GetTableWidth(),
                                                              GetLineHeight());
                                         }
@@ -978,8 +979,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                                                                     Colors::Color::Black);
                                             }
 
-                                        const wxDCTextColourChanger cellTextCCH(drawDC,
-                                                                                cellTextColor);
+                                        const wxDCTextColourChanger cellTextCCH{ drawDC,
+                                                                                 cellTextColor };
 
                                         if (GetColumnsInfo()[j].m_multiline)
                                             {
@@ -1096,7 +1097,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                         {
                         m_printCanvas.Create(dcWidth, dcHeight);
                         }
-                    wxMemoryDC memDc(m_printCanvas);
+                    wxMemoryDC memDc{ m_printCanvas };
                     memDc.Clear();
 #ifdef __WXMSW__
                     wxGraphicsContext* context{ nullptr };
@@ -1107,28 +1108,33 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                         }
                     if (context != nullptr)
                         {
-                        wxGCDC gcdc(context);
+                        wxGCDC gcdc{ context };
                         gcdc.SetFont(m_list->GetFont());
                         drawTables(gcdc);
                         drawHeadersAndFooters(gcdc);
-                        Canvas::DrawWatermarkLabel(gcdc,
-                                                   wxRect(wxSize(drawingWidth, drawingHeight)),
+                        Canvas::DrawWatermarkLabel(gcdc, wxRect{ wxSize {
+                                                       drawingWidth,
+                                                       drawingHeight
+                                                   } },
                                                    m_list->GetWatermark(), 1.0);
                         }
                     else
                         {
-                        wxGCDC gcdc(memDc);
+                        wxGCDC gcdc{ memDc };
                         drawTables(gcdc);
                         drawHeadersAndFooters(gcdc);
-                        Canvas::DrawWatermarkLabel(gcdc,
-                                                   wxRect(wxSize(drawingWidth, drawingHeight)),
+                        Canvas::DrawWatermarkLabel(gcdc, wxRect{ wxSize {
+                                                       drawingWidth,
+                                                       drawingHeight
+                                                   } },
                                                    m_list->GetWatermark(), 1.0);
                         }
 #else
-                    wxGCDC gcdc(memDc);
+                    wxGCDC gcdc{ memDc };
                     drawTables(gcdc);
                     drawHeadersAndFooters(gcdc);
-                    Canvas::DrawWatermarkLabel(gcdc, wxRect(wxSize(drawingWidth, drawingHeight)),
+                    Canvas::DrawWatermarkLabel(gcdc,
+                                               wxRect{ wxSize{ drawingWidth, drawingHeight } },
                                                m_list->GetWatermark(), 1.0);
 #endif
                     // copy renderings back into printer DC
@@ -1603,7 +1609,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         printer.GetPrintDialogData().EnableSelection(false);
         if (!printer.Print(this, printOut, true))
             {
-            // just show a message if a real error occurred. They may have just cancelled.
+            // Just show a message if a real error occurred. They may have just cancelled.
             if (wxPrinter::GetLastError() == wxPRINTER_ERROR)
                 {
                 wxMessageBox(_(L"An error occurred while printing.\n"
@@ -1664,7 +1670,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         int x{ 0 }, y{ 0 }, width{ 0 }, height{ 0 };
         wxClientDisplayRect(&x, &y, &width, &height);
         wxPreviewFrame* frame = new wxPreviewFrame(preview, this, _(L"Print Preview"),
-                                                   wxDefaultPosition, wxSize(width, height));
+                                                   wxDefaultPosition, wxSize{ width, height });
 
         frame->Centre(wxBOTH);
         frame->Initialize();
@@ -1813,7 +1819,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     //------------------------------------------------------
     void ListCtrlEx::DeselectAll()
         {
-        const wxWindowUpdateLocker noUpdates(this);
+        const wxWindowUpdateLocker noUpdates{ this };
         const long style = GetExtraStyle();
         SetExtraStyle(style | wxWS_EX_BLOCK_EVENTS);
         for (long i = 0; i < GetItemCount(); ++i)
@@ -1837,7 +1843,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     //------------------------------------------------------
     void ListCtrlEx::SelectAll()
         {
-        const wxWindowUpdateLocker noUpdates(this);
+        const wxWindowUpdateLocker noUpdates{ this };
         const long style = GetExtraStyle();
         SetExtraStyle(style | wxWS_EX_BLOCK_EVENTS);
         for (long i = 0; i < GetItemCount(); ++i)
@@ -1851,7 +1857,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     //------------------------------------------------------
     void ListCtrlEx::DistributeColumns(const long maxColumnWidth /*= 300*/)
         {
-        const wxWindowUpdateLocker noUpdates(this);
+        const wxWindowUpdateLocker noUpdates{ this };
         for (long i = 0; i < GetColumnCount(); ++i)
             {
             const long estimatedWidth = EstimateColumnWidth(i);
@@ -2089,7 +2095,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
         SetCursor(*wxHOURGLASS_CURSOR);
         // freeze the window and also (temporarily) block
         // its events to optimize the sorting process
-        const wxWindowUpdateLocker noUpdates(this);
+        const wxWindowUpdateLocker noUpdates{ this };
         const long style = GetExtraStyle();
         SetExtraStyle(style | wxWS_EX_BLOCK_EVENTS);
         if (IsVirtual() && m_virtualData != nullptr) [[likely]]
@@ -2164,7 +2170,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             SetCursor(*wxHOURGLASS_CURSOR);
             // freeze the window and also (temporarily) block
             // its events to optimize the sorting process
-            const wxWindowUpdateLocker noUpdates(this);
+            const wxWindowUpdateLocker noUpdates{ this };
             const long style = GetExtraStyle();
             SetExtraStyle(style | wxWS_EX_BLOCK_EVENTS);
 
@@ -2220,7 +2226,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             }
         for (auto i = 0; i < GetImageList(whichList)->GetImageCount(); ++i)
             {
-            const wxImage img(GetImageList(whichList)->GetBitmap(i).ConvertToImage());
+            const wxImage img{ GetImageList(whichList)->GetBitmap(i).ConvertToImage() };
             const auto tempFilePath = wxFileName::CreateTempFileName(L"RSI");
             if (!tempFilePath.empty() &&
                 img.SaveFile(tempFilePath, wxBitmapType::wxBITMAP_TYPE_PNG))
@@ -3485,8 +3491,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             if (m_editTextCtrl == nullptr)
                 {
                 m_editTextCtrl = new ListEditTextCtrl(
-                    this, this, wxID_ANY, currentItemText, wxPoint(itemRect.x, itemRect.y),
-                    wxSize(itemRect.width, itemRect.height),
+                    this, this, wxID_ANY, currentItemText, wxPoint{ itemRect.x, itemRect.y },
+                    wxSize{ itemRect.width, itemRect.height },
                     wxTE_PROCESS_TAB | wxTE_PROCESS_ENTER | wxBORDER_SUNKEN);
                 m_editTextCtrl->SetCurrentItem(selectedRow, selectedColumn);
                 }
@@ -3494,8 +3500,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                 {
                 m_editTextCtrl->SetCurrentItem(selectedRow, selectedColumn);
                 m_editTextCtrl->SetValue(currentItemText);
-                m_editTextCtrl->Move(wxPoint(itemRect.x, itemRect.y));
-                m_editTextCtrl->SetSize(wxSize(itemRect.width, itemRect.height));
+                m_editTextCtrl->Move(wxPoint{ itemRect.x, itemRect.y });
+                m_editTextCtrl->SetSize(wxSize{ itemRect.width, itemRect.height });
                 // move caret to end of the text
                 m_editTextCtrl->SetSelection(currentItemText.length(), currentItemText.length());
                 }
@@ -3516,8 +3522,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             if (m_editSpinCtrl == nullptr)
                 {
                 m_editSpinCtrl = new ListEditSpinCtrl(
-                    this, this, wxID_ANY, wxString{}, wxPoint(itemRect.x, itemRect.y),
-                    wxSize(itemRect.width, itemRect.height), wxSP_ARROW_KEYS,
+                    this, this, wxID_ANY, wxString{}, wxPoint{ itemRect.x, itemRect.y },
+                    wxSize{ itemRect.width, itemRect.height }, wxSP_ARROW_KEYS,
                     static_cast<int>(GetColumnEditMode(selectedColumn).m_numericMinValue),
                     static_cast<int>(GetColumnEditMode(selectedColumn).m_numericMaxValue),
                     static_cast<int>(initialValue));
@@ -3529,8 +3535,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                 m_editSpinCtrl->SetRange(
                     static_cast<int>(GetColumnEditMode(selectedColumn).m_numericMinValue),
                     static_cast<int>(GetColumnEditMode(selectedColumn).m_numericMaxValue));
-                m_editSpinCtrl->Move(wxPoint(itemRect.x, itemRect.y));
-                m_editSpinCtrl->SetSize(wxSize(itemRect.width, itemRect.height));
+                m_editSpinCtrl->Move(wxPoint{ itemRect.x, itemRect.y });
+                m_editSpinCtrl->SetSize(wxSize{ itemRect.width, itemRect.height });
                 }
             Select(selectedRow, false);
             m_editSpinCtrl->SetValue(initialValue);
@@ -3549,8 +3555,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             if (m_editSpinCtrlDouble == nullptr)
                 {
                 m_editSpinCtrlDouble = new ListEditSpinCtrlDouble(
-                    this, this, wxID_ANY, wxString{}, wxPoint(itemRect.x, itemRect.y),
-                    wxSize(itemRect.width, itemRect.height), wxSP_ARROW_KEYS,
+                    this, this, wxID_ANY, wxString{}, wxPoint{ itemRect.x, itemRect.y },
+                    wxSize{ itemRect.width, itemRect.height }, wxSP_ARROW_KEYS,
                     GetColumnEditMode(selectedColumn).m_numericMinValue,
                     GetColumnEditMode(selectedColumn).m_numericMaxValue, initialValue);
                 m_editSpinCtrlDouble->SetCurrentItem(selectedRow, selectedColumn);
@@ -3560,8 +3566,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                 m_editSpinCtrlDouble->SetCurrentItem(selectedRow, selectedColumn);
                 m_editSpinCtrlDouble->SetRange(GetColumnEditMode(selectedColumn).m_numericMinValue,
                                                GetColumnEditMode(selectedColumn).m_numericMaxValue);
-                m_editSpinCtrlDouble->Move(wxPoint(itemRect.x, itemRect.y));
-                m_editSpinCtrlDouble->SetSize(wxSize(itemRect.width, itemRect.height));
+                m_editSpinCtrlDouble->Move(wxPoint{ itemRect.x, itemRect.y });
+                m_editSpinCtrlDouble->SetSize(wxSize{ itemRect.width, itemRect.height });
                 }
             Select(selectedRow, false);
             m_editSpinCtrlDouble->SetValue(initialValue);
@@ -3580,7 +3586,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
                 }
             m_editComboBox = new ListEditComboBox(
                 this, this, GetColumnEditMode(selectedColumn).m_selectableValues, wxID_ANY,
-                wxString{}, wxPoint(itemRect.x, itemRect.y), wxDefaultSize,
+                wxString{}, wxPoint{ itemRect.x, itemRect.y }, wxDefaultSize,
                 GetColumnEditMode(selectedColumn).m_editMode ==
                         ColumnInfo::ColumnEditMode::ComboBoxEditReadOnly ?
                     wxCB_DROPDOWN | wxCB_READONLY :
@@ -3593,7 +3599,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
             m_editComboBox->Show(true);
             if (m_editComboBox->GetSize().GetWidth() < itemRect.GetWidth())
                 {
-                m_editComboBox->SetSize(wxSize(itemRect.GetWidth(), itemRect.GetHeight() + 4));
+                m_editComboBox->SetSize(wxSize{ itemRect.GetWidth(), itemRect.GetHeight() + 4 });
                 }
             m_editComboBox->Popup();
             m_editComboBox->SetFocus();
@@ -3603,7 +3609,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::UI::ListCtrlEx, wxListView)
     //------------------------------------------------------
     long ListCtrlEx::EstimateColumnWidth(const long column)
         {
-        wxClientDC dc(this);
+        wxClientDC dc{ this };
         dc.SetFont(GetFont());
         wxCoord headerTextWidth{ 0 }, headerTextHeight{ 0 };
         wxCoord textWidth{ 0 }, textHeight{ 0 };

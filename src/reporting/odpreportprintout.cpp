@@ -272,7 +272,7 @@ wxString Wisteria::ReportOdpExport::BuildTitleSlideXml(const OdpExportOptions& o
                          L"draw:textarea-vertical-align=\"bottom\"/></style:style>",
                          titleFrameStyle, subtitleFrameStyle, publisherFrameStyle);
 
-    // drawing-page background: gradient when themed, plain white otherwise.
+    // The drawing-page background is a gradient when themed, and plain white otherwise.
     // Transition/auto-advance are also drawing-page properties, not draw:page attributes.
     if (isThemed)
         {

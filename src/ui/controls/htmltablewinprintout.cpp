@@ -145,18 +145,18 @@ bool HtmlTablePrintout::OnPrintPage(int page)
             };
 
             // need to use wxGCDC for any color transparency
-            if (!m_printCanvas.IsOk() || m_printCanvas.GetSize() != wxSize(dcWidth, dcHeight))
+            if (!m_printCanvas.IsOk() || m_printCanvas.GetSize() != wxSize{ dcWidth, dcHeight })
                 {
                 m_printCanvas.Create(dcWidth, dcHeight);
                 }
-            wxMemoryDC memDc(m_printCanvas);
+            wxMemoryDC memDc{ m_printCanvas };
             memDc.Clear();
-            wxGCDC gcdc(memDc);
+            wxGCDC gcdc{ memDc };
 
             drawTables(gcdc);
             drawHeadersAndFooters(gcdc);
-            Wisteria::Canvas::DrawWatermarkLabel(gcdc, wxRect(wxSize(drawingWidth, drawingHeight)),
-                                                 m_waterMark, 1.0);
+            Wisteria::Canvas::DrawWatermarkLabel(
+                gcdc, wxRect{ wxSize{ drawingWidth, drawingHeight } }, m_waterMark, 1.0);
             // copy renderings back into printer DC
             dc->Blit(0, 0, dcWidth, dcHeight, &memDc, 0, 0);
             memDc.SelectObject(wxNullBitmap);
@@ -212,13 +212,13 @@ void HtmlTablePrintout::OnPreparePrinting()
 
         // paginate by measuring each table and storing which tables
         // should be on which page
-        if (!m_printCanvas.IsOk() || m_printCanvas.GetSize() != wxSize(dcWidth, dcHeight))
+        if (!m_printCanvas.IsOk() || m_printCanvas.GetSize() != wxSize{ dcWidth, dcHeight })
             {
             m_printCanvas.Create(dcWidth, dcHeight);
             }
-        wxMemoryDC memDc(m_printCanvas);
+        wxMemoryDC memDc{ m_printCanvas };
         memDc.Clear();
-        wxGCDC gcdc(memDc);
+        wxGCDC gcdc{ memDc };
         gcdc.SetUserScale(safe_divide<double>(1.0, scaleDownX),
                           safe_divide<double>(1.0, scaleDownY));
         wxHtmlDCRenderer htmlRenderer;

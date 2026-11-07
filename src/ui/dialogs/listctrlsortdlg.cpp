@@ -14,7 +14,7 @@ namespace Wisteria::UI
     void ListCtrlSortDlg::CreateControls()
         {
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
-        mainSizer->SetMinSize(FromDIP(wxSize(500, 300)));
+        mainSizer->SetMinSize(FromDIP(wxSize{ 500, 300 }));
 
         auto* optionsSizer = new wxBoxSizer(wxHORIZONTAL);
         mainSizer->Add(optionsSizer, wxSizerFlags{ 1 }.Expand().Border());
@@ -32,9 +32,7 @@ namespace Wisteria::UI
         m_columnList->SetColumnEditable(0);
         m_columnList->SetColumnTextSelectionsReadOnly(0, m_columnChoices);
         m_columnList->InsertColumn(1, _(L"Order"));
-        wxArrayString orderOptions;
-        orderOptions.Add(GetAscendingLabel());
-        orderOptions.Add(GetDescendingLabel());
+        const wxArrayString orderOptions{ GetAscendingLabel(), GetDescendingLabel() };
         m_columnList->SetColumnEditable(1);
         m_columnList->SetColumnTextSelectionsReadOnly(1, orderOptions);
         m_columnList->SetVirtualDataProvider(m_data);

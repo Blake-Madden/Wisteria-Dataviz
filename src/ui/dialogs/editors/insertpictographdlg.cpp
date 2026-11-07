@@ -153,19 +153,14 @@ namespace Wisteria::UI
 
         layoutSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Orientation:")),
                          wxSizerFlags{}.CenterVertical());
-        wxArrayString orientationChoices;
-        orientationChoices.Add(_(L"Vertical"));
-        orientationChoices.Add(_(L"Horizontal"));
+        const wxArrayString orientationChoices{ _(L"Vertical"), _(L"Horizontal") };
         layoutSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                       orientationChoices, 0,
                                       wxGenericValidator{ &m_orientationIndex }));
 
         layoutSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Value display:")),
                          wxSizerFlags{}.CenterVertical());
-        wxArrayString valueFormatChoices;
-        valueFormatChoices.Add(_(L"Value"));
-        valueFormatChoices.Add(_(L"Percentage"));
-        valueFormatChoices.Add(_(L"Currency"));
+        const wxArrayString valueFormatChoices{ _(L"Value"), _(L"Percentage"), _(L"Currency") };
         layoutSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                       valueFormatChoices, 0,
                                       wxGenericValidator{ &m_valueFormatIndex }));

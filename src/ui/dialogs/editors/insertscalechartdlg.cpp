@@ -418,7 +418,7 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertScaleChartDlg::RefreshScalesList()
         {
-        const wxWindowUpdateLocker noUpdates(m_scalesList);
+        const wxWindowUpdateLocker noUpdates{ m_scalesList };
         m_scalesList->DeleteAllItems();
         for (size_t i = 0; i < m_scales.size(); ++i)
             {
@@ -430,7 +430,7 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertScaleChartDlg::RefreshBlocksList()
         {
-        const wxWindowUpdateLocker noUpdates(m_blocksList);
+        const wxWindowUpdateLocker noUpdates{ m_blocksList };
         m_blocksList->DeleteAllItems();
         const long scaleSel = GetSelectedScaleIndex();
         if (scaleSel == wxNOT_FOUND)
@@ -737,7 +737,7 @@ namespace Wisteria::UI
         // options
         m_showcaseScore = scaleChart->IsShowcasingScore();
 
-        // scales from bars — skip the first two bars (main scale + scores)
+        // read scales from the bars, skipping the first two (main scale + scores)
         m_scales.clear();
         const auto& bars = scaleChart->GetBars();
         for (size_t barIdx = 2; barIdx < bars.size(); ++barIdx)

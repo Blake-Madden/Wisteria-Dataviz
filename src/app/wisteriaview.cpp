@@ -194,10 +194,10 @@ bool WisteriaView::OnCreate(wxDocument* doc, long flags)
         return false;
         }
 
-    const wxSize windowSize(std::max(wxGetApp().GetMainFrame()->GetClientSize().GetWidth(),
-                                     wxGetApp().GetMainFrame()->FromDIP(800)),
-                            std::max(wxGetApp().GetMainFrame()->GetClientSize().GetHeight(),
-                                     wxGetApp().GetMainFrame()->FromDIP(600)));
+    const wxSize windowSize{ std::max(wxGetApp().GetMainFrame()->GetClientSize().GetWidth(),
+                                      wxGetApp().GetMainFrame()->FromDIP(800)),
+                             std::max(wxGetApp().GetMainFrame()->GetClientSize().GetHeight(),
+                                      wxGetApp().GetMainFrame()->FromDIP(600)) };
 
     const wxFileName fn(doc->GetFilename());
     const wxString title =
@@ -1413,7 +1413,7 @@ void WisteriaView::OnPasteItem([[maybe_unused]] wxCommandEvent& event)
     // (an empty row would otherwise be collapsed to zero height by CalcRowDimensions)
     canvas->ZoomReset();
     canvas->CalcRowDimensions();
-    wxGCDC gdc(canvas);
+    wxGCDC gdc{ canvas };
     canvas->CalcAllSizes(gdc);
     canvas->ResetResizeDelay();
     canvas->SendSizeEvent();

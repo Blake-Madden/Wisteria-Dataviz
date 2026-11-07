@@ -21,9 +21,7 @@ namespace Wisteria::UI
         {
         auto* mainSizer = new wxBoxSizer(wxVERTICAL);
 
-        wxArrayString orientations;
-        orientations.Add(_(L"Horizontally"));
-        orientations.Add(_(L"Vertically"));
+        const wxArrayString orientations{ _(L"Horizontally"), _(L"Vertically") };
         auto* orientationsRadioBox = new wxRadioBox(
             this, wxID_ANY, _(L"Merge Images:"), wxDefaultPosition, wxDefaultSize, orientations, 0,
             wxRA_SPECIFY_ROWS, wxGenericValidator{ &m_orientRadio });
@@ -194,7 +192,7 @@ namespace Wisteria::UI
     //----------------------------------------
     void ImageMergeDlg::AdjustThumbnailsHorizontally()
         {
-        const wxWindowUpdateLocker noUpdates(m_horizontalThumbsSizer->GetStaticBox());
+        const wxWindowUpdateLocker noUpdates{ m_horizontalThumbsSizer->GetStaticBox() };
         int maxHeight{ 0 };
         int totalWidth{ 0 };
         for (const auto* sizerItem : m_horizontalThumbsSizer->GetChildren())
@@ -229,7 +227,7 @@ namespace Wisteria::UI
     //----------------------------------------
     void ImageMergeDlg::AdjustThumbnailsVertically()
         {
-        const wxWindowUpdateLocker noUpdates(m_verticalThumbsSizer->GetStaticBox());
+        const wxWindowUpdateLocker noUpdates{ m_verticalThumbsSizer->GetStaticBox() };
         int maxWidth{ 0 };
         int totalHeight{ 0 };
         for (const auto* sizerItem : m_verticalThumbsSizer->GetChildren())

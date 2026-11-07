@@ -315,11 +315,12 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<ReportExportPage>& 
             {
             const bool landscape = (printData.GetOrientation() == wxLANDSCAPE);
             const auto paperSzTenthsMM = paper->GetSize();
-            const wxSize logicalSize(
+            const wxSize logicalSize{
                 wxRound((landscape ? paperSzTenthsMM.GetHeight() : paperSzTenthsMM.GetWidth()) /
                         254.0 * pdfPPI),
                 wxRound((landscape ? paperSzTenthsMM.GetWidth() : paperSzTenthsMM.GetHeight()) /
-                        254.0 * pdfPPI));
+                        254.0 * pdfPPI)
+            };
             const wxSize dipSize = pdfDC.ToDIP(logicalSize);
             dipW = dipSize.GetWidth() - leftMargin - rightMargin;
             dipH = dipSize.GetHeight() - topMargin - bottomMargin;

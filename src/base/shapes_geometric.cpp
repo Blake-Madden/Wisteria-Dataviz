@@ -462,7 +462,7 @@ namespace Wisteria::GraphItems
         gc->SetBrush(wxBrush{ fillColor });
         gc->FillPath(arrowPath);
 
-            // sheen: diagonal highlight band within the arrow head only.
+            // Draw the sheen as a diagonal highlight band within the arrow head only.
             // The head region is geometrically well-defined (bounded by the head diagonal),
             // so no clip region is needed and no pixels escape the arrow boundary.
             {

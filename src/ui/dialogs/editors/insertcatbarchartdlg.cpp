@@ -189,9 +189,7 @@ namespace Wisteria::UI
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         orientSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Orientation:")),
                          wxSizerFlags{}.CenterVertical());
-        wxArrayString orientations;
-        orientations.Add(_(L"Horizontal"));
-        orientations.Add(_(L"Vertical"));
+        const wxArrayString orientations{ _(L"Horizontal"), _(L"Vertical") };
         orientSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                       orientations, 0,
                                       wxGenericValidator{ &m_barOrientationIndex }),
@@ -203,14 +201,10 @@ namespace Wisteria::UI
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         labelDispSizer->Add(new wxStaticText(barLabelsPage, wxID_ANY, _(L"Bar labels:")),
                             wxSizerFlags{}.CenterVertical());
-        wxArrayString labelDisplays;
-        labelDisplays.Add(_(L"Value"));
-        labelDisplays.Add(_(L"Percentage"));
-        labelDisplays.Add(_(L"Value and Percentage"));
-        labelDisplays.Add(_(L"No Display"));
-        labelDisplays.Add(_(L"Name"));
-        labelDisplays.Add(_(L"Name and Value"));
-        labelDisplays.Add(_(L"Name and Percentage"));
+        const wxArrayString labelDisplays{
+            _(L"Value"), _(L"Percentage"),     _(L"Value and Percentage"), _(L"No Display"),
+            _(L"Name"),  _(L"Name and Value"), _(L"Name and Percentage")
+        };
         labelDispSizer->Add(new wxChoice(barLabelsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                          labelDisplays, 0,
                                          wxGenericValidator{ &m_barLabelDisplayIndex }),
@@ -238,10 +232,8 @@ namespace Wisteria::UI
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         serpentineSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Fold over-long bars:")),
                              wxSizerFlags{}.CenterVertical());
-        wxArrayString serpentineModes;
-        serpentineModes.Add(_(L"None"));
-        serpentineModes.Add(_(L"Serpentine"));
-        serpentineModes.Add(_(L"Aggressive serpentine"));
+        const wxArrayString serpentineModes{ _(L"None"), _(L"Serpentine"),
+                                             _(L"Aggressive serpentine") };
         m_serpentineModeChoice =
             new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize, serpentineModes,
                          0, wxGenericValidator{ &m_serpentineModeIndex });
@@ -280,19 +272,18 @@ namespace Wisteria::UI
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         effectSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Bar effect:")),
                          wxSizerFlags{}.CenterVertical());
-        wxArrayString boxEffects;
-        boxEffects.Add(_(L"Solid"));
-        boxEffects.Add(_(L"Glassy"));
-        boxEffects.Add(_(L"Fade from Bottom to Top"));
-        boxEffects.Add(_(L"Fade from Top to Bottom"));
-        boxEffects.Add(_(L"Stipple Image"));
-        boxEffects.Add(_(L"Stipple Shape"));
-        boxEffects.Add(_(L"Watercolor"));
-        boxEffects.Add(_(L"Thick Watercolor"));
-        boxEffects.Add(_(L"Common Image"));
-        boxEffects.Add(_(L"Image"));
-        boxEffects.Add(_(L"Marker"));
-        boxEffects.Add(_(L"Pencil"));
+        const wxArrayString boxEffects{ _(L"Solid"),
+                                        _(L"Glassy"),
+                                        _(L"Fade from Bottom to Top"),
+                                        _(L"Fade from Top to Bottom"),
+                                        _(L"Stipple Image"),
+                                        _(L"Stipple Shape"),
+                                        _(L"Watercolor"),
+                                        _(L"Thick Watercolor"),
+                                        _(L"Common Image"),
+                                        _(L"Image"),
+                                        _(L"Marker"),
+                                        _(L"Pencil") };
         m_boxEffectChoice = new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                          boxEffects, 0, wxGenericValidator{ &m_boxEffectIndex });
         effectSizer->Add(m_boxEffectChoice, wxSizerFlags{}.CenterVertical());
@@ -331,10 +322,7 @@ namespace Wisteria::UI
         m_shapeAllRadio->SetValue(true);
         shapesBox->Add(m_shapeAllRadio, wxSizerFlags{}.Border());
 
-        wxArrayString barShapeChoices;
-        barShapeChoices.Add(_(L"Rectangle"));
-        barShapeChoices.Add(_(L"Arrow"));
-        barShapeChoices.Add(_(L"Reverse Arrow"));
+        const wxArrayString barShapeChoices{ _(L"Rectangle"), _(L"Arrow"), _(L"Reverse Arrow") };
         m_shapeAllChoice =
             new wxChoice(shapesBox->GetStaticBox(), wxID_ANY, wxDefaultPosition, wxDefaultSize,
                          barShapeChoices, 0, wxGenericValidator{ &m_barShapeAllIndex });
@@ -371,9 +359,7 @@ namespace Wisteria::UI
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         m_sortComparisonLabel = new wxStaticText(sortBox->GetStaticBox(), wxID_ANY, _(L"Sort by:"));
         sortComparisonSizer->Add(m_sortComparisonLabel, wxSizerFlags{}.CenterVertical());
-        wxArrayString sortComparisons;
-        sortComparisons.Add(_(L"Bar length"));
-        sortComparisons.Add(_(L"Bar label"));
+        const wxArrayString sortComparisons{ _(L"Bar length"), _(L"Bar label") };
         m_sortComparisonChoice = new wxChoice(sortBox->GetStaticBox(), wxID_ANY, wxDefaultPosition,
                                               wxDefaultSize, sortComparisons);
         m_sortComparisonChoice->SetSelection(0);
@@ -813,10 +799,7 @@ namespace Wisteria::UI
                                            wxString& inOutLabel,
                                            Graphs::BarChart::BarShape& inOutShape) -> bool
         {
-            wxArrayString shapeChoices;
-            shapeChoices.Add(_(L"Rectangle"));
-            shapeChoices.Add(_(L"Arrow"));
-            shapeChoices.Add(_(L"Reverse Arrow"));
+            const wxArrayString shapeChoices{ _(L"Rectangle"), _(L"Arrow"), _(L"Reverse Arrow") };
 
             wxDialog dlg(this, wxID_ANY, caption, wxDefaultPosition, wxDefaultSize,
                          wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
@@ -1950,7 +1933,7 @@ namespace Wisteria::UI
                 }
             }
 
-        // bar groups — convert from index-based to label-based
+        // convert bar groups from index-based to label-based
         m_barGroups.clear();
         const auto& bars = barChart->GetBars();
         for (const auto& group : barChart->GetBarGroups())
@@ -2314,7 +2297,7 @@ namespace Wisteria::UI
             }
         else if (boxEffect == BoxEffect::StippleImage && !GetImagePaths().empty() && doc != nullptr)
             {
-            wxImage img(doc->ResolveFilePath(GetImagePaths()[0]), wxBITMAP_TYPE_ANY);
+            wxImage img{ doc->ResolveFilePath(GetImagePaths()[0]), wxBITMAP_TYPE_ANY };
             if (img.IsOk() && GetImageEffect() != ImageEffect::NoEffect)
                 {
                 img = GraphItems::Image::ApplyEffect(GetImageEffect(), img);
@@ -2332,7 +2315,7 @@ namespace Wisteria::UI
             images.reserve(GetImagePaths().GetCount());
             for (const auto& path : GetImagePaths())
                 {
-                wxImage img(doc->ResolveFilePath(path), wxBITMAP_TYPE_ANY);
+                wxImage img{ doc->ResolveFilePath(path), wxBITMAP_TYPE_ANY };
                 if (img.IsOk() && imgEffect != ImageEffect::NoEffect)
                     {
                     img = GraphItems::Image::ApplyEffect(imgEffect, img);

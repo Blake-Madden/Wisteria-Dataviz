@@ -208,8 +208,8 @@ namespace Wisteria::UI
     //------------------------------------------------------
     void PdfExportDlg::OnPaintPreview([[maybe_unused]] wxPaintEvent& event)
         {
-        const wxPaintDC pdc(m_previewPanel);
-        wxGCDC dc(pdc);
+        const wxPaintDC pdc{ m_previewPanel };
+        wxGCDC dc{ pdc };
 
         const wxRect drawArea{ wxPoint{ 0, 0 }, dc.GetSize() };
         wxRect pageArea{ drawArea };
@@ -268,18 +268,19 @@ namespace Wisteria::UI
             }
 
         // pie chart mockup
-        const wxPoint center(pieX + pieDiameter / 2, pieY + pieDiameter / 2);
+        const wxPoint center{ pieX + pieDiameter / 2, pieY + pieDiameter / 2 };
         const int radius = pieDiameter / 2;
 
         dc.SetPen(*wxBLACK_PEN);
         dc.SetBrush(*wxBLACK_BRUSH);
         dc.DrawEllipse(pieX, pieY, pieDiameter, pieDiameter);
 
-        const wxPen slicePen(*wxWHITE, 2);
-        dc.SetPen(slicePen);
-        dc.DrawLine(center, wxPoint(center.x, center.y - radius));
-        dc.DrawLine(center, wxPoint(center.x + (radius * 0.86), center.y + (radius * 0.5)));
-        dc.DrawLine(center, wxPoint(center.x - (radius * 0.5), center.y + (radius * 0.86)));
+        dc.SetPen(wxPen{ *wxWHITE, 2 });
+        dc.DrawLine(center, wxPoint{ center.x, center.y - radius });
+        dc.DrawLine(center, wxPoint{ center.x + static_cast<int>(radius * 0.86),
+                                     center.y + static_cast<int>(radius * 0.5) });
+        dc.DrawLine(center, wxPoint{ center.x - static_cast<int>(radius * 0.5),
+                                     center.y + static_cast<int>(radius * 0.86) });
 
         // 2 lines below the pie
         dc.SetPen(*wxTRANSPARENT_PEN);

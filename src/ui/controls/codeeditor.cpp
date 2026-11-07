@@ -122,7 +122,7 @@ namespace Wisteria::UI
 
         StyleSetBackground(
             ERROR_ANNOTATION_STYLE,
-            wxSystemSettings::SelectLightDark(wxColour(244, 220, 220), wxColour(100, 100, 100)));
+            wxSystemSettings::SelectLightDark(wxColour{ 244, 220, 220 }, wxColour{ 100, 100, 100 }));
         StyleSetForeground(ERROR_ANNOTATION_STYLE, foreground);
 
         // line-number and fold margins (gutters)
@@ -290,7 +290,7 @@ namespace Wisteria::UI
             }
         const wxString filePath = dialogOpen.GetPath();
 
-        const wxWindowUpdateLocker noUpdates(this);
+        const wxWindowUpdateLocker noUpdates{ this };
         ClearAll();
         LoadFile(filePath);
         SetSelection(0, 0);

@@ -90,7 +90,7 @@ namespace lily_of_the_valley
             return;
             }
 
-        // find the target worksheet by name or 1-based index.
+        // Find the target worksheet by name or 1-based index.
         // ODS stores all worksheets sequentially as <table:table> elements
         // within <office:spreadsheet>, so we iterate until we find a match.
         const wchar_t* targetTableStart{ nullptr };
@@ -163,7 +163,7 @@ namespace lily_of_the_valley
 
             const wchar_t* const rowEnd =
                 html_extract_text::find_closing_element(rowTag, targetTableEnd, L"table:table-row");
-            // self-terminating row (no closing </table:table-row> tag, meaning empty row).
+            // Self-terminating row (no closing </table:table-row> tag, meaning empty row).
             // Just advance the row counter without adding data to the matrix.
             if (rowEnd == nullptr)
                 {
@@ -189,7 +189,7 @@ namespace lily_of_the_valley
 
             while (cellTag < rowEnd)
                 {
-                // look for table:table-cell or table:covered-table-cell.
+                // Look for table:table-cell or table:covered-table-cell.
                 // Covered cells are placeholders for cells hidden by a merge span;
                 // they occupy a column position but have no data.
                 const wchar_t* nextCell =
@@ -222,7 +222,7 @@ namespace lily_of_the_valley
                         1 :
                         static_cast<size_t>(std::wcstol(colsRepeatedStr.c_str(), nullptr, 10));
 
-                // read the cell value based on its office:value-type attribute.
+                // Read the cell value based on its office:value-type attribute.
                 // Unlike XLSX (which stores dates as serial numbers requiring style-based
                 // detection), ODS explicitly marks cell types: "string", "float", "date",
                 // "boolean", "currency", "percentage", and "time".

@@ -720,7 +720,7 @@ void WisteriaDoc::SaveItem(wxSimpleJSON::Ptr_t& itemNode,
         itemNode->Add(L"id", static_cast<double>(item->GetId()));
         }
 
-    // scaling — use the original cached value, not the canvas-overwritten one
+    // for scaling, use the original cached value, not the canvas-overwritten one
     const double itemScaling = item->GetGraphItemInfo().GetOriginalCanvasScaling();
     if (!compare_doubles(itemScaling, 1.0))
         {
@@ -1754,7 +1754,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveCommonAxis(const Wisteria::GraphItems::Axis
         tmpl += wxString::Format(L", \"label-length\": %zu", axis->GetLabelLineLength());
         }
 
-    // custom-labels: only serialize when they are a user override (set in
+    // Only serialize custom-labels when they are a user override (set in
     // JSON or the label editor). Dataset-derived labels, which flow in via
     // CommonAxisBuilder copying from a child, are rebuilt on load and would
     // go stale if persisted.
@@ -3229,15 +3229,15 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
                 }
             }
 
-        // check if the color scheme is a named scheme —
-        // if so, save by name instead of enumerating colors
+        // if the color scheme is a named scheme, then save it by name
+        // instead of enumerating colors
         const auto& cs = graph->GetColorScheme();
         const int csIndex =
             (cs != nullptr) ? Wisteria::UI::InsertGraphDlg::ColorSchemeToIndex(cs) : 0;
 
         if (allSolid && csIndex > 0)
             {
-            // named color scheme with solid brushes — save by name
+            // save a named color scheme with solid brushes by name
             const auto schemeName = Wisteria::UI::InsertGraphDlg::ColorSchemeToName(csIndex);
             graphNode->Add(L"brush-scheme", schemeName);
             graphNode->Add(L"color-scheme", schemeName);
@@ -3282,7 +3282,7 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
             }
         }
 
-    // color-scheme — save named schemes by name, otherwise enumerate individual colors
+    // for color-scheme, save named schemes by name, otherwise enumerate individual colors
     // (only if no brush-scheme was written, since brush-scheme embeds its own)
     if ((graph->GetBrushScheme() == nullptr || graph->GetBrushScheme()->GetBrushes().empty()) &&
         graph->GetColorScheme() != nullptr && !graph->GetColorScheme()->GetColors().empty())
@@ -3356,7 +3356,7 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
             { graphNode->Add(L"color-scheme", wxString{ L"urbanoasis" }); }
         else
             {
-            // unrecognized scheme — fall back to enumerating individual colors
+            // for an unrecognized scheme, fall back to enumerating individual colors
             wxString colorsArr = L"[";
             const auto& colors = cs->GetColors();
             for (size_t i = 0; i < colors.size(); ++i)
@@ -3373,7 +3373,7 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
         // clang-format on
         }
 
-    // icon-scheme — save named schemes by name, otherwise enumerate individual icons
+    // for icon-scheme, save named schemes by name, otherwise enumerate individual icons
     if (graph->GetShapeScheme() != nullptr && !graph->GetShapeScheme()->GetShapes().empty())
         {
         if (graph->GetShapeScheme()->IsKindOf(wxCLASSINFO(Wisteria::Icons::Schemes::Semesters)))
@@ -4546,7 +4546,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                         }
                     if (paths[i].empty())
                         {
-                        // null image — encoded as an empty path so ReportBuilder
+                        // a null image is encoded as an empty path so ReportBuilder
                         // produces an unusable bundle and the brush is used
                         arr += L"{\"path\": \"\"}";
                         }
@@ -5654,7 +5654,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
             node->Add(_DT(L"projection"), projectionStr);
             }
 
-        if (choroplethMap->GetNoDataColor() != wxColour(L"#D2D2D2"))
+        if (choroplethMap->GetNoDataColor() != wxColour{ L"#D2D2D2" })
             {
             node->Add(L"no-data-color", ColorToStr(choroplethMap->GetNoDataColor()));
             }
@@ -5669,7 +5669,7 @@ wxSimpleJSON::Ptr_t WisteriaDoc::SaveGraphByType(const Wisteria::Graphs::Graph2D
                 }
             }
 
-        if (choroplethMap->GetProportionalSymbolColor() != wxColour(L"#2F6F8F"))
+        if (choroplethMap->GetProportionalSymbolColor() != wxColour{ L"#2F6F8F" })
             {
             node->Add(L"symbol-color", ColorToStr(choroplethMap->GetProportionalSymbolColor()));
             }

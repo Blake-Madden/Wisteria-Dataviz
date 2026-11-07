@@ -68,7 +68,7 @@ namespace Wisteria::UI
     //----------------------------------
     void EnlargedImageWindow::OnPaint([[maybe_unused]] wxPaintEvent& event)
         {
-        wxAutoBufferedPaintDC dc(this);
+        wxAutoBufferedPaintDC dc{ this };
         dc.SetBackground(Colors::ColorBrewer::GetColor(Colors::Color::White));
         dc.Clear();
         dc.DrawBitmap(GetBitmap(), 0, 0);
@@ -205,7 +205,7 @@ namespace Wisteria::UI
     //----------------------------------
     void Thumbnail::OnPaint([[maybe_unused]] wxPaintEvent& event)
         {
-        wxAutoBufferedPaintDC dc(this);
+        wxAutoBufferedPaintDC dc{ this };
         dc.SetBackground(GetParent()->GetBackgroundColour());
         dc.Clear();
         dc.SetTextForeground(
@@ -375,13 +375,13 @@ namespace Wisteria::UI
                     scaledSize.first, scaledSize.second, wxIMAGE_QUALITY_HIGH));
                 }
             // add a little "click to close" label at the bottom of the full image
-            wxMemoryDC memDC(canvasBmp);
-            memDC.SetFont(wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize(),
-                                 wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL,
-                                 false, L"Times New Roman"));
+            wxMemoryDC memDC{ canvasBmp };
+            memDC.SetFont(wxFont{ wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetPointSize(),
+                                  wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL,
+                                  false, L"Times New Roman" });
             memDC.SetTextForeground(Colors::ColorBrewer::GetColor(Colors::Color::Blue));
             memDC.SetPen(Colors::ColorBrewer::GetColor(Colors::Color::Black));
-            memDC.SetBrush(wxBrush(wxColour(L"#FFFFDD")));
+            memDC.SetBrush(wxBrush{ wxColour{ L"#FFFFDD" } });
             wxCoord width{ 0 }, height{ 0 };
             const wxString label(_(L"Click to close"));
             memDC.GetTextExtent(label, &width, &height);

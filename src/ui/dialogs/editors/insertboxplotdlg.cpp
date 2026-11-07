@@ -146,19 +146,18 @@ namespace Wisteria::UI
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         effectSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Box effect:")),
                          wxSizerFlags{}.CenterVertical());
-        wxArrayString boxEffects;
-        boxEffects.Add(_(L"Solid"));
-        boxEffects.Add(_(L"Glassy"));
-        boxEffects.Add(_(L"Fade from Bottom to Top"));
-        boxEffects.Add(_(L"Fade from Top to Bottom"));
-        boxEffects.Add(_(L"Stipple Image"));
-        boxEffects.Add(_(L"Stipple Shape"));
-        boxEffects.Add(_(L"Watercolor"));
-        boxEffects.Add(_(L"Thick Watercolor"));
-        boxEffects.Add(_(L"Common Image"));
-        boxEffects.Add(_(L"Image"));
-        boxEffects.Add(_(L"Marker"));
-        boxEffects.Add(_(L"Pencil"));
+        const wxArrayString boxEffects{ _(L"Solid"),
+                                        _(L"Glassy"),
+                                        _(L"Fade from Bottom to Top"),
+                                        _(L"Fade from Top to Bottom"),
+                                        _(L"Stipple Image"),
+                                        _(L"Stipple Shape"),
+                                        _(L"Watercolor"),
+                                        _(L"Thick Watercolor"),
+                                        _(L"Common Image"),
+                                        _(L"Image"),
+                                        _(L"Marker"),
+                                        _(L"Pencil") };
         m_boxEffectChoice = new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                          boxEffects, 0, wxGenericValidator{ &m_boxEffectIndex });
         effectSizer->Add(m_boxEffectChoice, wxSizerFlags{}.CenterVertical());
@@ -643,7 +642,7 @@ namespace Wisteria::UI
             }
         else if (boxEffect == BoxEffect::StippleImage && !GetImagePaths().empty() && doc != nullptr)
             {
-            wxImage img(doc->ResolveFilePath(GetImagePaths()[0]), wxBITMAP_TYPE_ANY);
+            wxImage img{ doc->ResolveFilePath(GetImagePaths()[0]), wxBITMAP_TYPE_ANY };
             if (img.IsOk() && GetImageEffect() != ImageEffect::NoEffect)
                 {
                 img = GraphItems::Image::ApplyEffect(GetImageEffect(), img);
@@ -661,7 +660,7 @@ namespace Wisteria::UI
             images.reserve(GetImagePaths().GetCount());
             for (const auto& path : GetImagePaths())
                 {
-                wxImage img(doc->ResolveFilePath(path), wxBITMAP_TYPE_ANY);
+                wxImage img{ doc->ResolveFilePath(path), wxBITMAP_TYPE_ANY };
                 if (img.IsOk() && imgEffect != ImageEffect::NoEffect)
                     {
                     img = GraphItems::Image::ApplyEffect(imgEffect, img);

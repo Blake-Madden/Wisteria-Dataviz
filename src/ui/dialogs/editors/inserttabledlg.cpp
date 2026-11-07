@@ -70,9 +70,7 @@ namespace Wisteria::UI
         auto* columnBox = new wxStaticBoxSizer(wxVERTICAL, optionsPage, _(L"Columns Selection"));
 
         // variable selection mode
-        wxArrayString varModeChoices;
-        varModeChoices.Add(_(L"All columns"));
-        varModeChoices.Add(_(L"Custom selection"));
+        const wxArrayString varModeChoices{ _(L"All columns"), _(L"Custom selection") };
         m_varModeRadio = new wxRadioBox(columnBox->GetStaticBox(), ID_VAR_MODE_RADIO, _(L"Method"),
                                         wxDefaultPosition, wxDefaultSize, varModeChoices, 1,
                                         wxRA_SPECIFY_COLS, wxGenericValidator{ &m_varModeIndex });
@@ -541,8 +539,8 @@ namespace Wisteria::UI
                     const auto valEnd = altColorTemplate.find(L"\"", valStart + 1);
                     if (valEnd != wxString::npos)
                         {
-                        const wxColour color(
-                            altColorTemplate.substr(valStart + 1, valEnd - valStart - 1));
+                        const wxColour color{ altColorTemplate.substr(valStart + 1,
+                                                                      valEnd - valStart - 1) };
                         if (color.IsOk() && m_altRowColorPicker != nullptr)
                             {
                             m_altRowColorPicker->SetColour(color);
@@ -904,20 +902,14 @@ namespace Wisteria::UI
 
         gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Type:")),
                        wxSizerFlags{}.CenterVertical());
-        wxArrayString types;
-        types.Add(_(L"Column"));
-        types.Add(_(L"Row"));
+        const wxArrayString types{ _(L"Column"), _(L"Row") };
         auto* typeCtrl = new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, types);
         typeCtrl->SetSelection(0);
         gridSizer->Add(typeCtrl, wxSizerFlags{}.Expand());
 
         gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Aggregate Type:")),
                        wxSizerFlags{}.CenterVertical());
-        wxArrayString aggTypes;
-        aggTypes.Add(_(L"Total"));
-        aggTypes.Add(_(L"Change %"));
-        aggTypes.Add(_(L"Ratio"));
-        aggTypes.Add(_(L"Change"));
+        const wxArrayString aggTypes{ _(L"Total"), _(L"Change %"), _(L"Ratio"), _(L"Change") };
         auto* aggTypeCtrl =
             new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, aggTypes);
         aggTypeCtrl->SetSelection(0);
@@ -1025,20 +1017,14 @@ namespace Wisteria::UI
 
         gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Type:")),
                        wxSizerFlags{}.CenterVertical());
-        wxArrayString types;
-        types.Add(_(L"Column"));
-        types.Add(_(L"Row"));
+        const wxArrayString types{ _(L"Column"), _(L"Row") };
         auto* typeCtrl = new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, types);
         typeCtrl->SetSelection(entry.m_type.CmpNoCase(L"row") == 0 ? 1 : 0);
         gridSizer->Add(typeCtrl, wxSizerFlags{}.Expand());
 
         gridSizer->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Aggregate Type:")),
                        wxSizerFlags{}.CenterVertical());
-        wxArrayString aggTypes;
-        aggTypes.Add(_(L"Total"));
-        aggTypes.Add(_(L"Change %"));
-        aggTypes.Add(_(L"Ratio"));
-        aggTypes.Add(_(L"Change"));
+        const wxArrayString aggTypes{ _(L"Total"), _(L"Change %"), _(L"Ratio"), _(L"Change") };
         auto* aggTypeCtrl =
             new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, aggTypes);
         int aggSel = 0;
@@ -1256,9 +1242,7 @@ namespace Wisteria::UI
                                          dlg.FromDIP(wxSize{ -1, 100 }), wxTE_MULTILINE);
         grid->Add(valueCtrl, wxSizerFlags{}.Expand());
 
-        wxArrayString sideChoices;
-        sideChoices.Add(_(L"Right"));
-        sideChoices.Add(_(L"Left"));
+        const wxArrayString sideChoices{ _(L"Right"), _(L"Left") };
         grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Side:")), wxSizerFlags{}.CenterVertical());
         auto* sideCtrl =
             new wxChoice(&dlg, wxID_ANY, wxDefaultPosition, wxDefaultSize, sideChoices);
@@ -1278,10 +1262,8 @@ namespace Wisteria::UI
         bgCheck->Bind(wxEVT_CHECKBOX, [bgCheck, bgPicker]([[maybe_unused]] wxCommandEvent&)
                       { bgPicker->Enable(bgCheck->GetValue()); });
 
-        wxArrayString modeChoices;
-        modeChoices.Add(_(L"Column outliers"));
-        modeChoices.Add(_(L"Column top-N"));
-        modeChoices.Add(_(L"Cell range"));
+        const wxArrayString modeChoices{ _(L"Column outliers"), _(L"Column top-N"),
+                                         _(L"Cell range") };
         grid->Add(new wxStaticText(&dlg, wxID_ANY, _(L"Cell selection:")),
                   wxSizerFlags{}.CenterVertical());
         auto* modeCtrl =
@@ -1602,7 +1584,7 @@ namespace Wisteria::UI
         // before row additions and aggregates)
         GetReportBuilder()->ApplyTableFeatures(table);
 
-        // side annotations live in the gutters beside the table; a left- or
+        // Side annotations live in the gutters beside the table; a left- or
         // right-aligned table only has one gutter, so Table::DeduceGutterSide()
         // collapses every note into it. Only force centering when both sides are
         // in use - single-side annotations fit in the one available gutter

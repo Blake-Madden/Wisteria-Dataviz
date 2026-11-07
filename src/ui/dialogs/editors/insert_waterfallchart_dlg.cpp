@@ -165,19 +165,14 @@ namespace Wisteria::UI
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         valueSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Orientation:")),
                         wxSizerFlags{}.CenterVertical());
-        wxArrayString orientationChoices;
-        orientationChoices.Add(_(L"Vertical"));
-        orientationChoices.Add(_(L"Horizontal"));
+        const wxArrayString orientationChoices{ _(L"Vertical"), _(L"Horizontal") };
         valueSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                      orientationChoices, 0,
                                      wxGenericValidator{ &m_orientationIndex }));
         valueSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Value format:")),
                         wxSizerFlags{}.CenterVertical());
-        wxArrayString valueFormatChoices;
-        valueFormatChoices.Add(_(L"Value"));
-        valueFormatChoices.Add(_(L"Currency"));
-        valueFormatChoices.Add(_(L"Percentage"));
-        valueFormatChoices.Add(_(L"Simple value"));
+        const wxArrayString valueFormatChoices{ _(L"Value"), _(L"Currency"), _(L"Percentage"),
+                                                _(L"Simple value") };
         valueSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                      valueFormatChoices, 0,
                                      wxGenericValidator{ &m_valueFormatIndex }));

@@ -138,10 +138,7 @@ namespace Wisteria::UI
 
         layoutSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Value display:")),
                          wxSizerFlags{}.CenterVertical());
-        wxArrayString valueFormatChoices;
-        valueFormatChoices.Add(_(L"Value"));
-        valueFormatChoices.Add(_(L"Percentage"));
-        valueFormatChoices.Add(_(L"Currency"));
+        const wxArrayString valueFormatChoices{ _(L"Value"), _(L"Percentage"), _(L"Currency") };
         layoutSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                       valueFormatChoices, 0,
                                       wxGenericValidator{ &m_valueFormatIndex }));

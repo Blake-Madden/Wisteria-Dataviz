@@ -93,13 +93,13 @@ namespace Wisteria::GraphItems
         if (level == AxisResetLevel::CosmeticSettings || level == AxisResetLevel::AllSettings)
             {
             GetFont() = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).MakeSmaller();
-            SetFontColor(wxColour(Colors::ColorBrewer::GetColor(Colors::Color::Black)));
+            SetFontColor(wxColour{ Colors::ColorBrewer::GetColor(Colors::Color::Black) });
             SetFontBackgroundColor(wxNullColour);
             SetTextAlignment(TextAlignment::Centered);
             m_axisLabelAlignment = AxisLabelAlignment::AlignWithAxisLine;
             m_axisLinePen = Colors::ColorBrewer::GetColor(Colors::Color::Black);
             m_lineStyle = LineStyle::Lines;
-            m_gridlinePen = wxPen(wxPenInfo(wxColour(211, 211, 211, 200)).Cap(wxCAP_BUTT));
+            m_gridlinePen = wxPen(wxPenInfo(wxColour{ 211, 211, 211, 200 }).Cap(wxCAP_BUTT));
             m_outlineSize = wxDefaultSize;
             }
         if (level == AxisResetLevel::Brackets || level == AxisResetLevel::AllSettings)

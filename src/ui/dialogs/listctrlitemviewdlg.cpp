@@ -60,14 +60,14 @@ namespace Wisteria::UI
             {
             auto* button = new wxButton(this, wxID_COPY);
             button->SetBitmap(
-                wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON, FromDIP(wxSize(16, 16))));
+                wxArtProvider::GetBitmap(wxART_COPY, wxART_BUTTON, FromDIP(wxSize{ 16, 16 })));
             buttonSizer->Add(button, wxSizerFlags{}.Border(wxRIGHT));
             }
 
             {
             auto* button = new wxButton(this, wxID_CLOSE);
             button->SetBitmap(
-                wxArtProvider::GetBitmap(wxART_DELETE, wxART_BUTTON, FromDIP(wxSize(16, 16))));
+                wxArtProvider::GetBitmap(wxART_DELETE, wxART_BUTTON, FromDIP(wxSize{ 16, 16 })));
             button->SetDefault();
             buttonSizer->Add(button, wxSizerFlags{}.Border(wxRIGHT));
             }

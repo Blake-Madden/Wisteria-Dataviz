@@ -545,7 +545,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
             wxNumberFormatter::ToString(m_range.first, 1, Settings::GetDefaultNumberFormat()),
             wxNumberFormatter::ToString(m_range.second, 1, Settings::GetDefaultNumberFormat()));
 
-        // helper: appends one cell's contribution — "ID: value" or just "value"
+        // appends one cell's contribution, either "ID: value" or just "value"
         const auto appendCell = [](wxString& buf, const HeatCell& cell)
         {
             if (cell.m_valueLabel.empty())

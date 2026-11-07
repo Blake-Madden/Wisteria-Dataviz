@@ -488,7 +488,7 @@ namespace Wisteria::UI
                                      wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
                 if (fileDlg.ShowModal() != wxID_OK)
                     {
-                    // user cancelled — add a blank row representing a null image
+                    // if the user cancelled, add a blank row representing a null image
                     SyncImagePathsFromListBox();
                     m_imagePaths.Add(wxString{});
                     RefreshImageListBox();
@@ -1040,7 +1040,7 @@ namespace Wisteria::UI
                     images.emplace_back();
                     continue;
                     }
-                wxImage img(doc->ResolveFilePath(path), wxBITMAP_TYPE_ANY);
+                wxImage img{ doc->ResolveFilePath(path), wxBITMAP_TYPE_ANY };
                 if (img.IsOk())
                     {
                     images.emplace_back(wxBitmapBundle::FromBitmap(wxBitmap(img)));

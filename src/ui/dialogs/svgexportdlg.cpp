@@ -220,10 +220,7 @@ namespace Wisteria::UI
         layoutToggleCheck->SetValidator(wxGenericValidator{ &m_includeLayoutOptions });
         featuresSizer->Add(layoutToggleCheck, wxSizerFlags{}.Border());
 
-        wxArrayString layoutChoices;
-        layoutChoices.Add(_(L"Single"));
-        layoutChoices.Add(_(L"Duplex"));
-        layoutChoices.Add(_(L"Stacked"));
+        const wxArrayString layoutChoices{ _(L"Single"), _(L"Duplex"), _(L"Stacked") };
         auto* layoutRadio = new wxRadioBox(featuresSizer->GetStaticBox(), LAYOUT_RADIO_ID,
                                            _(L"Default Page Layout"), wxDefaultPosition,
                                            wxDefaultSize, layoutChoices, 1, wxRA_SPECIFY_COLS);
@@ -364,8 +361,8 @@ namespace Wisteria::UI
     //------------------------------------------------------
     void SvgExportDlg::OnPaintPreview([[maybe_unused]] wxPaintEvent& event)
         {
-        const wxPaintDC pdc(m_previewPanel);
-        wxGCDC dc(pdc);
+        const wxPaintDC pdc{ m_previewPanel };
+        wxGCDC dc{ pdc };
 
         const wxRect drawArea{ wxPoint{ 0, 0 }, dc.GetSize() };
         wxRect pageArea{ drawArea };
@@ -426,18 +423,19 @@ namespace Wisteria::UI
             }
 
         // pie chart
-        const wxPoint center(pieX + pieDiameter / 2, pieY + pieDiameter / 2);
+        const wxPoint center{ pieX + pieDiameter / 2, pieY + pieDiameter / 2 };
         const int radius = pieDiameter / 2;
 
         dc.SetPen(*wxBLACK_PEN);
         dc.SetBrush(*wxBLACK_BRUSH);
         dc.DrawEllipse(pieX, pieY, pieDiameter, pieDiameter);
 
-        const wxPen slicePen(bgColour, 2);
-        dc.SetPen(slicePen);
-        dc.DrawLine(center, wxPoint(center.x, center.y - radius));
-        dc.DrawLine(center, wxPoint(center.x + (radius * 0.86), center.y + (radius * 0.5)));
-        dc.DrawLine(center, wxPoint(center.x - (radius * 0.5), center.y + (radius * 0.86)));
+        dc.SetPen(wxPen{ bgColour, 2 });
+        dc.DrawLine(center, wxPoint{ center.x, center.y - radius });
+        dc.DrawLine(center, wxPoint{ center.x + static_cast<int>(radius * 0.86),
+                                     center.y + static_cast<int>(radius * 0.5) });
+        dc.DrawLine(center, wxPoint{ center.x - static_cast<int>(radius * 0.5),
+                                     center.y + static_cast<int>(radius * 0.86) });
 
         // 2 lines below the pie
         dc.SetPen(*wxTRANSPARENT_PEN);

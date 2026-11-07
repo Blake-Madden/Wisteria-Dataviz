@@ -1289,7 +1289,7 @@ namespace Wisteria::UI
 
         GraphItems::Axis::AxisBracket bracket(
             startPos, endPos, labelPos, labelText,
-            wxPen(colorPicker->GetColour(), widthSpin->GetValue()), bracketStyle);
+            wxPen{ colorPicker->GetColour(), widthSpin->GetValue() }, bracketStyle);
         axis.AddBracket(std::move(bracket));
         axis.SetBracketsAreDynamic(false);
         MarkEdited(AxisEdit::Brackets);
@@ -1476,7 +1476,7 @@ namespace Wisteria::UI
 
         brackets[sel] = GraphItems::Axis::AxisBracket(
             startPos, endPos, labelPos, labelCtrl->GetValue(),
-            wxPen(colorPicker->GetColour(), widthSpin->GetValue()), bracketStyle);
+            wxPen{ colorPicker->GetColour(), widthSpin->GetValue() }, bracketStyle);
         MarkEdited(AxisEdit::Brackets);
         RefreshBracketList();
         }
@@ -1688,7 +1688,7 @@ namespace Wisteria::UI
             }
 
         axis.ClearBrackets();
-        // map category labels to their sorted positions so brackets use the
+        // Map category labels to their sorted positions so brackets use the
         // actual axis positions instead of raw category IDs. Needed for
         // common axes, whose children may have sorted or dropped labels.
         std::map<wxString, double> labelPosMap;
@@ -1723,7 +1723,7 @@ namespace Wisteria::UI
             (styleChoice->GetSelection() >= 0 && styleChoice->GetSelection() < 5) ?
                 bracketStyles[styleChoice->GetSelection()] :
                 BracketLineStyle::CurlyBraces;
-        const wxPen pen(colorPicker->GetColour(), widthSpin->GetValue());
+        const wxPen pen{ colorPicker->GetColour(), widthSpin->GetValue() };
         for (auto& bracket : axis.GetBrackets())
             {
             bracket.SetBracketLineStyle(bracketStyle);

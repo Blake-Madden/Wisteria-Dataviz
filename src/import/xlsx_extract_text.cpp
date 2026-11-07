@@ -692,7 +692,7 @@ namespace lily_of_the_valley
                     return false;
                 };
 
-                // extracts a currency symbol from a format code, returning
+                // Extracts a currency symbol from a format code, returning
                 // the symbol if found or an empty string otherwise.
                 // Handles [$<symbol>-<locale>] bracket notation,
                 // quoted symbols (e.g., "$"), and common literal

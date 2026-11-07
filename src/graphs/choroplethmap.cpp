@@ -107,9 +107,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                             2 * drawPen.GetWidth(), wxPENSTYLE_DOT);
             }
 
-        const wxDCPenChanger penChanger(dc, drawPen);
-        const wxDCBrushChanger brushChanger(dc,
-                                            GetBrush().IsOk() ? GetBrush() : *wxTRANSPARENT_BRUSH);
+        const wxDCPenChanger penChanger{ dc, drawPen };
+        const wxDCBrushChanger brushChanger{ dc, GetBrush().IsOk() ? GetBrush() :
+                                                                     *wxTRANSPARENT_BRUSH };
 
         for (const auto& ring : m_outerRings)
             {
@@ -346,7 +346,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             colors != nullptr ?
                 colors :
                 std::make_shared<Colors::Schemes::ColorScheme>(Colors::Schemes::ColorScheme{
-                    Colors::ColorBrewer::GetColor(Colors::Color::White), wxColour(L"#6F9FD8") }));
+                    Colors::ColorBrewer::GetColor(Colors::Color::White), wxColour{ L"#6F9FD8" } }));
 
         GetPen().SetColour(L"#808080");
         GetBrush().SetColour(L"#C9D8E8");

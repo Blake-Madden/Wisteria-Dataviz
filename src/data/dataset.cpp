@@ -362,7 +362,7 @@ namespace Wisteria::Data
             throw std::runtime_error(_(L"New column name cannot be empty.").ToUTF8());
             }
 
-        // make sure new name isn't in dataset already (unless old name and new name
+        // Make sure new name isn't in dataset already (unless old name and new name
         // are the same). New and old might be different if they are changing the casing.
         if (colName.CmpNoCase(newColName) != 0 && ContainsColumn(newColName))
             {

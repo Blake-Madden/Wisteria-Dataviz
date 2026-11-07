@@ -227,7 +227,7 @@ namespace Wisteria::GraphItems
         // scale up or down to fit the bounding box if necessary
         wxCoord measuredWidth{ 0 }, measureHeight{ 0 };
         GetSize(dc, measuredWidth, measureHeight);
-        // adjust area to text drawing area by removing space for the images
+        // Adjust area to text drawing area by removing space for the images
         //---------------
         // In horizontal orientation, the top image adds to height; in vertical orientation
         // it adds to width. Subtract that space before passing to CalcLeftImageSize so the
@@ -627,7 +627,7 @@ namespace Wisteria::GraphItems
             std::vector<wxCoord> bodyLineHeights;
             if (!GetHeaderInfo().IsEnabled())
                 {
-                // no header — the first token is already a body line
+                // with no header, the first token is already a body line
                 bodyLineHeights.push_back(dc.GetTextExtent(topLine).GetHeight());
                 }
             while (lineTokenizer.HasMoreTokens())
@@ -1675,7 +1675,7 @@ namespace Wisteria::GraphItems
             {
             return;
             }
-        // if multi-line, see if any of its lines are too long. If so,
+        // If multi-line, see if any of its lines are too long. If so,
         // we need to split this string up and reformat it.
         wxStringTokenizer lineTokenizer(GetText(), L"\r\n", wxTOKEN_RET_EMPTY);
         bool lineIsTooLong(false);
@@ -2383,7 +2383,7 @@ namespace Wisteria::GraphItems
     void Label::FixFont(wxFont& theFont)
         {
         const wxString originalFaceName = theFont.GetFaceName();
-        // fix the point size: a size that is zero can cause a crash on some platforms, and if the
+        // Fix the point size. A size that is zero can cause a crash on some platforms, and if the
         // size is too small to be supported by the font then it appears blank in a font selection
         // dialog. The smallest size is 8 on Windows and 9 on OSX, so reset bogus sizes if needed.
         constexpr int MINIMUM_POINT_SIZE =

@@ -496,7 +496,7 @@ namespace Wisteria::Graphs
                        GetPhysicalCoordinates(rowPosition, rangeStart + scaleValue, resultPt);
         };
 
-        // trace the ribbon's center line run by run. Each row change is a turn.
+        // Trace the ribbon's center line run by run. Each row change is a turn.
         std::vector<wxPoint> centerLine;
         std::vector<wxRect> segmentRects;
         centerLine.reserve(segments.size() * 2);

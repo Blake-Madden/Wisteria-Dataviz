@@ -183,9 +183,8 @@ namespace Wisteria::UI
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         plotTypeSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Plot type:")),
                            wxSizerFlags{}.CenterVertical());
-        wxArrayString plotTypes;
-        plotTypes.Add(_(L"Candlestick"));
-        plotTypes.Add(/* TRANSLATORS: Open/High/Low/Close chart. */ _(L"OHLC"));
+        const wxArrayString plotTypes{ _(L"Candlestick"),
+                                       /* TRANSLATORS: Open/High/Low/Close chart. */ _(L"OHLC") };
         plotTypeSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                         plotTypes, 0, wxGenericValidator{ &m_plotTypeIndex }),
                            wxSizerFlags{}.CenterVertical());

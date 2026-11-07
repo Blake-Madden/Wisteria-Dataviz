@@ -149,7 +149,7 @@ namespace Wisteria::UI
                     }
                 else
                     {
-                    // literal value — clear any stale constant template so
+                    // for a literal value, clear any stale constant template so
                     // the next LoadGraphOptions reads the actual text, not the old template
                     dest.SetPropertyTemplate(L"text", wxString{});
                     }
@@ -391,7 +391,7 @@ namespace Wisteria::UI
             }
         graphSizer->Add(idSizer, wxSizerFlags{}.Border());
 
-        // title, subtitle, caption — each opens a full Label editor
+        // title, subtitle, and caption each open a full Label editor
         auto* textSizer = new wxGridBagSizer(wxSizerFlags::GetDefaultBorder(),
                                              wxSizerFlags::GetDefaultBorder() * 2);
 
@@ -560,7 +560,7 @@ namespace Wisteria::UI
 
             graphSizer->Add(shapeBox, wxSizerFlags{}.Border());
 
-            // initial enable state — named scheme selected by default
+            // initially, the named scheme is selected and enabled
             m_namedShapeRadio->SetValue(true);
             m_shapeSchemeChoice->Enable(true);
             m_customShapeListBox->Enable(false);
@@ -2367,7 +2367,7 @@ namespace Wisteria::UI
             m_plotBgColorPicker->SetColour(bgColor);
             }
 
-        // background image — rebuild from the graph's bitmap and property templates
+        // rebuild the background image from the graph's bitmap and property templates
         const auto& bgBundle = graph.GetPlotBackgroundImage();
         if (bgBundle.IsOk())
             {
@@ -2515,7 +2515,7 @@ namespace Wisteria::UI
             if (namedIndex == 0 && shapeScheme != nullptr &&
                 !shapeScheme->IsKindOf(wxCLASSINFO(Icons::Schemes::StandardShapes)))
                 {
-                // custom scheme — copy the shapes into the editable list
+                // for a custom scheme, copy the shapes into the editable list
                 m_useCustomShapeScheme = true;
                 m_customShapes = shapeScheme->GetShapes();
                 m_shapeSchemeIndex = 0;
@@ -2537,8 +2537,7 @@ namespace Wisteria::UI
     //-------------------------------------------
     wxArrayString InsertGraphDlg::GetColorSchemeNames()
         {
-        wxArrayString names;
-        names.Add(_(L"Default"));
+        wxArrayString names{ _(L"Default") };
         for (const auto& entry : Colors::Schemes::ColorSchemeCatalog::GetEntries())
             {
             names.Add(entry.first);
@@ -2638,10 +2637,7 @@ namespace Wisteria::UI
     //-------------------------------------------
     wxArrayString InsertGraphDlg::GetShapeSchemeNames()
         {
-        wxArrayString names;
-        names.Add(_(L"Standard Shapes"));
-        names.Add(_(L"Semesters"));
-        return names;
+        return wxArrayString{ _(L"Standard Shapes"), _(L"Semesters") };
         }
 
     //-------------------------------------------

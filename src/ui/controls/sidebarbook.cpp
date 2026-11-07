@@ -25,7 +25,7 @@ namespace Wisteria::UI
         {
         // NOLINTNEXTLINE(cppcoreguidelines-prefer-member-initializer)
         m_sidebar = new SideBar(this);
-        m_sidebar->SetMinSize(wxSize(100, -1));
+        m_sidebar->SetMinSize(wxSize{ 100, -1 });
 
         // bind events
         Bind(wxEVT_SIDEBAR_CLICK, &SideBarBook::OnListSelected, this, wxID_ANY);
@@ -43,7 +43,7 @@ namespace Wisteria::UI
     void SideBarBook::UpdateSelectedPage(size_t newsel)
         {
         m_selection = static_cast<int>(newsel);
-        // block events temporarily. We just want to select an item in the sidebar
+        // Block events temporarily. We just want to select an item in the sidebar
         // without actually calling its selection event, which would be redundant.
         const long style = GetSideBar()->GetExtraStyle();
         GetSideBar()->SetExtraStyle(style | wxWS_EX_BLOCK_EVENTS);
@@ -204,7 +204,7 @@ namespace Wisteria::UI
             return wxNOT_FOUND;
             }
 
-        const wxWindowUpdateLocker noUpdates(this);
+        const wxWindowUpdateLocker noUpdates{ this };
 
         const int oldSel = GetSelection();
 
@@ -297,7 +297,7 @@ namespace Wisteria::UI
             const wxWindow* const pPage = m_pages[nPage];
             if (pPage != nullptr)
                 {
-                const wxSize childBestSize(pPage->GetBestSize());
+                const wxSize childBestSize{ pPage->GetBestSize() };
 
                 bestSize.x = std::max(childBestSize.x, bestSize.x);
 

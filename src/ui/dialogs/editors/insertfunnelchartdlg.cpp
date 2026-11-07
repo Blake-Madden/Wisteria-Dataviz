@@ -160,9 +160,7 @@ namespace Wisteria::UI
             2, wxSize{ wxSizerFlags::GetDefaultBorder() * 2, wxSizerFlags::GetDefaultBorder() });
         styleSizer->Add(new wxStaticText(optionsPage, wxID_ANY, _(L"Funnel style:")),
                         wxSizerFlags{}.CenterVertical());
-        wxArrayString funnelStyleChoices;
-        funnelStyleChoices.Add(_(L"Glassy"));
-        funnelStyleChoices.Add(_(L"Standard"));
+        const wxArrayString funnelStyleChoices{ _(L"Glassy"), _(L"Standard") };
         styleSizer->Add(new wxChoice(optionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                      funnelStyleChoices, 0,
                                      wxGenericValidator{ &m_funnelStyleIndex }));

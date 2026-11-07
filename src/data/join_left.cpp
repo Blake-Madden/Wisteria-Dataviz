@@ -559,7 +559,7 @@ namespace Wisteria::Data
                         continue;
                         }
 
-                    // first match — copy data
+                    // copy data on the first match
                     if (outIdColumnsMap.first != nullptr && outIdColumnsMap.second != nullptr)
                         {
                         outIdColumnsMap.second->SetValue(
