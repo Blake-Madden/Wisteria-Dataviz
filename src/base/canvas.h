@@ -15,6 +15,7 @@
 #include "../ui/dialogs/imageexportdlg.h"
 #include "../ui/dialogs/radioboxdlg.h"
 #include "../util/guid.h"
+#include "axis.h"
 #include "graphitems.h"
 #include "image.h"
 #include "label.h"
@@ -190,6 +191,8 @@ namespace Wisteria
             std::shared_ptr<GraphItems::GraphItemBase> m_item;
             double m_canvasWidthProportion{ 1.0 };
             double m_originalCanvasScaling{ 1.0 };
+            // a graph's bottom, top, left, and right axes (empty for non-graphs)
+            std::vector<GraphItems::Axis> m_graphAxes;
             };
 
         /** @brief Constructor.

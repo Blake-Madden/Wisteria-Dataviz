@@ -1933,6 +1933,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     layout.m_item = item;
                     layout.m_canvasWidthProportion = item->GetCanvasWidthProportion();
                     layout.m_originalCanvasScaling = item->GetOriginalCanvasScaling();
+                    // common axes overwrite the axes of the graphs that they were built from
+                    if (const auto* graph = dynamic_cast<const Graphs::Graph2D*>(item.get());
+                        graph != nullptr)
+                        {
+                        layout.m_graphAxes = { graph->GetBottomXAxis(), graph->GetTopXAxis(),
+                                               graph->GetLeftYAxis(), graph->GetRightYAxis() };
+                        }
                     layouts.push_back(std::move(layout));
                     }
                 }
@@ -1947,6 +1954,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
             {
             layout.m_item->SetCanvasWidthProportion(layout.m_canvasWidthProportion);
             layout.m_item->SetOriginalCanvasScaling(layout.m_originalCanvasScaling);
+            if (auto* graph = dynamic_cast<Graphs::Graph2D*>(layout.m_item.get());
+                graph != nullptr && layout.m_graphAxes.size() == 4)
+                {
+                graph->GetBottomXAxis() = layout.m_graphAxes[0];
+                graph->GetTopXAxis() = layout.m_graphAxes[1];
+                graph->GetLeftYAxis() = layout.m_graphAxes[2];
+                graph->GetRightYAxis() = layout.m_graphAxes[3];
+                }
             ConnectGraphToCanvas(layout.m_item.get(), this);
             }
         }
