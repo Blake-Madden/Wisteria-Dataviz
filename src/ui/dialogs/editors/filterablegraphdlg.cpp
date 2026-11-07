@@ -321,12 +321,14 @@ namespace Wisteria::UI
             return;
             }
         // each value builds its own graph and adds a copy of the page to dashboard exports
-        if (!m_editMode && m_defaultValues.size() > MAX_RECOMMENDED_FILTER_VALUES &&
+        // (the first choice is for all values, so it isn't counted)
+        const size_t filterValueCount{ m_defaultValues.size() - 1 };
+        if (!m_editMode && filterValueCount > MAX_RECOMMENDED_FILTER_VALUES &&
             wxMessageBox(
                 wxString::Format(_(L"'%s' has %zu values to filter by. A graph will be built for "
                                    "each value, which may be slow and make exported dashboards "
                                    "very large.\n\nDo you wish to continue?"),
-                                 GetFilterColumn(), m_defaultValues.size()),
+                                 GetFilterColumn(), filterValueCount),
                 _(L"Many Filter Values"), wxYES_NO | wxNO_DEFAULT | wxICON_WARNING, this) != wxYES)
             {
             return;

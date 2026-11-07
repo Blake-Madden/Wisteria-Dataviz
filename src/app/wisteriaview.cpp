@@ -1395,7 +1395,8 @@ void WisteriaView::OnPasteItem([[maybe_unused]] wxCommandEvent& event)
         }
     if (canvasItem == nullptr)
         {
-        wxMessageBox(_(L"No item on the clipboard."), _(L"Paste"), wxOK | wxICON_INFORMATION);
+        wxMessageBox(_(L"No item on the clipboard."), _(L"Paste"), wxOK | wxICON_INFORMATION,
+                     m_frame);
         return;
         }
 

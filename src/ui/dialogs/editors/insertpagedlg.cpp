@@ -1325,8 +1325,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1351,8 +1352,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1377,8 +1379,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1403,8 +1406,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1429,8 +1433,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1455,8 +1460,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1492,8 +1498,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1519,8 +1526,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1546,8 +1554,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1572,8 +1581,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1596,8 +1606,9 @@ namespace Wisteria::UI
             PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1622,8 +1633,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1648,8 +1660,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1674,8 +1687,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1700,8 +1714,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1726,8 +1741,9 @@ namespace Wisteria::UI
                 dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1752,8 +1768,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1778,8 +1795,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1804,8 +1822,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1830,8 +1849,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1857,8 +1877,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1883,8 +1904,9 @@ namespace Wisteria::UI
                 dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1924,8 +1946,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1948,8 +1971,9 @@ namespace Wisteria::UI
             PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -1974,8 +1998,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -2001,8 +2026,9 @@ namespace Wisteria::UI
                 dlg.GetSelectedRow(), dlg.GetSelectedColumn(), Wisteria::UI::LegendPlacement::None);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -2028,8 +2054,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -2051,8 +2078,9 @@ namespace Wisteria::UI
             PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -2078,8 +2106,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -2104,8 +2133,9 @@ namespace Wisteria::UI
                              dlg.GetSelectedRow(), dlg.GetSelectedColumn(), legendPlacement);
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -2128,8 +2158,9 @@ namespace Wisteria::UI
             PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -2151,8 +2182,9 @@ namespace Wisteria::UI
             PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -2175,8 +2207,9 @@ namespace Wisteria::UI
             PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -2199,8 +2232,9 @@ namespace Wisteria::UI
             PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
@@ -2222,8 +2256,9 @@ namespace Wisteria::UI
             PlaceGraphInCell(stagingCanvas, plot, dlg.GetSelectedRow(), dlg.GetSelectedColumn());
             return true;
             }
-        catch (const std::exception&)
+        catch (const std::exception& exc)
             {
+            wxMessageBox(wxString::FromUTF8(exc.what()), _(L"Error"), wxOK | wxICON_ERROR, this);
             return false;
             }
         }
