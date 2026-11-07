@@ -2387,6 +2387,9 @@ void WisteriaView::RemovePageFromProject(Wisteria::Canvas* canvas)
         }
     m_pages.erase(foundPage);
     m_workWindows.RemoveWindowById(canvas->GetId());
+    m_workArea->GetSizer()->Detach(canvas);
+    canvas->Destroy();
+    m_workArea->Layout();
     }
 
 //-------------------------------------------
@@ -2562,10 +2565,13 @@ void WisteriaView::OnRearrangePages([[maybe_unused]] wxCommandEvent& event)
         m_sideBar->SelectFolder(0);
         }
 
-    // now safe to drop removed canvases from tracking (the select above already hid them)
+    // now safe to destroy removed canvases (the select above already hid them)
     for (const auto removedIdx : removedIndices)
         {
-        m_workWindows.RemoveWindowById(currentPages[removedIdx].m_canvas->GetId());
+        auto* removedCanvas = currentPages[removedIdx].m_canvas;
+        m_workWindows.RemoveWindowById(removedCanvas->GetId());
+        m_workArea->GetSizer()->Detach(removedCanvas);
+        removedCanvas->Destroy();
         }
 
     m_sideBar->SaveState();

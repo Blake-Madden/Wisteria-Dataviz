@@ -576,7 +576,7 @@ namespace Wisteria::UI
     void InsertLabelDlg::ApplyShapeOptionsToLabel(Wisteria::GraphItems::Label& label)
         {
         // left image
-        const auto leftImgPath = GetLeftImagePath();
+        const auto& leftImgPath = GetLeftImagePath();
         if (!leftImgPath.empty())
             {
             const auto img = Wisteria::GraphItems::Image::LoadFile(leftImgPath);
@@ -593,7 +593,7 @@ namespace Wisteria::UI
             }
 
         // top image
-        const auto topImgPath = GetTopImagePath();
+        const auto& topImgPath = GetTopImagePath();
         if (!topImgPath.empty())
             {
             const auto img = Wisteria::GraphItems::Image::LoadFile(topImgPath);
