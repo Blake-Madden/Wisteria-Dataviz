@@ -337,18 +337,28 @@ TEST_CASE("BarChart serpentine leaves an un-foldably long bar alone", "[barchart
     CHECK(print.m_scalingAxis.m_rangeEnd >= 300.0);
     }
 
-TEST_CASE("BarChart serpentine needs three bars, two lengths, and a forward axis",
+TEST_CASE("BarChart serpentine needs two bars, two lengths, and a forward axis",
           "[barchart][serpentine]")
     {
-    SECTION("fewer than three bars")
+    SECTION("fewer than two bars")
+        {
+        SerpSpec spec;
+        spec.m_barLengths = { 30 };
+        spec.m_mode = BarChart::SerpentineMode::Serpentine;
+        auto* canvas = MakeCanvas();
+        const auto print = LayOutAndCapture(canvas, BuildBarChart(canvas, spec));
+        CHECK(print.m_foldedBarCount == 0);
+        CHECK(print.m_extraRowCount == 0);
+        }
+    SECTION("two bars fold")
         {
         SerpSpec spec;
         spec.m_barLengths = { 6, 30 };
         spec.m_mode = BarChart::SerpentineMode::Serpentine;
         auto* canvas = MakeCanvas();
         const auto print = LayOutAndCapture(canvas, BuildBarChart(canvas, spec));
-        CHECK(print.m_foldedBarCount == 0);
-        CHECK(print.m_extraRowCount == 0);
+        CHECK(print.m_foldedBarCount == 1);
+        CHECK(print.m_extraRowCount > 0);
         }
     SECTION("only one distinct bar length")
         {

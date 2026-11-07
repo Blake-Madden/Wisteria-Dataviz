@@ -28,7 +28,7 @@ namespace Wisteria::Graphs
         {
         m_serpentineBarIndices.clear();
 
-        if (GetSerpentineMode() == SerpentineMode::None || GetBars().size() < 3 ||
+        if (GetSerpentineMode() == SerpentineMode::None || GetBars().size() < 2 ||
             !IsBarFoldingSupported() || GetScalingAxis().IsReversed())
             {
             return;

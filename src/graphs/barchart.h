@@ -990,7 +990,7 @@ namespace Wisteria::Graphs
 
         /// @brief Sets how bars that are vastly longer than the others are rendered.
         /// @param mode The serpentine mode to use.
-        /// @note Folding requires at least three bars and a scaling axis that is not
+        /// @note Folding requires at least two bars and a scaling axis that is not
         ///     reversed. A bar is only eligible if it is a single block, has no custom
         ///     scaling axis start position, and is not part of a bar group.
         /// @note Chart types that do not support folding ignore this call.
