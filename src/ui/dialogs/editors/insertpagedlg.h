@@ -210,6 +210,10 @@ namespace Wisteria::UI
         void DrawPreview(wxGCDC& dc);
         [[nodiscard]]
         std::pair<size_t, size_t> CellFromPoint(const wxPoint& pt) const;
+        /// @returns The cell of the legend placed next to the graph at @p row, @p column,
+        ///     or @c std::nullopt if it doesn't have one.
+        [[nodiscard]]
+        std::optional<std::pair<size_t, size_t>> FindLegendCell(size_t row, size_t column) const;
 
         /// @returns A hidden, temporary canvas mirroring m_fixedObjectsGrid's current
         ///     contents, for the object gallery's nested item dialogs to safely query
@@ -302,7 +306,8 @@ namespace Wisteria::UI
         std::vector<std::vector<std::shared_ptr<Wisteria::GraphItems::GraphItemBase>>>
             m_fixedObjectsGrid;
 
-        // layouts of the items shared with the page being edited, restored if the dialog is cancelled
+        // layouts of the items shared with the page being edited,
+        // restored if the dialog is cancelled
         std::vector<Canvas::FixedObjectLayout> m_sharedItemLayouts;
         // the last graph placed by a gallery drop, which a filterable graph replaces
         std::weak_ptr<Wisteria::GraphItems::GraphItemBase> m_lastPlacedGraph;

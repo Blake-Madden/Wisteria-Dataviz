@@ -121,6 +121,22 @@ namespace Wisteria::UI
     //-------------------------------------------
     void InsertPageDlg::ResizeFixedObjectsGrid()
         {
+        // graphs cut off by a smaller grid take their legends with them
+        for (size_t row = 0; row < m_fixedObjectsGrid.size(); ++row)
+            {
+            for (size_t col = 0; col < m_fixedObjectsGrid[row].size(); ++col)
+                {
+                if (std::cmp_greater_equal(row, m_rowCount) ||
+                    std::cmp_greater_equal(col, m_columnCount))
+                    {
+                    if (const auto legendCell = FindLegendCell(row, col); legendCell.has_value())
+                        {
+                        m_fixedObjectsGrid[legendCell->first][legendCell->second] = nullptr;
+                        }
+                    }
+                }
+            }
+
         m_fixedObjectsGrid.resize(static_cast<size_t>(m_rowCount));
         for (auto& row : m_fixedObjectsGrid)
             {
@@ -142,6 +158,70 @@ namespace Wisteria::UI
         const auto row = safe_divide<size_t>(pt.y - clientRect.y, cellHeight);
         return { std::min(row, static_cast<size_t>(m_rowCount - 1)),
                  std::min(col, static_cast<size_t>(m_columnCount - 1)) };
+        }
+
+    //-------------------------------------------
+    std::optional<std::pair<size_t, size_t>>
+    InsertPageDlg::FindLegendCell(const size_t row, const size_t column) const
+        {
+        if (row >= m_fixedObjectsGrid.size() || column >= m_fixedObjectsGrid[row].size())
+            {
+            return std::nullopt;
+            }
+        const auto& item = m_fixedObjectsGrid[row][column];
+
+        // a filterable graph keeps track of its own legend
+        if (const auto* filterableGraph =
+                dynamic_cast<const Wisteria::Graphs::FilterableGraph*>(item.get());
+            filterableGraph != nullptr)
+            {
+            const auto legend = filterableGraph->GetLegend();
+            if (legend == nullptr)
+                {
+                return std::nullopt;
+                }
+            for (size_t legendRow = 0; legendRow < m_fixedObjectsGrid.size(); ++legendRow)
+                {
+                for (size_t legendCol = 0; legendCol < m_fixedObjectsGrid[legendRow].size();
+                     ++legendCol)
+                    {
+                    if (m_fixedObjectsGrid[legendRow][legendCol] == legend)
+                        {
+                        return std::pair{ legendRow, legendCol };
+                        }
+                    }
+                }
+            return std::nullopt;
+            }
+
+        const auto* graph = dynamic_cast<const Wisteria::Graphs::Graph2D*>(item.get());
+        if (graph == nullptr || !graph->GetLegendInfo().has_value())
+            {
+            return std::nullopt;
+            }
+        const auto side = graph->GetLegendInfo()->GetPlacement();
+        const size_t rows{ m_fixedObjectsGrid.size() };
+        const size_t cols{ m_fixedObjectsGrid[row].size() };
+        const bool hasLegendCell{ (side == Wisteria::Side::Top && row > 0) ||
+                                  (side == Wisteria::Side::Bottom && row + 1 < rows) ||
+                                  (side == Wisteria::Side::Left && column > 0) ||
+                                  (side == Wisteria::Side::Right && column + 1 < cols) };
+        if (!hasLegendCell)
+            {
+            return std::nullopt;
+            }
+        const std::pair<size_t, size_t> legendCell{ (side == Wisteria::Side::Top)    ? row - 1 :
+                                                    (side == Wisteria::Side::Bottom) ? row + 1 :
+                                                                                       row,
+                                                    (side == Wisteria::Side::Left)  ? column - 1 :
+                                                    (side == Wisteria::Side::Right) ? column + 1 :
+                                                                                      column };
+        if (!WisteriaView::IsLegendItem(
+                m_fixedObjectsGrid[legendCell.first][legendCell.second].get()))
+            {
+            return std::nullopt;
+            }
+        return legendCell;
         }
 
     //-------------------------------------------
@@ -738,6 +818,13 @@ namespace Wisteria::UI
                                          _(L"Delete Item"), wxYES_NO | wxICON_QUESTION,
                                          this) == wxYES)
                             {
+                            // a graph's legend goes with it
+                            if (const auto legendCell =
+                                    FindLegendCell(m_selectedRow, m_selectedColumn);
+                                legendCell.has_value())
+                                {
+                                m_fixedObjectsGrid[legendCell->first][legendCell->second] = nullptr;
+                                }
                             m_fixedObjectsGrid[m_selectedRow][m_selectedColumn] = nullptr;
                             m_previewPanel->Refresh();
                             }
