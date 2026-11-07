@@ -1297,13 +1297,16 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                         extraSpaceFromPreviousItemsForThisItem += safe_divide<int>(
                             extraSpaceForFollowingItems, currentRow.size() - (i + 1));
 
-                        // if there are items to the left, then move this object back
-                        boundingRect.x -= extraSpaceForPreviousItems;
+                        // if there are items to the left, then move this object over
+                        // past the space given to them
+                        boundingRect.x += extraSpaceForPreviousItems;
                         boundingRect.SetWidth(measuredBox.GetWidth());
                         objectsPos->SetBoundingBox(boundingRect, dc, GetScaling());
 
+                        // the space given to the previous items is still used by this row,
+                        // only the space given to the following items is released
                         nonPaddedBoundingRect.SetWidth(nonPaddedBoundingRect.GetWidth() -
-                                                       widthDiff);
+                                                       extraSpaceForFollowingItems);
                         // adjust previously laid out items by making them wider
                         // and pushing them over
                         if (i > 0 && extraSpaceForPreviousItems > 0)
