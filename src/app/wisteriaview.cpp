@@ -79,6 +79,7 @@
 #include <wx/rearrangectrl.h>
 #include <wx/regex.h>
 #include <wx/scopeguard.h>
+#include <wx/tokenzr.h>
 #include <wx/wupdlock.h>
 
 wxIMPLEMENT_DYNAMIC_CLASS(WisteriaView, wxView);
@@ -2293,8 +2294,10 @@ void WisteriaView::OnEditPage([[maybe_unused]] wxCommandEvent& event)
 
     canvas->SetLayer(dlg.GetLayer());
     const auto previousFilterableGraphs = canvas->GetFilterableGraphs();
+    const auto previousAxisChildren = GetCommonAxisChildren(canvas);
     canvas->SetFixedObjectsGridSize(dlg.GetRows(), dlg.GetColumns());
     dlg.ApplyGridEdits(canvas);
+    ReleaseCommonAxisChildren(canvas, previousAxisChildren);
     SyncAddedFilters(*canvas, previousFilterableGraphs);
     canvas->FitToPageWhenPrinting(true);
     canvas->SetSizeFromPaperSize();
@@ -3057,6 +3060,132 @@ void WisteriaView::ClearGraphAndLegend(Wisteria::Canvas* canvas,
             if (IsLegendItem(canvas->GetFixedObject(legendRow, legendCol).get()))
                 {
                 canvas->SetFixedObject(legendRow, legendCol, nullptr);
+                }
+            }
+        }
+    }
+
+//-------------------------------------------
+std::vector<std::pair<long, Wisteria::AxisType>>
+WisteriaView::GetCommonAxisChildren(Wisteria::Canvas* canvas)
+    {
+    std::vector<std::pair<long, Wisteria::AxisType>> children;
+    if (canvas == nullptr)
+        {
+        return children;
+        }
+    const auto [gridRows, gridCols] = canvas->GetFixedObjectsGridSize();
+    const auto isGraphOnCanvas = [canvas, gridRows, gridCols](const long graphId)
+    {
+        for (size_t row = 0; row < gridRows; ++row)
+            {
+            for (size_t col = 0; col < gridCols; ++col)
+                {
+                const auto item = canvas->GetFixedObject(row, col);
+                if (item != nullptr && item->GetId() == graphId &&
+                    dynamic_cast<const Wisteria::Graphs::Graph2D*>(item.get()) != nullptr)
+                    {
+                    return true;
+                    }
+                }
+            }
+        return false;
+    };
+
+    for (size_t axisRow = 0; axisRow < gridRows; ++axisRow)
+        {
+        for (size_t axisCol = 0; axisCol < gridCols; ++axisCol)
+            {
+            const auto axisItem = canvas->GetFixedObject(axisRow, axisCol);
+            const auto* commonAxis =
+                dynamic_cast<const Wisteria::GraphItems::Axis*>(axisItem.get());
+            if (commonAxis == nullptr)
+                {
+                continue;
+                }
+            std::vector<long> childIds;
+            wxStringTokenizer tokenizer(commonAxis->GetPropertyTemplate(L"child-ids"), L",");
+            while (tokenizer.HasMoreTokens())
+                {
+                long childId{ 0 };
+                if (tokenizer.GetNextToken().Trim().Trim(false).ToLong(&childId) &&
+                    isGraphOnCanvas(childId))
+                    {
+                    childIds.push_back(childId);
+                    }
+                }
+            // the axis is only applied to its graphs when there are at least two of them
+            if (childIds.size() < 2)
+                {
+                continue;
+                }
+            for (const auto childId : childIds)
+                {
+                children.emplace_back(childId, commonAxis->GetAxisType());
+                }
+            }
+        }
+    return children;
+    }
+
+//-------------------------------------------
+void WisteriaView::ReleaseCommonAxisChildren(
+    Wisteria::Canvas* canvas,
+    const std::vector<std::pair<long, Wisteria::AxisType>>& previousChildren)
+    {
+    const auto* doc = dynamic_cast<WisteriaDoc*>(GetDocument());
+    if (canvas == nullptr || doc == nullptr || previousChildren.empty())
+        {
+        return;
+        }
+    const auto currentChildren = GetCommonAxisChildren(canvas);
+    SyncPageNumber(canvas);
+
+    const auto [gridRows, gridCols] = canvas->GetFixedObjectsGridSize();
+    for (const auto& [childId, axisType] : previousChildren)
+        {
+        if (std::ranges::find(currentChildren, std::pair{ childId, axisType }) !=
+            currentChildren.cend())
+            {
+            continue;
+            }
+        for (size_t row = 0; row < gridRows; ++row)
+            {
+            for (size_t col = 0; col < gridCols; ++col)
+                {
+                const auto oldGraph = std::dynamic_pointer_cast<Wisteria::Graphs::Graph2D>(
+                    canvas->GetFixedObject(row, col));
+                if (oldGraph == nullptr || oldGraph->GetId() != childId)
+                    {
+                    continue;
+                    }
+                // show the labels that the common axis hid
+                const bool isXAxis{ axisType == Wisteria::AxisType::BottomXAxis ||
+                                    axisType == Wisteria::AxisType::TopXAxis };
+                auto& mainAxis = isXAxis ? oldGraph->GetBottomXAxis() : oldGraph->GetLeftYAxis();
+                auto& oppositeAxis = isXAxis ? oldGraph->GetTopXAxis() : oldGraph->GetRightYAxis();
+                mainAxis.SetLabelDisplay(Wisteria::AxisLabelDisplay::DisplayCustomLabelsOrValues);
+                oppositeAxis.SetLabelDisplay(
+                    Wisteria::AxisLabelDisplay::DisplayCustomLabelsOrValues);
+                mainAxis.GetTitle().Show(true);
+                oppositeAxis.GetTitle().Show(true);
+
+                // rebuild the graph so that its range and labels come from its own data again
+                std::shared_ptr<Wisteria::Graphs::Graph2D> newGraph;
+                try
+                    {
+                    newGraph = m_reportBuilder.LoadGraphDetached(
+                        doc->SerializeGraphToJson(oldGraph.get(), canvas), canvas);
+                    }
+                catch (const std::exception&)
+                    {
+                    newGraph = nullptr;
+                    }
+                if (newGraph != nullptr)
+                    {
+                    newGraph->SetId(oldGraph->GetId());
+                    canvas->SetFixedObject(row, col, newGraph);
+                    }
                 }
             }
         }
@@ -4344,7 +4473,9 @@ void WisteriaView::OnDeleteItem([[maybe_unused]] wxCommandEvent& event)
             }
         }
 
+    const auto previousAxisChildren = GetCommonAxisChildren(canvas);
     canvas->SetFixedObject(itemRow, itemCol, nullptr);
+    ReleaseCommonAxisChildren(canvas, previousAxisChildren);
     UpdateCanvas(canvas);
     GetDocument()->Modify(true);
     }
@@ -7380,9 +7511,19 @@ void WisteriaView::EditCommonAxis(Wisteria::GraphItems::Axis& axis, Wisteria::Ca
         return;
         }
 
+    // take the axis off of its graphs first, so that graphs no longer connected to it
+    // show their own axes and the edited axis is built from the graphs' own ranges
+    const auto previousAxisChildren = GetCommonAxisChildren(canvas);
+    const auto oldAxis = canvas->GetFixedObject(axisRow, axisCol);
+    canvas->SetFixedObject(axisRow, axisCol, nullptr);
+    ReleaseCommonAxisChildren(canvas, previousAxisChildren);
+
     auto commonAxis = dlg.BuildCommonAxis();
     if (commonAxis == nullptr)
         {
+        // put the original axis back on its graphs
+        canvas->SetFixedObject(axisRow, axisCol, oldAxis);
+        UpdateCanvas(canvas);
         return;
         }
 

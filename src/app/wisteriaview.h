@@ -582,6 +582,20 @@ class WisteriaView final : public wxView
                                     const Wisteria::Graphs::Graph2D& graph, size_t graphRow,
                                     size_t graphCol);
 
+    /// @returns The IDs of the graphs on @p canvas that a common axis is applied to,
+    ///     paired with that axis's type.
+    /// @param canvas The canvas to search.
+    [[nodiscard]]
+    static std::vector<std::pair<long, Wisteria::AxisType>>
+    GetCommonAxisChildren(Wisteria::Canvas* canvas);
+    /// @brief Rebuilds the graphs that are no longer under a common axis
+    ///     so that they show their own axes again.
+    /// @param canvas The canvas to update.
+    /// @param previousChildren The canvas's common axis children before it was edited.
+    void ReleaseCommonAxisChildren(
+        Wisteria::Canvas* canvas,
+        const std::vector<std::pair<long, Wisteria::AxisType>>& previousChildren);
+
     /// @brief Carries forward a property template from an old graph to a new one.
     /// @param oldGraph The old graph.
     /// @param newGraph The new graph.
