@@ -113,7 +113,7 @@ namespace Wisteria::UI
 
             // power-of-2 size: downscale by 1 pixel to avoid GTK/Cocoa 16x16 quirk
             wxBitmap bmp = bundle.GetBitmap(size);
-            const int scaledPixel{ static_cast<int>(1 * scaling) };
+            const auto scaledPixel{ static_cast<int>(1 * scaling) };
             wxBitmap::Rescale(
                 bmp, wxSize{ size.GetWidth() - scaledPixel, size.GetHeight() - scaledPixel });
             bmp.SetScaleFactor(scaling);

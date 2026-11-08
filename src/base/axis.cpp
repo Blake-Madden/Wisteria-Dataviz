@@ -932,7 +932,7 @@ namespace Wisteria::GraphItems
             const auto [start, end] = GetRange();
             GetTickMarks().clear();
             const double interval = GetTickMarkInterval();
-            const int steps = static_cast<int>(std::ceil((end - start) / interval));
+            const auto steps = static_cast<int>(std::ceil(safe_divide(end - start, interval)));
             for (int k = 0; k <= steps; ++k)
                 {
                 const double i = (start + (static_cast<double>(k) * interval));
@@ -960,7 +960,7 @@ namespace Wisteria::GraphItems
             const auto [start, end] = GetRange();
             GetTickMarks().clear();
             const double interval = GetTickMarkInterval();
-            const int steps = static_cast<int>(std::ceil((end - start) / interval));
+            const auto steps = static_cast<int>(std::ceil(safe_divide(end - start, interval)));
             for (int k = 0; k <= steps; ++k)
                 {
                 const double i = (start + (static_cast<double>(k) * interval));
@@ -3500,7 +3500,8 @@ namespace Wisteria::GraphItems
             {
             double lastValidPoint = rangeEnd;
             // compute number of steps (explicit grouping)
-            const int steps = static_cast<int>(std::ceil((rangeEnd - rangeStart) / interval));
+            const auto steps =
+                static_cast<int>(std::ceil(safe_divide(rangeEnd - rangeStart, interval)));
             for (int k = steps; k >= 0; --k)
                 {
                 // compute floating-point position for this iteration
@@ -3531,7 +3532,8 @@ namespace Wisteria::GraphItems
                the intervals are set up), so a range like 1-70 might wind up being 1-71*/
             double lastValidPoint = rangeStart;
             // compute number of steps
-            const int steps = static_cast<int>(std::ceil((rangeEnd - rangeStart) / interval));
+            const auto steps =
+                static_cast<int>(std::ceil(safe_divide(rangeEnd - rangeStart, interval)));
             for (int k = 0; k <= steps; ++k)
                 {
                 const double i = (rangeStart + (static_cast<double>(k) * interval));

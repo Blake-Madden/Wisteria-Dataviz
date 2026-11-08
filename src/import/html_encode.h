@@ -49,7 +49,7 @@ namespace lily_of_the_valley
                         {
                         if (codePoint >= 0xD800 && codePoint <= 0xDBFF && i + 1 < text.length())
                             {
-                            const uint32_t low{ static_cast<uint32_t>(text[i + 1]) };
+                            const auto low{ static_cast<uint32_t>(text[i + 1]) };
                             if (low >= 0xDC00 && low <= 0xDFFF)
                                 {
                                 codePoint = 0x10000 + ((codePoint - 0xD800) << 10) + (low - 0xDC00);

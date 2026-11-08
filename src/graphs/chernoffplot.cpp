@@ -1946,7 +1946,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
             const double mustacheTop = mouthY - faceHeight * 0.12;
             const double mustacheBottom = mouthY - faceHeight * 0.01;
             const double mustacheSpacing = spacing * 0.9;
-            const int mustacheYSteps =
+            const auto mustacheYSteps =
                 static_cast<int>(safe_divide(mustacheBottom - mustacheTop, mustacheSpacing));
             for (int myi = 0; myi <= mustacheYSteps; ++myi)
                 {
@@ -1956,7 +1956,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChernoffFacesPlot, Wisteria::Graphs:
                 const double mustacheWidth = faceWidth * (0.15 + progress * 0.2);
 
                 const double mxStart = cx - mustacheWidth;
-                const int mustacheXSteps =
+                const auto mustacheXSteps =
                     static_cast<int>(safe_divide(mustacheWidth * 2, mustacheSpacing));
                 for (int mxi = 0; mxi <= mustacheXSteps; ++mxi)
                     {

@@ -597,7 +597,7 @@ namespace lily_of_the_valley
                 return;
                 }
             }
-        const size_t entryWidth{ static_cast<size_t>(widths[0] + widths[1] + widths[2]) };
+        const auto entryWidth{ static_cast<size_t>(widths[0] + widths[1] + widths[2]) };
         if (entryWidth == 0)
             {
             return;

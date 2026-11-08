@@ -205,8 +205,8 @@ static GtkPaperSize* GtkGetPaperSize(wxPaperSize paperId, const wxSize& size)
         { return gtk_paper_size_new(gtk_paper_size_get_default()); }
 
     // look for a size match in GTK's GtkPaperSize list
-    const double w{ static_cast<double>(size.x) };
-    const double h{ static_cast<double>(size.y) };
+    const auto w{ static_cast<double>(size.x) };
+    const auto h{ static_cast<double>(size.y) };
     GtkPaperSize* paperSize{ nullptr };
     GList* list = gtk_paper_size_get_paper_sizes(TRUE);
     for (GList* p = list; p != nullptr; p = p->next)

@@ -913,7 +913,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
         if (m_effectiveProjection == MapProjection::AlbersEqualAreaConic)
             {
             const double rhoArg = m_albersC - (2.0 * m_albersN * std::sin(lat));
-            const double rho = (rhoArg > 0.0) ? (std::sqrt(rhoArg) / m_albersN) : 0.0;
+            const double rho = (rhoArg > 0.0) ? safe_divide(std::sqrt(rhoArg), m_albersN) : 0.0;
             const double theta = m_albersN * (lon - m_projLon0);
             return { rho * std::sin(theta), m_albersRho0 - (rho * std::cos(theta)) };
             }
@@ -930,7 +930,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             const double denom =
                 3.0 * ((9.0 * a4 * p6 * p2) + (7.0 * a3 * p6) + (3.0 * a2 * p2) + a1);
             const double xVal =
-                (2.0 * sqrt3 * (lon - m_projLon0) * std::cos(parametricLat)) / denom;
+                safe_divide((2.0 * sqrt3 * (lon - m_projLon0) * std::cos(parametricLat)), denom);
             const double yVal = (a4 * p6 * parametricLat * p2) + (a3 * p6 * parametricLat) +
                                 (a2 * p2 * parametricLat) + (a1 * parametricLat);
             return { xVal, yVal };
@@ -1349,7 +1349,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                 .DPIScaling(GetDPIScaleFactor())
                 .Padding(2, 4, 2, 4));
         const wxRect probeBox = probe.GetBoundingBox(dc);
-        const int gap = static_cast<int>(4 * GetScaling());
+        const auto gap = static_cast<int>(4 * GetScaling());
         return { probeBox.GetWidth() + gap, probeBox.GetHeight() + gap };
         }
 
@@ -1596,13 +1596,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
                               clipRect.GetHeight() + (2 * cutMargin) };
         const auto pointAtX = [](const wxPoint& from, const wxPoint& to, const int edgeX)
         {
-            const double ratio = safe_divide<double>(edgeX - from.x, to.x - from.x);
+            const auto ratio = safe_divide<double>(edgeX - from.x, to.x - from.x);
             const int edgeY = from.y + static_cast<int>(std::lround(ratio * (to.y - from.y)));
             return wxPoint{ edgeX, edgeY };
         };
         const auto pointAtY = [](const wxPoint& from, const wxPoint& to, const int edgeY)
         {
-            const double ratio = safe_divide<double>(edgeY - from.y, to.y - from.y);
+            const auto ratio = safe_divide<double>(edgeY - from.y, to.y - from.y);
             const int edgeX = from.x + static_cast<int>(std::lround(ratio * (to.x - from.x)));
             return wxPoint{ edgeX, edgeY };
         };

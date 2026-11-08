@@ -211,7 +211,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
 
         Graph2D::RecalcSizes(dc);
 
-        const int maxRowsWhenGrouping =
+        const auto maxRowsWhenGrouping =
             static_cast<int>(std::ceil(safe_divide<double>(m_matrix.size(), m_groupColumnCount)));
 
         constexpr wxCoord LABEL_RIGHT_PADDING{ 4 };

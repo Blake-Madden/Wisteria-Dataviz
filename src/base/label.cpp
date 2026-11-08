@@ -1079,10 +1079,10 @@ namespace Wisteria::GraphItems
             return;
             }
 
-        const double boxLeft{ static_cast<double>(balloonBody.GetLeft()) };
-        const double boxTop{ static_cast<double>(balloonBody.GetTop()) };
-        const double boxRight{ static_cast<double>(balloonBody.GetRight()) };
-        const double boxBottom{ static_cast<double>(balloonBody.GetBottom()) };
+        const auto boxLeft{ static_cast<double>(balloonBody.GetLeft()) };
+        const auto boxTop{ static_cast<double>(balloonBody.GetTop()) };
+        const auto boxRight{ static_cast<double>(balloonBody.GetRight()) };
+        const auto boxBottom{ static_cast<double>(balloonBody.GetBottom()) };
         const double cornerRadius{ std::min(
             ScaleToScreenAndCanvas(Settings::GetBoxRoundedCornerRadius()),
             std::min(balloonBody.GetWidth(), balloonBody.GetHeight()) * math_constants::quarter) };

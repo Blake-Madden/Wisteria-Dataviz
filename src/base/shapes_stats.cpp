@@ -110,8 +110,8 @@ namespace Wisteria::GraphItems
             //--------------------------------------
             // label bounding box geometry
             //--------------------------------------
-            const int labelWidth = static_cast<int>(leftRegionWidth * 0.85);
-            const int labelHeight = static_cast<int>(r.GetHeight() * 0.70);
+            const auto labelWidth = static_cast<int>(leftRegionWidth * 0.85);
+            const auto labelHeight = static_cast<int>(r.GetHeight() * 0.70);
 
             //--------------------------------------
             // left label

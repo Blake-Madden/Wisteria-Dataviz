@@ -525,7 +525,7 @@ namespace lily_of_the_valley
                 textColor = std::strstr(textColor, "\\cf");
                 if ((textColor != nullptr) && (nextSpace != nullptr) && (textColor < nextSpace))
                     {
-                    const int idx = static_cast<int>(std::strtol(textColor + 3, nullptr, 10));
+                    const auto idx = static_cast<int>(std::strtol(textColor + 3, nullptr, 10));
                     // color table is one-base indexed
                     if (idx > 0 && std::cmp_less_equal(idx, m_color_table.size()))
                         {

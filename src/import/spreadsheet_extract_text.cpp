@@ -193,7 +193,7 @@ namespace lily_of_the_valley
             const wchar_t currentLetter = std::towupper(cell_name[i]);
             // if non letter in column name, then something is wrong;
             // set the column to bogus and quit
-            if (!(currentLetter >= L'A' && currentLetter <= L'Z'))
+            if (currentLetter < L'A' || currentLetter > L'Z')
                 {
                 cinfo.m_position = column_info::INVALID_POSITION;
                 break;

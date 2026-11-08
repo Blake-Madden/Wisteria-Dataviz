@@ -72,7 +72,7 @@ namespace lily_of_the_valley
 
                 if (hi >= 0 && lo >= 0)
                     {
-                    const char decoded = static_cast<char>((hi << 4) | lo);
+                    const auto decoded = static_cast<char>((hi << 4) | lo);
                     output.push_back(decoded);
                     // skip the rest of the escape sequence
                     index += 5;

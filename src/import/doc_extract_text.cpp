@@ -774,7 +774,7 @@ namespace lily_of_the_valley
             }
         // process document flags
         std::vector<char> headerBuffer(128, 0);
-        const long offset =
+        const auto offset =
             static_cast<long>(read_stream(headerBuffer.data(), headerBuffer.size(), cfbObj));
         const auto flags = read_short(headerBuffer.data(), 10);
         if ((flags & fComplex) != 0)

@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "geodataset.h"
+#include "../math/safe_math.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -395,7 +396,7 @@ namespace Wisteria::Data
             switch (aggregation)
                 {
             case GeoColumnAggregation::Mean:
-                return total / static_cast<double>(values.size());
+                return safe_divide<double>(total, values.size());
             case GeoColumnAggregation::Min:
                 return *std::ranges::min_element(values);
             case GeoColumnAggregation::Max:

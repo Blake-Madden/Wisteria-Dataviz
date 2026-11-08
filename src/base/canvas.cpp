@@ -658,7 +658,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     const bool landscape = printData.GetOrientation() == wxLANDSCAPE;
                     const auto paperSzTenthsMM = paper->GetSize();
                     // the DC's logical units per inch (not necessarily PDF points)
-                    const double pdfPPI{ static_cast<double>(pdfDC.GetPPI().GetWidth()) };
+                    const auto pdfPPI{ static_cast<double>(pdfDC.GetPPI().GetWidth()) };
                     const wxSize logicalSize(wxRound((landscape ? paperSzTenthsMM.GetHeight() :
                                                                   paperSzTenthsMM.GetWidth()) /
                                                      254.0 * pdfPPI),

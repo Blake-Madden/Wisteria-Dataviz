@@ -28,7 +28,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
     DuBoisSpiralChart::PathSegment::PathSegment(const double thickness, const wxColour& color)
         : m_thickness(thickness)
         {
-        GetGraphItemInfo().Brush(wxBrush{ color }).Pen(wxPen{ color });
+        GraphItemBase::GetGraphItemInfo().Brush(wxBrush{ color }).Pen(wxPen{ color });
         }
 
     //----------------------------------------------------------------
@@ -114,7 +114,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
     //----------------------------------------------------------------
     bool DuBoisSpiralChart::SpiralSegment::IsOnShape(const wxPoint pt) const
         {
-        if (!(m_radiusPerDegree > 0))
+        if (!std::isfinite(m_radiusPerDegree) || m_radiusPerDegree <= 0)
             {
             return false;
             }
@@ -199,7 +199,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
         // distance from the point to the closest spot on the line
         const double lineX = m_end.x - m_start.x;
         const double lineY = m_end.y - m_start.y;
-        const double along =
+        const auto along =
             safe_divide<double>(((pt.x - m_start.x) * lineX) + ((pt.y - m_start.y) * lineY),
                                 (lineX * lineX) + (lineY * lineY));
         const double clampedAlong = std::clamp(along, 0.0, 1.0);
@@ -349,7 +349,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
             {
             return;
             }
-        const double minDim =
+        const auto minDim =
             static_cast<double>(std::min(plotArea.GetWidth(), plotArea.GetHeight()));
         // pixel floors below are proportions of the smaller plot dimension,
         // so they grow and shrink with the plot instead of staying fixed
@@ -433,12 +433,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
                 {
                 return;
                 }
-            GraphItems::Label nameMeasure = createPlainLabel(m_nodes.back().GetLabel(), scaling);
+            const GraphItems::Label nameMeasure =
+                createPlainLabel(m_nodes.back().GetLabel(), scaling);
             nameLabelHeight = static_cast<double>(nameMeasure.GetBoundingBox(dc).GetHeight());
             sideLabelSizes.reserve(m_nodes.size() - 1);
             for (size_t i = 0; i + 1 < m_nodes.size(); ++i)
                 {
-                GraphItems::Label sideMeasure =
+                const GraphItems::Label sideMeasure =
                     createPlainLabel(FormatNodeText(m_nodes[i]), scaling);
                 sideLabelSizes.push_back(sideMeasure.GetBoundingBox(dc).GetSize());
                 }
@@ -535,7 +536,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
             constexpr int RADIUS_BISECT_STEPS{ 60 };
             // radius lost per radian traveled
             const double lossPerRad = radiusPerDegree * safe_divide(180.0, std::numbers::pi);
-            if (!(lossPerRad > 0))
+            if (!std::isfinite(lossPerRad) || lossPerRad <= 0)
                 {
                 return -1.0;
                 }
@@ -557,8 +558,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
             double outerRadius = contentR;
             for (int i = 0; i < RADIUS_BISECT_STEPS; ++i)
                 {
-                const double midRadius = (innerRadius + outerRadius) * math_constants::half;
-                if (arcLengthTo(midRadius) >= targetLen)
+                if (const double midRadius = (innerRadius + outerRadius) * math_constants::half;
+                    arcLengthTo(midRadius) >= targetLen)
                     {
                     innerRadius = midRadius;
                     }
@@ -574,7 +575,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
         const auto simulate = [&](const double scale)
         {
             SimResult result;
-            if (!(scale > 0) || !std::isfinite(scale))
+            if (!std::isfinite(scale) || scale <= 0)
                 {
                 return result;
                 }
@@ -615,13 +616,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
             const auto windSpiral = [&](const wxPoint2DDouble& entry, const double targetLen)
             {
                 const double contentR = contentRadiusFor(targetLen);
-                if (!(contentR > 0) || !std::isfinite(contentR) || contentR > maxSpiralRadius)
+                if (!std::isfinite(contentR) || contentR <= 0 || contentR > maxSpiralRadius)
                     {
                     return false;
                     }
                 const wxPoint2DDouble center{ entry.m_x, entry.m_y + contentR };
                 const double swept = sweepForLength(targetLen, contentR);
-                if (!(swept > 0))
+                if (!std::isfinite(swept) || swept <= 0)
                     {
                     return false;
                     }
@@ -715,12 +716,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
         {
             const double spacing = spacingFor(thick);
             const double hole = holeFor(thick);
-            if (!(maxSpiralRadius > hole) || !(spacing > 0))
+            if (!std::isfinite(spacing) || spacing <= 0 || !std::isfinite(hole) ||
+                maxSpiralRadius <= hole)
                 {
                 return 0.0;
                 }
-            return (std::numbers::pi * ((maxSpiralRadius * maxSpiralRadius) - (hole * hole))) /
-                   spacing;
+            return safe_divide(
+                (std::numbers::pi * ((maxSpiralRadius * maxSpiralRadius) - (hole * hole))),
+                spacing);
         };
 
         double highScale{ 0 };
@@ -735,7 +738,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
             // the spiral holds the final value
             const double firstValue = m_nodes.front().GetValue();
             double targetScale = safe_divide(availW * math_constants::half, firstValue);
-            if (!(targetScale > 0) || !std::isfinite(targetScale))
+            if (!std::isfinite(targetScale) || targetScale <= 0)
                 {
                 return;
                 }
@@ -751,8 +754,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
                 double searchHigh = lineThickness;
                 for (int i = 0; i < THICKNESS_SEARCH_STEPS; ++i)
                     {
-                    const double midThick = (lowThick + searchHigh) * math_constants::half;
-                    if (spiralCapacity(midThick) >= requiredLen)
+                    if (const double midThick = (lowThick + searchHigh) * math_constants::half;
+                        spiralCapacity(midThick) >= requiredLen)
                         {
                         feasibleThick = midThick;
                         lowThick = midThick;
@@ -772,7 +775,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
             applyThickness(feasibleThick);
             highScale = targetScale;
             }
-        if (!(highScale > 0) || !std::isfinite(highScale))
+        if (!std::isfinite(highScale) || highScale <= 0)
             {
             return;
             }
@@ -803,8 +806,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
             for (int i = 0; i < SCALE_BISECT_STEPS; ++i)
                 {
                 const double midScale = (lowScale + searchHigh) * math_constants::half;
-                const SimResult mid = simulate(midScale);
-                if (fitsBox(mid))
+                if (const SimResult mid = simulate(midScale); fitsBox(mid))
                     {
                     lowScale = midScale;
                     found = mid;
@@ -887,7 +889,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
                     maxLabelHeight =
                         std::max(maxLabelHeight, static_cast<double>(labelSize.GetHeight()));
                     }
-                GraphItems::Label valueMeasure =
+                const GraphItems::Label valueMeasure =
                     createPlainLabel(FormatValue(m_nodes.back().GetValue()), fullScaling);
                 maxLabelHeight =
                     std::max(maxLabelHeight,
@@ -909,7 +911,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
             // that it fits inside the spiral hole. Only this label shrinks for the hole.
             double valueScaling = smallScaling;
                 {
-                GraphItems::Label valueMeasure =
+                const GraphItems::Label valueMeasure =
                     createPlainLabel(FormatValue(m_nodes.back().GetValue()), smallScaling);
                 const wxSize valueSize = valueMeasure.GetBoundingBox(dc).GetSize();
                 const double availD =

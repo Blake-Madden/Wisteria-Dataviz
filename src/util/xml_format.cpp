@@ -230,7 +230,6 @@ wxFont XmlFormat::GetFont(const wchar_t* sectionStart, const wchar_t* sectionEnd
     // get the font
     const wchar_t* currentPos = lily_of_the_valley::html_extract_text::find_element(
         sectionStart, sectionEnd, { entityTag.data(), entityTag.length() }, true);
-    wchar_t* dummy{ nullptr };
     if ((currentPos != nullptr) && (currentPos < sectionEnd))
         {
         currentPos += entityTag.length() + 1;
@@ -241,7 +240,7 @@ wxFont XmlFormat::GetFont(const wchar_t* sectionStart, const wchar_t* sectionEnd
         if (pos != nullptr)
             {
             pos += attribute.length();
-            const int pointSize = static_cast<int>(std::wcstol(pos, &dummy, 10));
+            const auto pointSize = static_cast<int>(std::wcstol(pos, nullptr, 10));
             font.SetFractionalPointSize(
                 (pointSize > 0) ?
                     pointSize :
@@ -254,7 +253,8 @@ wxFont XmlFormat::GetFont(const wchar_t* sectionStart, const wchar_t* sectionEnd
         if (pos != nullptr)
             {
             pos += attribute.length();
-            font.SetStyle(static_cast<wxFontStyle>(static_cast<int>(std::wcstol(pos, &dummy, 10))));
+            font.SetStyle(
+                static_cast<wxFontStyle>(static_cast<int>(std::wcstol(pos, nullptr, 10))));
             }
         // weight
         attribute = FONT_WEIGHT_TAG;
@@ -264,7 +264,7 @@ wxFont XmlFormat::GetFont(const wchar_t* sectionStart, const wchar_t* sectionEnd
             {
             pos += attribute.length();
             font.SetWeight(
-                static_cast<wxFontWeight>(static_cast<int>(std::wcstol(pos, &dummy, 10))));
+                static_cast<wxFontWeight>(static_cast<int>(std::wcstol(pos, nullptr, 10))));
             }
         // underlined
         attribute = FONT_UNDERLINE_TAG;
@@ -273,7 +273,7 @@ wxFont XmlFormat::GetFont(const wchar_t* sectionStart, const wchar_t* sectionEnd
         if (pos != nullptr)
             {
             pos += attribute.length();
-            font.SetUnderlined(int_to_bool(static_cast<int>(std::wcstol(pos, &dummy, 10))));
+            font.SetUnderlined(int_to_bool(static_cast<int>(std::wcstol(pos, nullptr, 10))));
             }
         // face name
         attribute = FONT_FACE_NAME_TAG;
@@ -323,14 +323,13 @@ wxColour XmlFormat::GetColor(const wchar_t* sectionStart, const wchar_t* section
             return defaultValue;
             }
         currentPos += entityTag.length() + 1;
-        wchar_t* dummy{ nullptr };
         // red
         wxString colorAttribute = wxString{ RED_TAG } + L"=\"";
         const wchar_t* colorPos = std::wcsstr(currentPos, colorAttribute);
         if ((colorPos != nullptr) && (colorPos < entityEnd))
             {
             colorPos += colorAttribute.length();
-            red = static_cast<int>(std::wcstol(colorPos, &dummy, 10));
+            red = static_cast<int>(std::wcstol(colorPos, nullptr, 10));
             }
         // green
         colorAttribute = wxString{ GREEN_TAG } + L"=\"";
@@ -338,7 +337,7 @@ wxColour XmlFormat::GetColor(const wchar_t* sectionStart, const wchar_t* section
         if ((colorPos != nullptr) && (colorPos < entityEnd))
             {
             colorPos += colorAttribute.length();
-            green = static_cast<int>(std::wcstol(colorPos, &dummy, 10));
+            green = static_cast<int>(std::wcstol(colorPos, nullptr, 10));
             }
         // blue
         colorAttribute = wxString{ BLUE_TAG } + L"=\"";
@@ -346,7 +345,7 @@ wxColour XmlFormat::GetColor(const wchar_t* sectionStart, const wchar_t* section
         if ((colorPos != nullptr) && (colorPos < entityEnd))
             {
             colorPos += colorAttribute.length();
-            blue = static_cast<int>(std::wcstol(colorPos, &dummy, 10));
+            blue = static_cast<int>(std::wcstol(colorPos, nullptr, 10));
             }
         }
     color.Set(red, green, blue);
@@ -384,11 +383,10 @@ wxColour XmlFormat::GetColorWithInclusionTag(const wchar_t* sectionStart, const 
         // red
         wxString colorAttribute = wxString{ RED_TAG } + L"=\"";
         const wchar_t* colorPos = std::wcsstr(currentPos, colorAttribute);
-        wchar_t* dummy{ nullptr };
         if ((colorPos != nullptr) && (colorPos < entityEnd))
             {
             colorPos += colorAttribute.length();
-            red = static_cast<int>(std::wcstol(colorPos, &dummy, 10));
+            red = static_cast<int>(std::wcstol(colorPos, nullptr, 10));
             }
         // green
         colorAttribute = wxString{ GREEN_TAG } + L"=\"";
@@ -396,7 +394,7 @@ wxColour XmlFormat::GetColorWithInclusionTag(const wchar_t* sectionStart, const 
         if ((colorPos != nullptr) && (colorPos < entityEnd))
             {
             colorPos += colorAttribute.length();
-            green = static_cast<int>(std::wcstol(colorPos, &dummy, 10));
+            green = static_cast<int>(std::wcstol(colorPos, nullptr, 10));
             }
         // blue
         colorAttribute = wxString{ BLUE_TAG } + L"=\"";
@@ -404,7 +402,7 @@ wxColour XmlFormat::GetColorWithInclusionTag(const wchar_t* sectionStart, const 
         if ((colorPos != nullptr) && (colorPos < entityEnd))
             {
             colorPos += colorAttribute.length();
-            blue = static_cast<int>(std::wcstol(colorPos, &dummy, 10));
+            blue = static_cast<int>(std::wcstol(colorPos, nullptr, 10));
             }
         // include
         const wxString includeAttribute = wxString{ INCLUDE_TAG } + L"=\"";
@@ -667,9 +665,8 @@ double XmlFormat::GetDouble(const wchar_t* sectionStart, const wchar_t* sectionE
                 {
                 return defaultValue;
                 }
-            wchar_t* dummy = nullptr;
             // values are always written with '.' as the decimal separator
-            return wxStrtod_l(currentPos, &dummy, wxCLocale);
+            return wxStrtod_l(currentPos, nullptr, wxCLocale);
             }
 
         wxMessageBox(

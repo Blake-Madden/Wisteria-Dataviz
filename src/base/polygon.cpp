@@ -15,8 +15,8 @@ namespace Wisteria::GraphItems
     void Polygon::AddGlassyOverlayPath(wxGraphicsPath& path, const wxRect& rect,
                                        const double radius, const bool isVertical)
         {
-        const double left{ static_cast<double>(rect.GetX()) };
-        const double top{ static_cast<double>(rect.GetY()) };
+        const auto left{ static_cast<double>(rect.GetX()) };
+        const auto top{ static_cast<double>(rect.GetY()) };
         const double right{ left + rect.GetWidth() };
         const double bottom{ top + rect.GetHeight() };
         const double topRightRadius{ isVertical ? radius : 0 };

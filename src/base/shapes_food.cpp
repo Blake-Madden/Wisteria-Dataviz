@@ -504,9 +504,8 @@ namespace Wisteria::GraphItems
         wxGraphicsPath crustPath = gc->CreatePath();
         for (int sample = 0; sample <= SAMPLE_COUNT; ++sample)
             {
-            const double angle = safe_divide<double>(2.0 * std::numbers::pi * sample, SAMPLE_COUNT);
-            const double cycles =
-                safe_divide<double>(static_cast<double>(sample), SAMPLES_PER_FLUTE);
+            const auto angle = safe_divide<double>(2.0 * std::numbers::pi * sample, SAMPLE_COUNT);
+            const auto cycles = safe_divide<double>(static_cast<double>(sample), SAMPLES_PER_FLUTE);
             const double bump = std::abs(std::sin(std::numbers::pi * cycles));
             const double edgeRadius = radius - fluteDepth + (fluteDepth * bump);
             const double ptX = cx + (std::cos(angle) * edgeRadius);
@@ -553,7 +552,7 @@ namespace Wisteria::GraphItems
         gc->SetPen(wxPen{ sliceLineColor, std::max<int>(1, ScaleToScreenAndCanvas(0.5)) });
         for (int i = 0; i < SLICE_COUNT; ++i)
             {
-            const double angle = safe_divide<double>(2.0 * std::numbers::pi * i, SLICE_COUNT);
+            const auto angle = safe_divide<double>(2.0 * std::numbers::pi * i, SLICE_COUNT);
             gc->StrokeLine(cx, cy, cx + (std::cos(angle) * fillRadius),
                            cy + (std::sin(angle) * fillRadius));
             }
@@ -720,10 +719,10 @@ namespace Wisteria::GraphItems
         const double sleeveBottom = cupTop + (cupAreaHeight - lidHeight) * 0.62;
         const double sleeveTopWidth =
             cupTopWidth -
-            (cupTopWidth - cupBottomWidth) * ((sleeveTop - cupTop) / (cupBottom - cupTop));
+            (cupTopWidth - cupBottomWidth) * safe_divide(sleeveTop - cupTop, cupBottom - cupTop);
         const double sleeveBottomWidth =
             cupTopWidth -
-            (cupTopWidth - cupBottomWidth) * ((sleeveBottom - cupTop) / (cupBottom - cupTop));
+            (cupTopWidth - cupBottomWidth) * safe_divide(sleeveBottom - cupTop, cupBottom - cupTop);
         // add small padding to ensure sleeve covers cup outline
         const double sleevePadding = outlinePenWidth + 1;
 
@@ -925,7 +924,7 @@ namespace Wisteria::GraphItems
         wxRect bodyRect{ rect };
         if (bodyRect.GetHeight() > bodyRect.GetWidth() * 1.25)
             {
-            const int targetHeight = static_cast<int>(bodyRect.GetWidth() * 1.25);
+            const auto targetHeight = static_cast<int>(bodyRect.GetWidth() * 1.25);
             const int dy = (bodyRect.GetHeight() - targetHeight) / 2;
             bodyRect.SetHeight(targetHeight);
             bodyRect.Offset(0, dy);

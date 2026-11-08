@@ -294,8 +294,8 @@ namespace i18n_string_util
                                                         std::wstring_view{ L".tar." }) == 0)
             {
             // see if it is really a typo (missing space after a sentence).
-            return !(static_cast<bool>(std::iswupper(text[text.length() - 4])) &&
-                     !static_cast<bool>(std::iswupper(text[text.length() - 3])));
+            return !static_cast<bool>(std::iswupper(text[text.length() - 4])) ||
+                   static_cast<bool>(std::iswupper(text[text.length() - 3]));
             }
         // C header/source files, which only have a letter in the extension,
         // but are common in documentation

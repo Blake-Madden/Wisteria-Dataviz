@@ -183,7 +183,8 @@ namespace Wisteria::UI
                            wxSizerFlags{}.Border(wxLEFT));
 
             const int previewHeight = FromDIP(200);
-            const int previewWidth = static_cast<int>(previewHeight * math_constants::golden_ratio);
+            const auto previewWidth =
+                static_cast<int>(previewHeight * math_constants::golden_ratio);
             m_gridPanel =
                 new wxPanel(pagePage, wxID_ANY, wxDefaultPosition,
                             wxSize{ previewWidth, previewHeight }, wxTAB_TRAVERSAL | wxWANTS_CHARS);

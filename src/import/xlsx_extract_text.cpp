@@ -197,7 +197,7 @@ namespace lily_of_the_valley
                             const std::wstring valueIndex(value, valueEnd - value);
                             if (!valueIndex.empty())
                                 {
-                                const int stringTableIndex =
+                                const auto stringTableIndex =
                                     static_cast<int>(std::wcstol(valueIndex.c_str(), nullptr, 10));
                                 return get_shared_string(stringTableIndex, shared_strings,
                                                          shared_strings_length);
@@ -380,7 +380,7 @@ namespace lily_of_the_valley
                                     if (typeTag.second == 1 && typeTag.first != nullptr &&
                                         *typeTag.first == L's')
                                         {
-                                        const int stringTableIndex = static_cast<int>(
+                                        const auto stringTableIndex = static_cast<int>(
                                             std::wcstol(valueStr.c_str(), nullptr, 10));
                                         if (stringTableIndex >= 0 &&
                                             static_cast<size_t>(stringTableIndex) <

@@ -826,7 +826,7 @@ namespace Wisteria::GraphItems
         const double radiusY{ height * 0.34 };
 
         // point on a unit super-ellipse, which gives the bag a squarish, slumped shape
-        const double exponent{ safe_divide<double>(2.0, SQUARENESS) };
+        const auto exponent{ safe_divide<double>(2.0, SQUARENESS) };
         const auto unitPoint = [exponent](const double theta)
         {
             const double cosTheta{ std::cos(theta) };

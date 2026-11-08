@@ -120,9 +120,9 @@ namespace Wisteria::UI
         StyleSetBackground(wxSTC_STYLE_DEFAULT, background);
         StyleSetForeground(wxSTC_STYLE_DEFAULT, foreground);
 
-        StyleSetBackground(
-            ERROR_ANNOTATION_STYLE,
-            wxSystemSettings::SelectLightDark(wxColour{ 244, 220, 220 }, wxColour{ 100, 100, 100 }));
+        StyleSetBackground(ERROR_ANNOTATION_STYLE,
+                           wxSystemSettings::SelectLightDark(wxColour{ 244, 220, 220 },
+                                                             wxColour{ 100, 100, 100 }));
         StyleSetForeground(ERROR_ANNOTATION_STYLE, foreground);
 
         // line-number and fold margins (gutters)

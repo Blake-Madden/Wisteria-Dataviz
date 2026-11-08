@@ -738,7 +738,7 @@ namespace Wisteria::UI
 
         // preview panel
         const int previewWidth = FromDIP(400);
-        const int previewHeight = static_cast<int>(previewWidth * math_constants::golden_ratio);
+        const auto previewHeight = static_cast<int>(previewWidth * math_constants::golden_ratio);
         m_previewPanel =
             new wxPanel(this, wxID_ANY, wxDefaultPosition, wxSize{ previewWidth, previewHeight },
                         wxTAB_TRAVERSAL | wxWANTS_CHARS);

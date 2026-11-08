@@ -27,7 +27,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::NightingaleRoseChart, Wisteria::Grap
         : m_center(center), m_startAngle(startAngleDeg), m_endAngle(endAngleDeg),
           m_innerRadius(innerRadius), m_outerRadius(outerRadius)
         {
-        GetGraphItemInfo().Brush(brush).Pen(pen);
+        GraphItemBase::GetGraphItemInfo().Brush(brush).Pen(pen);
         }
 
     //----------------------------------------------------------------

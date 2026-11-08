@@ -198,7 +198,7 @@ namespace Wisteria::GraphItems
             return img;
             }
 
-        const double scale{ safe_divide<double>(255.0, whitePoint) };
+        const auto scale{ safe_divide<double>(255.0, whitePoint) };
 
         return TransformChannelsAffine(img, [scale]([[maybe_unused]] const int x, [[maybe_unused]]
                                                                                   const int y)

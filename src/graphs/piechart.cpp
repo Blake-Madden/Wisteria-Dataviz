@@ -1418,8 +1418,8 @@ namespace Wisteria::Graphs
         constexpr double ARC_START_DEGREES{ 135.0 }; // upper-left quadrant
 
         // offset to the left and slightly up
-        const int xOffset = static_cast<int>(ScaleToScreenAndCanvas(-25));
-        const int yOffset = static_cast<int>(ScaleToScreenAndCanvas(-8));
+        const auto xOffset = static_cast<int>(ScaleToScreenAndCanvas(-25));
+        const auto yOffset = static_cast<int>(ScaleToScreenAndCanvas(-8));
 
         const double baseRingThickness{ ScaleToScreenAndCanvas(6) };
         const double ringInflation{ ScaleToScreenAndCanvas(8) };
@@ -1551,8 +1551,8 @@ namespace Wisteria::Graphs
         constexpr double ARC_START_DEGREES2{ 320.0 }; // lower-right quadrant
 
         // offset to the right and slightly down
-        const int xOffset2 = static_cast<int>(ScaleToScreenAndCanvas(30));
-        const int yOffset2 = static_cast<int>(ScaleToScreenAndCanvas(12));
+        const auto xOffset2 = static_cast<int>(ScaleToScreenAndCanvas(30));
+        const auto yOffset2 = static_cast<int>(ScaleToScreenAndCanvas(12));
 
         const double baseRingThickness2{ ScaleToScreenAndCanvas(4) };
         const double ringInflation2{ ScaleToScreenAndCanvas(12) }; // further out

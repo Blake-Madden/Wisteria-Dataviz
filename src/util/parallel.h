@@ -47,7 +47,7 @@ namespace parallel
 
         std::vector<std::jthread> workers;
         workers.reserve(threadCount);
-        const int indicesPerThread{ safe_divide<int>(indexCount, static_cast<int>(threadCount)) };
+        const auto indicesPerThread{ safe_divide<int>(indexCount, static_cast<int>(threadCount)) };
         int start{ firstIndex };
         for (unsigned int i = 0; i < threadCount; ++i)
             {

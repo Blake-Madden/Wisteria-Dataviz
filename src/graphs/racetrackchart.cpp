@@ -22,7 +22,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::RaceTrackChart, Wisteria::Graphs::Gr
         : m_center(center), m_startAngle(startAngle), m_sweepAngle(sweepAngle),
           m_startRadius(startRadius), m_radiusPerDegree(radiusPerDegree), m_thickness(thickness)
         {
-        GetGraphItemInfo().Brush(wxBrush{ color }).Pen(wxPen{ color });
+        GraphItemBase::GetGraphItemInfo().Brush(wxBrush{ color }).Pen(wxPen{ color });
         }
 
     //----------------------------------------------------------------
@@ -278,7 +278,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::RaceTrackChart, Wisteria::Graphs::Gr
         // them wind inward at the same rate. Moving in lockstep keeps them from crossing.
         const bool isSpiraling = (laps > 1) && (longestSweep > 360.0 - m_lapSeamGapAngle);
 
-        const double ringCount = static_cast<double>(numLanes);
+        const auto ringCount = static_cast<double>(numLanes);
         double ringStep{ 0 };
         if (isSpiraling)
             {
