@@ -441,7 +441,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
                     _(L"%s (%s%%)"), wxString{ word.m_word }, percStr);
                 label += L", ";
                 }
-            if (label.EndsWith(L", "))
+            if (label.ends_with(L", "))
                 {
                 label.RemoveLast(2);
                 }
@@ -449,7 +449,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WordCloud, Wisteria::Graphs::Graph2D
 
         AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
 
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

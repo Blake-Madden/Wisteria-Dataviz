@@ -5287,7 +5287,7 @@ namespace Wisteria::Graphs
                 {
                 label += formatSlice(slice) + L", ";
                 }
-            if (label.EndsWith(L", "))
+            if (label.ends_with(L", "))
                 {
                 label.RemoveLast(2);
                 }
@@ -5298,7 +5298,7 @@ namespace Wisteria::Graphs
                 {
                 label += formatSlice(slice) + L", ";
                 }
-            if (label.EndsWith(L", "))
+            if (label.ends_with(L", "))
                 {
                 label.RemoveLast(2);
                 }
@@ -5310,7 +5310,7 @@ namespace Wisteria::Graphs
                 {
                 label += formatSlice(slice) + L", ";
                 }
-            if (label.EndsWith(L", "))
+            if (label.ends_with(L", "))
                 {
                 label.RemoveLast(2);
                 }
@@ -5318,7 +5318,7 @@ namespace Wisteria::Graphs
 
         AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
 
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

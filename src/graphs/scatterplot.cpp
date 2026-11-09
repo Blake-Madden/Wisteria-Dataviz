@@ -250,7 +250,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
         AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
         AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
         AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }
@@ -542,7 +542,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ScatterPlot, Wisteria::Graphs::Group
                     {
                     legendText.append(wxString::Format(
                         /* TRANSLATORS: 'r' is statistic in a regression. */
-                        L"r: %s\n", wxNumberFormatter::ToString(
+                        _(L"r: %s\n"), wxNumberFormatter::ToString(
                                         stats.correlation, 4, Settings::GetDefaultNumberFormat())));
                     }
                 else

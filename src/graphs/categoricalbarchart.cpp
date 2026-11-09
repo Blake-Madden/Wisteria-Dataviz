@@ -269,8 +269,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graph
                         (!block.GetTag().empty() ? block.GetTag() : block.GetDecal().GetText());
                     if (!blockName.empty())
                         {
-                        /* TRANSLATORS: a named block inside a bar and its length.
-                           1st %s is the block's name, 2nd %s is its length. */
                         label += L", " + wxString::Format(_DT(L"%s: %s"), blockName,
                                                           GetReadableAxisValue(GetScalingAxis(),
                                                                                block.GetLength()));
@@ -279,8 +277,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graph
                 }
             else
                 {
-                /* TRANSLATORS: bar label and its length in a categorical bar chart.
-                   1st %s is the bar's category label, 2nd %s is its length. */
                 label += L". " + wxString::Format(_DT(L"%s: %s"), barAxisLabel, barLengthStr);
                 }
             }
@@ -333,7 +329,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::CategoricalBarChart, Wisteria::Graph
         AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
         AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
         AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

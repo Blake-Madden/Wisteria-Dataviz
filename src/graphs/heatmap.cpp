@@ -589,13 +589,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                     {
                     appendCell(label, cell);
                     }
-                if (label.EndsWith(L", "))
+                if (label.ends_with(L", "))
                     {
                     label.RemoveLast(2);
                     }
                 label += L"; ";
                 }
-            if (label.EndsWith(L"; "))
+            if (label.ends_with(L"; "))
                 {
                 label.RemoveLast(2);
                 }
@@ -626,7 +626,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
                     appendCell(label, cell);
                     }
                 }
-            if (label.EndsWith(L", "))
+            if (label.ends_with(L", "))
                 {
                 label.RemoveLast(2);
                 }
@@ -634,7 +634,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::HeatMap, Wisteria::Graphs::GroupGrap
 
         AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
 
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

@@ -189,8 +189,8 @@ namespace Wisteria::UI
                 compileFlagsInfo.Trim(false);
                 if (!compileFlagsInfo.empty())
                     {
-                    // TRANSLATORS: Options used to compile the program.
                     buildInfo +=
+                        // TRANSLATORS: Options used to compile the program.
                         _(L"\n\nCompile options:\n--------------------\n") + compileFlagsInfo;
                     }
 #endif

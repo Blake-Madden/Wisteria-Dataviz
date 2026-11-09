@@ -185,7 +185,7 @@ namespace Wisteria::UI
             // copy property templates to the graph for round-tripping
             for (const auto& [key, val] : bgImage.GetPropertyTemplates())
                 {
-                if (key.StartsWith(_DT(L"image-import.")) || key.StartsWith(_DT(L"size.")))
+                if (key.starts_with(_DT(L"image-import.")) || key.starts_with(_DT(L"size.")))
                     {
                     graph.SetPropertyTemplate(key, val);
                     }

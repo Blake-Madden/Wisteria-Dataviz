@@ -972,7 +972,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuBoisSpiralChart, Wisteria::Graphs:
             label += L". " + FormatNodeText(node, false);
             }
 
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

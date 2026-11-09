@@ -418,7 +418,7 @@ img { -webkit-user-drag: none; user-drag: none; }
         static const wxString dragStartPrefix{ L"dragstart|" };
         static const wxString collapsePrefix{ L"collapse|" };
         static const wxString expandPrefix{ L"expand|" };
-        if (msg.StartsWith(dragStartPrefix))
+        if (msg.starts_with(dragStartPrefix))
             {
             if (const auto itemType = IdToGalleryItemType(msg.substr(dragStartPrefix.length()));
                 itemType.has_value())
@@ -430,7 +430,7 @@ img { -webkit-user-drag: none; user-drag: none; }
             {
             EndDrag(true);
             }
-        else if (msg.StartsWith(collapsePrefix))
+        else if (msg.starts_with(collapsePrefix))
             {
             long groupId{ 0 };
             if (msg.substr(collapsePrefix.length()).ToLong(&groupId))
@@ -439,7 +439,7 @@ img { -webkit-user-drag: none; user-drag: none; }
                 PersistCollapsedGroups();
                 }
             }
-        else if (msg.StartsWith(expandPrefix))
+        else if (msg.starts_with(expandPrefix))
             {
             long groupId{ 0 };
             if (msg.substr(expandPrefix.length()).ToLong(&groupId))

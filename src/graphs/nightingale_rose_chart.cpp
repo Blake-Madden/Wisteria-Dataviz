@@ -544,7 +544,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::NightingaleRoseChart, Wisteria::Grap
                 }
             }
 
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

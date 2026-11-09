@@ -423,20 +423,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
                 {
                 wxString resource{ task.m_resource };
                 resource.Replace(L"\n", L" ");
-                label += wxString::Format(
-                    /* TRANSLATORS: Gantt chart accessibility: resource assigned to a task.
-                       %s is the resource/person name. */
-                    _DT(L" (%s)"), resource.Trim(true).Trim(false));
+                label += wxString::Format(_DT(L" (%s)"), resource.Trim(true).Trim(false));
                 }
 
             if (!task.m_description.empty())
                 {
                 wxString desc{ task.m_description };
                 desc.Replace(L"\n", L" ");
-                label += wxString::Format(
-                    /* TRANSLATORS: Gantt chart accessibility: task description.
-                       %s is the description text. */
-                    _DT(L", %s"), desc.Trim(true).Trim(false));
+                label += wxString::Format(_DT(L", %s"), desc.Trim(true).Trim(false));
                 }
 
             if (task.m_start.IsValid() && task.m_end.IsValid())
@@ -477,14 +471,14 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::GanttChart, Wisteria::Graphs::BarCha
 
             label += L"; ";
             }
-        if (label.EndsWith(L"; "))
+        if (label.ends_with(L"; "))
             {
             label.RemoveLast(2);
             }
 
         AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
 
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

@@ -1639,7 +1639,7 @@ namespace Wisteria
                 _(L"A region file must be specified for a choropleth map.").ToUTF8());
             }
         // don't allow trying to load external paths
-        if (regionFileRaw.StartsWith(L"\\\\") || regionFileRaw.StartsWith(L"//"))
+        if (regionFileRaw.starts_with(L"\\\\") || regionFileRaw.starts_with(L"//"))
             {
             throw std::runtime_error(
                 wxString::Format(_(L"'%s': network paths are not allowed for region files."),
@@ -1742,7 +1742,7 @@ namespace Wisteria
                 graphNode->GetProperty(_DT(L"background-file"))->AsString();
             !backgroundFileRaw.empty())
             {
-            if (backgroundFileRaw.StartsWith(L"\\\\") || backgroundFileRaw.StartsWith(L"//"))
+            if (backgroundFileRaw.starts_with(L"\\\\") || backgroundFileRaw.starts_with(L"//"))
                 {
                 throw std::runtime_error(
                     wxString::Format(_(L"'%s': network paths are not allowed for region files."),

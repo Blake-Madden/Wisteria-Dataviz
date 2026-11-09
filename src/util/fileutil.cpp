@@ -240,12 +240,12 @@ bool FilePathResolverBase::HasNetworkPrefix(const wxString& str)
 wxString ParseTitleFromFileName(wxString filename)
     {
     // if page is just a PHP query, then use the name of the folder
-    if (wxFileName{ filename }.GetName().StartsWith(L"?"))
+    if (wxFileName{ filename }.GetName().starts_with(L"?"))
         {
         filename = wxFileName{ filename }.GetPath();
         }
     // sometimes webpage paths end with a '/', so chop that off when getting the title
-    if (filename.EndsWith(L"/"))
+    if (filename.ends_with(L"/"))
         {
         filename = filename.substr(0, filename.length() - 1);
         }

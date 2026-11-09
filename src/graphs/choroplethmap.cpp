@@ -1925,7 +1925,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::ChoroplethMap, Wisteria::Graphs::Gra
             }
 
         AddAccessibilityAttribute(description, GetCaption().GetText(), L". ");
-        if (!description.EndsWith(L"."))
+        if (!description.ends_with(L"."))
             {
             description += L".";
             }

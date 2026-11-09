@@ -2434,7 +2434,7 @@ std::optional<size_t> WisteriaView::ParseDefaultPageNumber(const wxString& name)
     const wxString prefix = templateStr.Left(static_cast<size_t>(placeholderPos));
     const wxString suffix = templateStr.substr(static_cast<size_t>(placeholderPos) + 3);
 
-    if (!name.StartsWith(prefix) || !name.EndsWith(suffix) ||
+    if (!name.starts_with(prefix) || !name.ends_with(suffix) ||
         name.length() < prefix.length() + suffix.length())
         {
         return std::nullopt;

@@ -813,9 +813,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FunnelChart, Wisteria::Graphs::BarCh
                         overallConv, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes)) };
                 const wxString overallDropStr{ wxNumberFormatter::ToString(
                     overallDrop, 0, Settings::GetDefaultNumberFormat()) };
-                /* TRANSLATORS: Overall conversion label: %s is the overall conversion percent, %s
-                   is the total drop. */
                 const wxString overallText{ wxString::Format(
+                    /* TRANSLATORS: Overall conversion label: %s is the overall conversion
+                       percent, %s is the total drop. */
                     _(L"Overall Conversion Rate: %s (%s drop)"), overallConvStr, overallDropStr) };
                 overallLabel = makeAnnotationLabel(overallText);
                 const wxRect overallBox{ overallLabel->GetBoundingBox(dc) };
@@ -1213,11 +1213,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FunnelChart, Wisteria::Graphs::BarCh
                                                0.0 };
                 const wxString convStr{ wxNumberFormatter::ToString(
                     conv, 0, wxNumberFormatter::Style::Style_NoTrailingZeroes) };
-                /* TRANSLATORS: Funnel stage accessibility description: first %s is the stage
-                   name, second %s is its value, third %s is its conversion percent from the
-                   previous stage. */
                 label += L". " +
-                         wxString::Format(_(L"%s: %s (%s%% of previous)"), stage, valStr, convStr);
+                         wxString::Format(
+                             /* TRANSLATORS: Funnel stage accessibility description: first %s is
+                                the stage name, second %s is its value, third %s is its conversion
+                                percent from the previous stage. */
+                             _(L"%s: %s (%s%% of previous)"), stage, valStr, convStr);
                 }
             if (i < m_targetValues.size() && std::isfinite(m_targetValues[i]))
                 {
@@ -1227,7 +1228,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::FunnelChart, Wisteria::Graphs::BarCh
                 }
             }
         AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

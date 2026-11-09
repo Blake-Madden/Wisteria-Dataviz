@@ -432,7 +432,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::DuelingPieChart, Wisteria::Graphs::G
         describeFan(m_topGroupLabel, m_topPie);
         describeFan(m_bottomGroupLabel, m_bottomPie);
 
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

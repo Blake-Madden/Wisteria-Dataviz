@@ -326,7 +326,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::InfleszScale, Wisteria::Graphs::Scal
             }
 
         AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

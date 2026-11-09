@@ -447,9 +447,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
                 {
                 statText += L"  ";
                 }
-            /* TRANSLATORS: a survival percentage; %s is the number, '%%' is a
-               literal percent sign. */
             statText += wxString::Format(
+                /* TRANSLATORS: a survival percentage; %s is the number, '%%' is a
+                   literal percent sign. */
                 _(L"%s%%"),
                 wxNumberFormatter::ToString(SurvivalProbability(period) * 100, 0,
                                             wxNumberFormatter::Style::Style_NoTrailingZeroes));
@@ -742,7 +742,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WilmarthBridgePlot, Wisteria::Graphs
                 FormatPeriod(m_periods.back()), survivingCount);
             }
 
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

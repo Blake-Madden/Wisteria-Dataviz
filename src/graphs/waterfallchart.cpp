@@ -364,7 +364,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaterfallChart, Wisteria::Graphs::Ba
             }
 
         AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

@@ -604,12 +604,12 @@ namespace Wisteria::UI
                                      static_cast<long long>(valueNode->AsDouble())) } :
                                  valueNode->AsString();
                     // split off the dimension prefix so it can be restored on save
-                    if (origin.Lower().StartsWith(L"column:"))
+                    if (origin.Lower().starts_with(L"column:"))
                         {
                         dimension = L"column";
                         origin = origin.substr(7);
                         }
-                    else if (origin.Lower().StartsWith(L"row:"))
+                    else if (origin.Lower().starts_with(L"row:"))
                         {
                         dimension = L"row";
                         origin = origin.substr(4);
@@ -635,11 +635,11 @@ namespace Wisteria::UI
                     else
                         {
                         wxString posStr = posNode->AsString();
-                        if (posStr.Lower().StartsWith(L"column:"))
+                        if (posStr.Lower().starts_with(L"column:"))
                             {
                             posStr = posStr.substr(7);
                             }
-                        else if (posStr.Lower().StartsWith(L"row:"))
+                        else if (posStr.Lower().starts_with(L"row:"))
                             {
                             posStr = posStr.substr(4);
                             }

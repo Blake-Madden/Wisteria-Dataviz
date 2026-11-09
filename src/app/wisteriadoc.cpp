@@ -2566,7 +2566,7 @@ void WisteriaDoc::SaveGraph(const Wisteria::Graphs::Graph2D* graph, wxSimpleJSON
             const auto varName = prop.substr(10); // skip "variables."
             // check for indexed pattern like "y[0]"
             const auto bracketPos = varName.find(L'[');
-            if (bracketPos != wxString::npos && varName.EndsWith(L"]"))
+            if (bracketPos != wxString::npos && varName.ends_with(L"]"))
                 {
                 const auto baseName = varName.Left(bracketPos);
                 const auto idxStr =

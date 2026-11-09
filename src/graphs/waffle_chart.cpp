@@ -353,7 +353,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
                     }
                 label += L", ";
                 }
-            if (label.EndsWith(L", "))
+            if (label.ends_with(L", "))
                 {
                 label.RemoveLast(2);
                 }
@@ -361,7 +361,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::WaffleChart, Wisteria::Graphs::Graph
 
         AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
 
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

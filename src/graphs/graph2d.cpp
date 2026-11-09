@@ -1492,19 +1492,19 @@ namespace Wisteria::Graphs
         for (const auto& refLine : GetReferenceLines())
             {
             result += (result.empty() ? result : wxString{ L"; " });
-            /* TRANSLATORS: reference line description for accessibility.
-               1st %s is the line's label, 2nd %s is its position on the axis. */
             result += wxString::Format(
+                /* TRANSLATORS: reference line description for accessibility.
+                   1st %s is the line's label, 2nd %s is its position on the axis. */
                 _(L"%s at %s"), refLine.GetLabel(),
                 GetReadableAxisValue(GetAxis(refLine.GetAxisType()), refLine.GetAxisPosition()));
             }
         for (const auto& refArea : GetReferenceAreas())
             {
             result += (result.empty() ? result : wxString{ L"; " });
-            /* TRANSLATORS: reference area description for accessibility.
-               1st %s is the area's label, 2nd %s is its start position on the axis,
-               3rd %s is its end position on the axis. */
             result += wxString::Format(
+                /* TRANSLATORS: reference area description for accessibility.
+                   1st %s is the area's label, 2nd %s is its start position on the axis,
+                   3rd %s is its end position on the axis. */
                 _(L"%s from %s to %s"), refArea.GetLabel(),
                 GetReadableAxisValue(GetAxis(refArea.GetAxisType()), refArea.GetAxisPosition()),
                 GetReadableAxisValue(GetAxis(refArea.GetAxisType()), refArea.GetAxisPosition2()));
@@ -1536,21 +1536,21 @@ namespace Wisteria::Graphs
                 bracketList += (bracketList.empty() ? bracketList : wxString{ L"; " });
                 if (bracket.IsSingleLine())
                     {
-                    /* TRANSLATORS: accessibility description of a single-point axis bracket.
-                       1st %s is the bracket's label, 2nd %s is its position on the axis. */
-                    bracketList +=
-                        wxString::Format(_(L"%s at %s"), bracket.GetLabel().GetText(),
-                                         GetReadableAxisValue(axis, bracket.GetStartPosition()));
+                    bracketList += wxString::Format(
+                        /* TRANSLATORS: accessibility description of a single-point axis bracket.
+                           1st %s is the bracket's label, 2nd %s is its position on the axis. */
+                        _(L"%s at %s"), bracket.GetLabel().GetText(),
+                        GetReadableAxisValue(axis, bracket.GetStartPosition()));
                     }
                 else
                     {
-                    /* TRANSLATORS: accessibility description of a ranged axis bracket.
-                       1st %s is the bracket's label, 2nd %s is its start position on the axis,
-                       3rd %s is its end position on the axis. */
-                    bracketList +=
-                        wxString::Format(_(L"%s from %s to %s"), bracket.GetLabel().GetText(),
-                                         GetReadableAxisValue(axis, bracket.GetStartPosition()),
-                                         GetReadableAxisValue(axis, bracket.GetEndPosition()));
+                    bracketList += wxString::Format(
+                        /* TRANSLATORS: accessibility description of a ranged axis bracket.
+                           1st %s is the bracket's label, 2nd %s is its start position on the
+                           axis, 3rd %s is its end position on the axis. */
+                        _(L"%s from %s to %s"), bracket.GetLabel().GetText(),
+                        GetReadableAxisValue(axis, bracket.GetStartPosition()),
+                        GetReadableAxisValue(axis, bracket.GetEndPosition()));
                     }
                 }
             if (bracketList.empty())

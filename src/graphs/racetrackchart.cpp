@@ -452,7 +452,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::RaceTrackChart, Wisteria::Graphs::Gr
                                              wxNumberFormatter::Style::Style_NoTrailingZeroes));
             }
 
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

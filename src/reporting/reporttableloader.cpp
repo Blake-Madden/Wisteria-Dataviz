@@ -1250,7 +1250,7 @@ namespace Wisteria
                 {
                 position = table->GetLastDataRow();
                 }
-            else if (originStr.StartsWith(L"column:"))
+            else if (originStr.starts_with(L"column:"))
                 {
                 if (const auto colPos =
                         (table ? table->FindColumnIndex(originStr.substr(7)) : std::nullopt);
@@ -1259,7 +1259,7 @@ namespace Wisteria
                     position = colPos;
                     }
                 }
-            else if (originStr.StartsWith(L"row:"))
+            else if (originStr.starts_with(L"row:"))
                 {
                 if (const auto colPos =
                         (table ? table->FindRowIndex(originStr.substr(4)) : std::nullopt);

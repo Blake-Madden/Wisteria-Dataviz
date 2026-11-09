@@ -21,8 +21,8 @@ namespace Wisteria::UI
         {
         const wxString url = event.GetURL();
         // allow initial page loads and internal URLs to proceed
-        if (url.empty() || url.StartsWith(L"about:") || url.StartsWith(L"data:") ||
-            url.StartsWith(L"memory:"))
+        if (url.empty() || url.starts_with(L"about:") || url.starts_with(L"data:") ||
+            url.starts_with(L"memory:"))
             {
             event.Skip();
             return;
@@ -32,7 +32,7 @@ namespace Wisteria::UI
         event.Veto();
 
         // extract the target from our custom scheme (funcbrowser://target)
-        if (!url.StartsWith(GetUrlScheme()))
+        if (!url.starts_with(GetUrlScheme()))
             {
             return;
             }

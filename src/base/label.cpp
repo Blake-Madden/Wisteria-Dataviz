@@ -2571,13 +2571,13 @@ namespace Wisteria::GraphItems
         colorStr.Trim(true).Trim(false);
 
         // handle hex color values like #RRGGBB or #RGB
-        if (colorStr.StartsWith(L"#"))
+        if (colorStr.starts_with(L"#"))
             {
             return { colorStr };
             }
 
         // handle rgb(r,g,b) format
-        if (colorStr.Lower().StartsWith(L"rgb("))
+        if (colorStr.Lower().starts_with(L"rgb("))
             {
             const wxRegEx reRgb(L"rgb\\s*\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\)",
                                 wxRE_ICASE);

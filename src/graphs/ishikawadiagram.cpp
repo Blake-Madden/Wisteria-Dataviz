@@ -312,7 +312,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::IshikawaDiagram, Wisteria::Graphs::G
         AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
         AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
         AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

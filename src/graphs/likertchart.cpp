@@ -3033,7 +3033,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LikertChart, Wisteria::Graphs::BarCh
         AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
         AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
         AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

@@ -258,7 +258,7 @@ namespace Wisteria::UI
         {
         // the page is self-contained, so only the initial load is allowed
         if (const wxString url = event.GetURL();
-            url.empty() || url.StartsWith(L"about:") || url.StartsWith(L"data:"))
+            url.empty() || url.starts_with(L"about:") || url.starts_with(L"data:"))
             {
             event.Skip();
             return;

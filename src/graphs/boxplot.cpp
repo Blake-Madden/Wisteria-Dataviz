@@ -1075,11 +1075,12 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
 
             if (outlierCount > 0)
                 {
-                /* TRANSLATORS: appended to the box plot stats when outliers are present.
-                   %zu is the number of outliers. */
                 boxStr += L", " +
-                          wxString::Format(wxPLURAL(L"%zu outlier", L"%zu outliers", outlierCount),
-                                           outlierCount);
+                          wxString::Format(
+                              /* TRANSLATORS: appended to the box plot stats when outliers are
+                                 present. %zu is the number of outliers. */
+                              wxPLURAL(L"%zu outlier", L"%zu outliers", outlierCount),
+                              outlierCount);
                 }
 
             label += L". " + boxStr;
@@ -1088,7 +1089,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
         AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
         AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
         AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

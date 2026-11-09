@@ -789,8 +789,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                         (!block.GetTag().empty() ? block.GetTag() : block.GetDecal().GetText());
                     if (!blockName.empty())
                         {
-                        /* TRANSLATORS: a named block inside a histogram bin and its count.
-                           1st %s is the group name, 2nd %s is its count. */
                         label += L", " + wxString::Format(_DT(L"%s: %s"), blockName,
                                                           GetReadableAxisValue(GetScalingAxis(),
                                                                                block.GetLength()));
@@ -799,8 +797,6 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
                 }
             else
                 {
-                /* TRANSLATORS: bin label and its count in a histogram.
-                   1st %s is the bin's range label, 2nd %s is its count. */
                 label += L". " + wxString::Format(_DT(L"%s: %s"), binLabel, binLengthStr);
                 }
             }
@@ -808,7 +804,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Histogram, Wisteria::Graphs::BarChar
         AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
         AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
         AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

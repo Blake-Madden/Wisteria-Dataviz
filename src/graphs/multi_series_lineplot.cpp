@@ -330,9 +330,9 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
                     {
                     pointsStr += L"; ";
                     }
-                // TRANSLATORS: description of a data point. The first %s is the Y value, the second
-                // %s is the X value (e.g., a date).
                 pointsStr += wxString::Format(
+                    // TRANSLATORS: description of a data point. The first %s is the Y value,
+                    // the second %s is the X value (e.g., a date).
                     _(L"%s at %s"), GetReadableAxisValue(GetLeftYAxis(), yVal), formatX(i));
                 ++pointCount;
                 }
@@ -344,7 +344,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::MultiSeriesLinePlot, Wisteria::Graph
         AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
         AddAccessibilityAttribute(label, GetReadableReferenceLines(), L". ");
         AddAccessibilityAttribute(label, GetReadableAnnotations(), L". ");
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

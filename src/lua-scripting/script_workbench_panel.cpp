@@ -149,9 +149,6 @@ namespace Wisteria::UI
         m_sidebarSplitter->SetSashGravity(0.0); // right (editor area) absorbs resize
 
         m_scriptSidebar = new SideBar(m_sidebarSplitter);
-        m_scriptSidebar->SetImageList({ BaseApp::GetApp().GetResourceManager().GetSVG(
-            wxSystemSettings::GetAppearance().IsDark() ? L"images/lua-dark-mode.svg" :
-                                                         L"images/lua.svg") });
         m_scriptSidebar->InsertItem(0, _(L"Scripts"), m_scriptsFolderId, std::nullopt);
         BaseApp::GetApp().ApplyThemeToSideBar(m_scriptSidebar);
 
@@ -263,7 +260,7 @@ namespace Wisteria::UI
                         {
                         const int lineStart = editor->LineFromPosition(editor->GetSelectionStart());
                         const wxString lineText = editor->GetLine(lineStart).Trim(false);
-                        if (lineText.StartsWith(L"--"))
+                        if (lineText.starts_with(L"--"))
                             {
                             Uncomment();
                             }
@@ -376,7 +373,7 @@ namespace Wisteria::UI
         m_editorBook->AddPage(page, label, true);
 
         const wxWindowID subId = m_nextSidebarSubId++;
-        m_scriptSidebar->InsertSubItemById(m_scriptsFolderId, label, subId, 0);
+        m_scriptSidebar->InsertSubItemById(m_scriptsFolderId, label, subId, std::nullopt);
         m_scriptSidebar->GetFolder(0).Expand();
         m_scriptSidebar->Realize();
         m_scriptSidebar->SelectSubItemById(m_scriptsFolderId, subId, false, false);
@@ -402,7 +399,7 @@ namespace Wisteria::UI
                 continue;
                 }
             const wxString& path = entry.m_editor->GetScriptFilePath();
-            const wxString base = path.empty() ? _(L"(unnamed)") : wxFileName(path).GetName();
+            const wxString base = path.empty() ? _(L"(unnamed)") : wxFileName{ path }.GetName();
             const wxString label = entry.m_editor->GetModify() ? (base + L" *") : base;
             m_scriptSidebar->SetSubItemLabel(m_scriptsFolderId, entry.m_sidebarId, label);
             return;
@@ -426,14 +423,14 @@ namespace Wisteria::UI
                 current->SetScriptFilePath(path);
                 current->LoadFile(path);
                 current->SetSelection(current->GetTextLength(), current->GetTextLength());
-                m_editorBook->SetPageText(0, wxFileName(path).GetName());
+                m_editorBook->SetPageText(0, wxFileName{ path }.GetName());
                 current->SetFocus();
                 return;
                 }
             }
 
         // ...otherwise open as a new entry
-        auto* editor = AddScriptEntry(wxFileName(path).GetName());
+        auto* editor = AddScriptEntry(wxFileName{ path }.GetName());
         if (editor != nullptr)
             {
             // set the path before LoadFile so the SAVEPOINTREACHED handler can
@@ -458,7 +455,7 @@ namespace Wisteria::UI
             {
             return;
             }
-        const wxString newLabel = wxFileName(codeEditor->GetScriptFilePath()).GetName();
+        const wxString newLabel = wxFileName{ codeEditor->GetScriptFilePath() }.GetName();
         m_editorBook->SetPageText(sel, newLabel);
 
         for (const auto& entry : m_scripts)
@@ -876,7 +873,7 @@ namespace Wisteria::UI
         const int lineStart = editor->LineFromPosition(editor->GetSelectionStart());
         int lineEnd = editor->LineFromPosition(editor->GetSelectionEnd());
 
-        // If the selection ends at the start of a line, don't include that line
+        // if the selection ends at the start of a line, don't include that line
         if (lineEnd > lineStart && editor->GetColumn(editor->GetSelectionEnd()) == 0)
             {
             lineEnd--;
@@ -902,7 +899,6 @@ namespace Wisteria::UI
         const int lineStart = editor->LineFromPosition(editor->GetSelectionStart());
         int lineEnd = editor->LineFromPosition(editor->GetSelectionEnd());
 
-        // If the selection ends at the start of a line, don't include that line
         if (lineEnd > lineStart && editor->GetColumn(editor->GetSelectionEnd()) == 0)
             {
             lineEnd--;
@@ -918,7 +914,7 @@ namespace Wisteria::UI
                 {
                 firstCharPos++;
                 }
-            if (lineText.substr(firstCharPos).StartsWith(L"--"))
+            if (lineText.substr(firstCharPos).starts_with(L"--"))
                 {
                 editor->DeleteRange(editor->PositionFromLine(i) + firstCharPos, 2);
                 }
@@ -1112,9 +1108,10 @@ namespace Wisteria::UI
     //-------------------------------------------------------
     void ScriptWorkbenchPanel::DebugClear()
         {
-        // TRANSLATORS: %d placeholders are the major, minor, and release version numbers of Lua
-        m_debugContent = wxString::Format(_(L"Lua version %d.%d.%d, ready..."), LUA_VERSION_MAJOR_N,
-                                          LUA_VERSION_MINOR_N, LUA_VERSION_RELEASE_N);
+        m_debugContent = wxString::Format(
+            // TRANSLATORS: %d placeholders are the major, minor, and release version numbers of Lua
+            _(L"Lua version %d.%d.%d, ready..."), LUA_VERSION_MAJOR_N, LUA_VERSION_MINOR_N,
+            LUA_VERSION_RELEASE_N);
         RefreshDebugWindow();
         }
 
@@ -1128,7 +1125,7 @@ namespace Wisteria::UI
                 {
                 continue;
                 }
-            // surface which script the prompt is about
+            // show which script the prompt is about
             m_scriptSidebar->SelectSubItemById(m_scriptsFolderId, entry.m_sidebarId, false, false);
             const wxString name = codeEditor->GetScriptFilePath().empty() ?
                                       wxString{ _(L"(unnamed)") } :

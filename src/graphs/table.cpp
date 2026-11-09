@@ -2180,13 +2180,13 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
                     }
                 label += L", ";
                 }
-            if (label.EndsWith(L", "))
+            if (label.ends_with(L", "))
                 {
                 label.RemoveLast(2);
                 }
             label += L"; ";
             }
-        if (label.EndsWith(L"; "))
+        if (label.ends_with(L"; "))
             {
             label.RemoveLast(2);
             }
@@ -2211,7 +2211,7 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::Table, Wisteria::Graphs::Graph2D)
             AddAccessibilityAttribute(label, GetCaption().GetText(), L". ");
             }
 
-        if (!label.EndsWith(L"."))
+        if (!label.ends_with(L"."))
             {
             label += L".";
             }

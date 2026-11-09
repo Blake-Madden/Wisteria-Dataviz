@@ -791,15 +791,15 @@ namespace Wisteria::UI
         // the next line), or a language keyword that starts a block body
         const auto endsWithBlockOpener = [this](const wxString& lineTrimmed)
         {
-            if (lineTrimmed.EndsWith(L"(") || lineTrimmed.EndsWith(L"[") ||
-                lineTrimmed.EndsWith(L"{"))
+            if (lineTrimmed.ends_with(L"(") || lineTrimmed.ends_with(L"[") ||
+                lineTrimmed.ends_with(L"{"))
                 {
                 return true;
                 }
             if (wxSTC_LEX_LUA == m_lexer)
                 {
-                return lineTrimmed.EndsWith(L"then") || lineTrimmed.EndsWith(L"do") ||
-                       lineTrimmed.EndsWith(L"else") || lineTrimmed.EndsWith(L"repeat");
+                return lineTrimmed.ends_with(L"then") || lineTrimmed.ends_with(L"do") ||
+                       lineTrimmed.ends_with(L"else") || lineTrimmed.ends_with(L"repeat");
                 }
             return false;
         };
