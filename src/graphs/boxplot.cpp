@@ -1075,12 +1075,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::BoxPlot, Wisteria::Graphs::Graph2D)
 
             if (outlierCount > 0)
                 {
-                boxStr += L", " +
-                          wxString::Format(
-                              /* TRANSLATORS: appended to the box plot stats when outliers are
-                                 present. %zu is the number of outliers. */
-                              wxPLURAL(L"%zu outlier", L"%zu outliers", outlierCount),
-                              outlierCount);
+                boxStr += L", " + wxString::Format(
+                                      /* TRANSLATORS: appended to the box plot stats when outliers
+                                         are present. %zu is the number of outliers. */
+                                      wxPLURAL(L"%zu outlier", L"%zu outliers", outlierCount),
+                                      outlierCount);
                 }
 
             label += L". " + boxStr;

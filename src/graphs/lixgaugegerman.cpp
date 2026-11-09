@@ -449,20 +449,19 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
             label += L". ";
             if (validScores.size() == 1)
                 {
-                label +=
-                    wxString::Format(
+                label += wxString::Format(
                     /* TRANSLATORS: Lix gauge accessibility: single score.
                        1st %s is the score value, 2nd %s is the section label. */
-                        _(L"Score: %s, classified as %s"),
-                                     wxNumberFormatter::ToString(
-                                         validScores[0], 1, wxNumberFormatter::Style::Style_None),
-                                     getSectionLabel(validScores[0]));
+                    _(L"Score: %s, classified as %s"),
+                    wxNumberFormatter::ToString(validScores[0], 1,
+                                                wxNumberFormatter::Style::Style_None),
+                    getSectionLabel(validScores[0]));
                 }
             else
                 {
                 const auto minScore = *std::min_element(validScores.cbegin(), validScores.cend());
                 const auto maxScore = *std::max_element(validScores.cbegin(), validScores.cend());
-                
+
                 label += wxString::Format(
                     /* TRANSLATORS: Lix gauge accessibility: multiple scores.
                        %zu is the count; 1st %s is lowest value, 2nd %s is its section,
