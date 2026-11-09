@@ -65,8 +65,8 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::RunChart, Wisteria::Graphs::SpcChart
             {
             return {};
             }
-        // TRANSLATORS: the first %s is a stage's label and the second is its median
         return wxString::Format(
+            // TRANSLATORS: the first %s is a stage's label and the second is its median
             _(L"%s: median %s"), GetStageLabels()[stage],
             wxNumberFormatter::ToString(m_stageMedians[stage].value(), 4,
                                         wxNumberFormatter::Style::Style_NoTrailingZeroes));

@@ -449,10 +449,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
             label += L". ";
             if (validScores.size() == 1)
                 {
-                /* TRANSLATORS: Lix gauge accessibility: single score.
-                   1st %s is the score value, 2nd %s is the section label. */
                 label +=
-                    wxString::Format(_(L"Score: %s, classified as %s"),
+                    wxString::Format(
+                    /* TRANSLATORS: Lix gauge accessibility: single score.
+                       1st %s is the score value, 2nd %s is the section label. */
+                        _(L"Score: %s, classified as %s"),
                                      wxNumberFormatter::ToString(
                                          validScores[0], 1, wxNumberFormatter::Style::Style_None),
                                      getSectionLabel(validScores[0]));
@@ -461,10 +462,11 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Graphs::LixGaugeGerman, Wisteria::Graphs::Gr
                 {
                 const auto minScore = *std::min_element(validScores.cbegin(), validScores.cend());
                 const auto maxScore = *std::max_element(validScores.cbegin(), validScores.cend());
-                /* TRANSLATORS: Lix gauge accessibility: multiple scores.
-                   %zu is the count; 1st %s is lowest value, 2nd %s is its section,
-                   3rd %s is highest value, 4th %s is its section. */
+                
                 label += wxString::Format(
+                    /* TRANSLATORS: Lix gauge accessibility: multiple scores.
+                       %zu is the count; 1st %s is lowest value, 2nd %s is its section,
+                       3rd %s is highest value, 4th %s is its section. */
                     _(L"%zu scores; lowest score (%s) falls in %s; highest score (%s) falls in %s"),
                     validScores.size(),
                     wxNumberFormatter::ToString(minScore, 1, wxNumberFormatter::Style::Style_None),

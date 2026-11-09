@@ -147,38 +147,41 @@ namespace Wisteria::UI
 #ifndef NDEBUG
                 buildInfo += _(L"DEBUG version");
 #else
-                // TRANSLATORS: Release version of the program.
-                buildInfo += _(L"Release version");
+
+                buildInfo +=
+                    /* TRANSLATORS: Release version of the program.*/ _(L"Release version");
 #endif
 #if defined(__apple_build_version__)
-                // TRANSLATORS: Compiler used to build the program.
-                buildInfo +=
-                    wxString::Format(_(L"\nCompiler: Apple Clang %d.%d.%d"), __clang_major__,
-                                     __clang_minor__, __clang_patchlevel__);
+                buildInfo += wxString::Format(
+                    // TRANSLATORS: Compiler used to build the program.
+                    _(L"\nCompiler: Apple Clang %d.%d.%d"), __clang_major__, __clang_minor__,
+                    __clang_patchlevel__);
 #elif defined(__clang__)
-                // TRANSLATORS: Compiler used to build the program.
-                buildInfo += wxString::Format(_(L"\nCompiler: Clang %d.%d.%d"), __clang_major__,
-                                              __clang_minor__, __clang_patchlevel__);
+                buildInfo += wxString::Format(
+                    // TRANSLATORS: Compiler used to build the program.
+                    _(L"\nCompiler: Clang %d.%d.%d"), __clang_major__, __clang_minor__,
+                    __clang_patchlevel__);
 #elif defined(_MSC_FULL_VER)
-                // TRANSLATORS: Compiler used to build the program.
-                buildInfo +=
-                    wxString::Format(_(L"\nCompiler: MSVC %d.%d.%d"), _MSC_FULL_VER / 10000000,
-                                     (_MSC_FULL_VER / 100000) % 100, _MSC_FULL_VER % 100000);
+                buildInfo += wxString::Format(
+                    // TRANSLATORS: Compiler used to build the program.
+                    _(L"\nCompiler: MSVC %d.%d.%d"), _MSC_FULL_VER / 10000000,
+                    (_MSC_FULL_VER / 100000) % 100, _MSC_FULL_VER % 100000);
 #elif defined(__MINGW32__) || defined(__MINGW64__)
-                // TRANSLATORS: Compiler used to build the program.
-                buildInfo += wxString::Format(_(L"\nCompiler: MinGW GCC %d.%d.%d"), __GNUC__,
-                                              __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
+                buildInfo += wxString::Format(
+                    // TRANSLATORS: Compiler used to build the program.
+                    _(L"\nCompiler: MinGW GCC %d.%d.%d"), __GNUC__, __GNUC_MINOR__,
+                    __GNUC_PATCHLEVEL__);
 #elif defined(__GNUC__)
-                // TRANSLATORS: Compiler used to build the program.
-                buildInfo += wxString::Format(_(L"\nCompiler: GCC %d.%d.%d"), __GNUC__,
-                                              __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
+                buildInfo += wxString::Format( // TRANSLATORS: Compiler used to build the program.
+                    _(L"\nCompiler: GCC %d.%d.%d"), __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
 #endif
-                // TRANSLATORS: C++ language standard used to build the program.
-                // (__cplusplus encodes the standard's finalization year as YYYYMM;
-                // C++98 is the sole exception, using 199711L.)
-                buildInfo +=
-                    wxString::Format(_(L"\nC++ Standard: C++%02ld"),
-                                     (__cplusplus <= 199711L) ? 98L : ((__cplusplus / 100) % 100));
+
+                buildInfo += wxString::Format(
+                    // TRANSLATORS: C++ language standard used to build the program.
+                    // (__cplusplus encodes the standard's finalization year as YYYYMM;
+                    // C++98 is the sole exception, using 199711L.)
+                    _(L"\nC++ Standard: C++%02ld"),
+                    (__cplusplus <= 199711L) ? 98L : ((__cplusplus / 100) % 100));
 #ifdef COMPILE_FLAGS_SUMMARY_STR
                 wxString compileFlagsInfo = wxString::FromUTF8(COMPILE_FLAGS_SUMMARY_STR);
                 compileFlagsInfo.Replace(L"\\n", L"\n");

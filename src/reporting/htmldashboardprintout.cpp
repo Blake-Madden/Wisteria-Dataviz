@@ -3360,8 +3360,9 @@ Wisteria::HtmlDashboardPrintout::HtmlDashboardPrintout(const std::vector<ReportE
                 wxString shownTitle{ tableTitle };
                 if (!shownTitle.empty() && tablePages > 1)
                     {
-                    shownTitle = wxString::Format(_(L"%s (%zu of %zu)"), tableTitle, tablePage + 1,
-                                                  tablePages);
+                    shownTitle = wxString::Format(
+                        // TRANSLATORS: a table title, and the page number of a page range.
+                        _(L"%s (%zu of %zu)"), tableTitle, tablePage + 1, tablePages);
                     }
                 const wxString sectionTitle{ shownTitle.empty() ?
                                                  wxString::Format(_(L"Page %zu"), pageIndex + 1) :
