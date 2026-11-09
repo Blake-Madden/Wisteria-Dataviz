@@ -18,7 +18,7 @@
 	path = src/wxStartPage
 	url = https://github.com/Blake-Madden/wxStartPage.git
 	branch = main
-[submodule "wxpdfdoc"]
+[submodule "src/wxpdfdoc"]
 	path = src/wxpdfdoc
 	url = https://github.com/utelle/wxpdfdoc.git
 [submodule "src/lua"]
