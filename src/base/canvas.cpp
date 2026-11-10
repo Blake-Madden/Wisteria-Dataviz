@@ -678,10 +678,26 @@ wxIMPLEMENT_DYNAMIC_CLASS(Wisteria::Canvas, wxScrolledWindow)
                     m_canvasMinSizeDIPs = wxSize{ dipW, dipH };
                     pdfDC.SetDeviceOrigin(leftMargin, topMargin);
                     }
-                const wxEventBlocker blocker(this);
+                const wxEventBlocker blocker{ this };
                 CalcAllSizes(pdfDC);
+                // The DC's graphics context ignores the DC's device origin, but its transform
+                // applies to the whole page (including what the DC draws). Position the
+                // content through the context alone so that both are offset only once.
+                auto* gc = pdfDC.GetGraphicsContext();
+                if (gc != nullptr)
+                    {
+                    const wxPoint origin{ pdfDC.GetDeviceOrigin() };
+                    pdfDC.SetDeviceOrigin(0, 0);
+                    gc->PushState();
+                    gc->Translate(pdfDC.DeviceToLogicalXRel(origin.x),
+                                  pdfDC.DeviceToLogicalYRel(origin.y));
+                    }
                 OnDraw(pdfDC);
                 DrawWatermarkLabel(pdfDC);
+                if (gc != nullptr)
+                    {
+                    gc->PopState();
+                    }
                 pdfDC.EndPage();
                 pdfDC.EndDoc();
                 }

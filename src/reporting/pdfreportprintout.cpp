@@ -403,24 +403,32 @@ Wisteria::ReportPDFExport::ReportPDFExport(const std::vector<ReportExportPage>& 
             const wxEventBlocker blocker{ canvas };
             canvas->CalcAllSizes(pdfDC);
 
-            // the DC's graphics context (used for shapes) ignores the DC's device origin,
-            // so apply the same offset to it while drawing this page
+            // The DC's graphics context ignores the DC's device origin, but its transform
+            // applies to the whole page (including what the DC draws). Position and scale
+            // the content through the context alone so that both are offset only once.
             auto* gc = pdfDC.GetGraphicsContext();
             if (gc != nullptr)
                 {
                 const wxPoint origin{ pdfDC.GetDeviceOrigin() };
+                pdfDC.SetDeviceOrigin(0, 0);
                 gc->PushState();
                 gc->Translate(pdfDC.DeviceToLogicalXRel(origin.x),
                               pdfDC.DeviceToLogicalYRel(origin.y));
                 gc->Scale(contentScale, contentScale);
                 }
-            pdfDC.SetUserScale(contentScale, contentScale);
+            else
+                {
+                pdfDC.SetUserScale(contentScale, contentScale);
+                }
             canvas->OnDraw(pdfDC);
             canvas->DrawWatermarkLabel(pdfDC);
-            pdfDC.SetUserScale(1.0, 1.0);
             if (gc != nullptr)
                 {
                 gc->PopState();
+                }
+            else
+                {
+                pdfDC.SetUserScale(1.0, 1.0);
                 }
 
             if (hasHeader || hasFooter)
