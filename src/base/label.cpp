@@ -276,8 +276,9 @@ namespace Wisteria::GraphItems
             {
             // scale the text to fit in the area where the text is going
             // (i.e., the rect with the images removed)
-            const wxRect textRect(wxSize(std::min(rect.GetWidth(), textAreaWidthNoSideImages),
-                                         std::min(rect.GetHeight(), textAreaHeightNoSideImages)));
+            const wxRect textRect{ wxSize{
+                std::min(rect.GetWidth(), textAreaWidthNoSideImages),
+                std::min(rect.GetHeight(), textAreaHeightNoSideImages) } };
             const auto widthFactor =
                 safe_divide<double>(textRect.GetWidth(), measureWidthNoSideImages);
             const auto heightFactor =
@@ -285,6 +286,24 @@ namespace Wisteria::GraphItems
             SetScaling(std::max(GetScaling() * std::min(widthFactor, heightFactor),
                                 // don't go too small, though
                                 math_constants::tenth));
+
+            // Some DCs (e.g., PDF) round fonts to whole point sizes, which can make
+            // the text larger than the box. Shrink until it fits.
+            constexpr int MAX_FIT_ATTEMPTS{ 10 };
+            constexpr double MIN_SHRINK_FACTOR{ 0.95 };
+            GetSize(dc, measuredWidth, measureHeight);
+            for (int attempt = 0;
+                 attempt < MAX_FIT_ATTEMPTS &&
+                 (measuredWidth > rect.GetWidth() || measureHeight > rect.GetHeight()) &&
+                 GetScaling() > math_constants::tenth;
+                 ++attempt)
+                {
+                const double shrinkFactor{ std::min(
+                    { safe_divide<double>(rect.GetWidth(), measuredWidth),
+                      safe_divide<double>(rect.GetHeight(), measureHeight), MIN_SHRINK_FACTOR }) };
+                SetScaling(std::max(GetScaling() * shrinkFactor, math_constants::tenth));
+                GetSize(dc, measuredWidth, measureHeight);
+                }
             }
 
         // used for page alignment
@@ -471,8 +490,8 @@ namespace Wisteria::GraphItems
                      ScaleToScreenAndCanvas(GetRightPadding());
             height += spaceBetweenLines + ScaleToScreenAndCanvas(GetTopPadding()) +
                       ScaleToScreenAndCanvas(GetBottomPadding());
-            // now, if top line is a header, then measure that and see if it needs to increase the
-            // width of the box
+            // now, if top line is a header, then measure that and see if it needs to increase
+            // the width of the box
             if (GetHeaderInfo().IsEnabled() && firstLineEnd != std::wstring::npos &&
                 secondLineStart != std::wstring::npos)
                 {
@@ -2383,9 +2402,10 @@ namespace Wisteria::GraphItems
     void Label::FixFont(wxFont& theFont)
         {
         const wxString originalFaceName = theFont.GetFaceName();
-        // Fix the point size. A size that is zero can cause a crash on some platforms, and if the
-        // size is too small to be supported by the font then it appears blank in a font selection
-        // dialog. The smallest size is 8 on Windows and 9 on OSX, so reset bogus sizes if needed.
+        // Fix the point size. A size that is zero can cause a crash on some platforms, and if
+        // the size is too small to be supported by the font then it appears blank in a font
+        // selection dialog. The smallest size is 8 on Windows and 9 on OSX, so reset bogus
+        // sizes if needed.
         constexpr int MINIMUM_POINT_SIZE =
 #ifdef __WXMSW__
             8;
@@ -2397,9 +2417,9 @@ namespace Wisteria::GraphItems
             theFont.SetFractionalPointSize(
                 wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT).GetFractionalPointSize());
             }
-        // Fix the face name. Of interest is that some versions of macOS use hidden fonts for their
-        // default font, which won't be displayed in a standard font selection dialog. We have to
-        // remap these here. OSX 10.9 font
+        // Fix the face name. Of interest is that some versions of macOS use hidden fonts for
+        // their default font, which won't be displayed in a standard font selection dialog. We
+        // have to remap these here. OSX 10.9 font
         if (theFont.GetFaceName() == L".Lucida Grande UI")
             {
             theFont.SetFaceName(
