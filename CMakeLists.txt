@@ -445,6 +445,9 @@ set_target_properties(${DEMO_APP} PROPERTIES
 
 # Link required libraries to the executable
 target_link_libraries(${DEMO_APP} ${WISTERIA_LIB} ${wxWidgets_LIBRARIES})
+if(UNIX AND NOT APPLE)
+    target_link_options(${DEMO_APP} PRIVATE "-Wl,-Map=${CMAKE_BINARY_DIR}/demo.map")
+endif()
 
 # Copy resources and datasets into build folder
 message(STATUS "Copying demo resources...")
