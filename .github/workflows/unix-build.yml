@@ -28,6 +28,10 @@ jobs:
              cmake ./
              cmake --build . -j4 -v
 
+      - name: Show linker map
+        if: always()
+        run: grep -F -m1 -A3 'libwxscintilla-3.3.a(AutoComplete' demo.map
+
       - name: Run tests
         run: |
              cd ..
