@@ -26,7 +26,7 @@ jobs:
       - name: Build
         run: |
              cmake ./
-             cmake --build . -j4
+             cmake --build . -j4 -v
 
       - name: Run tests
         run: |
