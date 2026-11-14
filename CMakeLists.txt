@@ -376,7 +376,7 @@ elseif(MINGW OR MSYS)
     target_compile_options(${WISTERIA_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
                            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-fstack-protector-strong>
                            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-D_FORTIFY_SOURCE=2>
-                           $<$<CONFIG:Debug>:-Og ${SANITIZER_FLAGS} ${SANITIZER_EXTRA_FLAGS}>
+                           $<$<CONFIG:Debug>:-O0 ${SANITIZER_FLAGS} ${SANITIZER_EXTRA_FLAGS}>
                            $<$<CONFIG:Release>:-O2>)
     target_link_options(${WISTERIA_LIB} PUBLIC
         $<$<CONFIG:Debug>:${SANITIZER_LINK_FLAGS}>)
@@ -387,7 +387,7 @@ elseif(APPLE)
                            # Security hardening (only for GCC and Clang)
                            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-fstack-protector-strong>
                            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-D_FORTIFY_SOURCE=2>
-                           $<$<CONFIG:Debug>:-Og ${SANITIZER_FLAGS} ${SANITIZER_EXTRA_FLAGS}>
+                           $<$<CONFIG:Debug>:-O0 ${SANITIZER_FLAGS} ${SANITIZER_EXTRA_FLAGS}>
                            $<$<CONFIG:Release>:-O2>)
     target_link_options(${WISTERIA_LIB} PUBLIC
         $<$<CONFIG:Debug>:${SANITIZER_LINK_FLAGS}>)
@@ -397,7 +397,7 @@ elseif(UNIX)
     target_compile_options(${WISTERIA_LIB} PUBLIC -Wall -Wextra -Wpedantic -Wshadow -Werror
                            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-fstack-protector-strong>
                            $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-D_FORTIFY_SOURCE=2>
-                           $<$<CONFIG:Debug>:-Og ${SANITIZER_FLAGS} ${SANITIZER_EXTRA_FLAGS}>
+                           $<$<CONFIG:Debug>:-O0 ${SANITIZER_FLAGS} ${SANITIZER_EXTRA_FLAGS}>
                            $<$<CONFIG:Release>:-O2>)
     target_link_options(${WISTERIA_LIB} PUBLIC
         $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wl,-z,relro,-z,now>
